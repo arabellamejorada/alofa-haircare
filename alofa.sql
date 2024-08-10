@@ -17,7 +17,7 @@ CREATE TABLE employee (
     last_name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
     contact_number VARCHAR(15) NOT NULL,
-    role_id INT
+    role_id INT NOT NULL
 );
 
 CREATE TABLE customer (
@@ -26,7 +26,7 @@ CREATE TABLE customer (
     last_name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
     contact_number VARCHAR(15) NOT NULL,
-    role_id INT
+    role_id INT NOT NULL
 );
 
 CREATE TABLE user_account (
@@ -53,7 +53,7 @@ CREATE TABLE shipping_address (
     city VARCHAR(255) NOT NULL,
     province VARCHAR(255) NOT NULL,
     zip_code VARCHAR(255) NOT NULL,
-    customer_id INT
+    customer_id INT NOT NULL
 );
 
 CREATE TABLE shipping (
@@ -61,8 +61,8 @@ CREATE TABLE shipping (
     shipping_date DATE NOT NULL,
     shipping_fee NUMERIC(10, 2) NOT NULL,
     tracking_number VARCHAR(255) NOT NULL,
-    shipping_method_id INT,
-    shipping_address_id INT
+    shipping_method_id INT NOT NULL,
+    shipping_address_id INT NOT NULL
 );
 
 -- 3. PRODUCT
@@ -82,17 +82,17 @@ CREATE TABLE product (
     name VARCHAR(255) NOT NULL,
     description VARCHAR(255) NOT NULL,
     unit_price NUMERIC(10, 2) NOT NULL,
-    image TEXT,
+    image TEXT NOT NULL,
     status VARCHAR(255) NOT NULL,
-    product_category_id INT,
-    inventory_id INT
+    product_category_id INT NOT NULL,
+    inventory_id INT NOT NULL
 );
 
 CREATE TABLE product_order (
     product_order_id SERIAL PRIMARY KEY,
     quantity INTEGER NOT NULL,
     subtotal NUMERIC(10, 2) NOT NULL,
-    product_id INT
+    product_id INT NOT NULL
 );
 
 -- 4. ORDER TRANSACTION
@@ -101,10 +101,10 @@ CREATE TABLE order_transaction (
     date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     total_amount NUMERIC(10, 2) NOT NULL,
     order_status VARCHAR(255) NOT NULL,
-    customer_id INT,
-    product_order_id INT,
-    shipping_id INT,
-    payment_id INT
+    customer_id INT NOT NULL,
+    product_order_id INT NOT NULL,
+    shipping_id INT NOT NULL,
+    payment_id INT NOT NULL
 );
 
 -- 5. PAYMENT
@@ -117,18 +117,19 @@ CREATE TABLE payment (
     payment_id SERIAL PRIMARY KEY,
     date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     amount_paid NUMERIC(10, 2),
-    proof_image TEXT,
+    proof_image TEXT NOT NULL,
     reference_number VARCHAR(255) NOT NULL,
-    payment_method_id INT,
-    order_transaction_id INT,
-    payment_verification_id INT
+    payment_method_id INT NOT NULL,
+    order_transaction_id INT NOT NULL,
+    payment_verification_id INT NOT NULL
 );
 
 CREATE TABLE payment_verification (
     payment_verification_id SERIAL PRIMARY KEY,
     verification_date DATE NOT NULL,
     is_verified BOOLEAN NOT NULL,
-    employee_id INT
+    employee_id INT NOT NULL,
+    payment_id INT NOT NULL
 );
 
 -- Add foreign key constraints
@@ -218,3 +219,7 @@ FOREIGN KEY (payment_verification_id) REFERENCES payment_verification(payment_ve
 ALTER TABLE payment_verification
 ADD CONSTRAINT fk_payment_verification_employee 
 FOREIGN KEY (employee_id) REFERENCES employee(employee_id);
+
+ALTER TABLE payment_verification
+ADD CONSTRAINT fk_payment_verification_payment
+FOREIGN KEY (payment_id) REFERENCES payment(payment_id);
