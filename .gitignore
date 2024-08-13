@@ -1,1 +1,33 @@
+# Node modules
 node_modules/
+
+# Environment variables
+.env
+
+# Logs
+*.log
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Editor and IDE settings
+.vscode/
+.idea/
+
+# Build output
+/dist
+/build
+
+# Coverage reports
+/coverage
+
+# Temporary files
+*.tmp
+*.temp
+
+# Optional: Ignore lock files for other package managers
+yarn.lock
+``
