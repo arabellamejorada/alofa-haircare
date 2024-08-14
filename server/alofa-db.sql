@@ -80,12 +80,12 @@ CREATE TABLE inventory (
 CREATE TABLE product (
     product_id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    description VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
     unit_price NUMERIC(10, 2) NOT NULL,
     image TEXT NOT NULL,
     status VARCHAR(255) NOT NULL,
     product_category_id INT NOT NULL,
-    inventory_id INT NOT NULL
+    inventory_id INT
 );
 
 CREATE TABLE product_order (
@@ -179,8 +179,9 @@ FOREIGN KEY (product_id) REFERENCES product(product_id);
 
 -- Inventory (Dependencies)
 ALTER TABLE inventory
-ADD CONSTRAINT fk_inventory_product 
-FOREIGN KEY (product_id) REFERENCES product(product_id);
+ADD CONSTRAINT fk_inventory_product
+FOREIGN KEY (product_id) REFERENCES product(product_id) 
+ON DELETE CASCADE;
 
 -- Order Transaction
 ALTER TABLE order_transaction
