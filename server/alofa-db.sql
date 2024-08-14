@@ -182,10 +182,6 @@ ALTER TABLE inventory
 ADD CONSTRAINT fk_inventory_product 
 FOREIGN KEY (product_id) REFERENCES product(product_id);
 
-ALTER TABLE inventory
-ADD CONSTRAINT fk_inventory_order_transaction 
-FOREIGN KEY (order_transaction_id) REFERENCES order_transaction(order_transaction_id);
-
 -- Order Transaction
 ALTER TABLE order_transaction
 ADD CONSTRAINT fk_order_transaction_customer 
