@@ -1,4 +1,4 @@
-# alofa-haircare
+# Alofa Haircare
 ## Project Overview
 This project is an eCommerce platform designed for Alofa Haircare to provide a seamless shopping experience for users. The site allows users to browse products, manage their carts, and complete transactions with secure payment options. This also allows admin to manage products and view sales report.
 
