@@ -1,10 +1,10 @@
+// productController includes product, product categories, inventory
 const pool = require('../db.js');
 
-// PRODUCTS CRUD
+// PRODUCTS CRUD + INVENTORY CREATE
 const createProductWithInventory = async (req, res) => {
     const client = await pool.connect();
     const { name, description, unit_price, status, product_category_id, stock_quantity } = req.body;
-    const stock_in_date = req.body.stock_in_date || new Date();
     const image = req.file ? req.file.filename : '';
 
     console.log(req.body);
@@ -24,10 +24,10 @@ const createProductWithInventory = async (req, res) => {
 
         // Insert inventory
         const inventoryResult = await client.query(
-            `INSERT INTO inventory (stock_quantity, stock_in_date, product_id)
-            VALUES ($1, $2, $3)
-            RETURNING inventory_id`,
-            [stock_quantity, stock_in_date, product_id]
+            `INSERT INTO inventory (stock_quantity, product_id)
+            VALUES ($1, $2)
+            RETURNING inventory_id, stock_in_date`,
+            [stock_quantity, product_id]
         );
         const inventory_id = inventoryResult.rows[0].inventory_id;
 
@@ -114,8 +114,8 @@ const deleteProduct = async (req, res) => {
 
     try {
         const results = await client.query(
-            `DELETE FROM 
-            product WHERE product_id = $1 
+            `DELETE FROM product 
+            WHERE product_id = $1 
             RETURNING product_id`, [product_id]);
 
         if (results.rowCount === 0) {
@@ -234,6 +234,90 @@ const deleteProductCategory = async (req, res) => {
     }
 };
 
+// INVENTORY RUD
+const getAllInventories = async (req, res) => {
+    const client = await pool.connect();
+
+    try {
+        const results = await client.query('SELECT * FROM inventory');
+        res.status(200).json(results.rows);
+    } catch (error) {
+        console.error('Error getting all inventory:', error);
+        res.status(500).json({ message: 'Error getting all inventory ', error: error.message});
+    } finally {
+        client.release();
+    }
+};
+
+const getInventoryById = async (req, res) => {
+    const client = await pool.connect();
+    const inventory_id = parseInt(req.params.id);
+
+    try {
+        const results = await client.query('SELECT * FROM inventory WHERE inventory_id = $1', [inventory_id]);
+        if (results.rows.length === 0) {
+            return res.status(404).json({ message: 'Inventory not found' });
+        }
+        res.status(200).json(results.rows[0]);
+    } catch (error) {
+        console.error('Error fetching inventory:', error);
+        res.status(500).json({ message: 'Error fetching inventory', error: error.message });
+    } finally {
+        client.release();
+    }
+};
+
+const updateInventory = async (req, res) => {
+    const client = await pool.connect();
+    const inventory_id = parseInt(req.params.id);
+    const { stock_quantity } = req.body;
+
+    try {
+        const results = await client.query(
+            `UPDATE inventory 
+            SET stock_quantity = $1, 
+                stock_in_date = CURRENT_TIMESTAMP
+            WHERE inventory_id = $2
+            RETURNING *`,
+            [stock_quantity, inventory_id]
+        );
+
+        if (results.rows.length === 0) {
+            return res.status(404).json({ message: 'Inventory not found' });
+        }
+
+        res.status(200).json(results.rows[0]);
+    } catch (error) {
+        console.error('Error updating inventory:', error);
+        res.status(500).json({ message: 'Error updating inventory', error: error.message });
+    } finally {
+        client.release();
+    }
+};
+
+const deleteInventory = async (req, res) => {
+    const client = await pool.connect();
+    const inventory_id = parseInt(req.params.id);
+
+    try {
+        const results = await client.query(
+            `DELETE FROM inventory 
+            WHERE inventory_id = $1 
+            RETURNING inventory_id`, 
+            [inventory_id]);    
+
+        if (results.rowCount === 0) {
+            return res.status(404).json({ message: 'Inventory not found' });
+        }
+        res.status(200).send(`Inventory  deleted with ID: ${inventory_id}`);
+    }
+    catch (error) {
+        console.error('Error deleting inventory:', error);
+        res.status(500).json({ message: 'Error deleting inventory', error: error.message });
+    } finally {
+        client.release();
+    }
+};
 
 module.exports = {
     createProductWithInventory,
@@ -245,5 +329,9 @@ module.exports = {
     getAllProductCategories,
     getProductCategoryById,
     updateProductCategory,
-    deleteProductCategory
+    deleteProductCategory,
+    getAllInventories,
+    getInventoryById,
+    updateInventory,
+    deleteInventory
 };

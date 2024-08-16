@@ -43,4 +43,12 @@ router.get('/product-category/:id', productController.getProductCategoryById);  
 router.put('/product-category/:id', productController.updateProductCategory);   // Update by ID
 router.delete('/product-category/:id', productController.deleteProductCategory);// Delete by ID
 
+
+// INVENTORY
+router.get('/inventory', productController.getAllInventories);     // Read all
+router.get('/inventory/:id', productController.getInventoryById);   // Read
+router.put('/inventory/:id', productController.updateInventory);    // Update
+router.delete('/inventory/:id', productController.deleteInventory); // Delete
+
+
 module.exports = router;
