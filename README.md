@@ -18,5 +18,5 @@ This project is an eCommerce platform designed for Alofa Haircare to provide a s
 
 ## Team Members
 - Cassey Anne Gempesaw
-- Arabelle Grace Mejorada
+- Arabella Grace Mejorada
 - John Robert Anthony Tabudlong
