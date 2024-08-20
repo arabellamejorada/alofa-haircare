@@ -17,7 +17,8 @@ CREATE TABLE employee (
     last_name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
     contact_number VARCHAR(15) NOT NULL,
-    role_id INT NOT NULL
+    role_id INT NOT NULL,
+    status VARCHAR(255) NOT NULL DEFAULT 'active'
 );
 
 CREATE TABLE customer (
