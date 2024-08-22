@@ -1,30 +1,30 @@
 const pool = require('../db.js');
 
-const createUserAccount = async (req, res) => {
-    const client = await pool.connect();
-    const { username, password, employee_id, customer_id } = req.body;
+// const createUserAccount = async (req, res) => {
+//     const client = await pool.connect();
+//     const { username, password, employee_id, customer_id } = req.body;
 
-    try {
-        // Validate input
-        if (!username || !password) {
-            return res.status(400).json({ message: 'Username and password are required' });
-        }
+//     try {
+//         // Validate input
+//         if (!username || !password) {
+//             return res.status(400).json({ message: 'Username and password are required' });
+//         }
 
-        // Insert new user account
-        const newUserAccount = await client.query(
-            `INSERT INTO user_account (username, password, employee_id, customer_id)
-            VALUES ($1, $2, $3, $4) 
-            RETURNING *`,
-            [username, password, employee_id, customer_id]
-        );
-        res.status(201).json(newUserAccount.rows[0]);
-    } catch (error) {
-        console.error('Error creating user account:', error);
-        res.status(500).json({ message: 'Internal server error', error: error.message });
-    } finally {
-        client.release();
-    }
-};
+//         // Insert new user account
+//         const newUserAccount = await client.query(
+//             `INSERT INTO user_account (username, password, employee_id, customer_id)
+//             VALUES ($1, $2, $3, $4) 
+//             RETURNING *`,
+//             [username, password, employee_id, customer_id]
+//         );
+//         res.status(201).json(newUserAccount.rows[0]);
+//     } catch (error) {
+//         console.error('Error creating user account:', error);
+//         res.status(500).json({ message: 'Internal server error', error: error.message });
+//     } finally {
+//         client.release();
+//     }
+// };
 
 const getAllUserAccounts = async (req, res) => {
     const client = await pool.connect();
@@ -119,7 +119,6 @@ const deleteUserAccount = async (req, res) => {
 };
 
 module.exports = {
-    createUserAccount,
     getAllUserAccounts,
     getUserAccountById,
     updateUserAccount,

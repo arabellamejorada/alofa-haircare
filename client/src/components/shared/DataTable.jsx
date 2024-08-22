@@ -1,11 +1,9 @@
 import React from "react";
 
-const DataTable = ({ data }) => {
+const DataTable = ({ data, columns }) => {
   if (!data || data.length === 0) {
     return <div>No data available</div>;
   }
-
-  const columnNames = Object.keys(data[0]);
 
   // Function to convert column names to a proper form
   const formatColumnName = (columnName) => {
@@ -23,8 +21,8 @@ const DataTable = ({ data }) => {
         <table className="w-full text-gray-700 border-x border-gray-200 rounded-xl">
           <thead>
             <tr>
-              {columnNames.map((columnName) => (
-                <td key={columnName}>{formatColumnName(columnName)}</td>
+              {columns.map((column) => (
+                <th key={column.key}>{column.header || formatColumnName(column.key)}</th>
               ))}
             </tr>
           </thead>
@@ -32,8 +30,10 @@ const DataTable = ({ data }) => {
           <tbody>
             {data.map((item, index) => (
               <tr key={index}>
-                {columnNames.map((columnName) => (
-                  <td key={columnName}>{item[columnName]}</td>
+                {columns.map((column) => (
+                  <td key={column.key}>
+                    {column.render ? column.render(item[column.key]) : item[column.key]}
+                  </td>
                 ))}
               </tr>
             ))}

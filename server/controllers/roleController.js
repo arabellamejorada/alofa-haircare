@@ -5,14 +5,20 @@ const createUserRole = async (req, res) => {
     const { name, description } = req.body;
 
     try {
+        await client.query('BEGIN');
+
         const newRole = await client.query(
             `INSERT INTO role (name, description) 
             VALUES ($1, $2) 
             RETURNING *`,
             [name, description]
         );
+
+        await client.query('COMMIT');
+
         res.status(201).json(newRole.rows[0]);
     } catch (error) {
+        await client.query('ROLLBACK');
         console.error('Error creating user role:', error);
         res.status(400).json({ message: 'Error creating user role', error: error.message });
     } finally {

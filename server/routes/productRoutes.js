@@ -30,11 +30,11 @@ const upload = multer({
 }).single('image');
 
 // PRODUCT
-router.post('/product', upload, productController.createProductWithInventory); // Create with file upload
-router.get('/product', productController.getAllProducts);              // Read all
-router.get('/product/:id', productController.getProductById);          // Read by ID
-router.put('/product/:id', productController.updateProduct);           // Update by ID
-router.delete('/product/:id', productController.deleteProduct);        // Delete by ID
+router.post('/products', upload, productController.createProductWithInventory); // Create with file upload
+router.get('/products', productController.getAllProducts);              // Read all
+router.get('/products/:id', productController.getProductById);          // Read by ID
+router.put('/products/:id', productController.updateProduct);           // Update by ID
+router.delete('/products/:id', productController.deleteProduct);        // Delete by ID
 
 // PRODUCT CATEGORY
 router.post('/product-category', productController.createProductCategory);      // Create

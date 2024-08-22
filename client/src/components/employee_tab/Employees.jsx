@@ -1,39 +1,55 @@
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import DataTable from "../shared/DataTable";
 import { MdAddBox } from "react-icons/md";
 import Modal from "../modal/Modal";
 import { IoMdArrowDropdown } from "react-icons/io";
+import { getEmployees, getRoles } from "../../api/employees"
 // import { Link } from "react-router-dom";
 
-const sampleData = [
-  {
-    id: "1",
-    name: "Cassey Gempesaw",
-    email: "catgemps@gmail.com",
-    contact_number: "09225245678",
-    position: "Admin",
-    status: "Active",
-  },
-  {
-    id: "2",
-    name: "Arabella Grace Mejorada",
-    email: "agmej@gmail,com",
-    contact_number: "0945678923",
-    position: "Admin",
-    status: "Inactive",
-  },
-  {
-    id: "3",
-    name: "Arj Tabudlong",
-    email: "arjtabs@gmail,com",
-    contact_number: "09295290355",
-    position: "Employee",
-    status: "Terminated",
-  },
-];
-
-export default function Products() {
+const Employees = () => {
+  const [employees, setEmployees] = useState([]);
+  const [roles, setRoles] = useState([]);
+  const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const employeesData = await getEmployees();
+        const rolesData = await getRoles();
+        setEmployees(employeesData);
+        setRoles(rolesData);
+      } catch (err) {
+        setError('Failed to fetch data');
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const columns = [
+    { key: "employee_id", header: "ID" },
+    { key: "first_name", header: "First Name" },
+    { key: "last_name", header: "Last Name" },
+    { key: "email", header: "Email" },
+    { key: "contact_number", header: "Contact Number" },
+    { key: "status", header: "Status"},
+    { key: "role_name", header: "Role" },
+  ];
+
+  if (error) return <div>{error}</div>;
+
+  // Map product IDs to names
+  const roleMap = roles.reduce((acc, role) => {
+    acc[role.role_id] = role.name;
+    return acc;
+  }, {});
+
+  // Process inventory data to include product names
+  const processedEmployee = employees.map(item => ({
+    ...item,
+    role_name: roleMap[item.role_id], // Ensure product_id is correctly mapped
+  }));
 
   return (
     <Fragment>
@@ -52,7 +68,7 @@ export default function Products() {
         </div>
 
         {/* Render Table with data*/}
-        <DataTable data={sampleData} />
+        <DataTable data={processedEmployee} columns={columns} />
       </div>
 
       <Modal isVisible={showModal} onClose={() => setShowModal(false)}>
@@ -201,4 +217,6 @@ export default function Products() {
       </Modal>
     </Fragment>
   );
-}
+};
+
+export default Employees;

@@ -1,31 +1,59 @@
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import DataTable from "../shared/DataTable";
 import { MdAddBox } from "react-icons/md";
 import Modal from "../modal/Modal";
 import { IoMdArrowDropdown } from "react-icons/io";
+import { getProducts, getCategories } from "../../api/products";
 // import { Link } from "react-router-dom";
 
-const sampleData = [
-  {
-    id: "1",
-    name: "Product 1",
-    description: "Product 1 Description",
-    category: "Hair Accessories",
-    unit_price: "₱100.00",
-    status: "AVAILABLE",
-  },
-  {
-    id: "2",
-    name: "Product 2",
-    description: "Product 2 Description",
-    category: "Hair Tools",
-    unit_price: "₱200.00",
-    status: "OUT OF STOCK",
-  },
-];
-
-export default function Products() {
+const Products = () => {
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const productsData = await getProducts();
+        const categoriesData = await getCategories();
+        setProducts(productsData);
+        setCategories(categoriesData);
+      } catch (err) {
+        setError('Failed to fetch data');
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const columns = [
+    { key: 'name', header: 'Product Name' },
+    { key: 'description', header: 'Description' },
+    { key: 'unit_price', header: 'Price per Unit', render: (value) => `₱${value}` },
+    { key: 'product_category', header: 'Category' },
+    { key: 'image', header: 'Image' },
+    // Exclude inventory_id and product_category_id
+  ];
+  const handleSubmit = (e) => {
+    e.preventDefault();
+  };
+
+  if (error) return <div>{error}</div>;
+
+  // Map category IDs to names
+  const categoryMap = categories.reduce((acc, category) => {
+    acc[category.id] = category.name;
+    return acc;
+  }, {});
+
+  // Process product data to include category names
+  const processedProducts = products.map(product => ({
+    ...product,
+    product_category: categoryMap[product.product_category],
+  }));
+
+ 
 
   return (
     <Fragment>
@@ -41,12 +69,12 @@ export default function Products() {
           </div>
         </div>
 
-        {/* Render Table with data*/}
-        <DataTable data={sampleData} />
+        {/* Render Table with data */}
+        <DataTable data={processedProducts} columns={columns}/> {/* Pass processed products */}
       </div>
 
       <Modal isVisible={showModal} onClose={() => setShowModal(false)}>
-        <form className="p-6">
+        <form className="p-6" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-4">
             <div className="font-extrabold text-3xl text-pink-400">
               Add New Product:
@@ -68,25 +96,20 @@ export default function Products() {
               <label className="font-bold" htmlFor="category">
                 Category:
               </label>
-              <div class="grid">
-                <svg
-                  class="pointer-events-none z-10 right-1 relative col-start-1 row-start-1 h-4 w-4 self-center justify-self-end forced-colors:hidden"
-                  viewBox="0 0 16 16"
-                  fill="currentColor"
+              <div className="relative">
+                <select
+                  id="category"
+                  name="category"
+                  className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
                 >
-                  <path
-                    fill-rule="evenodd"
-                    d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z"
-                    clip-rule="evenodd"
-                  ></path>
-                </svg>
-                <select class="w-full h-10 px-4 appearance-none forced-colors:appearance-auto border row-start-1 col-start-1 rounded-xl bg-gray-50 dark:bg-slate-800 hover:border-pink-500 dark:hover:border-pink-700 hover:bg-white dark:hover:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200">
-                  <option></option>
-                  <option>Hair Oil</option>
-                  <option>Comb</option>
-                  <option>Hair Clip</option>
-                  <IoMdArrowDropdown />
+                  <option value="">Select Category</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
                 </select>
+                <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2" />
               </div>
             </div>
 
@@ -100,7 +123,7 @@ export default function Products() {
                   name="product_description"
                   id="product_description"
                   placeholder="Product Description"
-                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 dark:bg-slate-800 hover:border-pink-500 dark:hover:border-pink-700 hover:bg-white dark:hover:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200"
+                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 dark:text-slate-200"
                 />
               </div>
             </div>
@@ -115,7 +138,7 @@ export default function Products() {
                   name="product_price"
                   id="product_price"
                   placeholder="₱0.00"
-                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 dark:bg-slate-800 hover:border-pink-500 dark:hover:border-pink-700 hover:bg-white dark:hover:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200"
+                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 dark:text-slate-200"
                 />
               </div>
             </div>
@@ -124,24 +147,17 @@ export default function Products() {
               <label className="font-bold" htmlFor="availability">
                 Availability:
               </label>
-              <div className="grid">
-                <svg
-                  className="pointer-events-none z-10 right-1 relative col-start-1 row-start-1 h-4 w-4 self-center justify-self-end forced-colors:hidden"
-                  viewBox="0 0 16 16"
-                  fill="currentColor"
+              <div className="relative">
+                <select
+                  id="availability"
+                  name="availability"
+                  className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
                 >
-                  <path
-                    fill-rule="evenodd"
-                    d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z"
-                    clip-rule="evenodd"
-                  ></path>
-                </svg>
-                <select className="w-full h-10 px-4 appearance-none forced-colors:appearance-auto border row-start-1 col-start-1 rounded-xl bg-gray-50 dark:bg-slate-800 hover:border-pink-500 dark:hover:border-pink-700 hover:bg-white dark:hover:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200">
-                  <option>Available</option>
-                  <option>Out of Stock</option>
-                  <option>Discontinued</option>
-                  <IoMdArrowDropdown />
+                  <option value="Available">Available</option>
+                  <option value="Out of Stock">Out of Stock</option>
+                  <option value="Discontinued">Discontinued</option>
                 </select>
+                <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2" />
               </div>
             </div> */}
 
@@ -157,17 +173,26 @@ export default function Products() {
               />
             </div>
 
-            <div className="flex flex-row justify-between mt-4 w-full h-full">
-              <div className="w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-semibold text-white">
+            <div className="flex flex-row justify-between mt-4">
+              <button
+                type="submit"
+                className="w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-semibold text-white"
+              >
                 Add
-              </div>
-              <div className="w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-extrabold text-white">
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowModal(false)}
+                className="w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-extrabold text-white"
+              >
                 Cancel
-              </div>
+              </button>
             </div>
           </div>
         </form>
       </Modal>
     </Fragment>
   );
-}
+};
+
+export default Products;
