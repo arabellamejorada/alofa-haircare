@@ -1,0 +1,27 @@
+Backend setup:
+
+cd server
+npm install express
+npm install pg
+npm install cors
+npm install dotenv
+npm install --save-dev nodemon
+
+
+Frontend setup:
+
+cd client
+npm install axios
+npm install react-router-dom
+npm install react-query
+npm install styled-components
+npm install -D tailwindcss
+// npx tailwindscss init
+
+
+Database:
+install pgadmin4/postgresql from their website
+database name: alofa
+run the alofa-sql.db
+
+
