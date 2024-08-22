@@ -10,17 +10,17 @@ const sampleData = [
     id: "1",
     name: "Product 1",
     description: "Product 1 Description",
+    category: "Hair Accessories",
     unit_price: "₱100.00",
     status: "AVAILABLE",
-    category: "Category 1",
   },
   {
     id: "2",
     name: "Product 2",
     description: "Product 2 Description",
+    category: "Hair Tools",
     unit_price: "₱200.00",
     status: "OUT OF STOCK",
-    category: "Category 2",
   },
 ];
 
