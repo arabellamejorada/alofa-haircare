@@ -11,24 +11,24 @@ const sampleData = [
     name: "Cassey Gempesaw",
     email: "catgemps@gmail.com",
     contact_number: "09225245678",
-    position: "Janitor",
-    status: "Fired",
+    position: "Admin",
+    status: "Active",
   },
   {
     id: "2",
     name: "Arabella Grace Mejorada",
     email: "agmej@gmail,com",
     contact_number: "0945678923",
-    position: "Cashier",
-    status: "Deceased",
+    position: "Admin",
+    status: "Inactive",
   },
   {
     id: "3",
     name: "Arj Tabudlong",
     email: "arjtabs@gmail,com",
     contact_number: "09295290355",
-    position: "CEO",
-    status: "Employed",
+    position: "Employee",
+    status: "Terminated",
   },
 ];
 
@@ -85,6 +85,21 @@ export default function Products() {
 
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-2">
+                <label className="font-bold" htmlFor="contact_number">
+                  Contact Number:
+                </label>
+                <input
+                  type="text"
+                  name="contact_number"
+                  id="contact_number"
+                  placeholder="Email"
+                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 dark:bg-slate-800 hover:border-pink-500 dark:hover:border-pink-700 hover:bg-white dark:hover:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
                 <label className="font-bold" htmlFor="employee_email">
                   Email:
                 </label>
@@ -100,6 +115,21 @@ export default function Products() {
 
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-2">
+                <label className="font-bold" htmlFor="employee_username">
+                  Username:
+                </label>
+                <input
+                  type="text"
+                  name="employee_username"
+                  id="employee_username"
+                  placeholder="Username"
+                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 dark:bg-slate-800 hover:border-pink-500 dark:hover:border-pink-700 hover:bg-white dark:hover:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
                 <label className="font-bold" htmlFor="employee_password">
                   Password:
                 </label>
@@ -108,21 +138,6 @@ export default function Products() {
                   name="employee_password"
                   id="employee_password"
                   placeholder="Password"
-                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 dark:bg-slate-800 hover:border-pink-500 dark:hover:border-pink-700 hover:bg-white dark:hover:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <label className="font-bold" htmlFor="contact_number">
-                  Contact Number:
-                </label>
-                <input
-                  type="text"
-                  name="contact_number"
-                  id="contact_number"
-                  placeholder="Email"
                   className="rounded-xl border w-full h-10 pl-4 bg-gray-50 dark:bg-slate-800 hover:border-pink-500 dark:hover:border-pink-700 hover:bg-white dark:hover:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200"
                 />
               </div>
@@ -146,10 +161,10 @@ export default function Products() {
                 </svg>
                 <select class="w-full h-10 px-4 appearance-none forced-colors:appearance-auto border row-start-1 col-start-1 rounded-xl bg-gray-50 dark:bg-slate-800 hover:border-pink-500 dark:hover:border-pink-700 hover:bg-white dark:hover:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200">
                   <option value="" disabled selected hidden>
-                    Select Position
+                    Position
                   </option>
-                  <option>Manager</option>
-                  <option>Janitor</option>
+                  <option>Admin</option>
+                  <option>Employee</option>
                   <IoMdArrowDropdown />
                 </select>
               </div>
