@@ -101,7 +101,7 @@ export default function Header() {
                 }}
               >
                 {/* Screenreader for seach engines only*/}
-                <span className="sr-only">Arj Tabudlong</span>
+                <span className="sr-only">Admin</span>
               </div>
             </Menu.Button>
           </div>
