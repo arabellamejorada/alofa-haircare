@@ -75,7 +75,8 @@ CREATE TABLE product_category (
 CREATE TABLE inventory (
     inventory_id SERIAL PRIMARY KEY,
     stock_quantity INTEGER NOT NULL,
-    stock_in_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    stock_in_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    product_id INT
 );
 
 CREATE TABLE product (
