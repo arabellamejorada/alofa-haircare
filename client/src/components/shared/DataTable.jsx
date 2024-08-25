@@ -15,6 +15,12 @@ const DataTable = ({ data, columns }) => {
       .replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize the first letter of each word
   };
 
+   // Function to convert UTC date string to local timezone string
+   const formatDateInLocalTimezone = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleString('en-GB', { timeZone: 'Asia/Manila' });
+  };
+
   return (
     <div className="bg-white px-4 pb-4 rounded-xl border-gray-200 flex-1">
       <div className="mt-3">
@@ -28,11 +34,17 @@ const DataTable = ({ data, columns }) => {
           </thead>
 
           <tbody>
-            {data.map((item, index) => (
+          {data.map((item, index) => (
               <tr key={index}>
                 {columns.map((column) => (
                   <td key={column.key}>
-                    {column.render ? column.render(item[column.key]) : item[column.key]}
+                    {column.render ? (
+                      column.render(item[column.key])
+                    ) : column.key === 'stock_in_date' ? (
+                      formatDateInLocalTimezone(item[column.key])
+                    ) : (
+                      item[column.key]
+                    )}
                   </td>
                 ))}
               </tr>

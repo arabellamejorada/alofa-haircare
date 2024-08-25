@@ -1,12 +1,12 @@
-// productController includes product, product categories, inventory
 const pool = require('../db.js');
 
 // PRODUCTS CRUD + INVENTORY CREATE
 const createProductWithInventory = async (req, res) => {
     const client = await pool.connect();
-    const { name, description, unit_price, status, product_category_id } = req.body;
+    const { name, description, unit_price, product_category_id } = req.body;
     const image = req.file ? req.file.filename : '';
     const stock_quantity = 0; // Default stock quantity
+    const status = "Available"; // Default status
     
     console.log("Request Body:", req.body);
     console.log("Uploaded File:", req.file);
@@ -270,17 +270,37 @@ const getInventoryById = async (req, res) => {
 
 const updateInventory = async (req, res) => {
     const client = await pool.connect();
-    const inventory_id = parseInt(req.params.id);
-    const { stock_quantity } = req.body;
+    const { product_id, stock_quantity } = req.body;
 
     try {
+        // Validate stock_quantity and convert to integer
+        const quantity = parseInt(stock_quantity, 10);
+        if (isNaN(quantity) || quantity <= 0) {
+            return res.status(400).json({ message: 'Invalid stock quantity' });
+        }
+
+        // Fetch the current stock quantity
+        const inventoryResults = await client.query(
+            `SELECT stock_quantity 
+             FROM inventory 
+             WHERE product_id = $1`,
+            [product_id]
+        );
+
+        if (inventoryResults.rows.length === 0) {
+            return res.status(404).json({ message: 'Product not found in inventory' });
+        }
+
+        const currentStockQuantity = inventoryResults.rows[0].stock_quantity;
+
+        // Update inventory with the new stock quantity
         const results = await client.query(
             `UPDATE inventory 
-            SET stock_quantity = $1, 
-                stock_in_date = CURRENT_TIMESTAMP
-            WHERE inventory_id = $2
-            RETURNING *`,
-            [stock_quantity, inventory_id]
+             SET stock_quantity = $1, 
+                 stock_in_date = CURRENT_TIMESTAMP
+             WHERE product_id = $2
+             RETURNING *`,
+            [currentStockQuantity + quantity, product_id]
         );
 
         if (results.rows.length === 0) {
@@ -295,6 +315,7 @@ const updateInventory = async (req, res) => {
         client.release();
     }
 };
+
 
 const deleteInventory = async (req, res) => {
     const client = await pool.connect();

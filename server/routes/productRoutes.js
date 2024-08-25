@@ -1,34 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/productController');
-const multer = require('multer');
-const path = require('path');
-
-// Set storage options for Multer
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/'); // Folder where images will be saved
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname)); // Unique filename
-  }
-});
-
-// Initialize Multer with storage configuration
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // Max file size 10MB
-  fileFilter: function (req, file, cb) {
-    const filetypes = /jpeg|jpg|png|gif/;
-    const mimetype = filetypes.test(file.mimetype);
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-
-    if (mimetype && extname) {
-      return cb(null, true);
-    }
-    cb(new Error('Only images are allowed!'));
-  }
-});
+const upload = require('../middlewares/multerConfig');
 
 // PRODUCT
 router.post('/products', upload.single('image'), productController.createProductWithInventory); // Handle single file upload

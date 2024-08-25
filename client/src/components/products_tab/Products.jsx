@@ -5,7 +5,6 @@ import Modal from "../modal/Modal";
 import { IoMdArrowDropdown } from "react-icons/io";
 import { getProducts, getCategories } from "../../api/products";
 import axios from "axios";
-// import { Link } from "react-router-dom";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -17,7 +16,7 @@ const Products = () => {
   const [product_description, setProductDescription] = useState('');
   const [unit_price, setUnitPrice] = useState('');
   const [product_category, setProductCategory] = useState('');
-  const [image, setImage] = useState();
+  const [image, setImage] = useState(null);
 
 
   useEffect(() => {
@@ -36,8 +35,10 @@ const Products = () => {
   }, []);
 
   const columns = [
+    { key: "product_id", header: "ID" },
     { key: "name", header: "Product Name" },
     { key: "description", header: "Description" },
+    { key: "status", header: "Status"},
     {
       key: "unit_price",
       header: "Price",
@@ -51,7 +52,7 @@ const Products = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const formData = new FormData(e.target);
+    const formData = new FormData();
     formData.append('name', product_name);
     formData.append('description', product_description);
     formData.append('unit_price', unit_price);
@@ -65,6 +66,10 @@ const Products = () => {
         },
       });
       console.log('File uploaded successfully:', response.data);
+      setShowModal(false);
+
+      const productsData = await getProducts();
+      setProducts(productsData);
     } catch (error) {
       console.error('Error uploading file:', error);
     }
@@ -97,13 +102,11 @@ const Products = () => {
             />
           </div>
         </div>
-        {/* Render Table with data */}
         <DataTable data={processedProducts} columns={columns} />{" "}
-        {/* Pass processed products */}
       </div>
 
       <Modal isVisible={showModal} onClose={() => setShowModal(false)}>
-        <form className="p-6" onSubmit={handleSubmit}>
+        <form className="p-6" onSubmit={handleSubmit} encType="multipart/form-data">
           <div className="flex flex-col gap-4">
             <div className="font-extrabold text-3xl text-pink-400">
               Add New Product:

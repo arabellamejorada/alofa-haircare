@@ -77,16 +77,14 @@ const Employees = () => {
 
   if (error) return <div>{error}</div>;
 
-  // Map product IDs to names
   const roleMap = roles.reduce((acc, role) => {
     acc[role.role_id] = role.name;
     return acc;
   }, {});
 
-  // Process inventory data to include product names
   const processedEmployee = employees.map((item) => ({
     ...item,
-    role_name: roleMap[item.role_id], // Ensure product_id is correctly mapped
+    role_name: roleMap[item.role_id], 
   }));
 
   return (
