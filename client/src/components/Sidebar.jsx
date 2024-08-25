@@ -1,6 +1,5 @@
 import React from "react";
 import classNames from "classnames";
-import { BsFlower1 } from "react-icons/bs";
 import { Link, useLocation } from "react-router-dom";
 import {
   DASHBOARD_SIDEBAR_BOTTOM_LINKS,
