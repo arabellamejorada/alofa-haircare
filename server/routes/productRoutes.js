@@ -4,33 +4,34 @@ const productController = require('../controllers/productController');
 const multer = require('multer');
 const path = require('path');
 
-// Set storage engine for multer
+// Set storage options for Multer
 const storage = multer.diskStorage({
-    destination: './public/uploads/',
-    filename: (req, file, cb) => {
-        cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
-    }
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/'); // Folder where images will be saved
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname)); // Unique filename
+  }
 });
 
-// Init multer upload
+// Initialize Multer with storage configuration
 const upload = multer({
-    storage: storage,
-    limits: { fileSize: 2000000 }, // Limit file size to 2MB
-    fileFilter: (req, file, cb) => {
-        const filetypes = /jpeg|jpg|png|gif/;
-        const mimetype = filetypes.test(file.mimetype);
-        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // Max file size 10MB
+  fileFilter: function (req, file, cb) {
+    const filetypes = /jpeg|jpg|png|gif/;
+    const mimetype = filetypes.test(file.mimetype);
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
 
-        if (mimetype && extname) {
-            return cb(null, true);
-        } else {
-            cb(new Error('Images only!')); 
-        }
+    if (mimetype && extname) {
+      return cb(null, true);
     }
-}).single('image');
+    cb(new Error('Only images are allowed!'));
+  }
+});
 
 // PRODUCT
-router.post('/products', upload, productController.createProductWithInventory); // Create with file upload
+router.post('/products', upload.single('image'), productController.createProductWithInventory); // Handle single file upload
 router.get('/products', productController.getAllProducts);              // Read all
 router.get('/products/:id', productController.getProductById);          // Read by ID
 router.put('/products/:id', productController.updateProduct);           // Update by ID

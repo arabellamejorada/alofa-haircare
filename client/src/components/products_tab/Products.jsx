@@ -4,6 +4,7 @@ import { MdAddBox } from "react-icons/md";
 import Modal from "../modal/Modal";
 import { IoMdArrowDropdown } from "react-icons/io";
 import { getProducts, getCategories } from "../../api/products";
+import axios from "axios";
 // import { Link } from "react-router-dom";
 
 const Products = () => {
@@ -11,6 +12,13 @@ const Products = () => {
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  
+  const [product_name, setProductName] = useState('');
+  const [product_description, setProductDescription] = useState('');
+  const [unit_price, setUnitPrice] = useState('');
+  const [product_category, setProductCategory] = useState('');
+  const [image, setImage] = useState();
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -35,8 +43,27 @@ const Products = () => {
     { key: 'image', header: 'Image' },
     // Exclude inventory_id and product_category_id
   ];
-  const handleSubmit = (e) => {
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const formData = new FormData(e.target);
+    formData.append('name', product_name);
+    formData.append('description', product_description);
+    formData.append('unit_price', unit_price);
+    formData.append('product_category_id', product_category);
+    formData.append('image', image);
+
+    try {
+        const response = await axios.post('http://localhost:3001/products', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      console.log('File uploaded successfully:', response.data);
+    } catch (error) {
+      console.error('Error uploading file:', error);
+    }
   };
 
   if (error) return <div>{error}</div>;
@@ -88,6 +115,8 @@ const Products = () => {
                 name="product_name"
                 id="product_name"
                 placeholder="Product Name"
+                value={product_name}
+                onChange={(e) => setProductName(e.target.value)}
                 className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 dark:text-slate-200"
               />
             </div>
@@ -99,12 +128,14 @@ const Products = () => {
               <div className="relative">
                 <select
                   id="category"
-                  name="category"
+                  name="product_category_id"
+                  value={product_category}
+                  onChange={(e) => setProductCategory(e.target.value)}
                   className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
                 >
                   <option value="">Select Category</option>
                   {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
+                    <option key={category.product_category_id} value={category.product_category_id}>
                       {category.name}
                     </option>
                   ))}
@@ -123,6 +154,8 @@ const Products = () => {
                   name="product_description"
                   id="product_description"
                   placeholder="Product Description"
+                  value={product_description}
+                  onChange={(e) => setProductDescription(e.target.value)}
                   className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 dark:text-slate-200"
                 />
               </div>
@@ -138,28 +171,12 @@ const Products = () => {
                   name="product_price"
                   id="product_price"
                   placeholder="₱0.00"
+                  value={unit_price}
+                  onChange={(e) => setUnitPrice(e.target.value)}
                   className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 dark:text-slate-200"
                 />
               </div>
             </div>
-
-            {/* <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="availability">
-                Availability:
-              </label>
-              <div className="relative">
-                <select
-                  id="availability"
-                  name="availability"
-                  className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-                >
-                  <option value="Available">Available</option>
-                  <option value="Out of Stock">Out of Stock</option>
-                  <option value="Discontinued">Discontinued</option>
-                </select>
-                <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2" />
-              </div>
-            </div> */}
 
             <div className="flex flex-col gap-2">
               <label className="font-bold" htmlFor="product_image">
@@ -167,9 +184,10 @@ const Products = () => {
               </label>
               <input
                 type="file"
-                name="product_image"
+                name="image"
                 id="product_image"
                 accept="image/*"
+                onChange={(e) => setImage(e.target.files[0])}
               />
             </div>
 

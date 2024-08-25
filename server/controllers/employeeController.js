@@ -4,7 +4,8 @@ const bcrypt = require('bcrypt');
 // Create employee without user account
 const createEmployeeWithUserAccount = async (req, res) => {
     const client = await pool.connect();
-    const { first_name, last_name, email, contact_number, role_id, status, username, password } = req.body;
+    const { first_name, last_name, email, contact_number, role_id, username, password } = req.body;
+    const status = 'Active'; // Default status
 
     try {
         if (!username || !password) {
@@ -20,7 +21,7 @@ const createEmployeeWithUserAccount = async (req, res) => {
             `INSERT INTO employee (first_name, last_name, email, contact_number, role_id, status) 
             VALUES ($1, $2, $3, $4, $5, $6) 
             RETURNING employee_id`,
-            [first_name, last_name, email, contact_number, role_id, status || 'active']
+            [first_name, last_name, email, contact_number, role_id, status]
         );
 
         const employee_id = newEmployee.rows[0].employee_id;

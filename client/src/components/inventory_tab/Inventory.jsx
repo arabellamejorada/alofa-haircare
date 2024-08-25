@@ -115,12 +115,21 @@ const Inventory = () => {
               </div>
             </div>
 
-            <div className="flex flex-row justify-between mt-4 w-full h-full">
-              <div className="w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-semibold text-white">
-                Add
-              </div>
-              <div className="w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-extrabold text-white">
-                Cancel
+            <div className="flex flex-col gap-2">
+              <div className="flex flex-row justify-between mt-4">
+                <button
+                  type="submit"
+                  className="w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-semibold text-white"
+                >
+                  Add
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-extrabold text-white"
+                >
+                  Cancel
+                </button>
               </div>
             </div>
           </div>

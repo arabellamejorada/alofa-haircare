@@ -3,9 +3,11 @@
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
-  "scripts": {
-    "start": "nodemon server/server.js"
-  },
+"scripts": {
+  "start": "npx kill-port 3000 3001 && concurrently \"npm run server\" \"npm run client\"",
+  "server": "cd server && nodemon server.js",
+  "client": "cd client && npm start"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",

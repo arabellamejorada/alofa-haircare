@@ -26,15 +26,10 @@ run the alofa-sql.db
 
 
 To run:
-npm start both /client and /server
-(magawa pa ako yung one time lang irun for both pero next time na i forgot how)
-
+npm start
 
 FAQS:
 common errors:
 1. if meron na existing naga run sa post 3000 (for example), do this:
 Identify the PID using the following command:
-    lfoi -i :3000
-Note the PID of the process.
-    kill -9 <PID> 
-    npm start
+    npx kill-port 3000 3001

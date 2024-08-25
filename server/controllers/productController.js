@@ -4,11 +4,12 @@ const pool = require('../db.js');
 // PRODUCTS CRUD + INVENTORY CREATE
 const createProductWithInventory = async (req, res) => {
     const client = await pool.connect();
-    const { name, description, unit_price, status, product_category_id, stock_quantity } = req.body;
+    const { name, description, unit_price, status, product_category_id } = req.body;
     const image = req.file ? req.file.filename : '';
-
-    console.log(req.body);
-    console.log(req.file);
+    const stock_quantity = 0; // Default stock quantity
+    
+    console.log("Request Body:", req.body);
+    console.log("Uploaded File:", req.file);
 
     try {
         await client.query('BEGIN');

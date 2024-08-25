@@ -1,6 +1,22 @@
 import axios from './axios';
 
 // PRODUCTS
+
+export const createProductWithInventory = async (productData, inventoryData) => {
+    try {
+        const productResponse = await axios.post('/products', productData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        const inventoryResponse = await axios.post('/inventory', inventoryData);
+        return { product: productResponse.data, inventory: inventoryResponse.data };
+    } catch (error) {
+        console.error('Error creating product with inventory: ', error);
+        throw error;
+    }
+};
+
 export const getProducts = async () => {
     try {
         const response = await axios.get('/products');
