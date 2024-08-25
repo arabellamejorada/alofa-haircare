@@ -1,6 +1,5 @@
 import React from "react";
 import classNames from "classnames";
-import { BsFlower1 } from "react-icons/bs";
 import { Link, useLocation } from "react-router-dom";
 import {
   DASHBOARD_SIDEBAR_BOTTOM_LINKS,
@@ -13,17 +12,17 @@ const linkClasses =
 
 export default function Sidebar() {
   return (
-    <div className="bg-pink-500 w-20% p-3 flex flex-col text-white">
-      <div className="flex items-center gap-2 px-1 py-5 justify-center">
-        <BsFlower1 fontSize={50} />
-        <spn className="text-white text-xl">Alofa Haircare</spn>
+    <div className="bg-gradient-to-b from-pink-400 to-pink-500 w-[18%] p-3 flex flex-col text-white">
+      <div className="flex flex-col px-1 py-5 mt-5 items-center justify-center">
+        {/* <BsFlower1 fontSize={50} /> */}
+        <spn className="text-white text-7xl font-title ">Alofa</spn>
       </div>
-      <div className="flex-1 py-8 flex flex-col gap-0.5">
+      <div className="flex-1 px-5 py-8 flex flex-col gap-0.5">
         {DASHBOARD_SIDEBAR_LINKS.map((item) => (
           <SidebarLink key={item.key} item={item} />
         ))}
       </div>
-      <div className="flex flex-col gap-0.5 pt-2 border-t-2 border-pink-400">
+      <div className="flex flex-col px-5 gap-0.5 pt-2 border-t-2 border-pink-400">
         {DASHBOARD_SIDEBAR_BOTTOM_LINKS.map((item) => (
           <SidebarLink key={item.key} item={item} />
         ))}

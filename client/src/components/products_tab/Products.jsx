@@ -28,7 +28,7 @@ const Products = () => {
         setProducts(productsData);
         setCategories(categoriesData);
       } catch (err) {
-        setError('Failed to fetch data');
+        setError("Failed to fetch data");
       }
     };
 
@@ -36,11 +36,15 @@ const Products = () => {
   }, []);
 
   const columns = [
-    { key: 'name', header: 'Product Name' },
-    { key: 'description', header: 'Description' },
-    { key: 'unit_price', header: 'Price per Unit', render: (value) => `₱${value}` },
-    { key: 'product_category', header: 'Category' },
-    { key: 'image', header: 'Image' },
+    { key: "name", header: "Product Name" },
+    { key: "description", header: "Description" },
+    {
+      key: "unit_price",
+      header: "Price",
+      render: (value) => `₱${value}`,
+    },
+    { key: "product_category", header: "Category" },
+    { key: "image", header: "Image" },
     // Exclude inventory_id and product_category_id
   ];
 
@@ -75,12 +79,10 @@ const Products = () => {
   }, {});
 
   // Process product data to include category names
-  const processedProducts = products.map(product => ({
+  const processedProducts = products.map((product) => ({
     ...product,
     product_category: categoryMap[product.product_category],
   }));
-
- 
 
   return (
     <Fragment>
@@ -95,9 +97,9 @@ const Products = () => {
             />
           </div>
         </div>
-
         {/* Render Table with data */}
-        <DataTable data={processedProducts} columns={columns}/> {/* Pass processed products */}
+        <DataTable data={processedProducts} columns={columns} />{" "}
+        {/* Pass processed products */}
       </div>
 
       <Modal isVisible={showModal} onClose={() => setShowModal(false)}>

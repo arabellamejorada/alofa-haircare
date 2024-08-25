@@ -25,3 +25,8 @@
 		@apply text-sky-500 hover:underline;
 	}
 }
+
+@font-face {
+	font-family: "Yavome";
+	src: url(fonts/YavomeRegular-4BwED.ttf);
+}
