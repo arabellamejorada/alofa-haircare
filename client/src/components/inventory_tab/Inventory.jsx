@@ -1,6 +1,11 @@
 import React, { Fragment, useState, useEffect } from "react";
-import DataTable from "../shared/DataTable";
-import { createInventory, getInventory, getProducts, updateInventory } from "../../api/products";
+import InventoryTable from "./InventoryTable";
+import {
+  createInventory,
+  getInventory,
+  getProducts,
+  updateInventory,
+} from "../../api/products";
 import { MdAddBox } from "react-icons/md";
 import Modal from "../modal/Modal";
 import { IoMdArrowDropdown } from "react-icons/io";
@@ -9,6 +14,7 @@ const Inventory = () => {
   const [inventory, setInventory] = useState([]);
   const [products, setProducts] = useState([]);
   const [error, setError] = useState(null);
+
   const [showModal, setShowModal] = useState(false);
 
   const [productId, setProductID] = useState("");
@@ -38,20 +44,25 @@ const Inventory = () => {
 
   const handleAddStock = async (e) => {
     e.preventDefault();
-    
+
     // Parse and validate input
     const parsedProductId = parseInt(productId, 10);
     const parsedStockQuantity = parseInt(stockQuantity, 10);
 
     // Check if the parsed values are valid integers
-    if (isNaN(parsedProductId) || isNaN(parsedStockQuantity) || parsedProductId <= 0 || parsedStockQuantity <= 0) {
+    if (
+      isNaN(parsedProductId) ||
+      isNaN(parsedStockQuantity) ||
+      parsedProductId <= 0 ||
+      parsedStockQuantity <= 0
+    ) {
       setError("Invalid product ID or stock quantity");
       return;
     }
 
     const newStock = {
       product_id: productId,
-      stock_quantity: stockQuantity
+      stock_quantity: stockQuantity,
     };
 
     try {
@@ -97,7 +108,7 @@ const Inventory = () => {
           </div>
         </div>
 
-        <DataTable data={processedInventory} columns={columns} />
+        <InventoryTable data={processedInventory} columns={columns} />
       </div>
 
       <Modal isVisible={showModal} onClose={() => setShowModal(false)}>
@@ -111,18 +122,7 @@ const Inventory = () => {
               <label className="font-bold" htmlFor="product_name">
                 Product:
               </label>
-              <div className="grid">
-                <svg
-                  className="pointer-events-none z-10 right-1 relative col-start-1 row-start-1 h-4 w-4 self-center justify-self-end forced-colors:hidden mr-2"
-                  viewBox="0 0 16 16"
-                  fill="currentColor"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z"
-                    clip-rule="evenodd"
-                  ></path>
-                </svg>
+              <div className="relative">
                 <select
                   id="product_id"
                   value={productId}
@@ -136,7 +136,7 @@ const Inventory = () => {
                     </option>
                   ))}
                 </select>
-                <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2" />
+                <IoMdArrowDropdown className="absolute right-3 top-1/2 transform -translate-y-1/2" />
               </div>
             </div>
 

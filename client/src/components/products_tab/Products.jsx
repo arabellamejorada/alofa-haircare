@@ -10,14 +10,17 @@ const Products = () => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  
-  const [product_name, setProductName] = useState('');
-  const [product_description, setProductDescription] = useState('');
-  const [unit_price, setUnitPrice] = useState('');
-  const [product_category, setProductCategory] = useState('');
-  const [image, setImage] = useState(null);
 
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const [showModal, setShowModal] = useState(false);
+
+  const [product_name, setProductName] = useState("");
+  const [product_description, setProductDescription] = useState("");
+  const [unit_price, setUnitPrice] = useState("");
+  const [product_category, setProductCategory] = useState("");
+  const [image, setImage] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -38,7 +41,7 @@ const Products = () => {
     { key: "product_id", header: "ID" },
     { key: "name", header: "Product Name" },
     { key: "description", header: "Description" },
-    { key: "status", header: "Status"},
+    { key: "status", header: "Status" },
     {
       key: "unit_price",
       header: "Price",
@@ -53,26 +56,40 @@ const Products = () => {
     e.preventDefault();
 
     const formData = new FormData();
-    formData.append('name', product_name);
-    formData.append('description', product_description);
-    formData.append('unit_price', unit_price);
-    formData.append('product_category_id', product_category);
-    formData.append('image', image);
+    formData.append("name", product_name);
+    formData.append("description", product_description);
+    formData.append("unit_price", unit_price);
+    formData.append("product_category_id", product_category);
+    formData.append("image", image);
 
     try {
-        const response = await axios.post('http://localhost:3001/products', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      console.log('File uploaded successfully:', response.data);
+      const response = await axios.post(
+        "http://localhost:3001/products",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      console.log("File uploaded successfully:", response.data);
       setShowModal(false);
 
       const productsData = await getProducts();
       setProducts(productsData);
     } catch (error) {
-      console.error('Error uploading file:', error);
+      console.error("Error uploading file:", error);
     }
+  };
+
+  const handleEdit = (product) => {
+    setSelectedProduct(product);
+    setIsModalVisible(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalVisible(false);
+    setSelectedProduct(null);
   };
 
   if (error) return <div>{error}</div>;
@@ -102,11 +119,19 @@ const Products = () => {
             />
           </div>
         </div>
-        <DataTable data={processedProducts} columns={columns} />{" "}
+        <DataTable
+          data={processedProducts}
+          columns={columns}
+          onEdit={handleEdit}
+        />{" "}
       </div>
 
       <Modal isVisible={showModal} onClose={() => setShowModal(false)}>
-        <form className="p-6" onSubmit={handleSubmit} encType="multipart/form-data">
+        <form
+          className="p-6"
+          onSubmit={handleSubmit}
+          encType="multipart/form-data"
+        >
           <div className="flex flex-col gap-4">
             <div className="font-extrabold text-3xl text-pink-400">
               Add New Product:
@@ -140,7 +165,10 @@ const Products = () => {
                 >
                   <option value="">Select Category</option>
                   {categories.map((category) => (
-                    <option key={category.product_category_id} value={category.product_category_id}>
+                    <option
+                      key={category.product_category_id}
+                      value={category.product_category_id}
+                    >
                       {category.name}
                     </option>
                   ))}
@@ -212,6 +240,124 @@ const Products = () => {
               </button>
             </div>
           </div>
+        </form>
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal isVisible={isModalVisible} onClose={handleCloseModal}>
+        <form className="p-6">
+          {selectedProduct && (
+            <div className="flex flex-col gap-4">
+              <div className="font-extrabold text-3xl text-pink-400">
+                Edit Product:
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="font-bold" htmlFor="edit_product_name">
+                  Edit Product Name:
+                </label>
+                <input
+                  type="text"
+                  name="edit_product_name"
+                  id="edit_product_name"
+                  placeholder={selectedProduct.name}
+                  value={product_name}
+                  onChange={(e) => setProductName(e.target.value)}
+                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 dark:text-slate-200"
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="font-bold" htmlFor="edit_category">
+                  Edit Category:
+                </label>
+                <div className="relative">
+                  <select
+                    id="edit_category"
+                    name="edit_product_category_id"
+                    value={product_category}
+                    onChange={(e) => setProductCategory(e.target.value)}
+                    className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+                  >
+                    <option value="">Select Category</option>
+                    {categories.map((category) => (
+                      <option
+                        key={category.product_category_id}
+                        value={category.product_category_id}
+                      >
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                  <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2" />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-2">
+                  <label
+                    className="font-bold"
+                    htmlFor="edit_product_description"
+                  >
+                    Edit Description:
+                  </label>
+                  <input
+                    type="text"
+                    name="edit_product_description"
+                    id="edit_product_description"
+                    placeholder={selectedProduct.description}
+                    value={product_description}
+                    onChange={(e) => setProductDescription(e.target.value)}
+                    className="overflow-ellipsis rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 dark:text-slate-200"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-2">
+                  <label className="font-bold" htmlFor="edit_product_price">
+                    Price per unit:
+                  </label>
+                  <input
+                    type="text"
+                    name="edit_product_price"
+                    id="edit_product_price"
+                    placeholder={selectedProduct.unit_price}
+                    value={unit_price}
+                    onChange={(e) => setUnitPrice(e.target.value)}
+                    className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 dark:text-slate-200"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="font-bold" htmlFor="edit_product_image">
+                  Product Image:
+                </label>
+                <input
+                  type="file"
+                  name="edit_product_image"
+                  id="edit_product_image"
+                  accept="image/*"
+                  onChange={(e) => setImage(e.target.files[0])}
+                />
+              </div>
+
+              <div className="flex flex-row justify-between mt-4">
+                <button
+                  type="submit"
+                  className="w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-semibold text-white"
+                >
+                  Add
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleCloseModal(false)}
+                  className="w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-extrabold text-white"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
         </form>
       </Modal>
     </Fragment>
