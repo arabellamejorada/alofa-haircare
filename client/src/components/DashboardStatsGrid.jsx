@@ -14,7 +14,7 @@ function DashboardStatsGrid() {
             <strong className="text-sl text-gray-700 font-semibold">
               ₱20,959.67
             </strong>
-            <span className="text-sm text-green-500 pl-2">+₱299.0</span>
+            <span className="text-sm text-green-500 pl-2">+₱299.00</span>
           </div>
         </div>
       </BoxWrapper>
