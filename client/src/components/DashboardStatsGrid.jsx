@@ -12,9 +12,9 @@ function DashboardStatsGrid() {
           <span className="text-sm text-gray-500 font-light">Total Sales</span>
           <div className="flex items-center">
             <strong className="text-sl text-gray-700 font-semibold">
-              ₱23943.67
+              ₱20,959.67
             </strong>
-            <span className="text-sm text-green-500 pl-2">+135</span>
+            <span className="text-sm text-green-500 pl-2">+₱299.0</span>
           </div>
         </div>
       </BoxWrapper>
@@ -25,10 +25,8 @@ function DashboardStatsGrid() {
         <div className="pl-4">
           <span className="text-sm text-gray-500 font-light">Total Orders</span>
           <div className="flex items-center">
-            <strong className="text-sl text-gray-700 font-semibold">
-              ₱23943.67
-            </strong>
-            <span className="text-sm text-green-500 pl-2">+135</span>
+            <strong className="text-sl text-gray-700 font-semibold">459</strong>
+            <span className="text-sm text-green-500 pl-2">+28</span>
           </div>
         </div>
       </BoxWrapper>
@@ -41,10 +39,8 @@ function DashboardStatsGrid() {
             Total Customers
           </span>
           <div className="flex items-center">
-            <strong className="text-sl text-gray-700 font-semibold">
-              ₱23943.67
-            </strong>
-            <span className="text-sm text-green-500 pl-2">+135</span>
+            <strong className="text-sl text-gray-700 font-semibold">265</strong>
+            <span className="text-sm text-green-500 pl-2">+12</span>
           </div>
         </div>
       </BoxWrapper>
