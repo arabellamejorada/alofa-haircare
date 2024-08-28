@@ -24,7 +24,7 @@ const getAllCustomers = async (req, res) => {
     const client = await pool.connect();
 
     try {
-        const customers = await client.query('SELECT * FROM customer');
+        const customers = await client.query('SELECT * FROM customer ORDER by customer_id ASC');
         res.status(200).json(customers.rows);
     } catch (error) {
         console.error('Error fetching customers:', error);

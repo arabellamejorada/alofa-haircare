@@ -54,7 +54,7 @@ const createProductWithInventory = async (req, res) => {
 const getAllProducts = async (req, res) => {
     const client = await pool.connect();
     try {
-        const results = await client.query('SELECT * FROM product');
+        const results = await client.query('SELECT * FROM product ORDER BY product_id ASC');
         res.status(200).json(results.rows);
     } catch (error) {
         console.error('Error fetching products:', error);
