@@ -3,7 +3,12 @@ import DataTable from "../shared/DataTable";
 import { MdAddBox } from "react-icons/md";
 import Modal from "../modal/Modal";
 import { IoMdArrowDropdown } from "react-icons/io";
-import { getEmployees, getRoles, createEmployee, updateEmployee } from "../../api/employees";
+import {
+  getEmployees,
+  getRoles,
+  createEmployee,
+  updateEmployee,
+} from "../../api/employees";
 
 const Employees = () => {
   const [employees, setEmployees] = useState([]);
@@ -55,7 +60,7 @@ const Employees = () => {
       setSelectedEmployee(null); // Clear selected employee
     }
   }, [isModalVisible]);
-  
+
   const handleAddEmployee = async (e) => {
     e.preventDefault();
 
@@ -90,13 +95,18 @@ const Employees = () => {
     formData.append("first_name", firstName || selectedEmployee.first_name);
     formData.append("last_name", lastName || selectedEmployee.last_name);
     formData.append("email", email || selectedEmployee.email);
-    formData.append("contact_number", contactNumber || selectedEmployee.contact_number);
+    formData.append(
+      "contact_number",
+      contactNumber || selectedEmployee.contact_number
+    );
     formData.append("role_id", roleId || selectedEmployee.role_id);
     formData.append("status", status || selectedEmployee.status);
 
-
     try {
-      const response = await updateEmployee(selectedEmployee.employee_id, formData);
+      const response = await updateEmployee(
+        selectedEmployee.employee_id,
+        formData
+      );
       console.log(response);
       setIsModalVisible(false);
 
@@ -148,7 +158,6 @@ const Employees = () => {
     setIsModalVisible(false);
     setSelectedEmployee(null);
   };
-  
 
   return (
     <Fragment>
@@ -250,9 +259,11 @@ const Employees = () => {
                   name="roleId"
                   value={roleId}
                   onChange={(e) => setRoleId(e.target.value)}
-                  className="border rounded-xl w-full h-10 pl-4 bg-gray-50 dark:bg-slate-800 hover:border-pink-500 dark:hover:border-pink-700 hover:bg-white dark:hover:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200"
+                  className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
                 >
-                  <option value="" disabled>Select Role</option>
+                  <option value="" disabled>
+                    Select Role
+                  </option>
                   {roles.map((role) => (
                     <option key={role.role_id} value={role.role_id}>
                       {role.name}
@@ -364,7 +375,9 @@ const Employees = () => {
                   type="text"
                   name="contact_number"
                   id="contact_number"
-                  placeholder={selectedEmployee?.contact_number || "Contact Number"}
+                  placeholder={
+                    selectedEmployee?.contact_number || "Contact Number"
+                  }
                   value={contactNumber}
                   onChange={(e) => setContactNumber(e.target.value)}
                   className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
@@ -382,9 +395,11 @@ const Employees = () => {
                   name="roleId"
                   value={roleId}
                   onChange={(e) => setRoleId(e.target.value)}
-                  className="border rounded-xl w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+                  className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
                 >
-                  <option value="" disabled>Select Role</option>
+                  <option value="" disabled>
+                    Select Role
+                  </option>
                   {roles.map((role) => (
                     <option key={role.role_id} value={role.role_id}>
                       {role.name}
@@ -407,48 +422,18 @@ const Employees = () => {
                   onChange={(e) => setEmployeeStatus(e.target.value)}
                   className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
                 >
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-                <option value="Terminated">Terminated</option>
-              </select>
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                  <option value="Terminated">Terminated</option>
+                </select>
                 <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2" />
               </div>
             </div>
-          
-            {/* <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="username">
-                Username:
-              </label>
-              <input
-                type="text"
-                name="username"
-                id="username"
-                placeholder={selectedEmployee?.username || "Username"}
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-              />
-            </div>
 
-            <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="password">
-                Password:
-              </label>
-              <input
-                type="password"
-                name="password"
-                id="password"
-                placeholder="Password (Leave empty if not changing)"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-              />
-            </div> */}
-
-            <div className="flex justify-end gap-2 mt-4">
+            <div className="flex justify-end mt-2">
               <button
                 type="submit"
-                className="px-4 py-2 bg-pink-500 text-white rounded-xl"
+                className="w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-semibold text-white"
               >
                 Update
               </button>

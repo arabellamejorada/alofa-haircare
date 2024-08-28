@@ -1,4 +1,6 @@
 import React from "react";
+import { IoMdArchive } from "react-icons/io";
+import { MdEditDocument } from "react-icons/md";
 
 const DataTable = ({ data, columns, onEdit }) => {
   if (!data || data.length === 0) {
@@ -32,7 +34,7 @@ const DataTable = ({ data, columns, onEdit }) => {
                   {column.header || formatColumnName(column.key)}
                 </th>
               ))}
-              <th className="text-center">Actions</th>{" "}
+              <th className="text-center">Actions</th>
               {/* New column for the "Edit" button */}
             </tr>
           </thead>
@@ -49,13 +51,18 @@ const DataTable = ({ data, columns, onEdit }) => {
                       : item[column.key]}
                   </td>
                 ))}
-                <td className="text-center">
-                  <button
-                    className="text-white bg-pink-500 hover:bg-pink-600 px-5 py-1 text-center rounded-xl"
+                <td className="flex text-center justify-center items-center gap-4">
+                  <div
+                    className="text-pink-500 hover:text-pink-600 text-center rounded-xl"
                     onClick={() => onEdit(item)} // Pass the item to onEdit
                   >
-                    Edit
-                  </button>
+                    <MdEditDocument fontSize={30} />
+                  </div>
+                  <div className="items-center justify-center">
+                    <div className=" text-pink-500 hover:text-pink-600 rounded-full">
+                      <IoMdArchive fontSize={30} />
+                    </div>
+                  </div>
                 </td>
               </tr>
             ))}

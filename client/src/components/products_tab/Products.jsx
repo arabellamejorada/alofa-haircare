@@ -425,20 +425,14 @@ const Products = () => {
                 />
               </div>
 
-              <div className="flex flex-row justify-between mt-4">
+              <div className="flex flex-row justify-end mt-4">
                 <button
                   type="submit"
                   className="w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-semibold text-white"
                 >
                   Apply Changes
                 </button>
-                <button
-                  type="button"
-                  onClick={() => handleCloseModal(false)}
-                  className="w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-extrabold text-white"
-                >
-                  Cancel
-                </button>
+      
               </div>
             </div>
           )}
