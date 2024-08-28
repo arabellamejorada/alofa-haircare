@@ -22,9 +22,9 @@ export const createEmployee = async (employee) => {
     }
 };
 
-export const updateEmployee = async (employee) => {
+export const updateEmployee = async (id, employeeData) => {
     try {
-        const response = await axios.put(`/employees/${employee.employee_id}`, employee);
+        const response = await axios.put(`/employees/${id}`, employeeData);
         console.log('Employee updated: ', response.data);
         return response.data;
     } catch (error) {

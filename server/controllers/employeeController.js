@@ -86,15 +86,15 @@ const getEmployeeById = async (req, res) => {
 const updateEmployee = async (req, res) => {
     const client = await pool.connect();
     const employee_id = parseInt(req.params.id);
-    const { first_name, last_name, email, contact_number, role_id } = req.body;
+    const { first_name, last_name, email, contact_number, role_id, status} = req.body;
 
     try {
         const updatedEmployee = await client.query(
             `UPDATE employee 
-            SET first_name = $1, last_name = $2, email = $3, contact_number = $4, role_id = $5 
-            WHERE employee_id = $6 
+            SET first_name = $1, last_name = $2, email = $3, contact_number = $4, role_id = $5, status = $6
+            WHERE employee_id = $7
             RETURNING *`,
-            [first_name, last_name, email, contact_number, role_id, employee_id]
+            [first_name, last_name, email, contact_number, role_id, status, employee_id]
         );
 
         if (updatedEmployee.rows.length === 0) {

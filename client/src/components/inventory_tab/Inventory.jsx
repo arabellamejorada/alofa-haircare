@@ -1,11 +1,6 @@
 import React, { Fragment, useState, useEffect } from "react";
 import InventoryTable from "./InventoryTable";
-import {
-  createInventory,
-  getInventory,
-  getProducts,
-  updateInventory,
-} from "../../api/products";
+import { getInventory, getProducts, updateInventory } from "../../api/products";
 import { MdAddBox } from "react-icons/md";
 import Modal from "../modal/Modal";
 import { IoMdArrowDropdown } from "react-icons/io";

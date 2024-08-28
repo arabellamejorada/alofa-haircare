@@ -3,10 +3,9 @@ const pool = require('../db.js');
 // PRODUCTS CRUD + INVENTORY CREATE
 const createProductWithInventory = async (req, res) => {
     const client = await pool.connect();
-    const { name, description, unit_price, product_category_id } = req.body;
+    const { name, description, status, unit_price, product_category_id } = req.body;
     const image = req.file ? req.file.filename : '';
     const stock_quantity = 0; // Default stock quantity
-    const status = "Available"; // Default status
     
     console.log("Request Body:", req.body);
     console.log("Uploaded File:", req.file);
@@ -16,10 +15,10 @@ const createProductWithInventory = async (req, res) => {
 
         // Insert product
         const productResult = await client.query(
-            `INSERT INTO product (name, description, unit_price, image, status, product_category_id)
+            `INSERT INTO product (name, description, status, unit_price, image, product_category_id)
             VALUES ($1, $2, $3, $4, $5, $6)
             RETURNING product_id`,
-            [name, description, unit_price, image, status, product_category_id]
+            [name, description, status, unit_price, image, product_category_id]
         );
         const product_id = productResult.rows[0].product_id;
 
@@ -86,15 +85,39 @@ const getProductById = async (req, res) => {
 const updateProduct = async (req, res) => {
     const client = await pool.connect();
     const product_id = parseInt(req.params.id);
-    const { name, description, unit_price, image, status, product_category_id } = req.body;
+    const { name, description, unit_price, status, product_category_id } = req.body;
+    const image = req.file ? req.file.path : null; 
 
+    console.log ('Request Body:', req.body);
+    console.log ('Uploaded Image:', image);
+    
     try {
-        const results = await client.query(
-            `UPDATE product SET name = $1, description = $2, unit_price = $3, image = $4, status = $5, product_category_id = $6
+        const query = `
+            UPDATE product
+            SET
+                name = COALESCE($1, name),
+                description = COALESCE($2, description),
+                unit_price = COALESCE($3, unit_price),
+                image = COALESCE($4, image),
+                status = COALESCE($5, status),
+                product_category_id = COALESCE($6, product_category_id)
             WHERE product_id = $7
-            RETURNING *`,
-            [name, description, unit_price, image, status, product_category_id, product_id]
-        );
+            RETURNING *;
+        `;
+
+        const values = [
+            name || null,
+            description || null,
+            unit_price || null,
+            image || null,
+            status || null,
+            product_category_id || null,
+            product_id
+        ];
+
+        console.log('Query Values:', values);
+
+        const results = await client.query(query, values);
 
         if (results.rows.length === 0) {
             return res.status(404).json({ message: 'Product not found' });
@@ -103,7 +126,7 @@ const updateProduct = async (req, res) => {
         res.status(200).json(results.rows[0]);
     } catch (error) {
         console.error('Error updating product:', error);
-        res.status(500).json({ message: 'Error updating product', error: error.message });
+        res.status(500).json({ messag3e: 'Error updating product', error: error.message });
     } finally {
         client.release();
     }

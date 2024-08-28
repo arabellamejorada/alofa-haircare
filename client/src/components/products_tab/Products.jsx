@@ -18,6 +18,7 @@ const Products = () => {
 
   const [product_name, setProductName] = useState("");
   const [product_description, setProductDescription] = useState("");
+  const [product_status, setProductStatus] = useState("");
   const [unit_price, setUnitPrice] = useState("");
   const [product_category, setProductCategory] = useState("");
   const [image, setImage] = useState(null);
@@ -49,48 +50,90 @@ const Products = () => {
     },
     { key: "product_category", header: "Category" },
     { key: "image", header: "Image" },
-    // Exclude inventory_id and product_category_id
   ];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+ 
+    if (!product_name || !unit_price || !product_status || !product_category) {
+      alert("Please fill out all required fields.");
+      return;
+    }
 
     const formData = new FormData();
     formData.append("name", product_name);
     formData.append("description", product_description);
+    formData.append("status", product_status);
     formData.append("unit_price", unit_price);
     formData.append("product_category_id", product_category);
-    formData.append("image", image);
-
+    if (image) {
+      formData.append("image", image);
+    }
+  
     try {
-      const response = await axios.post(
-        "http://localhost:3001/products",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      console.log("File uploaded successfully:", response.data);
-      setShowModal(false);
+      let response;
 
+      if (selectedProduct) {
+        // If editing an existing product
+        response = await axios.put(
+          `http://localhost:3001/products/${selectedProduct.product_id}`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        console.log("Product updated successfully:", response.data);
+      } else {
+        // If adding a new product
+        response = await axios.post(
+          "http://localhost:3001/products",
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        console.log("Product added successfully:", response.data);
+      }
+  
       const productsData = await getProducts();
       setProducts(productsData);
+      handleCloseModal();
+
     } catch (error) {
-      console.error("Error uploading file:", error);
+      console.error("Error saving product:", error);
+      setError("Error saving product. Please try again.");
     }
   };
+  
 
   const handleEdit = (product) => {
+    console.log("Editing product:", product);
     setSelectedProduct(product);
+    setProductName(product.name || "");
+    setProductDescription(product.description || "");
+    setProductStatus(product.status || "");
+    setUnitPrice(product.unit_price || "");
+    setProductCategory(product.product_category_id || "");
+    setImage(product.image || null);
+
     setIsModalVisible(true);
   };
 
   const handleCloseModal = () => {
     setIsModalVisible(false);
     setSelectedProduct(null);
+    setProductName("");
+    setProductDescription("");
+    setProductStatus("");
+    setUnitPrice("");
+    setProductCategory("");
+    setImage(null);
   };
+  
 
   if (error) return <div>{error}</div>;
 
@@ -193,6 +236,27 @@ const Products = () => {
                 />
               </div>
             </div>
+            
+            <div className="flex flex-col gap-2">
+              <label className="font-bold" htmlFor="status">
+                Status:
+              </label>
+              <div className="relative">
+                <select
+                  name="product_status"
+                  id="product_status"
+                  value={product_status}
+                  onChange={(e) => setProductStatus(e.target.value)}
+                  className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+                >
+                <option value="Available">Available</option>
+                <option value="Out of Stock">Out of Stock</option>
+                <option value="Discontinued">Discontinued</option>
+              </select>
+                <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2" />
+              </div>
+            </div>
+
 
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-2">
@@ -245,7 +309,7 @@ const Products = () => {
 
       {/* Edit Modal */}
       <Modal isVisible={isModalVisible} onClose={handleCloseModal}>
-        <form className="p-6">
+        <form className="p-6" onSubmit={handleSubmit} encType="multipart/form-data">
           {selectedProduct && (
             <div className="flex flex-col gap-4">
               <div className="font-extrabold text-3xl text-pink-400">
@@ -257,7 +321,7 @@ const Products = () => {
                 </label>
                 <input
                   type="text"
-                  name="edit_product_name"
+                  name="product_name"
                   id="edit_product_name"
                   placeholder={selectedProduct.name}
                   value={product_name}
@@ -272,7 +336,7 @@ const Products = () => {
                 <div className="relative">
                   <select
                     id="edit_category"
-                    name="edit_product_category_id"
+                    name="product_category_id"
                     value={product_category}
                     onChange={(e) => setProductCategory(e.target.value)}
                     className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
@@ -301,7 +365,7 @@ const Products = () => {
                   </label>
                   <input
                     type="text"
-                    name="edit_product_description"
+                    name="product_description"
                     id="edit_product_description"
                     placeholder={selectedProduct.description}
                     value={product_description}
@@ -310,6 +374,26 @@ const Products = () => {
                   />
                 </div>
               </div>
+              
+              <div className="flex flex-col gap-2">
+              <label className="font-bold" htmlFor="edit_status">
+                Status:
+              </label>
+              <div className="relative">
+                <select
+                  name="product_status"
+                  id="edit_status"
+                  value={product_status}
+                  onChange={(e) => setProductStatus(e.target.value)}
+                  className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+                >
+                <option value="Available">Available</option>
+                <option value="Out of Stock">Out of Stock</option>
+                <option value="Discontinued">Discontinued</option>
+              </select>
+                <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2" />
+              </div>
+            </div>
 
               <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-2">
@@ -318,7 +402,7 @@ const Products = () => {
                   </label>
                   <input
                     type="text"
-                    name="edit_product_price"
+                    name="product_price"
                     id="edit_product_price"
                     placeholder={selectedProduct.unit_price}
                     value={unit_price}
@@ -334,7 +418,7 @@ const Products = () => {
                 </label>
                 <input
                   type="file"
-                  name="edit_product_image"
+                  name="image"
                   id="edit_product_image"
                   accept="image/*"
                   onChange={(e) => setImage(e.target.files[0])}
@@ -346,7 +430,7 @@ const Products = () => {
                   type="submit"
                   className="w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-semibold text-white"
                 >
-                  Add
+                  Apply Changes
                 </button>
                 <button
                   type="button"
