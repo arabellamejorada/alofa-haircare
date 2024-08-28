@@ -20,8 +20,12 @@ export const createProductWithInventory = async (productData, inventoryData) => 
 export const getProducts = async () => {
     try {
         const response = await axios.get('/products');
-        console.log('Products fetched: ', response.data);
-        return response.data;
+        const data = response.data; // Directly access the data from the response
+        console.log('Products fetched: ', data);
+        return data.map(product => ({
+            ...product,
+            is_archived: product.is_archived || false, // Default to false if not present
+        }));
     } catch (error) {
         console.error('Error fetching products: ', error);
         throw error;
@@ -47,6 +51,16 @@ export const updateProduct = async (product) => {
         throw error;
     }
 };
+
+export const archiveProduct = async (productId) => {
+    try {
+        const response = await axios.put(`/products/${productId}/archive`);
+        return response.data;
+    } catch (error) {
+        console.error('Error archiving product: ', error);
+        throw error;
+    }
+}; 
 
 export const deleteProduct = async (productId) => {
     try {

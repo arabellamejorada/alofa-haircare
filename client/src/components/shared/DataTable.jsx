@@ -2,7 +2,7 @@ import React from "react";
 import { IoMdArchive } from "react-icons/io";
 import { MdEditDocument } from "react-icons/md";
 
-const DataTable = ({ data, columns, onEdit }) => {
+const DataTable = ({ data, columns, onEdit, onArchive }) => {
   if (!data || data.length === 0) {
     return <div>No data available</div>;
   }
@@ -41,12 +41,15 @@ const DataTable = ({ data, columns, onEdit }) => {
 
           <tbody>
             {data.map((item, index) => (
-              <tr key={index}>
+              <tr
+                key={index}
+                className={item.status === 'Archived' ? 'bg-gray-200' : ''}
+              >
                 {columns.map((column) => (
                   <td className="text-center" key={column.key}>
                     {column.render
                       ? column.render(item[column.key])
-                      : column.key === "stock_in_date"
+                      : column.key === 'stock_in_date'
                       ? formatDateInLocalTimezone(item[column.key])
                       : item[column.key]}
                   </td>
@@ -58,8 +61,11 @@ const DataTable = ({ data, columns, onEdit }) => {
                   >
                     <MdEditDocument fontSize={30} />
                   </div>
-                  <div className="items-center justify-center">
-                    <div className=" text-pink-500 hover:text-pink-600 rounded-full">
+                  <div
+                    className="items-center justify-center"
+                    onClick={() => onArchive(item)} // Pass the item to onArchive
+                  >
+                    <div className="text-pink-500 hover:text-pink-600 rounded-full">
                       <IoMdArchive fontSize={30} />
                     </div>
                   </div>
