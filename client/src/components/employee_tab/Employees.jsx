@@ -42,6 +42,20 @@ const Employees = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    if (!isModalVisible) {
+      // Reset fields when modal is closed
+      setFirstName("");
+      setLastName("");
+      setEmail("");
+      setContactNumber("");
+      setRoleId("");
+      setUsername("");
+      setPassword("");
+      setSelectedEmployee(null); // Clear selected employee
+    }
+  }, [isModalVisible]);
+  
   const handleAddEmployee = async (e) => {
     e.preventDefault();
 
@@ -134,6 +148,7 @@ const Employees = () => {
     setIsModalVisible(false);
     setSelectedEmployee(null);
   };
+  
 
   return (
     <Fragment>

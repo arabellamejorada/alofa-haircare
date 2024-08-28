@@ -55,7 +55,7 @@ const Products = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
  
-    if (!product_name || !unit_price || !product_status || !product_category) {
+    if (!product_name || !unit_price || !product_description || !product_category) {
       alert("Please fill out all required fields.");
       return;
     }
