@@ -263,7 +263,7 @@ const getAllInventories = async (req, res) => {
     const client = await pool.connect();
 
     try {
-        const results = await client.query('SELECT * FROM inventory');
+        const results = await client.query('SELECT * FROM inventory ORDER BY inventory_id ASC');
         res.status(200).json(results.rows);
     } catch (error) {
         console.error('Error getting all inventory:', error);
