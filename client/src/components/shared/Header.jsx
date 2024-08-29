@@ -96,8 +96,7 @@ export default function Header() {
               <div
                 className="h-10 w-10 rounded-full bg-sky-500 bg-cover bg-no-repeat bg-center"
                 style={{
-                  backgroundImage:
-                    'url("https://scontent.fdvo2-1.fna.fbcdn.net/v/t39.30808-6/447977873_1001123578392163_4676140127227500500_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeFLfMiX2MszvdDncU5PpPgDqd3vnrbcojGp3e-ettyiMdsdunueW84DiB1-xtAotpE8L3d42IttG3nWvFBAyhti&_nc_ohc=SjpUGg2ledgQ7kNvgGEPjei&_nc_ht=scontent.fdvo2-1.fna&oh=00_AYA7P8kk_XSgTWr9KfmtQwHag_F_cYFah99OwqjzU2Kmyw&oe=66C74AD6")',
+                  backgroundImage: `url(/photos/mikha.jpeg)`,
                 }}
               >
                 {/* Screenreader for seach engines only*/}

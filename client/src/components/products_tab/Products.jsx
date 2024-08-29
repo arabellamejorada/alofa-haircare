@@ -223,7 +223,7 @@ const Products = () => {
                 placeholder="Product Name"
                 value={product_name}
                 onChange={(e) => setProductName(e.target.value)}
-                className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 dark:text-slate-200"
+                className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
               />
             </div>
 
@@ -265,7 +265,7 @@ const Products = () => {
                   placeholder="Product Description"
                   value={product_description}
                   onChange={(e) => setProductDescription(e.target.value)}
-                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 dark:text-slate-200"
+                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 "
                 />
               </div>
             </div>
@@ -304,7 +304,7 @@ const Products = () => {
                   placeholder="₱0.00"
                   value={unit_price}
                   onChange={(e) => setUnitPrice(e.target.value)}
-                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 dark:text-slate-200"
+                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 "
                 />
               </div>
             </div>
@@ -360,7 +360,7 @@ const Products = () => {
                   placeholder={selectedProduct.name}
                   value={product_name}
                   onChange={(e) => setProductName(e.target.value)}
-                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 dark:text-slate-200"
+                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 "
                 />
               </div>
               <div className="flex flex-col gap-2">
@@ -404,7 +404,7 @@ const Products = () => {
                     placeholder={selectedProduct.description}
                     value={product_description}
                     onChange={(e) => setProductDescription(e.target.value)}
-                    className="overflow-ellipsis rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 dark:text-slate-200"
+                    className="overflow-ellipsis rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 "
                   />
                 </div>
               </div>
@@ -442,7 +442,7 @@ const Products = () => {
                     placeholder={selectedProduct.unit_price}
                     value={unit_price}
                     onChange={(e) => setUnitPrice(e.target.value)}
-                    className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 dark:text-slate-200"
+                    className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 "
                   />
                 </div>
               </div>
