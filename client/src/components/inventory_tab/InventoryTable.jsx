@@ -22,13 +22,16 @@ const DataTable = ({ data, columns, onEdit }) => {
   };
 
   return (
-    <div className="bg-white px-4 pb-4 rounded-xl border-gray-200 flex-1">
-      <div className="mt-3">
-        <table className="w-full text-gray-700 border-x border-gray-200 rounded-xl">
+    <div className="overflow-x-auto pt-4">
+      <div className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+        <table className="min-w-full leading-normal">
           <thead>
             <tr>
               {columns.map((column) => (
-                <th className="text-center" key={column.key}>
+                <th
+                  className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                  key={column.key}
+                >
                   {column.header || formatColumnName(column.key)}
                 </th>
               ))}
@@ -40,7 +43,10 @@ const DataTable = ({ data, columns, onEdit }) => {
             {data.map((item, index) => (
               <tr key={index}>
                 {columns.map((column) => (
-                  <td className="text-center" key={column.key}>
+                  <td
+                    className="px-5 py-5 border-b border-gray-200 bg-white text-sm"
+                    key={column.key}
+                  >
                     {column.render
                       ? column.render(item[column.key])
                       : column.key === "stock_in_date"
