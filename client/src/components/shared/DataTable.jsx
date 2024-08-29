@@ -52,7 +52,7 @@ const DataTable = ({ data, columns, onEdit, onArchive }) => {
               >
                 {columns.map((column) => (
                   <td
-                    className="px-5 py-5 border-b border-gray-200 bg-white text-sm"
+                    className="px-5 py-5 border-b border-gray-200 text-sm"
                     key={column.key}
                   >
                     {column.render
@@ -72,7 +72,10 @@ const DataTable = ({ data, columns, onEdit, onArchive }) => {
                       <MdEditDocument fontSize={30} />
                     </div>
                     <div className="items-center justify-center">
-                      <div className=" text-pink-500 hover:text-pink-600 rounded-full">
+                      <div 
+                        className="text-pink-500 hover:text-pink-600 rounded-full"
+                        onClick={() => onArchive(item)} // Pass the item to onArchive
+                      >
                         <IoMdArchive fontSize={30} />
                       </div>
 
