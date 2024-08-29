@@ -3,7 +3,7 @@ import DataTable from "../shared/DataTable";
 import { MdAddBox } from "react-icons/md";
 import Modal from "../modal/Modal";
 import { IoMdArrowDropdown } from "react-icons/io";
-import { getProducts, getCategories } from "../../api/products";
+import { getProducts, getCategories, archiveProduct } from "../../api/products";
 import axios from "axios";
 
 const Products = () => {
@@ -109,7 +109,6 @@ const Products = () => {
     }
   };
   
-
   const handleEdit = (product) => {
     console.log("Editing product:", product);
     setSelectedProduct(product);
@@ -123,8 +122,36 @@ const Products = () => {
     setIsModalVisible(true);
   };
 
+
+  const handleArchiveProduct = async (selectedProduct) => {
+    if (!selectedProduct) return;
+  
+    const isConfirmed = window.confirm("Are you sure you want to archive this product?");
+    if (!isConfirmed) return;
+  
+    const data = {
+      status: "Archived"
+    };
+  
+    try {
+      console.log("Archiving product: ", selectedProduct.product_id);
+      const response = await archiveProduct(
+        selectedProduct.product_id,
+        data
+      );
+      console.log(response);
+  
+      const productsData = await getProducts();
+      setProducts(productsData);
+    } catch (error) {
+      console.error("Error archiving products: ", error);
+      setError("Failed to update product status to Archived");
+    }
+  };  
+
   const handleCloseModal = () => {
     setIsModalVisible(false);
+    setShowModal(false);
     setSelectedProduct(null);
     setProductName("");
     setProductDescription("");
@@ -143,11 +170,16 @@ const Products = () => {
     return acc;
   }, {});
 
-  // Process product data to include category names
-  const processedProducts = products.map((product) => ({
-    ...product,
-    product_category: categoryMap[product.product_category],
-  }));
+  const processedProducts = products
+    .map((product) => ({
+      ...product,
+      product_category: categoryMap[product.product_category] || "Unknown",
+    }))
+    .sort((a, b) => {
+      if (a.status === 'Archived' && b.status !== 'Archived') return 1;
+      if (a.status !== 'Archived' && b.status === 'Archived') return -1;
+      return 0;
+    });
 
   return (
     <Fragment>
@@ -166,6 +198,7 @@ const Products = () => {
           data={processedProducts}
           columns={columns}
           onEdit={handleEdit}
+          onArchive={handleArchiveProduct}
         />{" "}
       </div>
 
@@ -249,6 +282,7 @@ const Products = () => {
                   onChange={(e) => setProductStatus(e.target.value)}
                   className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
                 >
+                <option value="" disabled>Select Status</option>
                 <option value="Available">Available</option>
                 <option value="Out of Stock">Out of Stock</option>
                 <option value="Discontinued">Discontinued</option>
@@ -390,6 +424,7 @@ const Products = () => {
                 <option value="Available">Available</option>
                 <option value="Out of Stock">Out of Stock</option>
                 <option value="Discontinued">Discontinued</option>
+                <option value="Archived">Archived</option>
               </select>
                 <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2" />
               </div>

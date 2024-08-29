@@ -110,6 +110,32 @@ const updateEmployee = async (req, res) => {
     }
 };
 
+const archiveEmployee = async (req, res) => {
+    const client = await pool.connect();
+    const employee_id = parseInt(req.params.id);
+
+    try {
+        const archivedEmployee = await client.query(
+            `UPDATE employee 
+            SET status = 'Archived' 
+            WHERE employee_id = $1 
+            RETURNING *`,
+            [employee_id]
+        );
+
+        if (archivedEmployee.rows.length === 0) {
+            return res.status(404).json({ message: 'Employee not found' });
+        }
+
+        res.status(200).json(archivedEmployee.rows[0]);
+    } catch (error) {
+        console.error('Error archiving employee:', error);
+        res.status(500).json({ message: 'Error archiving employee', error: error.message });
+    } finally {
+        client.release();
+    }
+};
+
 const deleteEmployee = async (req, res) => {
     const client = await pool.connect();
     const employee_id = parseInt(req.params.id);
@@ -140,5 +166,6 @@ module.exports = {
     getAllEmployees,
     getEmployeeById,
     updateEmployee,
+    archiveEmployee,
     deleteEmployee
 };

@@ -8,6 +8,7 @@ import {
   getRoles,
   createEmployee,
   updateEmployee,
+  archiveEmployee,
 } from "../../api/employees";
 
 const Employees = () => {
@@ -118,28 +119,35 @@ const Employees = () => {
     }
   };
 
-  const columns = [
-    { key: "employee_id", header: "ID" },
-    { key: "first_name", header: "First Name" },
-    { key: "last_name", header: "Last Name" },
-    { key: "email", header: "Email" },
-    { key: "contact_number", header: "Contact Number" },
-    { key: "role_name", header: "Role" },
-    { key: "status", header: "Status" },
-  ];
-
-  if (error) return <div>{error}</div>;
-
-  const roleMap = roles.reduce((acc, role) => {
-    acc[role.role_id] = role.name;
-    return acc;
-  }, {});
-
-  const processedEmployee = employees.map((item) => ({
-    ...item,
-    role_name: roleMap[item.role_id],
-  }));
-
+  const handleArchiveEmployee = async (selectedEmployee) => {
+    if (!selectedEmployee) return;
+  
+    const isConfirmed = window.confirm("Are you sure you want to archive this employee?");
+    if (!isConfirmed) return;
+  
+    const data = {
+      status: "Archived"
+    };
+  
+    try {
+      console.log("Archiving employee: ", selectedEmployee.employee_id);
+      const response = await archiveEmployee(
+        selectedEmployee.employee_id,
+        data
+      );
+      console.log(response);
+  
+      // Optionally refresh the employees list
+      const employeesData = await getEmployees();
+      setEmployees(employeesData);
+    } catch (error) {
+      console.error("Error archiving employee: ", error);
+      setError("Failed to update employee status to Archived");
+    }
+  };
+  
+  
+  
   const handleEdit = (employee) => {
     console.log("Selected Employee:", employee); // Check if employee data is correct
 
@@ -158,6 +166,36 @@ const Employees = () => {
     setIsModalVisible(false);
     setSelectedEmployee(null);
   };
+
+  const columns = [
+    { key: "employee_id", header: "ID" },
+    { key: "first_name", header: "First Name" },
+    { key: "last_name", header: "Last Name" },
+    { key: "email", header: "Email" },
+    { key: "contact_number", header: "Contact Number" },
+    { key: "role_name", header: "Role" },
+    { key: "status", header: "Status" }
+  ];
+
+  if (error) return <div>{error}</div>;
+
+  const roleMap = roles.reduce((acc, role) => {
+    acc[role.role_id] = role.name;
+    return acc;
+  }, {});
+
+  const processedEmployee = employees
+  .map((item) => ({
+    ...item,
+    role_name: roleMap[item.role_id],
+  }))
+  .sort((a, b) => {
+    // Move archived employees to the end
+    if (a.status === 'Archived' && b.status !== 'Archived') return 1;
+    if (a.status !== 'Archived' && b.status === 'Archived') return -1;
+    return 0;
+  });
+
 
   return (
     <Fragment>
@@ -180,6 +218,7 @@ const Employees = () => {
           data={processedEmployee}
           columns={columns}
           onEdit={handleEdit}
+          onArchive={handleArchiveEmployee}
         />
       </div>
 
@@ -425,6 +464,7 @@ const Employees = () => {
                   <option value="Active">Active</option>
                   <option value="Inactive">Inactive</option>
                   <option value="Terminated">Terminated</option>
+                  <option value="Archived">Archived</option>
                 </select>
                 <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2" />
               </div>

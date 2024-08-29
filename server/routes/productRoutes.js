@@ -8,6 +8,7 @@ router.post('/products', upload.single('image'), productController.createProduct
 router.get('/products', productController.getAllProducts);              // Read all
 router.get('/products/:id', productController.getProductById);          // Read by ID
 router.put('/products/:id', upload.single('image'), productController.updateProduct);           // Update by ID
+router.put('/products/:id/archive', productController.archiveProduct);  // Archive by ID
 router.delete('/products/:id', productController.deleteProduct);        // Delete by ID
 
 // PRODUCT CATEGORY

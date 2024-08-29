@@ -65,6 +65,9 @@ const Inventory = () => {
       console.log(response);
       setShowModal(false);
 
+      setProductID("");
+      setStockQuantity("");
+
       const inventoryData = await getInventory();
       setInventory(inventoryData);
     } catch (error) {
@@ -73,19 +76,27 @@ const Inventory = () => {
     }
   };
 
+  
   if (error) return <div>{error}</div>;
 
-  // Map product IDs to names
   const productMap = products.reduce((acc, product) => {
-    acc[product.product_id] = product.name;
+    acc[product.product_id] = {
+      name: product.name,
+      is_archived: product.is_archived,
+    };
     return acc;
   }, {});
 
-  // Process inventory data to include product names
   const processedInventory = inventory.map((item) => ({
     ...item,
-    product_name: productMap[item.product_id], // Ensure product_id is correctly mapped
+    product_name: productMap[item.product_id]?.name || "Unknown",
+    is_archived: productMap[item.product_id]?.is_archived || false,
   }));
+
+  const productStatusMap = products.reduce((acc, product) => {
+    acc[product.product_id] = product.is_archived ? 'Archived' : 'Available';
+    return acc;
+  }, {});
 
   return (
     <Fragment>
@@ -103,7 +114,7 @@ const Inventory = () => {
           </div>
         </div>
 
-        <InventoryTable data={processedInventory} columns={columns} />
+        <InventoryTable data={processedInventory} columns={columns} productStatusMap={productStatusMap} />
       </div>
 
       <Modal isVisible={showModal} onClose={() => setShowModal(false)}>
