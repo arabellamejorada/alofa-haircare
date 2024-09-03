@@ -48,7 +48,7 @@ const DataTable = ({ data, columns, onEdit, onArchive }) => {
             {data.map((item, index) => (
               <tr
                 key={index}
-                className={item.status === 'Archived' ? 'bg-gray-200' : ''}
+                className={item.status_id === 3 ? 'bg-gray-200' : ''}
               >
                 {columns.map((column) => (
                   <td
