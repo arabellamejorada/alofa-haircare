@@ -65,3 +65,14 @@ export const getRoles = async () => {
         throw error;
     }
 };
+
+export const getEmployeeStatus = async () => {
+    try {
+        const response = await axios.get('/employee-status');
+        console.log('Employee statuses fetched: ', response.data);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching employee statuses: ', error);
+        throw error;
+    }
+};
