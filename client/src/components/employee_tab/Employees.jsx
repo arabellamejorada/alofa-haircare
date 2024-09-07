@@ -9,11 +9,13 @@ import {
   createEmployee,
   updateEmployee,
   archiveEmployee,
+  getEmployeeStatus
 } from "../../api/employees";
 
 const Employees = () => {
   const [employees, setEmployees] = useState([]);
   const [roles, setRoles] = useState([]);
+  const [statuses, setStatuses] = useState([]);
   const [error, setError] = useState(null);
 
   const [selectedEmployee, setSelectedEmployee] = useState(null);
@@ -25,7 +27,7 @@ const Employees = () => {
   const [email, setEmail] = useState("");
   const [contactNumber, setContactNumber] = useState("");
   const [roleId, setRoleId] = useState("");
-  const [status, setEmployeeStatus] = useState("");
+  const [statusId, setStatusId] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
@@ -33,6 +35,7 @@ const Employees = () => {
     const fetchData = async () => {
       try {
         const employeesData = await getEmployees();
+        const employeeStatusData = await getEmployeeStatus();
         let rolesData = await getRoles();
 
         rolesData = rolesData.filter(
@@ -41,6 +44,8 @@ const Employees = () => {
 
         setEmployees(employeesData);
         setRoles(rolesData);
+        setStatuses(employeeStatusData);
+
       } catch (err) {
         setError("Failed to fetch data");
       }
@@ -71,6 +76,7 @@ const Employees = () => {
       email: email,
       contact_number: contactNumber,
       role_id: roleId,
+      status_id: 1,
       username: username,
       password: password,
     };
@@ -101,7 +107,7 @@ const Employees = () => {
       contactNumber || selectedEmployee.contact_number
     );
     formData.append("role_id", roleId || selectedEmployee.role_id);
-    formData.append("status", status || selectedEmployee.status);
+    formData.append("status_id", statusId || selectedEmployee.status_id);
 
     try {
       const response = await updateEmployee(
@@ -126,7 +132,7 @@ const Employees = () => {
     if (!isConfirmed) return;
   
     const data = {
-      status: "Archived"
+      status_id: 3
     };
   
     try {
@@ -146,8 +152,6 @@ const Employees = () => {
     }
   };
   
-  
-  
   const handleEdit = (employee) => {
     console.log("Selected Employee:", employee); // Check if employee data is correct
 
@@ -157,7 +161,7 @@ const Employees = () => {
     setEmail(employee.email);
     setContactNumber(employee.contact_number);
     setRoleId(employee.role_id);
-    setEmployeeStatus(employee.status);
+    setStatusId(employee.status_id);
 
     setIsModalVisible(true);
   };
@@ -174,7 +178,7 @@ const Employees = () => {
     { key: "email", header: "Email" },
     { key: "contact_number", header: "Contact Number" },
     { key: "role_name", header: "Role" },
-    { key: "status", header: "Status" }
+    { key: "status_description", header: "Status" }
   ];
 
   if (error) return <div>{error}</div>;
@@ -184,18 +188,23 @@ const Employees = () => {
     return acc;
   }, {});
 
+  const statusMap = statuses.reduce((acc, status) => {
+    acc[status.status_id] = status.description;
+    return acc;
+  }, {});
+
   const processedEmployee = employees
   .map((item) => ({
     ...item,
     role_name: roleMap[item.role_id],
+    status_description: statusMap[item.status_id],
   }))
   .sort((a, b) => {
     // Move archived employees to the end
-    if (a.status === 'Archived' && b.status !== 'Archived') return 1;
-    if (a.status !== 'Archived' && b.status === 'Archived') return -1;
+    if (a.status_id === 3 && b.status_id !== 3) return 1;
+    if (a.status_id !== 3 && b.status_id === 3) return -1;
     return 0;
   });
-
 
   return (
     <Fragment>
@@ -450,21 +459,25 @@ const Employees = () => {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="status">
+              <label className="font-bold" htmlFor="statusId">
                 Status:
               </label>
               <div className="relative">
                 <select
-                  name="status"
-                  id="status"
-                  value={status}
-                  onChange={(e) => setEmployeeStatus(e.target.value)}
+                  name="statusId"
+                  id="statusId"
+                  value={statusId}
+                  onChange={(e) => setStatusId(e.target.value)}
                   className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
                 >
-                  <option value="Active">Active</option>
-                  <option value="Inactive">Inactive</option>
-                  <option value="Terminated">Terminated</option>
-                  <option value="Archived">Archived</option>
+                  <option value="" disabled>
+                    Select Status
+                  </option>
+                  {statuses.map((status) => (
+                    <option key={status.status_id} value={status.status_id}>
+                      {status.description}
+                    </option>
+                  ))}
                 </select>
                 <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2" />
               </div>

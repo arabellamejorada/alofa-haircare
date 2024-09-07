@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt');
 const createEmployeeWithUserAccount = async (req, res) => {
     const client = await pool.connect();
     const { first_name, last_name, email, contact_number, role_id, username, password } = req.body;
-    const status = 'Active'; // Default status
+    const status_id = 1; // Default status for new employees
 
     try {
         if (!username || !password) {
@@ -16,12 +16,12 @@ const createEmployeeWithUserAccount = async (req, res) => {
 
         await client.query('BEGIN');
 
-        // Create employee with a specific status
+        // Create employee 
         const newEmployee = await client.query(
-            `INSERT INTO employee (first_name, last_name, email, contact_number, role_id, status) 
+            `INSERT INTO employee (first_name, last_name, email, contact_number, role_id, status_id) 
             VALUES ($1, $2, $3, $4, $5, $6) 
-            RETURNING employee_id`,
-            [first_name, last_name, email, contact_number, role_id, status]
+            RETURNING *`,
+            [first_name, last_name, email, contact_number, role_id, status_id]
         );
 
         const employee_id = newEmployee.rows[0].employee_id;
@@ -86,15 +86,15 @@ const getEmployeeById = async (req, res) => {
 const updateEmployee = async (req, res) => {
     const client = await pool.connect();
     const employee_id = parseInt(req.params.id);
-    const { first_name, last_name, email, contact_number, role_id, status} = req.body;
+    const { first_name, last_name, email, contact_number, role_id, status_id} = req.body;
 
     try {
         const updatedEmployee = await client.query(
             `UPDATE employee 
-            SET first_name = $1, last_name = $2, email = $3, contact_number = $4, role_id = $5, status = $6
+            SET first_name = $1, last_name = $2, email = $3, contact_number = $4, role_id = $5, status_id = $6
             WHERE employee_id = $7
             RETURNING *`,
-            [first_name, last_name, email, contact_number, role_id, status, employee_id]
+            [first_name, last_name, email, contact_number, role_id, status_id, employee_id]
         );
 
         if (updatedEmployee.rows.length === 0) {
@@ -117,7 +117,7 @@ const archiveEmployee = async (req, res) => {
     try {
         const archivedEmployee = await client.query(
             `UPDATE employee 
-            SET status = 'Archived' 
+            SET status_id = 3
             WHERE employee_id = $1 
             RETURNING *`,
             [employee_id]
@@ -161,11 +161,103 @@ const deleteEmployee = async (req, res) => {
     }
 };
 
+const createEmployeeStatus = async (req, res) => {
+    const client = await pool.connect();
+    const { description } = req.body;
+
+    try {
+        const newStatus = await client.query(
+            `INSERT INTO employee_status (description) 
+            VALUES ($1) 
+            RETURNING *`,
+            [description]
+        );
+
+        res.status(201).json(newStatus.rows[0]);
+    } catch (error) {
+        console.error('Error creating new employee status:', error);
+        res.status(500).json({ message: 'Error creating employee status', error: error.message });
+    } finally {
+        client.release();
+    }
+};
+
+const getEmployeeStatus = async (req, res) => {
+    const client = await pool.connect();
+
+    try {
+        const statuses = await client.query('SELECT * FROM employee_status ORDER BY status_id ASC');
+        res.status(200).json(statuses.rows);
+    } catch (error) {
+        console.error('Error fetching employee statuses:', error);
+        res.status(500).json({ message: 'Error fetching employee statuses', error: error.message });
+    } finally {
+        client.release();
+    }
+};
+
+const updateEmployeeStatus = async (req, res) => {
+    const client = await pool.connect();
+    const status_id = parseInt(req.params.id);
+    const { description } = req.body;
+
+    try {
+        const updatedStatus = await client.query(
+            `UPDATE employee_status 
+            SET description = $1 
+            WHERE status_id = $2 
+            RETURNING *`,
+            [description, status_id]
+        );
+
+        if (updatedStatus.rows.length === 0) {
+            return res.status(404).json({ message: 'Employee status not found' });
+        }
+
+        res.status(200).json(updatedStatus.rows[0]);
+    }
+    catch (error) {
+        console.error('Error updating employee status:', error);
+        res.status(500).json({ message: 'Error updating employee status', error: error.message });
+    } finally {
+        client.release();
+    }
+};
+
+const deleteEmployeeStatus = async (req, res) => {
+    const client = await pool.connect();
+    const status_id = parseInt(req.params.id);
+
+    try {
+        const result = await client.query(
+            `DELETE FROM employee_status 
+            WHERE status_id = $1 
+            RETURNING status_id`,
+            [status_id]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ message: 'Employee status not found' });
+        }
+
+        res.status(200).json({ message: `Employee status deleted with ID: ${status_id}` });
+    } catch (error) {
+        console.error('Error deleting employee status:', error);
+        res.status(500).json({ message: 'Error deleting employee status', error: error.message });
+    } finally {
+        client.release();
+    }
+};
+
 module.exports = {
     createEmployeeWithUserAccount,
     getAllEmployees,
     getEmployeeById,
     updateEmployee,
     archiveEmployee,
-    deleteEmployee
+    deleteEmployee,
+    createEmployeeStatus,
+    getEmployeeStatus,
+    updateEmployeeStatus,
+    deleteEmployeeStatus
 };

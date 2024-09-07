@@ -222,3 +222,30 @@ FOREIGN KEY (employee_id) REFERENCES employee(employee_id);
 ALTER TABLE payment_verification
 ADD CONSTRAINT fk_payment_verification_payment
 FOREIGN KEY (payment_id) REFERENCES payment(payment_id);
+
+
+-- RECENT EDITS --
+
+-- create mployee status table
+CREATE TABLE employee_status (
+    status_id SERIAL PRIMARY KEY,
+    description VARCHAR(50) NOT NULL
+);
+
+-- employee table drop status column
+ALTER TABLE employee
+DROP COLUMN status;
+
+-- employee table add status_id column & make foreign key
+ALTER TABLE employee
+ADD COLUMN status_id INT NOT NULL,
+ADD CONSTRAINT fk_employee_status_employee
+FOREIGN KEY (status_id) REFERENCES employee_status(status_id);
+
+-- delete exisiting employee and user_account records
+DELETE FROM user_account;
+DELETE FROM employee;
+ALTER SEQUENCE user_account_user_account_id_seq RESTART WITH 1;
+ALTER SEQUENCE employee_employee_id_seq RESTART WITH 1;
+
+
