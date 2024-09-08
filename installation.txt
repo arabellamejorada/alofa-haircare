@@ -18,6 +18,12 @@ npm install styled-components
 npm install -D tailwindcss
 // npx tailwindscss init
 
+products-page frontend:
+cd products-page
+npm install react-router-dom
+npm install react-query
+npm install styled-components
+
 
 Database:
 install pgadmin4/postgresql from their website
