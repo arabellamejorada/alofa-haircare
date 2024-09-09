@@ -4,6 +4,7 @@ import Dashboard from "./components/Dashboard";
 import Products from "./components/products_tab/Products";
 import Inventory from "./components/inventory_tab/Inventory";
 import Employees from "./components/employee_tab/Employees";
+import Suppliers from "./components/supplier_tab/Suppliers";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Route path="products" element={<Products />} />
           <Route path="inventory" element={<Inventory />} />
           <Route path="employees" element={<Employees />} />
+          <Route path="suppliers" element={<Suppliers />} />
         </Route>
         <Route path="login" element={<div>Login Page</div>}></Route>
       </Routes>

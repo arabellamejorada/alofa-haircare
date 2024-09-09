@@ -224,9 +224,13 @@ ADD CONSTRAINT fk_payment_verification_payment
 FOREIGN KEY (payment_id) REFERENCES payment(payment_id);
 
 
+
+
+
+
 -- RECENT EDITS --
 
--- create mployee status table
+-- create employee status table
 CREATE TABLE employee_status (
     status_id SERIAL PRIMARY KEY,
     description VARCHAR(50) NOT NULL
@@ -249,3 +253,67 @@ ALTER SEQUENCE user_account_user_account_id_seq RESTART WITH 1;
 ALTER SEQUENCE employee_employee_id_seq RESTART WITH 1;
 
 
+
+
+
+-- NEW CHANGES SEPTEMBER 7 8PM --
+-- note: this is for inventory-product-stock_in process
+
+-- drop columns in product table
+ALTER TABLE product
+    DROP COLUMN inventory_id,
+    DROP COLUMN status,
+    DROP COLUMN unit_price,
+    DROP COLUMN image;
+    ADD COLUMN  product_status_id INT REFERENCES product_status(status_id) ON DELETE CASCADE;
+
+
+-- create product_variation table
+CREATE TABLE product_variation (
+    variation_id SERIAL PRIMARY KEY,
+    product_id INT REFERENCES product(product_id) ON DELETE CASCADE,
+    product_status_id INT REFERENCES product_status(status_id) ON DELETE CASCADE,
+    name VARCHAR(255),        -- e.g., 'Color', 'Size'
+    value VARCHAR(255),       -- e.g., 'Red', 'Large'
+    unit_price NUMERIC(10, 2),  -- Price for this specific variation
+    sku VARCHAR(100) UNIQUE   -- Unique SKU for the variation
+    image TEXT,
+);
+
+-- CREAT product_status table
+CREATE TABLE product_status (
+    status_id SERIAL PRIMARY KEY,
+    description VARCHAR(50) NOT NULL
+);
+
+-- Insert values into product_status
+INSERT INTO product_status (description) VALUES ('Available');
+INSERT INTO product_status (description) VALUES ('Out of Stock');
+INSERT INTO product_status (description) VALUES ('Discontinued');
+INSERT INTO product_status (description) VALUES ('Archived');
+
+
+-- modify inventory table
+ALTER TABLE inventory
+    ADD COLUMN variation_id INT REFERENCES product_variation(variation_id) ON DELETE CASCADE,
+    DROP COLUMN product_id;   -- Remove the old product_id reference, since we're using variation_id now
+
+-- create supplier table
+CREATE TABLE supplier (
+    supplier_id SERIAL PRIMARY KEY,
+    supplier_name VARCHAR(255) NOT NULL,
+    contact_person VARCHAR(255) NOT NULL,
+    contact_number VARCHAR(15) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'Pending'
+);
+
+-- create bulk stock_in table
+CREATE TABLE stock_in (
+    stock_in_id SERIAL PRIMARY KEY,
+    variation_id INT REFERENCES product_variation(variation_id) ON DELETE CASCADE,
+    supplier_id INT REFERENCES supplier(supplier_id) ON DELETE CASCADE,
+    quantity INT,
+    stock_in_date DATE DEFAULT CURRENT_DATE
+);
