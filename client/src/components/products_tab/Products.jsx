@@ -3,12 +3,13 @@ import DataTable from "../shared/DataTable";
 import { MdAddBox } from "react-icons/md";
 import Modal from "../modal/Modal";
 import { IoMdArrowDropdown } from "react-icons/io";
-import { getProducts, getCategories, archiveProduct } from "../../api/products";
+import { createProduct, getProducts, getCategories, getStatus, archiveProduct, updateProduct } from "../../api/products";
 import axios from "axios";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [statuses, setStatus] = useState([]);
   const [error, setError] = useState(null);
 
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -19,17 +20,17 @@ const Products = () => {
   const [product_name, setProductName] = useState("");
   const [product_description, setProductDescription] = useState("");
   const [product_status, setProductStatus] = useState("");
-  const [unit_price, setUnitPrice] = useState("");
   const [product_category, setProductCategory] = useState("");
-  const [image, setImage] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const productsData = await getProducts();
         const categoriesData = await getCategories();
+        const statusData = await getStatus();
         setProducts(productsData);
         setCategories(categoriesData);
+        setStatus(statusData);
       } catch (err) {
         setError("Failed to fetch data");
       }
@@ -38,24 +39,10 @@ const Products = () => {
     fetchData();
   }, []);
 
-  const columns = [
-    { key: "product_id", header: "ID" },
-    { key: "name", header: "Product Name" },
-    { key: "description", header: "Description" },
-    { key: "status", header: "Status" },
-    {
-      key: "unit_price",
-      header: "Price",
-      render: (value) => `₱${value}`,
-    },
-    { key: "product_category", header: "Category" },
-    { key: "image", header: "Image" },
-  ];
-
   const handleSubmit = async (e) => {
     e.preventDefault();
  
-    if (!product_name || !unit_price || !product_description || !product_category) {
+    if (!product_name || !product_status || !product_description || !product_category) {
       alert("Please fill out all required fields.");
       return;
     }
@@ -63,46 +50,24 @@ const Products = () => {
     const formData = new FormData();
     formData.append("name", product_name);
     formData.append("description", product_description);
-    formData.append("status", product_status);
-    formData.append("unit_price", unit_price);
+    formData.append("product_status_id", product_status);
     formData.append("product_category_id", product_category);
-    if (image) {
-      formData.append("image", image);
-    }
-  
+    
     try {
       let response;
 
       if (selectedProduct) {
         // If editing an existing product
-        response = await axios.put(
-          `http://localhost:3001/products/${selectedProduct.product_id}`,
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
-        console.log("Product updated successfully:", response.data);
+        response = await updateProduct(selectedProduct.product_id, formData);
+        console.log("Product updated successfully:", response);
       } else {
         // If adding a new product
-        response = await axios.post(
-          "http://localhost:3001/products",
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
-        console.log("Product added successfully:", response.data);
+        response = await createProduct(formData);
+        console.log("Product created successfully:", response);
       }
-  
+      handleCloseModal();
       const productsData = await getProducts();
       setProducts(productsData);
-      handleCloseModal();
-
     } catch (error) {
       console.error("Error saving product:", error);
       setError("Error saving product. Please try again.");
@@ -114,14 +79,11 @@ const Products = () => {
     setSelectedProduct(product);
     setProductName(product.name || "");
     setProductDescription(product.description || "");
-    setProductStatus(product.status || "");
-    setUnitPrice(product.unit_price || "");
+    setProductStatus(product.product_status_id || "");
     setProductCategory(product.product_category_id || "");
-    setImage(product.image || null);
 
     setIsModalVisible(true);
   };
-
 
   const handleArchiveProduct = async (selectedProduct) => {
     if (!selectedProduct) return;
@@ -130,7 +92,7 @@ const Products = () => {
     if (!isConfirmed) return;
   
     const data = {
-      status: "Archived"
+      product_status_id: 4, // Archived status
     };
   
     try {
@@ -156,28 +118,41 @@ const Products = () => {
     setProductName("");
     setProductDescription("");
     setProductStatus("");
-    setUnitPrice("");
     setProductCategory("");
-    setImage(null);
   };
   
-
   if (error) return <div>{error}</div>;
+
+  const columns = [
+    { key: "product_id", header: "ID" },
+    { key: "name", header: "Product Name" },
+    { key: "description", header: "Description" },
+    { key: "product_category", header: "Category" },
+    { key: "product_status", header: "Status" },
+  ];
 
   // Map category IDs to names
   const categoryMap = categories.reduce((acc, category) => {
-    acc[category.id] = category.name;
+    acc[category.product_category_id] = category.name;
+    return acc;
+  }, {});
+
+  // Map status IDs to descriptions
+  const statusMap = statuses.reduce((acc, status) => {
+    acc[status.status_id] = status.description;
     return acc;
   }, {});
 
   const processedProducts = products
     .map((product) => ({
       ...product,
-      product_category: categoryMap[product.product_category] || "Unknown",
+      product_category: categoryMap[product.product_category_id] || "Unknown", // Map category based on product_category_id
+      product_status: statusMap[product.product_status_id] || "Unknown",    // Map description from statusMap
     }))
     .sort((a, b) => {
-      if (a.status === 'Archived' && b.status !== 'Archived') return 1;
-      if (a.status !== 'Archived' && b.status === 'Archived') return -1;
+      // Sort based on status_id
+      if (a.product_status_id === 4 && b.product_status_id !== 4) return 1;
+      if (a.product_status_id !== 4 && b.product_status_id === 4) return -1;
       return 0;
     });
 
@@ -272,54 +247,28 @@ const Products = () => {
             
             <div className="flex flex-col gap-2">
               <label className="font-bold" htmlFor="status">
-                Status:
+                Product Status:
               </label>
               <div className="relative">
                 <select
-                  name="product_status"
-                  id="product_status"
-                  value={product_status}
-                  onChange={(e) => setProductStatus(e.target.value)}
-                  className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-                >
-                <option value="" disabled>Select Status</option>
-                <option value="Available">Available</option>
-                <option value="Out of Stock">Out of Stock</option>
-                <option value="Discontinued">Discontinued</option>
-              </select>
+                    id="status"
+                    name="product_status_id"
+                    value={product_status}
+                    onChange={(e) => setProductStatus(e.target.value)}
+                    className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+                  >
+                    <option value="">Select Status</option>
+                    {statuses.map((status) => (
+                      <option
+                        key={status.status_id}
+                        value={status.status_id}
+                      >
+                        {status.description}
+                      </option>
+                    ))}
+                  </select>
                 <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2" />
               </div>
-            </div>
-
-
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <label className="font-bold" htmlFor="product_price">
-                  Price per unit:
-                </label>
-                <input
-                  type="text"
-                  name="product_price"
-                  id="product_price"
-                  placeholder="₱0.00"
-                  value={unit_price}
-                  onChange={(e) => setUnitPrice(e.target.value)}
-                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 "
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="product_image">
-                Product Image:
-              </label>
-              <input
-                type="file"
-                name="image"
-                id="product_image"
-                accept="image/*"
-                onChange={(e) => setImage(e.target.files[0])}
-              />
             </div>
 
             <div className="flex flex-row justify-between mt-4">
@@ -342,6 +291,7 @@ const Products = () => {
       </Modal>
 
       {/* Edit Modal */}
+      
       <Modal isVisible={isModalVisible} onClose={handleCloseModal}>
         <form className="p-6" onSubmit={handleSubmit} encType="multipart/form-data">
           {selectedProduct && (
@@ -363,6 +313,7 @@ const Products = () => {
                   className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 "
                 />
               </div>
+
               <div className="flex flex-col gap-2">
                 <label className="font-bold" htmlFor="edit_category">
                   Edit Category:
@@ -410,64 +361,45 @@ const Products = () => {
               </div>
               
               <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="edit_status">
-                Status:
-              </label>
-              <div className="relative">
+                <label className="font-bold" htmlFor="edit_status">
+                  Edit Product Status:
+                </label>
+                <div className="relative">
                 <select
-                  name="product_status"
-                  id="edit_status"
-                  value={product_status}
-                  onChange={(e) => setProductStatus(e.target.value)}
-                  className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+                    id="edit_status"
+                    name="product_status_id"
+                    value={product_status}
+                    onChange={(e) => setProductStatus(e.target.value)}
+                    className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
                 >
-                <option value="Available">Available</option>
-                <option value="Out of Stock">Out of Stock</option>
-                <option value="Discontinued">Discontinued</option>
-                <option value="Archived">Archived</option>
-              </select>
-                <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2" />
-              </div>
-            </div>
-
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-2">
-                  <label className="font-bold" htmlFor="edit_product_price">
-                    Price per unit:
-                  </label>
-                  <input
-                    type="text"
-                    name="product_price"
-                    id="edit_product_price"
-                    placeholder={selectedProduct.unit_price}
-                    value={unit_price}
-                    onChange={(e) => setUnitPrice(e.target.value)}
-                    className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 "
-                  />
+                    <option value="">Select Status</option>
+                    {statuses.map((status) => (
+                      <option
+                        key={status.status_id}
+                        value={status.status_id}
+                      >
+                        {status.description}
+                      </option>
+                    ))}
+                  </select>
+                  <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2" />
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2">
-                <label className="font-bold" htmlFor="edit_product_image">
-                  Product Image:
-                </label>
-                <input
-                  type="file"
-                  name="image"
-                  id="edit_product_image"
-                  accept="image/*"
-                  onChange={(e) => setImage(e.target.files[0])}
-                />
-              </div>
-
-              <div className="flex flex-row justify-end mt-4">
+              <div className="flex flex-row justify-between mt-4">
                 <button
                   type="submit"
                   className="w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-semibold text-white"
                 >
                   Apply Changes
                 </button>
-      
+                <button
+                  type="button"
+                  onClick={handleCloseModal}
+                  className="w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-extrabold text-white"
+                >
+                  Cancel
+                </button>
               </div>
             </div>
           )}

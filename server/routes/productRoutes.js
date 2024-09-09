@@ -4,7 +4,8 @@ const productController = require('../controllers/productController');
 const upload = require('../middlewares/multerConfig');
 
 // PRODUCT
-router.post('/products', upload.array('variation_images', 20), productController.createProductWithVariationsInventory);
+// router.post('/products', upload.array('variation_images', 20), productController.createProductWithVariationsInventory);
+router.post('/products', productController.createProduct); // Create
 router.get('/products', productController.getAllProducts);              // Read all
 router.get('/products/:id', productController.getProductById);          // Read by ID
 router.put('/products/:id', upload.single('image'), productController.updateProduct);           // Update by ID
