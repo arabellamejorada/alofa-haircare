@@ -2,20 +2,20 @@ import axios from './axios';
 
 // PRODUCTS
 
-export const createProductWithInventory = async (productData, inventoryData) => {
-    try {
-        const productResponse = await axios.post('/products', productData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        });
-        const inventoryResponse = await axios.post('/inventory', inventoryData);
-        return { product: productResponse.data, inventory: inventoryResponse.data };
-    } catch (error) {
-        console.error('Error creating product with inventory: ', error);
-        throw error;
-    }
-};
+// export const createProductWithInventory = async (productData, inventoryData) => {
+//     try {
+//         const productResponse = await axios.post('/products', productData, {
+//             headers: {
+//                 'Content-Type': 'multipart/form-data',
+//             },
+//         });
+//         const inventoryResponse = await axios.post('/inventory', inventoryData);
+//         return { product: productResponse.data, inventory: inventoryResponse.data };
+//     } catch (error) {
+//         console.error('Error creating product with inventory: ', error);
+//         throw error;
+//     }
+// };
 
 export const getProducts = async () => {
     try {
@@ -42,9 +42,9 @@ export const createProduct = async (productData) => {
     }
 };
 
-export const updateProduct = async (product) => {
+export const updateProduct = async (productId, productData) => {
     try {
-        const response = await axios.put(`/products/${product.id}`, product);
+        const response = await axios.put(`/products/${productId}`, productData);
         return response.data;
     } catch (error) {
         console.error('Error updating product: ', error);
@@ -86,7 +86,7 @@ export const getCategories = async () => {
 };
 
 // PRODUCT STATUS
-export const getStatuses = async () => {
+export const getStatus = async () => {
     try {
         const response = await axios.get('/product-status');
         console.log('Product statuses fetched: ', response.data);

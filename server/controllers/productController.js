@@ -1,116 +1,148 @@
 const pool = require('../db.js');
 
-// PRODUCTS CRUD + CREATE VARIATION + CREATE INVENTORY
-const createProductWithVariationsInventory = async (req, res) => {
+const createProduct = async (req, res) => {
     const client = await pool.connect();
-    const { name, description, product_category_id, product_status_id, variations } = req.body;
+    const { name, description, product_category_id, product_status_id } = req.body;
+
+    console.log('Request Body:', req.body);
+    if (!name || !description || !product_category_id || !product_status_id) {
+        return res.status(400).json({ message: 'Missing required fields' });
+    }
 
     try {
         await client.query('BEGIN');
 
-        // Insert product (without image at the product level)
-        const productResult = await client.query(
+        const results = await client.query(
             `INSERT INTO product (name, description, product_category_id, product_status_id)
             VALUES ($1, $2, $3, $4)
             RETURNING product_id`,
             [name, description, product_category_id, product_status_id]
         );
-        const product_id = productResult.rows[0].product_id;
 
-        // Ensure variations is an array and not empty
-        if (!Array.isArray(variations) || variations.length === 0) {
-            throw new Error('Invalid variations data');
-        }
+        await client.query('COMMIT'); 
 
-        // Insert each variation
-        for (let i = 0; i < variations.length; i++) {
-            const variation = variations[i];
-
-            // Validate variation fields
-            if (!variation.name || !variation.value || !variation.unit_price || !variation.product_status_id) {
-                throw new Error(`Invalid variation data: ${JSON.stringify(variation)}`);
-            }
-
-            // Get the corresponding uploaded file for the variation
-            const variationImage = req.files && req.files[`variation_${i}_image`] ? req.files[`variation_${i}_image`].filename : '';
-
-            // Generate SKU
-            const sku = generateSKU(name, variation.name, variation.value, product_id);
-
-            // Insert variation with the associated image
-            const variationResult = await client.query(
-                `INSERT INTO product_variation (product_id, name, value, unit_price, product_status_id, sku, image)
-                VALUES ($1, $2, $3, $4, $5, $6, $7)
-                RETURNING variation_id`,
-                [product_id, variation.name, variation.value, variation.unit_price, variation.product_status_id, sku, variationImage]
-            );
-            const variation_id = variationResult.rows[0].variation_id;
-
-            // Insert inventory for the variation
-            const stock_quantity = variation.stock_quantity || 0; // Default to 0 if not provided
-            await client.query(
-                `INSERT INTO inventory (variation_id, stock_quantity, stock_in_date)
-                VALUES ($1, $2, $3)`,
-                [variation_id, stock_quantity, new Date()]
-            );
-        }
-
-        await client.query('COMMIT');
-        res.status(201).json({ message: 'Product, variations, and inventory created successfully', product_id });
+        res.status(201).json({ message: 'Product added', product_id: results.rows[0].product_id });
     } catch (error) {
-        await client.query('ROLLBACK');
-        console.error('Transaction error:', error);
-        res.status(500).json({ message: 'Error creating product, variations, and inventory', error: error.message });
+        await client.query('ROLLBACK'); 
+        console.error('Error creating product:', error);
+        res.status(500).json({ message: 'Error creating product', error: error.message });
     } finally {
         client.release();
     }
 };
 
-// Generate SKU with abbreviation mappings
-const generateSKU = (product_name, variation_type, variation_value, counter) => {
-    const abbreviationMap = {
-        'Name': {
-            'Flower Hair Clip': 'FHC',
-            'Mini Flower Hair Clip': 'MFH',
-            'Orchid Hair Clamp': 'OHC',
-            'Hair Oil': 'OIL',
-            'Bamboo Brush': 'BRS',
-            'Hair Mist': 'MST',
-            'Scalp Massager': 'MSG',
-            'Jade Comb': 'CMB'
-        },
-        'Color': {
-            'Sunrise': 'SUNR',
-            'Sunset': 'SUNS',
-            'Seaside': 'SEAS',
-            'Blossom': 'BLOS',
-            'Meadow': 'MEAD',
-            'Midnight': 'MIDN',
-            'Clementine': 'CLEM',
-            'Lilac': 'LILA',
-            'Moss': 'MOSS',
-            'Shoreline': 'SHOR'
-        },
-        'Size': {
-            '30mL': '30ML',
-            '50mL': '50ML',
-            '60mL': '60ML'
-        }
-    };
+
+// // PRODUCTS CRUD + CREATE VARIATION + CREATE INVENTORY
+// const createProductWithVariationsInventory = async (req, res) => {
+//     const client = await pool.connect();
+//     const { name, description, product_category_id, product_status_id, variations } = req.body;
+
+//     try {
+//         await client.query('BEGIN');
+
+//         // Insert product (without image at the product level)
+//         const productResult = await client.query(
+//             `INSERT INTO product (name, description, product_category_id, product_status_id)
+//             VALUES ($1, $2, $3, $4)
+//             RETURNING product_id`,
+//             [name, description, product_category_id, product_status_id]
+//         );
+//         const product_id = productResult.rows[0].product_id;
+
+//         // Ensure variations is an array and not empty
+//         if (!Array.isArray(variations) || variations.length === 0) {
+//             throw new Error('Invalid variations data');
+//         }
+
+//         // Insert each variation
+//         for (let i = 0; i < variations.length; i++) {
+//             const variation = variations[i];
+
+//             // Validate variation fields
+//             if (!variation.name || !variation.value || !variation.unit_price || !variation.product_status_id) {
+//                 throw new Error(`Invalid variation data: ${JSON.stringify(variation)}`);
+//             }
+
+//             // Get the corresponding uploaded file for the variation
+//             const variationImage = req.files && req.files[`variation_${i}_image`] ? req.files[`variation_${i}_image`].filename : '';
+
+//             // Generate SKU
+//             const sku = generateSKU(name, variation.name, variation.value, product_id);
+
+//             // Insert variation with the associated image
+//             const variationResult = await client.query(
+//                 `INSERT INTO product_variation (product_id, name, value, unit_price, product_status_id, sku, image)
+//                 VALUES ($1, $2, $3, $4, $5, $6, $7)
+//                 RETURNING variation_id`,
+//                 [product_id, variation.name, variation.value, variation.unit_price, variation.product_status_id, sku, variationImage]
+//             );
+//             const variation_id = variationResult.rows[0].variation_id;
+
+//             // Insert inventory for the variation
+//             const stock_quantity = variation.stock_quantity || 0; // Default to 0 if not provided
+//             await client.query(
+//                 `INSERT INTO inventory (variation_id, stock_quantity, stock_in_date)
+//                 VALUES ($1, $2, $3)`,
+//                 [variation_id, stock_quantity, new Date()]
+//             );
+//         }
+
+//         await client.query('COMMIT');
+//         res.status(201).json({ message: 'Product, variations, and inventory created successfully', product_id });
+//     } catch (error) {
+//         await client.query('ROLLBACK');
+//         console.error('Transaction error:', error);
+//         res.status(500).json({ message: 'Error creating product, variations, and inventory', error: error.message });
+//     } finally {
+//         client.release();
+//     }
+// };
+
+// // Generate SKU with abbreviation mappings
+// const generateSKU = (product_name, variation_type, variation_value, counter) => {
+//     const abbreviationMap = {
+//         'Name': {
+//             'Flower Hair Clip': 'FHC',
+//             'Mini Flower Hair Clip': 'MFH',
+//             'Orchid Hair Clamp': 'OHC',
+//             'Hair Oil': 'OIL',
+//             'Bamboo Brush': 'BRS',
+//             'Hair Mist': 'MST',
+//             'Scalp Massager': 'MSG',
+//             'Jade Comb': 'CMB'
+//         },
+//         'Color': {
+//             'Sunrise': 'SUNR',
+//             'Sunset': 'SUNS',
+//             'Seaside': 'SEAS',
+//             'Blossom': 'BLOS',
+//             'Meadow': 'MEAD',
+//             'Midnight': 'MIDN',
+//             'Clementine': 'CLEM',
+//             'Lilac': 'LILA',
+//             'Moss': 'MOSS',
+//             'Shoreline': 'SHOR'
+//         },
+//         'Size': {
+//             '30mL': '30ML',
+//             '50mL': '50ML',
+//             '60mL': '60ML'
+//         }
+//     };
     
-    // Convert product name and variation type to abbreviation
-    const productAbbreviation = abbreviationMap['Name'][product_name] || product_name.toUpperCase().slice(0, 3);
-    const variationAbbreviation = abbreviationMap[variation_type]?.[variation_value] || variation_value.toUpperCase().slice(0, 3);
+//     // Convert product name and variation type to abbreviation
+//     const productAbbreviation = abbreviationMap['Name'][product_name] || product_name.toUpperCase().slice(0, 3);
+//     const variationAbbreviation = abbreviationMap[variation_type]?.[variation_value] || variation_value.toUpperCase().slice(0, 3);
     
-    // Ensure counter is 4 digits
-    const formattedCounter = String(counter).padStart(4, '0');
+//     // Ensure counter is 4 digits
+//     const formattedCounter = String(counter).padStart(4, '0');
     
-    // Generate SKU in the format: PRODUCTABBREVIATION-VARIATIONABBREVIATION-COUNTER
-    const sku = `${productAbbreviation}${variationAbbreviation}${formattedCounter}`;
+//     // Generate SKU in the format: PRODUCTABBREVIATION-VARIATIONABBREVIATION-COUNTER
+//     const sku = `${productAbbreviation}${variationAbbreviation}${formattedCounter}`;
     
-    console.log("Generated SKU:", sku);
-    return sku;
-};  
+//     console.log("Generated SKU:", sku);
+//     return sku;
+// };  
 
 const getAllProducts = async (req, res) => {
     const client = await pool.connect();
@@ -156,7 +188,7 @@ const updateProduct = async (req, res) => {
                 description = COALESCE($2, description),
                 product_status_id = COALESCE($3, product_status_id),
                 product_category_id = COALESCE($4, product_category_id)
-            WHERE product_id = $7
+            WHERE product_id = $5
             RETURNING *;
         `;
 
@@ -508,7 +540,7 @@ const deleteProductVariation = async (req, res) => {
 };
 
 module.exports = {
-    createProductWithVariationsInventory,
+    createProduct,
     getAllProducts,
     getProductById,
     updateProduct,
