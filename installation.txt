@@ -23,6 +23,9 @@ cd products-page
 npm install react-router-dom
 npm install react-query
 npm install styled-components
+npm install react-icons --save
+
+// npm run dev
 
 
 Database:
