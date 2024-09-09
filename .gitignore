@@ -33,3 +33,4 @@ checklist.txt
 yarn.lock
 ``
 public/uploads/
+server/db.js
