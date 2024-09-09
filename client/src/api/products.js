@@ -85,6 +85,17 @@ export const getCategories = async () => {
     }
 };
 
+// PRODUCT STATUS
+export const getStatuses = async () => {
+    try {
+        const response = await axios.get('/product-status');
+        console.log('Product statuses fetched: ', response.data);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching product statuses: ', error);
+        throw error;
+    }
+};
 
 // INVENTORY
 export const getInventory = async () => {
@@ -124,6 +135,18 @@ export const deleteInventory = async (inventoryId) => {
         return response.data;
     } catch (error) {
         console.error('Error deleting inventory: ', error);
+        throw error;
+    }
+};
+
+// GET PRODUCT VARIATIONS
+export const getProductVariations = async () => {
+    try {
+        const response = await axios.get('/product-variations');
+        console.log('Product variations fetched: ', response.data);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching product variations: ', error);
         throw error;
     }
 };

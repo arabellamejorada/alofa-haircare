@@ -6,6 +6,8 @@ const roleRoutes = require('./routes/roleRoutes.js');
 const employeeRoutes = require('./routes/employeeRoutes.js');
 const customerRoutes = require('./routes/customerRoutes.js');
 const userAccountRoutes = require('./routes/userAccountRoutes.js');
+const inventoryRoutes = require('./routes/inventoryRoutes.js');
+const supplierRoutes = require('./routes/supplierRoutes.js');
 
 app.use(cors({
     origin: 'http://localhost:3000',
@@ -20,7 +22,8 @@ app.use('/', roleRoutes);
 app.use('/', employeeRoutes);
 app.use('/', customerRoutes);
 app.use('/', userAccountRoutes);
-
+app.use('/', inventoryRoutes);
+app.use('/', supplierRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 3001;
