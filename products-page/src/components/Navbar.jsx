@@ -1,44 +1,34 @@
-// import { Link } from 'react-router-dom';
+import { FaUserAlt, FaShoppingCart } from "react-icons/fa";
+import logo from "/images/alofa-logo.png";
 
-// const Navbar = () => {
-//   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+const Navbar = () => {
 
-//   const handleDropdownToggle = () => {
-//     setIsDropdownOpen(!isDropdownOpen);
-//   };
+  return (
+    <header className="bg-white shadow-md py-4">
+        <nav className="container mx-auto flex justify-between items-center px-4 md:py-4 pt-6 pb-3">
 
-//   return (
-//     <nav className="navbar bg-gray-100 shadow-md">
-//       <div className="container mx-auto px-4 py-3">
-//         <div className="flex justify-between items-center">
-//           <div className="flex space-x-4">
-//             <Link to="/" className="text-pink-500 font-bold text-2xl">Alofa</Link>
-//             <Link to="/" className="hover:text-pink-500">Home</Link>
-//             <Link to="/products" className="hover:text-pink-500">Products</Link>
-//             <Link to="/faqs" className="hover:text-pink-500">FAQs</Link>
-//           </div>
-//           <div className="flex space-x-2">
-//             <button className="text-pink-500 hover:text-pink-700">Login</button>
-//             <button className="text-pink-500 hover:text-pink-700">Sign Up</button>
-//             <div className="relative">
-//               <button className="text-pink-500 hover:text-pink-700" onClick={handleDropdownToggle}>
-//                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
-//                   <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 15.75l-2.25-2.25m0 0l-2.25-2.25m0 0l-2.25-2.25m6.75 6.75l-2.25-2.25m0 0l-2.25-2.25m0 0l-2.25-2.25" />
-//                 </svg>
-//               </button>
-//               <div className={`absolute right-0 top-full ${isDropdownOpen ? 'block' : 'hidden'} bg-white rounded-lg shadow-md`}>
-//                 <ul className="py-2">
-//                   <li className="px-4 py-2 hover:bg-gray-200">Item 1</li>
-//                   <li className="px-4 py-2 hover:bg-gray-200">Item 2</li>
-//                   <li className="px-4 py-2 hover:bg-gray-200">Item 3</li>
-//                 </ul>
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-//     </nav>
-//   );
-// };
+          {/* logo */}
+          <a href="/"><img src={logo} alt="" /></a>
 
-// export default Navbar;
+          {/* navigation pages */}
+          <div className="text-lg text-alofa-pink sm:flex items-center gap-8 hidden">
+            <a href="/" className="flex items-center gap-2">Home</a>
+            <p>|</p>
+            <a href="/" className="flex items-center gap-2">Products</a>
+            <p>|</p>
+            <a href="/" className="flex items-center gap-2">FAQs</a>
+          </div>
+
+          {/* acc & cart button */}
+          <div className="text-lg text-alofa-pink sm:flex items-center gap-4 hidden">
+            <a href="/" className="flex items-center gap-2"><FaUserAlt />Login</a>
+            <p>|</p>
+            <a href="/" className="flex items-center gap-2"> Sign Up</a>
+            <a href="/"><FaShoppingCart /></a>
+          </div>
+        </nav>
+    </header>
+  )
+}
+
+export default Navbar
