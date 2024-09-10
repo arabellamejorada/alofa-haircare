@@ -13,20 +13,25 @@ const Navbar = () => {
           <a href="/"><img src={logo} alt="" /></a>
 
           {/* navigation pages */}
-          <div className="text-lg text-alofa-pink sm:flex items-center gap-8 hidden">
-            <Link to="./Home" className="flex items-center gap-2">Home</Link>
+          <div className="text-lg font-semibold text-alofa-pink sm:flex items-center gap-8 hidden">
+            <Link to="/home" className="items-baseline gap-2">Home</Link>
             {/* <p>|</p> */}
-            <Link to="/login" className="flex items-center gap-2">Products</Link>
+            <Link to="/products" className="hover:text-black flex items-baseline gap-2">Products</Link>
             {/* <p>|</p> */}
-            <a href="/" className="hover:text-black flex items-center gap-2">FAQs</a>
+            <a href="/frequently-asked-questions" className="hover:text-black flex items-baseline gap-2">FAQs</a>
           </div>
 
           {/* acc & cart button */}
           <div className="text-lg text-alofa-pink sm:flex items-center gap-4 hidden">
-            <a href="/" className="hover:text-black flex items-center gap-2"><FaUserAlt />Login</a>
+            <p><FaUserAlt /></p>
+            <a href="/" className="hover:text-black flex items-center gap-2">Login</a>
             <p>|</p>
             <a href="/" className="hover:text-black flex items-center gap-2">Sign Up</a>
-            <a href="/"><FaShoppingCart /></a>
+            <a href="/" className="flex items-center gap-5">
+                <div className="text-[#FE699F] p-3 rounded-full transition-colors duration-300 hover:bg-[#FE699F] hover:text-white">
+                <FaShoppingCart/>
+                </div>
+            </a>
           </div>
         </nav>
     </header>
