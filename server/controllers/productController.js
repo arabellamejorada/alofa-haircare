@@ -18,7 +18,6 @@ const createProduct = async (req, res) => {
             RETURNING product_id`,
             [name, description, product_category_id, product_status_id]
         );
-
         await client.query('COMMIT'); 
 
         res.status(201).json({ message: 'Product added', product_id: results.rows[0].product_id });
