@@ -46,6 +46,12 @@ export const DASHBOARD_SIDEBAR_LINKS = [
     path: "/employees",
     icon: <HiOutlineUsers />,
   },
+  {
+    key: "suppliers",
+    label: "Suppliers",
+    path: "/suppliers",
+    icon: <HiOutlineUsers />,
+  }
 ];
 
 export const DASHBOARD_SIDEBAR_BOTTOM_LINKS = [

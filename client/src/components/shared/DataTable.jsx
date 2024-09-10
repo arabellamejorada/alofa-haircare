@@ -40,7 +40,6 @@ const DataTable = ({ data, columns, onEdit, onArchive }) => {
               <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                 Actions
               </th>
-              {/* New column for the "Edit" button */}
             </tr>
           </thead>
 
@@ -48,7 +47,7 @@ const DataTable = ({ data, columns, onEdit, onArchive }) => {
             {data.map((item, index) => (
               <tr
                 key={index}
-                className={item.status_id === 3 ? 'bg-gray-200' : ''}
+                className={item.status_id === 3 || item.status === 'Archived' || item.product_status_id === 4 ? 'bg-gray-200' : ''}
               >
                 {columns.map((column) => (
                   <td

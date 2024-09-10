@@ -1,55 +1,148 @@
 const pool = require('../db.js');
 
-// PRODUCTS CRUD + INVENTORY CREATE
-const createProductWithInventory = async (req, res) => {
+const createProduct = async (req, res) => {
     const client = await pool.connect();
-    const { name, description, status, unit_price, product_category_id } = req.body;
-    const image = req.file ? req.file.filename : '';
-    const stock_quantity = 0; // Default stock quantity
-    
-    console.log("Request Body:", req.body);
-    console.log("Uploaded File:", req.file);
+    const { name, description, product_category_id, product_status_id } = req.body;
+
+    console.log('Request Body:', req.body);
+    if (!name || !description || !product_category_id || !product_status_id) {
+        return res.status(400).json({ message: 'Missing required fields' });
+    }
 
     try {
         await client.query('BEGIN');
 
-        // Insert product
-        const productResult = await client.query(
-            `INSERT INTO product (name, description, status, unit_price, image, product_category_id)
-            VALUES ($1, $2, $3, $4, $5, $6)
+        const results = await client.query(
+            `INSERT INTO product (name, description, product_category_id, product_status_id)
+            VALUES ($1, $2, $3, $4)
             RETURNING product_id`,
-            [name, description, status, unit_price, image, product_category_id]
-        );
-        const product_id = productResult.rows[0].product_id;
-
-        // Insert inventory
-        const inventoryResult = await client.query(
-            `INSERT INTO inventory (stock_quantity, product_id)
-            VALUES ($1, $2)
-            RETURNING inventory_id, stock_in_date`,
-            [stock_quantity, product_id]
-        );
-        const inventory_id = inventoryResult.rows[0].inventory_id;
-
-            // Update product with inventory_id
-        await client.query(
-            `UPDATE product 
-            SET inventory_id = $1 
-            WHERE product_id = $2`,
-            [inventory_id, product_id]
+            [name, description, product_category_id, product_status_id]
         );
 
-        await client.query('COMMIT');
+        await client.query('COMMIT'); 
 
-        res.status(201).json({ message: 'Product and inventory created successfully', product_id, inventory_id });
+        res.status(201).json({ message: 'Product added', product_id: results.rows[0].product_id });
     } catch (error) {
-        await client.query('ROLLBACK');
-        console.error('Transaction error:', error);
-        res.status(500).json({ message: 'Error creating product and inventory', error: error.message });
+        await client.query('ROLLBACK'); 
+        console.error('Error creating product:', error);
+        res.status(500).json({ message: 'Error creating product', error: error.message });
     } finally {
         client.release();
     }
 };
+
+
+// // PRODUCTS CRUD + CREATE VARIATION + CREATE INVENTORY
+// const createProductWithVariationsInventory = async (req, res) => {
+//     const client = await pool.connect();
+//     const { name, description, product_category_id, product_status_id, variations } = req.body;
+
+//     try {
+//         await client.query('BEGIN');
+
+//         // Insert product (without image at the product level)
+//         const productResult = await client.query(
+//             `INSERT INTO product (name, description, product_category_id, product_status_id)
+//             VALUES ($1, $2, $3, $4)
+//             RETURNING product_id`,
+//             [name, description, product_category_id, product_status_id]
+//         );
+//         const product_id = productResult.rows[0].product_id;
+
+//         // Ensure variations is an array and not empty
+//         if (!Array.isArray(variations) || variations.length === 0) {
+//             throw new Error('Invalid variations data');
+//         }
+
+//         // Insert each variation
+//         for (let i = 0; i < variations.length; i++) {
+//             const variation = variations[i];
+
+//             // Validate variation fields
+//             if (!variation.name || !variation.value || !variation.unit_price || !variation.product_status_id) {
+//                 throw new Error(`Invalid variation data: ${JSON.stringify(variation)}`);
+//             }
+
+//             // Get the corresponding uploaded file for the variation
+//             const variationImage = req.files && req.files[`variation_${i}_image`] ? req.files[`variation_${i}_image`].filename : '';
+
+//             // Generate SKU
+//             const sku = generateSKU(name, variation.name, variation.value, product_id);
+
+//             // Insert variation with the associated image
+//             const variationResult = await client.query(
+//                 `INSERT INTO product_variation (product_id, name, value, unit_price, product_status_id, sku, image)
+//                 VALUES ($1, $2, $3, $4, $5, $6, $7)
+//                 RETURNING variation_id`,
+//                 [product_id, variation.name, variation.value, variation.unit_price, variation.product_status_id, sku, variationImage]
+//             );
+//             const variation_id = variationResult.rows[0].variation_id;
+
+//             // Insert inventory for the variation
+//             const stock_quantity = variation.stock_quantity || 0; // Default to 0 if not provided
+//             await client.query(
+//                 `INSERT INTO inventory (variation_id, stock_quantity, stock_in_date)
+//                 VALUES ($1, $2, $3)`,
+//                 [variation_id, stock_quantity, new Date()]
+//             );
+//         }
+
+//         await client.query('COMMIT');
+//         res.status(201).json({ message: 'Product, variations, and inventory created successfully', product_id });
+//     } catch (error) {
+//         await client.query('ROLLBACK');
+//         console.error('Transaction error:', error);
+//         res.status(500).json({ message: 'Error creating product, variations, and inventory', error: error.message });
+//     } finally {
+//         client.release();
+//     }
+// };
+
+// // Generate SKU with abbreviation mappings
+// const generateSKU = (product_name, variation_type, variation_value, counter) => {
+//     const abbreviationMap = {
+//         'Name': {
+//             'Flower Hair Clip': 'FHC',
+//             'Mini Flower Hair Clip': 'MFH',
+//             'Orchid Hair Clamp': 'OHC',
+//             'Hair Oil': 'OIL',
+//             'Bamboo Brush': 'BRS',
+//             'Hair Mist': 'MST',
+//             'Scalp Massager': 'MSG',
+//             'Jade Comb': 'CMB'
+//         },
+//         'Color': {
+//             'Sunrise': 'SUNR',
+//             'Sunset': 'SUNS',
+//             'Seaside': 'SEAS',
+//             'Blossom': 'BLOS',
+//             'Meadow': 'MEAD',
+//             'Midnight': 'MIDN',
+//             'Clementine': 'CLEM',
+//             'Lilac': 'LILA',
+//             'Moss': 'MOSS',
+//             'Shoreline': 'SHOR'
+//         },
+//         'Size': {
+//             '30mL': '30ML',
+//             '50mL': '50ML',
+//             '60mL': '60ML'
+//         }
+//     };
+    
+//     // Convert product name and variation type to abbreviation
+//     const productAbbreviation = abbreviationMap['Name'][product_name] || product_name.toUpperCase().slice(0, 3);
+//     const variationAbbreviation = abbreviationMap[variation_type]?.[variation_value] || variation_value.toUpperCase().slice(0, 3);
+    
+//     // Ensure counter is 4 digits
+//     const formattedCounter = String(counter).padStart(4, '0');
+    
+//     // Generate SKU in the format: PRODUCTABBREVIATION-VARIATIONABBREVIATION-COUNTER
+//     const sku = `${productAbbreviation}${variationAbbreviation}${formattedCounter}`;
+    
+//     console.log("Generated SKU:", sku);
+//     return sku;
+// };  
 
 const getAllProducts = async (req, res) => {
     const client = await pool.connect();
@@ -85,32 +178,24 @@ const getProductById = async (req, res) => {
 const updateProduct = async (req, res) => {
     const client = await pool.connect();
     const product_id = parseInt(req.params.id);
-    const { name, description, unit_price, status, product_category_id } = req.body;
-    const image = req.file ? req.file.path : null; 
+    const { name, description, product_status_id, product_category_id } = req.body;
 
-    console.log ('Request Body:', req.body);
-    console.log ('Uploaded Image:', image);
-    
     try {
         const query = `
             UPDATE product
             SET
                 name = COALESCE($1, name),
                 description = COALESCE($2, description),
-                unit_price = COALESCE($3, unit_price),
-                image = COALESCE($4, image),
-                status = COALESCE($5, status),
-                product_category_id = COALESCE($6, product_category_id)
-            WHERE product_id = $7
+                product_status_id = COALESCE($3, product_status_id),
+                product_category_id = COALESCE($4, product_category_id)
+            WHERE product_id = $5
             RETURNING *;
         `;
 
         const values = [
             name || null,
             description || null,
-            unit_price || null,
-            image || null,
-            status || null,
+            product_status_id || null,
             product_category_id || null,
             product_id
         ];
@@ -139,7 +224,7 @@ const archiveProduct = async (req, res) => {
     try {
         const results = await client.query(
             `UPDATE product
-            SET status = 'Archived'
+            SET product_status_id = 4
             WHERE product_id = $1
             RETURNING *`,
             [product_id]
@@ -176,6 +261,91 @@ const deleteProduct = async (req, res) => {
     } catch (error) {
         console.error('Error deleting product:', error);
         res.status(500).json({ message: 'Error deleting product', error: error.message });
+    } finally {
+        client.release();
+    }
+};
+
+
+// PRODUCT STATUS CRUD
+const getAllProductStatus = async (req, res) => {
+    const client = await pool.connect();
+
+    try {
+        const results = await client.query('SELECT * FROM product_status');
+        res.status(200).json(results.rows);
+    } catch (error) {
+        console.error('Error fetching product statuses:', error);
+        res.status(500).json({ message: 'Error fetching product statuses', error: error.message });
+    } finally {
+        client.release();
+    }
+};
+
+const getProductStatusById = async (req, res) => {
+    const client = await pool.connect();
+    const product_status_id = parseInt(req.params.id);
+
+    try {
+        const results = await client.query('SELECT * FROM product_status WHERE product_status_id = $1', [product_status_id]);
+        if (results.rows.length === 0) {
+            return res.status(404).json({ message: 'Product status not found' });
+        }
+        res.status(200).json(results.rows[0]);
+    } catch (error) {
+        console.error('Error fetching product status:', error);
+        res.status(500).json({ message: 'Error fetching product status', error: error.message });
+    } finally {
+        client.release();
+    }
+};
+
+const updateProductStatus = async (req, res) => {
+    const client = await pool.connect();
+    const product_status_id = parseInt(req.params.id);
+    const { status } = req.body;
+
+    try {
+        const results = await client.query(
+            `UPDATE product_status
+            SET status = $1 WHERE product_status_id = $2
+            RETURNING *`,
+            [status, product_status_id]
+        );
+
+        if (results.rows.length === 0) {
+            return res.status(404).json({ message: 'Product status not found' });
+        }
+
+        res.status(200).json(results.rows[0]);
+    } catch (error) {
+        console.error('Error updating product status:', error);
+        res.status(500).json({ message: 'Error updating product status', error: error.message });
+    } finally {
+        client.release();
+    }
+};
+
+const deleteProductStatus = async (req, res) => {
+    const client = await pool.connect();
+    const product_status_id = parseInt(req.params.id);
+
+    try {
+        const results = await client.query(
+            `DELETE FROM product_status
+            WHERE product_status_id = $1
+            RETURNING product_status_id`,
+            [product_status_id]
+        );
+
+        if (results.rowCount === 0) {
+            return res.status(404).json({ message: 'Product status not found' });
+        }
+
+        res.status(200).send(`Product status deleted with ID: ${product_status_id}`);
+    } catch (error) {
+        console.error('Error deleting product status:', error);
+        res.status(500).json({ message: 'Error deleting product status', error: error.message });
     } finally {
         client.release();
     }
@@ -284,126 +454,109 @@ const deleteProductCategory = async (req, res) => {
     }
 };
 
-// INVENTORY RUD
-const getAllInventories = async (req, res) => {
+// PRODUCT VARIATIONS RUD
+const getAllProductVariations = async (req, res) => {
     const client = await pool.connect();
 
     try {
-        const results = await client.query('SELECT * FROM inventory ORDER BY inventory_id ASC');
+        const results = await client.query('SELECT * FROM product_variation');
         res.status(200).json(results.rows);
     } catch (error) {
-        console.error('Error getting all inventory:', error);
-        res.status(500).json({ message: 'Error getting all inventory ', error: error.message});
+        console.error('Error fetching product variations:', error);
+        res.status(500).json({ message: 'Error fetching product variations', error: error.message });
     } finally {
         client.release();
     }
 };
 
-const getInventoryById = async (req, res) => {
+const getProductVariationById = async (req, res) => {
     const client = await pool.connect();
-    const inventory_id = parseInt(req.params.id);
+    const variation_id = parseInt(req.params.id);
 
     try {
-        const results = await client.query('SELECT * FROM inventory WHERE inventory_id = $1', [inventory_id]);
+        const results = await client.query('SELECT * FROM product_variation WHERE variation_id = $1', [variation_id]);
         if (results.rows.length === 0) {
-            return res.status(404).json({ message: 'Inventory not found' });
+            return res.status(404).json({ message: 'Product variation not found' });
         }
         res.status(200).json(results.rows[0]);
     } catch (error) {
-        console.error('Error fetching inventory:', error);
-        res.status(500).json({ message: 'Error fetching inventory', error: error.message });
+        console.error('Error fetching product variation:', error);
+        res.status(500).json({ message: 'Error fetching product variation', error: error.message });
     } finally {
         client.release();
     }
 };
 
-const updateInventory = async (req, res) => {
+const updateProductVariation = async (req, res) => {
     const client = await pool.connect();
-    const { product_id, stock_quantity } = req.body;
+    const variation_id = parseInt(req.params.id);
+    const { name, value, unit_price } = req.body;
 
     try {
-        // Validate stock_quantity and convert to integer
-        const quantity = parseInt(stock_quantity, 10);
-        if (isNaN(quantity) || quantity <= 0) {
-            return res.status(400).json({ message: 'Invalid stock quantity' });
-        }
-
-        // Fetch the current stock quantity
-        const inventoryResults = await client.query(
-            `SELECT stock_quantity 
-             FROM inventory 
-             WHERE product_id = $1`,
-            [product_id]
-        );
-
-        if (inventoryResults.rows.length === 0) {
-            return res.status(404).json({ message: 'Product not found in inventory' });
-        }
-
-        const currentStockQuantity = inventoryResults.rows[0].stock_quantity;
-
-        // Update inventory with the new stock quantity
         const results = await client.query(
-            `UPDATE inventory 
-             SET stock_quantity = $1, 
-                 stock_in_date = CURRENT_TIMESTAMP
-             WHERE product_id = $2
-             RETURNING *`,
-            [currentStockQuantity + quantity, product_id]
+            `UPDATE product_variation
+            SET name = $1, value = $2, unit_price = $3
+            WHERE variation_id = $4
+            RETURNING *`,
+            [name, value, unit_price, variation_id]
         );
 
         if (results.rows.length === 0) {
-            return res.status(404).json({ message: 'Inventory not found' });
+            return res.status(404).json({ message: 'Product variation not found' });
         }
 
         res.status(200).json(results.rows[0]);
     } catch (error) {
-        console.error('Error updating inventory:', error);
-        res.status(500).json({ message: 'Error updating inventory', error: error.message });
+        console.error('Error updating product variation:', error);
+        res.status(500).json({ message: 'Error updating product variation', error: error.message });
     } finally {
         client.release();
     }
 };
 
-
-const deleteInventory = async (req, res) => {
+const deleteProductVariation = async (req, res) => {
     const client = await pool.connect();
-    const inventory_id = parseInt(req.params.id);
+    const variation_id = parseInt(req.params.id);
 
     try {
         const results = await client.query(
-            `DELETE FROM inventory 
-            WHERE inventory_id = $1 
-            RETURNING inventory_id`, 
-            [inventory_id]);    
+            `DELETE FROM product_variation 
+            WHERE variation_id = $1 
+            RETURNING variation_id`,
+            [variation_id]
+        );
 
         if (results.rowCount === 0) {
-            return res.status(404).json({ message: 'Inventory not found' });
+            return res.status(404).json({ message: 'Product variation not found' });
         }
-        res.status(200).send(`Inventory  deleted with ID: ${inventory_id}`);
-    }
-    catch (error) {
-        console.error('Error deleting inventory:', error);
-        res.status(500).json({ message: 'Error deleting inventory', error: error.message });
+
+        res.status(200).send(`Product variation deleted with ID: ${variation_id}`);
+    } catch (error) {
+        console.error('Error deleting product variation:', error);
+        res.status(500).json({ message: 'Error deleting product variation', error: error.message });
     } finally {
         client.release();
     }
 };
 
 module.exports = {
-    createProductWithInventory,
+    createProduct,
     getAllProducts,
     getProductById,
     updateProduct,
     archiveProduct,
     deleteProduct,
+    getAllProductStatus,
+    getProductStatusById,
+    updateProductStatus,
+    deleteProductStatus,
     createProductCategory,
     getAllProductCategories,
     getProductCategoryById,
     updateProductCategory,
     deleteProductCategory,
-    getAllInventories,
-    getInventoryById,
-    updateInventory,
-    deleteInventory
+    getAllProductVariations,
+    getProductVariationById,
+    updateProductVariation,
+    deleteProductVariation
 };

@@ -35,10 +35,9 @@ run the alofa-sql.db
 
 
 To run:
-npm start
+npm start (both client and server)
 
 FAQS:
 common errors:
 1. if meron na existing naga run sa post 3000 (for example), do this:
-Identify the PID using the following command:
     npx kill-port 3000 3001
