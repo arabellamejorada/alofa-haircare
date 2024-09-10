@@ -6,7 +6,7 @@ const Navbar = () => {
 
   return (
     <header 
-      className="bg-white shadow-md py-2">
+      className="bg-white shadow-md py-2px">
         <nav className="container mx-auto flex justify-between items-center px-4 md:py-2 pt-3 pb-2">
 
           {/* logo */}
@@ -16,7 +16,7 @@ const Navbar = () => {
           <div className="text-lg text-alofa-pink sm:flex items-center gap-8 hidden">
             <Link to="./Home" className="flex items-center gap-2">Home</Link>
             {/* <p>|</p> */}
-            <a href="/" className="hover:text-black flex items-center gap-2">Products</a>
+            <Link to="/login" className="flex items-center gap-2">Products</Link>
             {/* <p>|</p> */}
             <a href="/" className="hover:text-black flex items-center gap-2">FAQs</a>
           </div>
