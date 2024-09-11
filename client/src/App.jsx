@@ -5,6 +5,9 @@ import Products from "./components/products_tab/Products";
 import Inventory from "./components/inventory_tab/Inventory";
 import Employees from "./components/employee_tab/Employees";
 import Suppliers from "./components/supplier_tab/Suppliers";
+import ProductVariations from "./components/products_tab/ProductVariations";
+import ProductCategories from "./components/products_tab/ProductCategories";
+import StockIn from "./components/inventory_tab/StockIn";
 
 function App() {
   return (
@@ -14,9 +17,12 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<Dashboard />} />
           <Route path="products" element={<Products />} />
+          <Route path="productvariations" element={<ProductVariations />} />
+          <Route path="productcategories" element={<ProductCategories />} />
           <Route path="inventory" element={<Inventory />} />
-          <Route path="employees" element={<Employees />} />
+          <Route path="stockin" element={<StockIn />} />
           <Route path="suppliers" element={<Suppliers />} />
+          <Route path="employees" element={<Employees />} />
         </Route>
         <Route path="login" element={<div>Login Page</div>}></Route>
       </Routes>

@@ -4,6 +4,9 @@ import { Link, useLocation } from "react-router-dom";
 import {
   DASHBOARD_SIDEBAR_BOTTOM_LINKS,
   DASHBOARD_SIDEBAR_LINKS,
+  PRODUCT_SIDEBAR_LINKS,
+  INVENTORY_SIDEBAR_LINKS,
+  EMPLOYEE_SIDEBAR_LINKS,
 } from "../lib/consts/navigation";
 import { HiOutlineLogout } from "react-icons/hi";
 
@@ -18,10 +21,28 @@ export default function Sidebar() {
         <spn className="text-white text-7xl font-title ">Alofa</spn>
       </div>
       <div className="flex-1 px-5 py-8 flex flex-col gap-0.5">
-        {DASHBOARD_SIDEBAR_LINKS.map((item) => (
-          <SidebarLink key={item.key} item={item} />
-        ))}
+        <div>
+          {DASHBOARD_SIDEBAR_LINKS.map((item) => (
+            <SidebarLink key={item.key} item={item} />
+          ))}
+        </div>
+        <div className="pt-5">
+          {PRODUCT_SIDEBAR_LINKS.map((item) => (
+            <SidebarLink key={item.key} item={item} />
+          ))}
+        </div>
+        <div className="pt-5">
+          {INVENTORY_SIDEBAR_LINKS.map((item) => (
+            <SidebarLink key={item.key} item={item} />
+          ))}
+        </div>
+        <div className="pt-5">
+          {EMPLOYEE_SIDEBAR_LINKS.map((item) => (
+            <SidebarLink key={item.key} item={item} />
+          ))}
+        </div>
       </div>
+
       <div className="flex flex-col px-5 gap-0.5 pt-2 border-t-2 border-pink-400">
         {DASHBOARD_SIDEBAR_BOTTOM_LINKS.map((item) => (
           <SidebarLink key={item.key} item={item} />
