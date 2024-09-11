@@ -17,6 +17,10 @@ npm install react-query
 npm install styled-components
 npm install -D tailwindcss
 // npx tailwindscss init
+npm install express redis express-session
+npm install connect-redis redis
+
+
 
 
 Database:
