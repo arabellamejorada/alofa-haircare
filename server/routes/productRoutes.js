@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/productController');
+const productVariationsController = require('../controllers/productVariationsController'); 
 const upload = require('../middlewares/multerConfig');
 
 // PRODUCT
@@ -18,18 +19,21 @@ router.get('/product-category', productController.getAllProductCategories);     
 router.get('/product-category/:id', productController.getProductCategoryById);  // Read by ID
 router.put('/product-category/:id', productController.updateProductCategory);   // Update by ID
 router.delete('/product-category/:id', productController.deleteProductCategory);// Delete by ID
+router.delete('/product-category', productController.deleteAllProductCategories);// Delete all
 
 
 // PRODUCT VARIATION
-router.get('/product-variations', productController.getAllProductVariations);       // Read all
-router.get('/product-variations/:id', productController.getProductVariationById);   // Read by ID
-router.put('/product-variations/:id', productController.updateProductVariation);    // Update by ID
-router.delete('/product-variations/:id', productController.deleteProductVariation); // Delete by ID
+router.post('/product-variations', productVariationsController.createProductVariationsWithInventory); 
+router.get('/product-variations', productVariationsController.getAllProductVariations);       // Read all
+router.get('/product-variations/:id', productVariationsController.getProductVariationById);     // Read by ID
+router.put('/product-variations/:id', productVariationsController.updateProductVariation);      // Update by ID
+router.delete('/product-variations/:id', productVariationsController.deleteProductVariation);   // Delete by ID
+router.delete('/product-variations', productVariationsController.deleteAllProductVariations);   // Delete all
 
 // PRODUCT STATUS
 router.get('/product-status', productController.getAllProductStatus);       // Read all
 router.get('/product-status/:id', productController.getProductStatusById);     // Read by ID
 router.put('/product-status/:id', productController.updateProductStatus);      // Update by ID
-router.delete('/product-status/:id', productController.deleteProductStatus);   // Delete by ID
+router.delete('/product-status/:id', productController.deleteAllProductStatus);   // Delete by ID
 
 module.exports = router;
