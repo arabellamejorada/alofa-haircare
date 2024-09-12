@@ -2,7 +2,7 @@ import React from "react";
 import { IoMdArchive } from "react-icons/io";
 import { MdEditDocument } from "react-icons/md";
 
-const DataTable = ({ data, columns, onEdit, onArchive }) => {
+const DataTable = ({ data, columns, onEdit, onArchive, isInventory}) => {
   if (!data || data.length === 0) {
     return <div>No data available</div>;
   }
@@ -31,15 +31,17 @@ const DataTable = ({ data, columns, onEdit, onArchive }) => {
             <tr>
               {columns.map((column) => (
                 <th
-                  className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                  className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider"
                   key={column.key}
                 >
                   {column.header || formatColumnName(column.key)}
                 </th>
               ))}
-              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                Actions
-              </th>
+              {!isInventory && (
+                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  Actions
+                </th>
+              )}
             </tr>
           </thead>
 
@@ -47,40 +49,48 @@ const DataTable = ({ data, columns, onEdit, onArchive }) => {
             {data.map((item, index) => (
               <tr
                 key={index}
-                className={item.status_id === 3 || item.status === 'Archived' || item.product_status_id === 4 ? 'bg-gray-200' : ''}
+                className={
+                  item.status_id === 3 ||
+                  item.status === "Archived" ||
+                  item.product_status_id === 4
+                    ? "bg-gray-200"
+                    : ""
+                }
               >
                 {columns.map((column) => (
                   <td
-                    className="px-5 py-5 border-b border-gray-200 text-sm"
+                    className="px-5 py-5 border-b border-gray-200 text-sm text-center"
                     key={column.key}
                   >
                     {column.render
                       ? column.render(item[column.key])
-                      : column.key === 'stock_in_date'
+                      : column.key === "stock_in_date"
                       ? formatDateInLocalTimezone(item[column.key])
                       : item[column.key]}
                   </td>
                 ))}
-                
-                <td className="text-center ">
-                  <div className="flex text-center justify-center items-center rounded-xl gap-2">
-                    <div
-                      className="text-pink-500 hover:text-pink-600 "
-                      onClick={() => onEdit(item)} // Pass the item to onEdit
-                    >
-                      <MdEditDocument fontSize={30} />
-                    </div>
-                    <div className="items-center justify-center">
-                      <div 
-                        className="text-pink-500 hover:text-pink-600 rounded-full"
-                        onClick={() => onArchive(item)} // Pass the item to onArchive
-                      >
-                        <IoMdArchive fontSize={30} />
-                      </div>
 
+               {/* Conditionally render the edit button */}
+               {!isInventory && (
+                  <td className="text-center ">
+                    <div className="flex text-left justify-center items-center rounded-xl gap-2">
+                        <div
+                          className="text-pink-500 hover:text-pink-600 "
+                          onClick={() => onEdit(item)} // Pass the item to onEdit
+                        >
+                          <MdEditDocument fontSize={30} />
+                        </div>
+                      <div className="items-center justify-center">
+                        <div
+                          className="text-pink-500 hover:text-pink-600 rounded-full"
+                          onClick={() => onArchive(item)} // Pass the item to onArchive
+                        >
+                          <IoMdArchive fontSize={30} />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </td>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
