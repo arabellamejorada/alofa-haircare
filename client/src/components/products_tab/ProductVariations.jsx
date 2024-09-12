@@ -4,6 +4,7 @@ import { MdAddBox } from "react-icons/md";
 import Modal from "../modal/Modal";
 import { IoMdArrowDropdown } from "react-icons/io";
 
+
 const ProductVariations = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -35,6 +36,7 @@ const ProductVariations = () => {
     { key: "variation_name", header: "Variation Type" },
     { key: "variation_value", header: "Variation Value" },
     { key: "product_category", header: "Category" },
+    { key: "product_status", header: "Variation Status" },
     { key: "sku", header: "SKU" },
     { key: "unit_price", header: "Price" },
   ];
@@ -76,17 +78,21 @@ const ProductVariations = () => {
             <div className="font-extrabold text-3xl text-pink-400">
               Add Product Variation:
             </div>
+
             <div className="flex flex-col gap-2">
               <label className="font-bold" htmlFor="product_name">
                 Product Name:
               </label>
-              <input
-                type="text"
-                name="product_name"
-                id="product_name"
-                placeholder="Product Name"
-                className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-              />
+              <div className="relative">
+                <select
+                  id="type"
+                  name="product_name"
+                  className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+                >
+                  <option value="">Select Type</option>
+                </select>
+                <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2" />
+              </div>
             </div>
 
             <div className="flex flex-col gap-2">
@@ -119,22 +125,6 @@ const ProductVariations = () => {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="Category">
-                Product Category:
-              </label>
-              <div className="relative">
-                <select
-                  id="category"
-                  name="product_category"
-                  className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-                >
-                  <option value="">Select Category</option>
-                </select>
-                <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2" />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-2">
               <label className="font-bold" htmlFor="sku">
                 SKU:
               </label>
@@ -159,6 +149,8 @@ const ProductVariations = () => {
                 className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
               />
             </div>
+
+            {/* add image here*/}
 
             <div className="flex flex-row justify-between mt-4">
               <button
@@ -187,6 +179,7 @@ const ProductVariations = () => {
             <div className="font-extrabold text-3xl text-pink-400">
               Edit Product Variation:
             </div>
+            
             <div className="flex flex-col gap-2">
               <label className="font-bold" htmlFor="product_name">
                 Product Name:
@@ -230,19 +223,16 @@ const ProductVariations = () => {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="Category">
-                Product Category:
+              <label className="font-bold" htmlFor="unit_price">
+                Price:
               </label>
-              <div className="relative">
-                <select
-                  id="edit_category"
-                  name="product_category"
-                  className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-                >
-                  <option value="">Select Category</option>
-                </select>
-                <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2" />
-              </div>
+              <input
+                type="text"
+                name="unit_price"
+                id="edit_unit_price"
+                placeholder="Unit Price"
+                className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+              />
             </div>
 
             <div className="flex flex-col gap-2">
@@ -255,21 +245,12 @@ const ProductVariations = () => {
                 id="edit_sku"
                 placeholder="SKU"
                 className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+                readOnly
               />
             </div>
 
-            <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="unit_price">
-                Price:
-              </label>
-              <input
-                type="text"
-                name="unit_price"
-                id="edit_unit_price"
-                placeholder="Unit Price"
-                className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-              />
-            </div>
+            {/* replace current image here */}
+            
 
             <div className="flex flex-row justify-between mt-4">
               <button

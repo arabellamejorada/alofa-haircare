@@ -1,15 +1,14 @@
-// cartController.js
+const pool = require('../db.js');
 
 // Initialize cart if it doesn't exist
-exports.initializeCart = (req, res) => {
+const initializeCart = (req, res) => {
     if (!req.session.cart) {
         req.session.cart = [];
     }
     res.send({ message: "Cart initialized", cart: req.session.cart });
 };
 
-// Add item to cart
-exports.addItemToCart = (req, res) => {
+const addItemToCart = (req, res) => {
     const { variationId, quantity } = req.body;
 
     // Initialize cart if it doesn't exist
@@ -31,8 +30,7 @@ exports.addItemToCart = (req, res) => {
     res.send({ message: "Item added to cart", cart });
 };
 
-// View cart
-exports.viewCart = (req, res) => {
+const viewCart = (req, res) => {
     if (!req.session.cart) {
         return res.send({ message: "Cart is empty" });
     }
@@ -40,8 +38,7 @@ exports.viewCart = (req, res) => {
     res.send({ cart: req.session.cart });
 };
 
-// Checkout cart
-exports.checkoutCart = (req, res) => {
+const checkoutCart = (req, res) => {
     if (!req.session.cart || req.session.cart.length === 0) {
         return res.send({ message: "Cart is empty" });
     }
@@ -53,4 +50,11 @@ exports.checkoutCart = (req, res) => {
     // Clear the cart after successful checkout
     req.session.cart = [];
     res.send({ message: "Checkout successful", cart });
+};
+
+module.exports = {
+    initializeCart,
+    addItemToCart,
+    viewCart,
+    checkoutCart
 };
