@@ -1,31 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 
-body {
-  font-family: "Montserrat", system-ui;
-}
-
-.product-card {
-  display: flex;
-  flex-direction: column;
-  height: 376px;
-  width: 241px;
-}
-
-.product-card .top-card {
-  background-color: white;
-  height: 40%;
-}
-
-.product-card .bottom-card {
-  background-color: white;
-  height: 40%;
-}
-
-.container-product-card {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%,-50%); 
+* {
+  font-family: "Montserrat";
 }
 
 /* fill: var(--Soft-White, linear-gradient(180deg, #FFF 0%, #FFF8FC 100%));

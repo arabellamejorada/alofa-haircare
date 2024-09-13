@@ -5,8 +5,8 @@ import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
-import Home from './pages/home/Home.jsx';
-import Navbar from './components/Navbar.jsx';
+import Home from './pages/Home.jsx';
+import Navbar from './shared/Navbar.jsx';
 
 const router = createBrowserRouter([
   {
