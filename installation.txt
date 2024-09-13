@@ -6,7 +6,8 @@ npm install pg
 npm install cors
 npm install dotenv
 npm install --save-dev nodemon
-
+npm install express redis express-session
+npm install connect-redis redis
 
 Frontend setup:
 
@@ -17,6 +18,10 @@ npm install react-query
 npm install styled-components
 npm install -D tailwindcss
 // npx tailwindscss init
+npm install react-select
+
+
+
 
 products-page frontend:
 cd products-page
