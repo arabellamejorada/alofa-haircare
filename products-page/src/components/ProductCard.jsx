@@ -39,9 +39,13 @@ const ProductCard = () => {
         <div className="product-card">
             <div className="top-card">
                  {/* img, price */}
+                 <img src="" className="product-img"></img>
+
+
             </div>
             <div className="bottom-card">
                 {/* name, desc, cta */}
+
             </div>
         </div>
     </div>

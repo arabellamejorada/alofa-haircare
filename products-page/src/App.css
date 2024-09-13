@@ -3,3 +3,32 @@
 body {
   font-family: "Montserrat", system-ui;
 }
+
+.product-card {
+  display: flex;
+  flex-direction: column;
+  height: 376px;
+  width: 241px;
+}
+
+.product-card .top-card {
+  background-color: white;
+  height: 40%;
+}
+
+.product-card .bottom-card {
+  background-color: white;
+  height: 40%;
+}
+
+.container-product-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%); 
+}
+
+/* fill: var(--Soft-White, linear-gradient(180deg, #FFF 0%, #FFF8FC 100%));
+stroke-width: 5px;
+stroke: var(--Alofa-New, #EFB3C0);
+filter: drop-shadow(0px 4px 10px rgba(0, 0, 0, 0.25)); */
