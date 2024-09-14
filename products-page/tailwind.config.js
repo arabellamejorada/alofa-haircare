@@ -7,9 +7,9 @@ export default {
   theme: {
     extend: {
       backgroundImage: {
-        "body-bg" : "/images/body-bg.png",
-        "alofa-icon" : "/images/alofa-icon.png",
-        "navbar-bg" : "/images/",
+        "body-bg" : './public/images/body-bg.png',
+        "alofa-icon" : "./public/images/alofa-icon.png",
+        "navbar-bg" : "./public/images/alofa-icon.png",
       },
       colors: {
         "alofa-pink" : "#FE699F",

@@ -3,7 +3,7 @@
  import './App.css'
  import Navbar from "./shared/Navbar.jsx";
 //  import Home from "./pages/home/Home.jsx";
-import ProductCard from "./components/ProductCard.jsx";
+// import ProductCard from "./components/ProductCard.jsx";
 import Products from "./components/Products.jsx"
 
 function App() {
@@ -13,7 +13,7 @@ function App() {
         <Navbar/>
         {/* <Home/> */}
         <Products/>
-        <ProductCard/>
+        {/* <ProductCard/> */}
 
         {/* <Routes>
           <Route path="/" element={<Home/>}/>

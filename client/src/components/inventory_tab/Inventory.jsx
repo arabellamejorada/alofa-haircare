@@ -1,6 +1,6 @@
 import React, { Fragment, useState, useEffect } from "react";
 import DataTable from "../shared/DataTable";
-import { getInventory, getProducts } from "../../api/products";
+import { getInventory, getAllProducts } from "../../api/products";
 
 const Inventory = () => {
   const [inventory, setInventory] = useState([]);
@@ -11,7 +11,7 @@ const Inventory = () => {
     const fetchData = async () => {
       try {
         const inventoryData = await getInventory();
-        const productsData = await getProducts();
+        const productsData = await getAllProducts();
         setInventory(inventoryData);
         setProducts(productsData);
       } catch (err) {

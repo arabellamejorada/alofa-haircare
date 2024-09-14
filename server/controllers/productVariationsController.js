@@ -1,86 +1,72 @@
 const pool = require('../db.js');
-
+//this should be a loop sa front end na mag add variation
 // Create product variations + inventory
 const createProductVariationsWithInventory = async (req, res) => {
     const client = await pool.connect();
     const { product_id, variations } = req.body;
-    console.log(req.body);
-    // Validate that product_id and variations are present
+    const uploadedFiles = req.files;  // Array of uploaded images
+  
     if (!product_id || !variations || !Array.isArray(variations)) {
-        return res.status(400).json({ message: 'Product ID and an array of variations are required.' });
+      return res.status(400).json({ message: 'Product ID and an array of variations are required.' });
     }
-    
+  
+    console.log("Request Body:", req.body);
+    console.log("Uploaded Files:", uploadedFiles);  // Debugging the uploaded files
+  
     try {
-        await client.query('BEGIN');
-
-        const insertedInventories = [];
-        const insertedVariations = [];
-
-        // Get product name for SKU generation
-        const productResult = await client.query(
-            `SELECT name FROM product WHERE product_id = $1`,
-            [product_id]
+      await client.query('BEGIN');
+  
+      const insertedInventories = [];
+      const insertedVariations = [];
+  
+      const productResult = await client.query(`SELECT name FROM product WHERE product_id = $1`, [product_id]);
+      const product_name = productResult.rows[0].name;
+  
+      for (let i = 0; i < variations.length; i++) {
+        const variation = variations[i];
+        const { name, value, unit_price, product_status_id } = variation;
+        const image = uploadedFiles[i] ? uploadedFiles[i].path : null;  // Assign corresponding image
+  
+        const sku = generateSKU(product_name, name, value, product_id);
+  
+        const productVariationResult = await client.query(
+          `INSERT INTO product_variation (product_id, name, value, sku, unit_price, product_status_id, image)
+           VALUES ($1, $2, $3, $4, $5, $6, $7)
+           RETURNING variation_id`,
+          [product_id, name, value, sku, unit_price, product_status_id, image]
         );
-        const product_name = productResult.rows[0].name;
-        console.log("Product Name:", product_name);
-
-        // Insert each variation and inventory
-        for (let variation of variations) {
-            const { 
-                name, 
-                value, 
-                unit_price, 
-                product_status_id, 
-                image
-            } = variation;
-    
-            // Validate required fields for each variation
-            if (!name || !value || !unit_price || !product_status_id) {
-                throw new Error('All fields are required for each variation.');
-            }
-            
-            // generate SKU based on product name, var type/value and product_id as counter
-            const sku = generateSKU(product_name, name, value, product_id);
-
-            const productVariationResult = await client.query(
-                `INSERT INTO product_variation (product_id, name, value, sku, unit_price, product_status_id, image)
-                VALUES ($1, $2, $3, $4, $5, $6, $7)
-                RETURNING variation_id`,
-                [product_id, name, value, sku, unit_price, product_status_id, image]            
-            )
-            
-            const variation_id = productVariationResult.rows[0].variation_id;
-            const stock_in_date = new Date();
-            const stock_quantity = 0;
-
-            const inventoryResult = await client.query(
-                `INSERT INTO inventory (variation_id, stock_quantity, stock_in_date)
-                VALUES ($1, $2, $3)
-                RETURNING inventory_id`,
-                [variation_id, stock_quantity, stock_in_date]
-            );
-
-            const inventory_id = inventoryResult.rows[0].inventory_id;
-            insertedVariations.push({ variation_id, product_id, name, value, sku, unit_price, product_status_id, image });
-            insertedInventories.push({ inventory_id, variation_id, stock_quantity, stock_in_date });
-        }
-        await client.query('COMMIT');
-
-        // Return the created product variations and inventory details
-        res.status(201).json({
-            message: 'Product variations and inventories created successfully!',
-            product_variations: insertedVariations,
-            inventories: insertedInventories
-        });        
+  
+        const variation_id = productVariationResult.rows[0].variation_id;
+        const stock_in_date = new Date();
+        const stock_quantity = 0;
+  
+        const inventoryResult = await client.query(
+          `INSERT INTO inventory (variation_id, stock_quantity, stock_in_date)
+           VALUES ($1, $2, $3)
+           RETURNING inventory_id`,
+          [variation_id, stock_quantity, stock_in_date]
+        );
+  
+        insertedVariations.push({ variation_id, product_id, name, value, sku, unit_price, product_status_id, image });
+        insertedInventories.push({ inventory_id, variation_id, stock_quantity, stock_in_date });
+      }
+  
+      await client.query('COMMIT');
+  
+      res.status(201).json({
+        message: 'Product variations and inventories created successfully!',
+        product_variations: insertedVariations,
+        inventories: insertedInventories
+      });
     } catch (error) {
-        await client.query('ROLLBACK');
-        console.error('Transaction error:', error);
-        res.status(500).json({ message: 'Error creating product variations and inventories', error: error.message });
+      await client.query('ROLLBACK');
+      console.error('Transaction error:', error);
+      res.status(500).json({ message: 'Error creating product variations and inventories', error: error.message });
     } finally {
-        client.release();
+      client.release();
     }
-};
-
+  };
+  
 // Generate SKU with abbreviation mappings
 const generateSKU = (product_name, variation_type, variation_value, counter) => {
     const abbreviationMap = {
@@ -188,6 +174,33 @@ const updateProductVariation = async (req, res) => {
     }
 };
 
+// Archive product variation
+const archiveProductVariation = async (req, res) => {
+    const client = await pool.connect();
+    const variation_id = parseInt(req.params.id);
+
+    try {
+        const results = await client.query(
+            `UPDATE product_variation
+            SET product_status_id = 4
+            WHERE variation_id = $1
+            RETURNING *`,
+            [variation_id]
+        );
+
+        if (results.rows.length === 0) {
+            return res.status(404).json({ message: 'Product Variation not found' });
+        }
+
+        res.status(200).json(results.rows[0]);
+    } catch (error) {
+        console.error('Error archiving product variation:', error);
+        res.status(500).json({ message: 'Error archiving product variation:', error: error.message });
+    } finally {
+        client.release();
+    }
+};
+
 // Delete product variation by ID
 const deleteProductVariation = async (req, res) => {
     const id = parseInt(req.params.id);
@@ -230,5 +243,6 @@ module.exports = {
     getProductVariationById,
     updateProductVariation,
     deleteProductVariation,
+    archiveProductVariation,
     deleteAllProductVariations
 };
