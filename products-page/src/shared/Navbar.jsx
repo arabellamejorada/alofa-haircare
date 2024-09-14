@@ -6,7 +6,7 @@ const Navbar = () => {
 
   return (
     <header 
-      className="bg-white shadow-md py-2px fixed top-0 w-full z-50">
+      className="bg-white/75 shadow-md py-2px fixed top-0 w-full z-50">
         <nav className="container mx-auto flex justify-between items-center px-4 md:py-2 pt-3 pb-2">
 
           {/* logo */}
@@ -14,7 +14,7 @@ const Navbar = () => {
 
           {/* navigation pages */}
           <div className="text-lg font-semibold text-alofa-pink sm:flex items-center gap-8 hidden">
-            <Link to="/home" className="hover:text-pink-700 items-baseline gap-2">Home</Link>
+            <Link to="/" className="hover:text-pink-700 items-baseline gap-2">Home</Link>
             {/* <p>|</p> */}
             <Link to="/products" className="hover:text-pink-700 flex items-baseline gap-2">Products</Link>
             {/* <p>|</p> */}
@@ -35,9 +35,6 @@ const Navbar = () => {
           </div>
         </nav>
     </header>
-
-  
-
   );
 }
 

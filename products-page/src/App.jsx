@@ -1,26 +1,20 @@
-//  import {Outlet} from "react-router-dom";
-//  import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
- import './App.css'
- import Navbar from "./shared/Navbar.jsx";
-//  import Home from "./pages/home/Home.jsx";
-// import ProductCard from "./components/ProductCard.jsx";
-import Products from "./components/Products.jsx"
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Navbar from './shared/Navbar.jsx';
+import Home from './pages/Home.jsx';
+import Products from './pages/Products.jsx';
+import './App.css';
 
 function App() {
-
   return (
-    <>
-        <Navbar/>
-        {/* <Home/> */}
-        <Products/>
-        {/* <ProductCard/> */}
+    <Router>
+      <Navbar/>
+      <Routes>
+        <Route path="/" element={<Home/>} />
+        <Route path="/products" element={<Products />} />
 
-        {/* <Routes>
-          <Route path="/" element={<Home/>}/>
-        </Routes> */}
-      {/* <Outlet/> */}
-    </>
-  )
+      </Routes>
+    </Router>
+  );
 }
 
-export default App
+export default App;
