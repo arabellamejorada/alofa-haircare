@@ -4,7 +4,7 @@ import { MdAddBox } from "react-icons/md";
 import Modal from "../modal/Modal";
 import { IoMdArrowDropdown } from "react-icons/io";
 import { createProduct, getProducts, getCategories, getStatus, archiveProduct, updateProduct } from "../../api/products";
-import axios from "axios";
+
 
 const Products = () => {
   const [products, setProducts] = useState([]);
