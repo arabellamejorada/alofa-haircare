@@ -3,13 +3,14 @@ import DataTable from "../shared/DataTable";
 import { MdAddBox } from "react-icons/md";
 import Modal from "../modal/Modal";
 import { IoMdArrowDropdown } from "react-icons/io";
+import ProductVariationsTable from "./ProductVariationsTable";
 import {
   createProductVariationWithInventory,
   getAllProductVariations,
   getAllProducts,
   updateProductVariation,
   getStatus,
-  archiveProductVariation
+  archiveProductVariation,
 } from "../../api/products";
 
 const ProductVariations = () => {
@@ -22,7 +23,16 @@ const ProductVariations = () => {
   const [showModal, setShowModal] = useState(false);
 
   const [product_id, setProductId] = useState("");
-  const [variations, setVariations] = useState([{ name: '', value: '', sku: '', unit_price: '', product_status_id: '', image: null }]);
+  const [variations, setVariations] = useState([
+    {
+      type: "",
+      value: "",
+      sku: "",
+      unit_price: "",
+      product_status_id: "",
+      image: null,
+    },
+  ]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -56,23 +66,20 @@ const ProductVariations = () => {
 
     // Append each variation's data and image to FormData
     variations.forEach((variation, index) => {
-      formData.append(`variations[${index}][name]`, variation.name);
+      formData.append(`variations[${index}][type]`, variation.type);
       formData.append(`variations[${index}][value]`, variation.value);
       formData.append(`variations[${index}][sku]`, variation.sku);
       formData.append(`variations[${index}][unit_price]`, variation.unit_price);
       formData.append(`variations[${index}][product_status_id]`, variation.product_status_id);
       if (variation.image) {
-        formData.append(`images`, variation.image); // Append the image for each variation
+        formData.append("images", variation.image); // Append the image for each variation
       }
     });
 
     try {
       let response;
       if (selectedProductVariation) {
-        response = await updateProductVariation(
-          selectedProductVariation.variation_id,
-          formData
-        );
+        response = await updateProductVariation(selectedProductVariation.variation_id, formData);
         console.log("Product variation updated successfully:", response);
       } else {
         response = await createProductVariationWithInventory(formData);
@@ -103,14 +110,39 @@ const ProductVariations = () => {
 
   // Add new variation
   const addVariation = () => {
-    setVariations([...variations, { name: '', value: '', sku: '', unit_price: '', product_status_id: '', image: null }]);
+    setVariations([
+      ...variations,
+      {
+        type: "",
+        value: "",
+        sku: "",
+        unit_price: "",
+        product_status_id: "",
+        image: null,
+      },
+    ]);
+  };
+
+  // Delete a variation
+  const deleteVariation = (index) => {
+    const newVariations = variations.filter((_, idx) => idx !== index);
+    setVariations(newVariations);
   };
 
   const handleEdit = (product_variation) => {
     console.log("Editing product:", product_variation);
     setSelectedProductVariation(product_variation);
     setProductId(product_variation.product_id || "");
-    setVariations([{ name: product_variation.name, value: product_variation.value, sku: product_variation.sku, unit_price: product_variation.unit_price, product_status_id: product_variation.product_status_id, image: null }]);
+    setVariations([
+      {
+        type: product_variation.type,
+        value: product_variation.value,
+        sku: product_variation.sku,
+        unit_price: product_variation.unit_price,
+        product_status_id: product_variation.product_status_id,
+        image: null,
+      },
+    ]);
     setShowModal(true);
   };
 
@@ -145,7 +177,16 @@ const ProductVariations = () => {
     setShowModal(false);
     setSelectedProductVariation(null);
     setProductId("");
-    setVariations([{ name: '', value: '', sku: '', unit_price: '', product_status_id: '', image: null }]); // Reset the form
+    setVariations([
+      {
+        type: "",
+        value: "",
+        sku: "",
+        unit_price: "",
+        product_status_id: "",
+        image: null,
+      },
+    ]); // Reset the form
   };
 
   if (error) return <div>{error}</div>;
@@ -153,11 +194,11 @@ const ProductVariations = () => {
   const columns = [
     { key: "variation_id", header: "ID" },
     { key: "product_name", header: "Product Name" },
-    { key: "variation_name", header: "Variation Type" },
-    { key: "variation_value", header: "Variation Value" },
+    { key: "type", header: "Variation Type" },
+    { key: "value", header: "Variation Value" },
     { key: "sku", header: "SKU" },
     { key: "unit_price", header: "Price" },
-    { key: "product_status", header: "Status" }
+    { key: "product_status", header: "Status" },
   ];
 
   // Map product IDs to names
@@ -208,12 +249,16 @@ const ProductVariations = () => {
       </div>
 
       <Modal isVisible={showModal} onClose={handleCloseModal}>
-        <form className="p-6" onSubmit={handleSubmit} encType="multipart/form-data">
+        <form
+          className="p-6 w-full max-w-3xl mx-auto bg-white rounded-lg shadow-lg"
+          onSubmit={handleSubmit}
+          encType="multipart/form-data"
+        >
           <div className="flex flex-col gap-4">
-            <div className="font-extrabold text-3xl text-pink-400">
+            <div className="font-extrabold text-2xl md:text-3xl text-pink-400 text-center">
               {selectedProductVariation
                 ? "Edit Product Variation"
-                : "Add Product Variation"}
+                : "Add Product Variations"}
             </div>
 
             <div className="flex flex-col gap-2">
@@ -233,112 +278,21 @@ const ProductVariations = () => {
                     <option key={product.product_id} value={product.product_id}>
                       {product.name}
                     </option>
-                 
-                ))}
+                  ))}
                 </select>
                 <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2" />
               </div>
             </div>
 
-            {/* Loop through variations */}
-            {variations.map((variation, index) => (
-              <div key={index} className="variation-section">
-                <h4>Variation {index + 1}</h4>
-
-                <div className="flex flex-col gap-2">
-                  <label className="font-bold" htmlFor={`variation_name_${index}`}>
-                    Variation Name:
-                  </label>
-                  <input
-                    type="text"
-                    name={`variation_name_${index}`}
-                    value={variation.name}
-                    onChange={(e) => handleVariationChange(index, 'name', e.target.value)}
-                    className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <label className="font-bold" htmlFor={`variation_value_${index}`}>
-                    Variation Value:
-                  </label>
-                  <input
-                    type="text"
-                    name={`variation_value_${index}`}
-                    value={variation.value}
-                    onChange={(e) => handleVariationChange(index, 'value', e.target.value)}
-                    className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <label className="font-bold" htmlFor={`sku_${index}`}>
-                    SKU:
-                  </label>
-                  <input
-                    type="text"
-                    name={`sku_${index}`}
-                    value={variation.sku}
-                    onChange={(e) => handleVariationChange(index, 'sku', e.target.value)}
-                    className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <label className="font-bold" htmlFor={`unit_price_${index}`}>
-                    Price:
-                  </label>
-                  <input
-                    type="text"
-                    name={`unit_price_${index}`}
-                    value={variation.unit_price}
-                    onChange={(e) => handleVariationChange(index, 'unit_price', e.target.value)}
-                    className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <label className="font-bold" htmlFor={`status_${index}`}>
-                    Product Status:
-                  </label>
-                  <select
-                    id={`status_${index}`}
-                    name={`status_${index}`}
-                    value={variation.product_status_id}
-                    onChange={(e) => handleVariationChange(index, 'product_status_id', e.target.value)}
-                    className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-                  >
-                    <option value="">Select Status</option>
-                    {statuses.map((status) => (
-                      <option key={status.status_id} value={status.status_id}>
-                        {status.description}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <label className="font-bold" htmlFor={`image_${index}`}>
-                    Upload Image:
-                  </label>
-                  <input
-                    type="file"
-                    name={`image_${index}`}
-                    accept="image/*"
-                    onChange={(e) => handleImageChange(index, e.target.files[0])}
-                    className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-                  />
-                </div>
-              </div>
-            ))}
-
-            <button
-              type="button"
-              onClick={addVariation}
-              className="mt-4 bg-green-500 text-white py-2 px-4 rounded"
-            >
-              Add Another Variation
-            </button>
+            {/* Use the separated ProductVariationsTable component */}
+            <ProductVariationsTable
+              variations={variations}
+              statuses={statuses}
+              handleVariationChange={handleVariationChange}
+              handleImageChange={handleImageChange}
+              addVariation={addVariation}
+              deleteVariation={deleteVariation}
+            />
 
             <div className="flex flex-row justify-between mt-4">
               <button

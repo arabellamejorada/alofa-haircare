@@ -2,7 +2,7 @@ import React from "react";
 import { IoMdArchive } from "react-icons/io";
 import { MdEditDocument } from "react-icons/md";
 
-const DataTable = ({ data, columns, onEdit, onArchive, isInventory}) => {
+const DataTable = ({ data, columns, onEdit, onArchive, isInventory }) => {
   if (!data || data.length === 0) {
     return <div>No data available</div>;
   }
@@ -31,7 +31,7 @@ const DataTable = ({ data, columns, onEdit, onArchive, isInventory}) => {
             <tr>
               {columns.map((column) => (
                 <th
-                  className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                  className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
                   key={column.key}
                 >
                   {column.header || formatColumnName(column.key)}
@@ -59,7 +59,7 @@ const DataTable = ({ data, columns, onEdit, onArchive, isInventory}) => {
               >
                 {columns.map((column) => (
                   <td
-                    className="px-5 py-5 border-b border-gray-200 text-sm text-center"
+                    className="px-5 py-5 border-b border-gray-200 text-sm text-left" // Left justify text
                     key={column.key}
                   >
                     {column.render
