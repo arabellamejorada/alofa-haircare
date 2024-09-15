@@ -3,12 +3,7 @@ import DataTable from "../shared/DataTable";
 import { MdAddBox } from "react-icons/md";
 import Modal from "../modal/Modal";
 import { IoMdArrowDropdown } from "react-icons/io";
-<<<<<<< HEAD
 import { createProduct, getAllProducts, getCategories, getStatus, archiveProduct, updateProduct } from "../../api/products";
-=======
-import { createProduct, getProducts, getCategories, getStatus, archiveProduct, updateProduct } from "../../api/products";
-
->>>>>>> 009170b0938a279e63d00297f9be91535b9bc6df
 
 const Products = () => {
   const [products, setProducts] = useState([]);
