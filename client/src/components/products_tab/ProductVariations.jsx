@@ -21,8 +21,17 @@ const ProductVariations = () => {
 
   const [selectedProductVariation, setSelectedProductVariation] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
-  const [product_id, setProductId] = useState("");
+   // For Edit Modal (Individual State Variables)
+   const [product_id, setProductId] = useState("");
+   const [type, setType] = useState("");
+   const [value, setValue] = useState("");
+   const [sku, setSku] = useState("");
+   const [unitPrice, setUnitPrice] = useState("");
+   const [productStatusId, setProductStatusId] = useState("");
+   const [image, setImage] = useState(null);
+
   const [variations, setVariations] = useState([
     {
       type: "",
@@ -131,19 +140,37 @@ const ProductVariations = () => {
 
   const handleEdit = (product_variation) => {
     console.log("Editing product:", product_variation);
-    setSelectedProductVariation(product_variation);
-    setProductId(product_variation.product_id || "");
-    setVariations([
-      {
-        type: product_variation.type,
-        value: product_variation.value,
-        sku: product_variation.sku,
-        unit_price: product_variation.unit_price,
-        product_status_id: product_variation.product_status_id,
-        image: null,
-      },
-    ]);
-    setShowModal(true);
+      setSelectedProductVariation(product_variation);
+      setProductId(product_variation.product_id || "");
+      setType(product_variation.type || "");
+      setValue(product_variation.value || "");
+      setSku(product_variation.sku || "");
+      setUnitPrice(product_variation.unit_price || "");
+      setProductStatusId(product_variation.product_status_id || "");
+      setImage(product_variation.image || null);
+      setIsModalVisible(true);
+  };
+
+  const handleUpdateVariation = async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append("product_id", product_id);
+    formData.append("type", type);
+    formData.append("value", value);
+    formData.append("sku", sku);
+    formData.append("unit_price", unitPrice);
+    formData.append("product_status_id", productStatusId);
+    if (image) formData.append("image", image);
+
+    try {
+      const response = await updateProductVariation(selectedProductVariation.variation_id, formData);
+      console.log("Product variation updated successfully:", response);
+      setIsModalVisible(false);
+      const updatedVariations = await getAllProductVariations();
+      setProductVariations(updatedVariations);
+    } catch (error) {
+      console.error("Error updating product variation:", error);
+    }
   };
 
   const handleArchive = async (selectedProductVariation) => {
@@ -175,6 +202,7 @@ const ProductVariations = () => {
 
   const handleCloseModal = () => {
     setShowModal(false);
+    setIsModalVisible(false);
     setSelectedProductVariation(null);
     setProductId("");
     setVariations([
@@ -248,6 +276,7 @@ const ProductVariations = () => {
         />
       </div>
 
+      {/* Add Modal */}
       <Modal isVisible={showModal} onClose={handleCloseModal}>
         <form
           className="p-6 w-full max-w-3xl mx-auto bg-white rounded-lg shadow-lg"
@@ -307,6 +336,132 @@ const ProductVariations = () => {
                 className="w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-extrabold text-white"
               >
                 Cancel
+              </button>
+            </div>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal isVisible={isModalVisible} onClose={handleCloseModal}>
+        <form className="p-6" onSubmit={handleUpdateVariation}>
+          <div className="flex flex-col gap-4">
+            <div className="font-extrabold text-3xl text-pink-400">Edit Product Variation</div>
+
+            {/* Product Name */}
+            <div className="flex flex-col gap-2">
+              <label className="font-bold" htmlFor="product_name">Product Name:</label>
+              <div className="relative">
+                <select
+                  id="product_id"
+                  name="product_id"
+                  value={product_id}
+                  onChange={(e) => setProductId(e.target.value)}
+                  className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+                >
+                  <option value="" disabled>Select Product</option>
+                  {products.map((product) => (
+                    <option key={product.product_id} value={product.product_id}>
+                      {product.name}
+                    </option>
+                  ))}
+                </select>
+                <IoMdArrowDropdown className="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500" />
+              </div>
+            </div>
+
+            {/* Variation Type */}
+            <div className="flex flex-col gap-2">
+              <label className="font-bold" htmlFor="type">Variation Type:</label>
+              <input
+                type="text"
+                name="type"
+                id="type"
+                value={type}
+                onChange={(e) => setType(e.target.value)}
+                className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+              />
+            </div>
+
+            {/* Variation Value */}
+            <div className="flex flex-col gap-2">
+              <label className="font-bold" htmlFor="value">Variation Value:</label>
+              <input
+                type="text"
+                name="value"
+                id="value"
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+              />
+            </div>
+
+            {/* SKU */}
+            <div className="flex flex-col gap-2">
+              <label className="font-bold" htmlFor="sku">SKU:</label>
+              <input
+                type="text"
+                name="sku"
+                id="sku"
+                value={sku}
+                readOnly
+                className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+              />
+            </div>
+
+            {/* Unit Price */}
+            <div className="flex flex-col gap-2">
+              <label className="font-bold" htmlFor="unit_price">Unit Price:</label>
+              <input
+                type="number"
+                name="unit_price"
+                id="unit_price"
+                value={unitPrice}
+                onChange={(e) => setUnitPrice(e.target.value)}
+                className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+              />
+            </div>
+
+            {/* Image Upload */}
+            <div className="flex flex-col gap-2">
+              <label className="font-bold" htmlFor="image">Product Image:</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setImage(e.target.files[0])}
+                className="rounded-xl border w-full h-10 px-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+              />
+            </div>
+
+            {/* Product Status */}
+            <div className="flex flex-col gap-2">
+              <label className="font-bold" htmlFor="statusId">Status:</label>
+              <div className="relative">
+                <select
+                  name="statusId"
+                  id="statusId"
+                  value={productStatusId}
+                  onChange={(e) => setProductStatusId(e.target.value)}
+                  className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+                >
+                  <option value="" disabled>Select Status</option>
+                  {statuses.map((status) => (
+                    <option key={status.status_id} value={status.status_id}>
+                      {status.description}
+                    </option>
+                  ))}
+                </select>
+                <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500" />
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <div className="flex justify-end mt-2">
+              <button
+                type="submit"
+                className="w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-semibold text-white"
+              >
+                Update Variation
               </button>
             </div>
           </div>
