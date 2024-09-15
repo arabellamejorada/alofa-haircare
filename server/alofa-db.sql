@@ -273,7 +273,7 @@ CREATE TABLE product_variation (
     variation_id SERIAL PRIMARY KEY,
     product_id INT REFERENCES product(product_id) ON DELETE CASCADE,
     product_status_id INT REFERENCES product_status(status_id) ON DELETE CASCADE,
-    name VARCHAR(255),        -- e.g., 'Color', 'Size'
+    type VARCHAR(255),        -- e.g., 'Color', 'Size'
     value VARCHAR(255),       -- e.g., 'Red', 'Large'
     unit_price NUMERIC(10, 2),  -- Price for this specific variation
     sku VARCHAR(100) UNIQUE   -- Unique SKU for the variation

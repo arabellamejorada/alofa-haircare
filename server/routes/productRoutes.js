@@ -9,7 +9,7 @@ const upload = require('../middlewares/multerConfig');
 router.post('/products', productController.createProduct); // Create
 router.get('/products', productController.getAllProducts);              // Read all
 router.get('/products/:id', productController.getProductById);          // Read by ID
-router.put('/products/:id', upload.single('image'), productController.updateProduct);           // Update by ID
+router.put('/products/:id', productController.updateProduct);           // Update by ID
 router.put('/products/:id/archive', productController.archiveProduct);  // Archive by ID
 router.delete('/products/:id', productController.deleteProduct);        // Delete by ID
 
@@ -18,17 +18,18 @@ router.post('/product-category', productController.createProductCategory);      
 router.get('/product-category', productController.getAllProductCategories);     // Read all
 router.get('/product-category/:id', productController.getProductCategoryById);  // Read by ID
 router.put('/product-category/:id', productController.updateProductCategory);   // Update by ID
+router.put('/product-category/:id/archive', productController.archiveProductCategory); // Archive by ID
 router.delete('/product-category/:id', productController.deleteProductCategory);// Delete by ID
-router.delete('/product-category', productController.deleteAllProductCategories);// Delete all
 
 
 // PRODUCT VARIATION
-router.post('/product-variations', productVariationsController.createProductVariationsWithInventory); 
+router.post('/product-variations', upload, productVariationsController.createProductVariationsWithInventory); 
 router.get('/product-variations', productVariationsController.getAllProductVariations);       // Read all
 router.get('/product-variations/:id', productVariationsController.getProductVariationById);     // Read by ID
 router.put('/product-variations/:id', productVariationsController.updateProductVariation);      // Update by ID
 router.delete('/product-variations/:id', productVariationsController.deleteProductVariation);   // Delete by ID
 router.delete('/product-variations', productVariationsController.deleteAllProductVariations);   // Delete all
+router.put('/product-variations/:id', productVariationsController.archiveProductVariation);      // Archive product variation
 
 // PRODUCT STATUS
 router.get('/product-status', productController.getAllProductStatus);       // Read all

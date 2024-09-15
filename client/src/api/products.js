@@ -2,22 +2,17 @@ import axios from './axios';
 
 // PRODUCTS
 
-// export const createProductWithInventory = async (productData, inventoryData) => {
-//     try {
-//         const productResponse = await axios.post('/products', productData, {
-//             headers: {
-//                 'Content-Type': 'multipart/form-data',
-//             },
-//         });
-//         const inventoryResponse = await axios.post('/inventory', inventoryData);
-//         return { product: productResponse.data, inventory: inventoryResponse.data };
-//     } catch (error) {
-//         console.error('Error creating product with inventory: ', error);
-//         throw error;
-//     }
-// };
+export const createProductVariationWithInventory = async (productData) => {
+    try {
+        const response = await axios.post('/product-variations', productData);
+        return response.data;
+    } catch (error) {
+        console.error('Error creating product variation with inventory: ', error);
+        throw error;
+    }
+};
 
-export const getProducts = async () => {
+export const getAllProducts = async () => {
     try {
         const response = await axios.get('/products');
         const data = response.data; // Directly access the data from the response
@@ -85,6 +80,36 @@ export const getCategories = async () => {
     }
 };
 
+export const createCategory = async (categoryData) => {
+    try {
+        const response = await axios.post('/product-category', categoryData);
+        return response.data;
+    } catch (error) {
+        console.error('Error creating category: ', error);
+        throw error;
+    }
+};
+
+export const updateCategory = async (categoryId, categoryData) => {
+    try {
+        const response = await axios.put(`/product-category/${categoryId}`, categoryData);
+        return response.data;
+    } catch (error) {
+        console.error('Error updating category: ', error);
+        throw error;
+    }
+};
+
+export const archiveCategory = async (categoryId) => {
+    try {
+        const response = await axios.put(`/product-category/${categoryId}/archive`);
+        return response.data;
+    } catch (error) {
+        console.error('Error archiving category: ', error);
+        throw error;
+    }
+};
+
 // PRODUCT STATUS
 export const getStatus = async () => {
     try {
@@ -140,13 +165,33 @@ export const deleteInventory = async (inventoryId) => {
 };
 
 // GET PRODUCT VARIATIONS
-export const getProductVariations = async () => {
+export const getAllProductVariations = async () => {
     try {
         const response = await axios.get('/product-variations');
         console.log('Product variations fetched: ', response.data);
         return response.data;
     } catch (error) {
         console.error('Error fetching product variations: ', error);
+        throw error;
+    }
+};
+
+export const updateProductVariation = async (variationId, variationData) => {
+    try {
+        const response = await axios.put(`/product-variations/${variationId}`, variationData);
+        return response.data;
+    } catch (error) {
+        console.error('Error updating product variation: ', error);
+        throw error;
+    }
+};
+
+export const archiveProductVariation = async (variationId) => {
+    try {
+        const response = await axios.put(`/product-variations/${variationId}/archive`);
+        return response.data;
+    } catch (error) {
+        console.error('Error archiving product variation: ', error);
         throw error;
     }
 };

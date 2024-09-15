@@ -1,12 +1,23 @@
 import axios from './axios';
 
-export const getSuppliers = async () => {
+export const getAllSuppliers = async () => {
     try {
         const response = await axios.get('/suppliers');
         console.log('Suppliers fetched: ', response.data);
         return response.data;
     } catch (error) {
         console.error('Error fetching suppliers: ', error);
+        throw error;
+    }
+};
+
+export const getSupplier = async (id) => {
+    try {
+        const response = await axios.get(`/suppliers/${id}`);
+        console.log('Supplier fetched: ', response.data);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching supplier: ', error);
         throw error;
     }
 };

@@ -1,58 +1,257 @@
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useState, useEffect } from "react";
 import DataTable from "../shared/DataTable";
 import { MdAddBox } from "react-icons/md";
 import Modal from "../modal/Modal";
 import { IoMdArrowDropdown } from "react-icons/io";
-
+import ProductVariationsTable from "./ProductVariationsTable";
+import {
+  createProductVariationWithInventory,
+  getAllProductVariations,
+  getAllProducts,
+  updateProductVariation,
+  getStatus,
+  archiveProductVariation,
+} from "../../api/products";
 
 const ProductVariations = () => {
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [product_variations, setProductVariations] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [statuses, setStatus] = useState([]);
+  const [error, setError] = useState(null);
+
+  const [selectedProductVariation, setSelectedProductVariation] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
-  const handleEdit = (product) => {
-    console.log("Editing product:", product);
-    // setSelectedProduct(product);
-    // setProductName(product.name || "");
-    // setProductDescription(product.description || "");
-    // setProductStatus(product.product_status_id || "");
-    // setProductCategory(product.product_category_id || "");
+   // For Edit Modal (Individual State Variables)
+   const [product_id, setProductId] = useState("");
+   const [type, setType] = useState("");
+   const [value, setValue] = useState("");
+   const [sku, setSku] = useState("");
+   const [unitPrice, setUnitPrice] = useState("");
+   const [productStatusId, setProductStatusId] = useState("");
+   const [image, setImage] = useState(null);
 
-    setIsModalVisible(true);
+  const [variations, setVariations] = useState([
+    {
+      type: "",
+      value: "",
+      sku: "",
+      unit_price: "",
+      product_status_id: "",
+      image: null,
+    },
+  ]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const productVariationsData = await getAllProductVariations();
+        const productsData = await getAllProducts();
+        const statusData = await getStatus();
+
+        setProductVariations(productVariationsData);
+        setProducts(productsData);
+        setStatus(statusData);
+      } catch (err) {
+        setError("Failed to fetch data");
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Function to handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!product_id) {
+      alert("Please select a product.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("product_id", product_id);
+
+    // Append each variation's data and image to FormData
+    variations.forEach((variation, index) => {
+      formData.append(`variations[${index}][type]`, variation.type);
+      formData.append(`variations[${index}][value]`, variation.value);
+      formData.append(`variations[${index}][sku]`, variation.sku);
+      formData.append(`variations[${index}][unit_price]`, variation.unit_price);
+      formData.append(`variations[${index}][product_status_id]`, variation.product_status_id);
+      if (variation.image) {
+        formData.append("images", variation.image); // Append the image for each variation
+      }
+    });
+
+    try {
+      let response;
+      if (selectedProductVariation) {
+        response = await updateProductVariation(selectedProductVariation.variation_id, formData);
+        console.log("Product variation updated successfully:", response);
+      } else {
+        response = await createProductVariationWithInventory(formData);
+        console.log("Product variation created successfully:", response);
+      }
+      handleCloseModal();
+      const productVariationsData = await getAllProductVariations();
+      setProductVariations(productVariationsData);
+    } catch (error) {
+      console.error("Error saving product variation:", error);
+      setError("Error saving product variation. Please try again.");
+    }
+  };
+
+  // Handle variation input change
+  const handleVariationChange = (index, field, value) => {
+    const newVariations = [...variations];
+    newVariations[index][field] = value;
+    setVariations(newVariations);
+  };
+
+  // Handle image change
+  const handleImageChange = (index, file) => {
+    const newVariations = [...variations];
+    newVariations[index].image = file;
+    setVariations(newVariations);
+  };
+
+  // Add new variation
+  const addVariation = () => {
+    setVariations([
+      ...variations,
+      {
+        type: "",
+        value: "",
+        sku: "",
+        unit_price: "",
+        product_status_id: "",
+        image: null,
+      },
+    ]);
+  };
+
+  // Delete a variation
+  const deleteVariation = (index) => {
+    const newVariations = variations.filter((_, idx) => idx !== index);
+    setVariations(newVariations);
+  };
+
+  const handleEdit = (product_variation) => {
+    console.log("Editing product:", product_variation);
+      setSelectedProductVariation(product_variation);
+      setProductId(product_variation.product_id || "");
+      setType(product_variation.type || "");
+      setValue(product_variation.value || "");
+      setSku(product_variation.sku || "");
+      setUnitPrice(product_variation.unit_price || "");
+      setProductStatusId(product_variation.product_status_id || "");
+      setImage(product_variation.image || null);
+      setIsModalVisible(true);
+  };
+
+  const handleUpdateVariation = async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append("product_id", product_id);
+    formData.append("type", type);
+    formData.append("value", value);
+    formData.append("sku", sku);
+    formData.append("unit_price", unitPrice);
+    formData.append("product_status_id", productStatusId);
+    if (image) formData.append("image", image);
+
+    try {
+      const response = await updateProductVariation(selectedProductVariation.variation_id, formData);
+      console.log("Product variation updated successfully:", response);
+      setIsModalVisible(false);
+      const updatedVariations = await getAllProductVariations();
+      setProductVariations(updatedVariations);
+    } catch (error) {
+      console.error("Error updating product variation:", error);
+    }
+  };
+
+  const handleArchive = async (selectedProductVariation) => {
+    if (!selectedProductVariation) return;
+
+    const isConfirmed = window.confirm(
+      "Are you sure you want to archive this product variation?"
+    );
+    if (!isConfirmed) return;
+
+    const data = {
+      product_status_id: 4, // Archived status
+    };
+
+    try {
+      const response = await archiveProductVariation(
+        selectedProductVariation.variation_id,
+        data
+      );
+      console.log(response);
+
+      const productVariationsData = await getAllProductVariations();
+      setProductVariations(productVariationsData);
+    } catch (error) {
+      console.error("Error archiving product variation: ", error);
+      setError("Failed to update product status to Archived");
+    }
   };
 
   const handleCloseModal = () => {
-    setIsModalVisible(false);
     setShowModal(false);
-    // setSelectedProduct(null);
-    // setProductName("");
-    // setProductDescription("");
-    // setProductStatus("");
-    // setProductCategory("");
+    setIsModalVisible(false);
+    setSelectedProductVariation(null);
+    setProductId("");
+    setVariations([
+      {
+        type: "",
+        value: "",
+        sku: "",
+        unit_price: "",
+        product_status_id: "",
+        image: null,
+      },
+    ]); // Reset the form
   };
+
+  if (error) return <div>{error}</div>;
 
   const columns = [
     { key: "variation_id", header: "ID" },
     { key: "product_name", header: "Product Name" },
-    { key: "variation_name", header: "Variation Type" },
-    { key: "variation_value", header: "Variation Value" },
-    { key: "product_category", header: "Category" },
-    { key: "product_status", header: "Variation Status" },
+    { key: "type", header: "Variation Type" },
+    { key: "value", header: "Variation Value" },
     { key: "sku", header: "SKU" },
     { key: "unit_price", header: "Price" },
+    { key: "product_status", header: "Status" },
   ];
 
-  const sampleData = [
-    {
-      variation_id: 1,
-      name: "Variant A",
-      product_name: "Hair Clip",
-      variation_name: "Color",
-      variation_value: "Blue",
-      product_category: "Clip",
-      sku: "001",
-      unit_price: "₱10.00",
-    },
-  ];
+  // Map product IDs to names
+  const productMap = products.reduce((acc, product) => {
+    acc[product.product_id] = product.name;
+    return acc;
+  }, {});
+
+  // Map status IDs to descriptions
+  const statusMap = statuses.reduce((acc, status) => {
+    acc[status.status_id] = status.description;
+    return acc;
+  }, {});
+
+  const processedProductVariations = product_variations
+    .map((variation) => ({
+      ...variation,
+      product_name: productMap[variation.product_id] || "Unknown", // Map name from productMap
+      product_status: statusMap[variation.product_status_id] || "Unknown", // Map description from statusMap
+    }))
+    .sort((a, b) => {
+      if (a.product_status_id === 4 && b.product_status_id !== 4) return 1;
+      if (a.product_status_id !== 4 && b.product_status_id === 4) return -1;
+      return 0;
+    });
 
   return (
     <Fragment>
@@ -69,99 +268,71 @@ const ProductVariations = () => {
             />
           </div>
         </div>
-        <DataTable data={sampleData} columns={columns} onEdit={handleEdit} />{" "}
+        <DataTable
+          data={processedProductVariations}
+          columns={columns}
+          onEdit={handleEdit}
+          onArchive={handleArchive}
+        />
       </div>
 
-      <Modal isVisible={showModal} onClose={() => setShowModal(false)}>
-        <form className="p-6">
+      {/* Add Modal */}
+      <Modal isVisible={showModal} onClose={handleCloseModal}>
+        <form
+          className="p-6 w-full max-w-3xl mx-auto bg-white rounded-lg shadow-lg"
+          onSubmit={handleSubmit}
+          encType="multipart/form-data"
+        >
           <div className="flex flex-col gap-4">
-            <div className="font-extrabold text-3xl text-pink-400">
-              Add Product Variation:
+            <div className="font-extrabold text-2xl md:text-3xl text-pink-400 text-center">
+              {selectedProductVariation
+                ? "Edit Product Variation"
+                : "Add Product Variations"}
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="product_name">
+              <label className="font-bold" htmlFor="product_id">
                 Product Name:
               </label>
               <div className="relative">
                 <select
-                  id="type"
-                  name="product_name"
+                  id="product_id"
+                  name="product_id"
+                  value={product_id}
+                  onChange={(e) => setProductId(e.target.value)}
                   className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
                 >
-                  <option value="">Select Type</option>
+                  <option value="">Select Product</option>
+                  {products.map((product) => (
+                    <option key={product.product_id} value={product.product_id}>
+                      {product.name}
+                    </option>
+                  ))}
                 </select>
                 <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2" />
               </div>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="variation_type">
-                Variation Type:
-              </label>
-              <div className="relative">
-                <select
-                  id="type"
-                  name="variation_type"
-                  className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-                >
-                  <option value="">Select Type</option>
-                </select>
-                <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2" />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="variation_value">
-                Variation Value:
-              </label>
-              <input
-                type="text"
-                name="variation_value"
-                id="variation_value"
-                placeholder="Variation"
-                className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-              />
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="sku">
-                SKU:
-              </label>
-              <input
-                type="text"
-                name="sku"
-                id="sku"
-                placeholder="SKU"
-                className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-              />
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="unit_price">
-                Price:
-              </label>
-              <input
-                type="text"
-                name="unit_price"
-                id="unit_price"
-                placeholder="Unit Price"
-                className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-              />
-            </div>
-
-            {/* add image here*/}
+            {/* Use the separated ProductVariationsTable component */}
+            <ProductVariationsTable
+              variations={variations}
+              statuses={statuses}
+              handleVariationChange={handleVariationChange}
+              handleImageChange={handleImageChange}
+              addVariation={addVariation}
+              deleteVariation={deleteVariation}
+            />
 
             <div className="flex flex-row justify-between mt-4">
               <button
                 type="submit"
                 className="w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-semibold text-white"
               >
-                Add
+                {selectedProductVariation ? "Apply Changes" : "Add Product Variations"}
               </button>
               <button
                 type="button"
-                onClick={() => setShowModal(false)}
+                onClick={handleCloseModal}
                 className="w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-extrabold text-white"
               >
                 Cancel
@@ -172,99 +343,125 @@ const ProductVariations = () => {
       </Modal>
 
       {/* Edit Modal */}
-
       <Modal isVisible={isModalVisible} onClose={handleCloseModal}>
-        <form className="p-6">
+        <form className="p-6" onSubmit={handleUpdateVariation}>
           <div className="flex flex-col gap-4">
-            <div className="font-extrabold text-3xl text-pink-400">
-              Edit Product Variation:
-            </div>
-            
-            <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="product_name">
-                Product Name:
-              </label>
-              <input
-                type="text"
-                name="product_name"
-                id="edit_product_name"
-                placeholder="Product Name"
-                className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-              />
-            </div>
+            <div className="font-extrabold text-3xl text-pink-400">Edit Product Variation</div>
 
+            {/* Product Name */}
             <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="variation_type">
-                Variation Type:
-              </label>
+              <label className="font-bold" htmlFor="product_name">Product Name:</label>
               <div className="relative">
                 <select
-                  id="edit_type"
-                  name="variation_type"
+                  id="product_id"
+                  name="product_id"
+                  value={product_id}
+                  onChange={(e) => setProductId(e.target.value)}
                   className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
                 >
-                  <option value="">Select Type</option>
+                  <option value="" disabled>Select Product</option>
+                  {products.map((product) => (
+                    <option key={product.product_id} value={product.product_id}>
+                      {product.name}
+                    </option>
+                  ))}
                 </select>
-                <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2" />
+                <IoMdArrowDropdown className="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500" />
               </div>
             </div>
 
+            {/* Variation Type */}
             <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="variation_value">
-                Variation Value:
-              </label>
+              <label className="font-bold" htmlFor="type">Variation Type:</label>
               <input
                 type="text"
-                name="variation_value"
-                id="edit_variation_value"
-                placeholder="Variation"
+                name="type"
+                id="type"
+                value={type}
+                onChange={(e) => setType(e.target.value)}
                 className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
               />
             </div>
 
+            {/* Variation Value */}
             <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="unit_price">
-                Price:
-              </label>
+              <label className="font-bold" htmlFor="value">Variation Value:</label>
               <input
                 type="text"
-                name="unit_price"
-                id="edit_unit_price"
-                placeholder="Unit Price"
+                name="value"
+                id="value"
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
                 className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
               />
             </div>
 
+            {/* SKU */}
             <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="sku">
-                SKU:
-              </label>
+              <label className="font-bold" htmlFor="sku">SKU:</label>
               <input
                 type="text"
                 name="sku"
-                id="edit_sku"
-                placeholder="SKU"
-                className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+                id="sku"
+                value={sku}
                 readOnly
+                className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
               />
             </div>
 
-            {/* replace current image here */}
-            
+            {/* Unit Price */}
+            <div className="flex flex-col gap-2">
+              <label className="font-bold" htmlFor="unit_price">Unit Price:</label>
+              <input
+                type="number"
+                name="unit_price"
+                id="unit_price"
+                value={unitPrice}
+                onChange={(e) => setUnitPrice(e.target.value)}
+                className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+              />
+            </div>
 
-            <div className="flex flex-row justify-between mt-4">
+            {/* Image Upload */}
+            <div className="flex flex-col gap-2">
+              <label className="font-bold" htmlFor="image">Product Image:</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setImage(e.target.files[0])}
+                className="rounded-xl border w-full h-10 px-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+              />
+            </div>
+
+            {/* Product Status */}
+            <div className="flex flex-col gap-2">
+              <label className="font-bold" htmlFor="statusId">Status:</label>
+              <div className="relative">
+                <select
+                  name="statusId"
+                  id="statusId"
+                  value={productStatusId}
+                  onChange={(e) => setProductStatusId(e.target.value)}
+                  className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+                >
+                  <option value="" disabled>Select Status</option>
+                  {statuses.map((status) => (
+                    <option key={status.status_id} value={status.status_id}>
+                      {status.description}
+                    </option>
+                  ))}
+                </select>
+                <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500" />
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <div className="flex justify-end mt-2">
               <button
                 type="submit"
                 className="w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-semibold text-white"
               >
-                Apply Changes
-              </button>
-              <button
-                type="button"
-                onClick={handleCloseModal}
-                className="w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-extrabold text-white"
-              >
-                Cancel
+                Update Variation
               </button>
             </div>
           </div>
