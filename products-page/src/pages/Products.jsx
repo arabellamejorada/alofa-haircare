@@ -4,7 +4,7 @@ import HairClip from '../../../productImages/hairclips_all.jpeg'
 import BambooBrush from '../../../productImages/tools_bamboobrush.jpeg'
 import JadeComb from '../../../productImages/tools_jadecomb.jpeg'
 import ScalpBrush from '../../../productImages/tools_scalpbrush.jpeg'
-
+import '../../public/images/body-bg.png'
 const products = [
   {
     id: 1,
