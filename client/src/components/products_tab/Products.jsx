@@ -4,10 +4,6 @@ import { MdAddBox } from "react-icons/md";
 import Modal from "../modal/Modal";
 import { IoMdArrowDropdown } from "react-icons/io";
 import { createProduct, getAllProducts, getCategories, getStatus, archiveProduct, updateProduct } from "../../api/products";
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/cassey-test-branch
 
 const Products = () => {
   const [products, setProducts] = useState([]);
