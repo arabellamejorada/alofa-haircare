@@ -18,8 +18,8 @@ router.post('/product-category', productController.createProductCategory);      
 router.get('/product-category', productController.getAllProductCategories);     // Read all
 router.get('/product-category/:id', productController.getProductCategoryById);  // Read by ID
 router.put('/product-category/:id', productController.updateProductCategory);   // Update by ID
+router.put('/product-category/:id/archive', productController.archiveProductCategory); // Archive by ID
 router.delete('/product-category/:id', productController.deleteProductCategory);// Delete by ID
-router.delete('/product-category', productController.deleteAllProductCategories);// Delete all
 
 
 // PRODUCT VARIATION

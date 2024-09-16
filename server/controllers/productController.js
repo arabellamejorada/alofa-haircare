@@ -334,19 +334,28 @@ const deleteProductCategory = async (req, res) => {
     }
 };
 
-const deleteAllProductCategories = async (req, res) => {
+const archiveProductCategory = async (req, res) => {
     const client = await pool.connect();
+    const product_category_id = parseInt
 
     try {
-        await client.query('BEGIN');
-        await client.query('DELETE FROM product_category');
-        await client.query('ALTER SEQUENCE product_category_product_category_id_seq RESTART WITH 1');
-        await client.query('COMMIT');
-        res.status(200).json({ message: 'All product categories deleted and sequence reset' });
-    } catch (error) {
-        await client.query('ROLLBACK');
-        console.error('Error deleting all product categories:', error);
-        res.status(500).json({ message: 'Error deleting all product categories', error: error.message });
+        const results = await client.query(
+            `UPDATE product_category
+            SET product_status_id = 4
+            WHERE product_category_id = $1
+            RETURNING *`,
+            [product_category_id]
+        );
+
+        if (results.rows.length === 0) {
+            return res.status(404).json({ message: 'Product category not found' });
+        }
+
+        res.status(200).json(results.rows[0]);
+    }
+    catch (error) {
+        console.error('Error archiving product category:', error);
+        res.status(500).json({ message: 'Error archiving product category', error: error.message });
     } finally {
         client.release();
     }
@@ -368,5 +377,5 @@ module.exports = {
     getProductCategoryById,
     updateProductCategory,
     deleteProductCategory,
-    deleteAllProductCategories
+    archiveProductCategory
 };
