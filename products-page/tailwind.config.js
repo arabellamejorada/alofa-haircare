@@ -16,7 +16,7 @@ export default {
         "alofa-pink-gradient" : "#F8587A",
       },
       fontFamily: {
-        'title': ["Yavome", "sans-serif"],
+        'title': ['Yavome', 'sans-serif'],
         'body': ["Montserrat", "sans-serif"],
       }
     },
