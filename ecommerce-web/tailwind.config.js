@@ -17,6 +17,7 @@ export default {
       },
       fontFamily: {
         'title': ['Yavome', 'sans-serif'],
+        'heading': ['Yeseva One', 'sans-serif'],
         'body': ["Montserrat", "sans-serif"],
       }
     },

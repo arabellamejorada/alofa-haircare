@@ -3,7 +3,7 @@ import DataTable from "../shared/DataTable";
 import { MdAddBox } from "react-icons/md";
 import Modal from "../modal/Modal";
 import { IoMdArrowDropdown } from "react-icons/io";
-import { createProduct, getProducts, getCategories, getStatus, archiveProduct, updateProduct } from "../../api/products";
+import { createProduct, getAllProducts, getCategories, getStatus, archiveProduct, updateProduct } from "../../api/products";
 
 
 const Products = () => {
