@@ -125,12 +125,12 @@ const Suppliers = () => {
     console.log("Selected Supplier:", supplier); // Check if supplier data is correct
 
     setSelectedSupplier(supplier);
-    setSupplierName(supplier.supplier_name);
-    setContactPerson(supplier.contact_person);
-    setContactNumber(supplier.contact_number);
-    setEmail(supplier.email);
-    setAddress(supplier.address);
-    setStatus(supplier.status);
+    setSupplierName(supplier.supplier_name || "");
+    setContactPerson(supplier.contact_person || "");
+    setContactNumber(supplier.contact_number || "");
+    setEmail(supplier.email || "");
+    setAddress(supplier.address || "");
+    setStatus(supplier.status || "");
 
     setIsModalVisible(true);
   };
