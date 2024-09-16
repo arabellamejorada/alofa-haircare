@@ -4,13 +4,18 @@ import axios from './axios';
 
 export const createProductVariationWithInventory = async (productData) => {
     try {
-        const response = await axios.post('/product-variations', productData);
+        const response = await axios.post('/product-variations', productData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+            });
         return response.data;
     } catch (error) {
         console.error('Error creating product variation with inventory: ', error);
         throw error;
     }
 };
+
 
 export const getAllProducts = async () => {
     try {
