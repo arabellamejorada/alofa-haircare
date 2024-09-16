@@ -25,9 +25,9 @@ const StockIn = () => {
   // Fetch employee and supplier data on component mount
   useEffect(() => {
     const loadData = async () => {
-      const employeeData = await getEmployees(); 
+      const employeeData = await getEmployees();
       const supplierData = await getAllSuppliers();
-      const productVariationsData = await getAllProductVariations(); 
+      const productVariationsData = await getAllProductVariations();
       setEmployees(employeeData);
       setSuppliers(supplierData);
       setProductVariations(productVariationsData);
@@ -54,7 +54,7 @@ const StockIn = () => {
     { key: "product_name", header: "Product Name" },
     { key: "type", header: "Type" },
     { key: "value", header: "Value" },
-    { key: "sku", header: "SKU" },    
+    { key: "sku", header: "SKU" },
     { key: "quantity", header: "Qty." },
     { key: "stock_in_date", header: "Stock In Date" },
     { key: "supplier", header: "Supplier" },
@@ -94,7 +94,10 @@ const StockIn = () => {
                 >
                   <option value="">Select Employee</option>
                   {employees.map((employee) => (
-                    <option key={employee.employee_id} value={employee.employee_id}>
+                    <option
+                      key={employee.employee_id}
+                      value={employee.employee_id}
+                    >
                       {employee.first_name} {employee.last_name}
                     </option>
                   ))}
@@ -117,9 +120,6 @@ const StockIn = () => {
                 className="rounded-md border w-[85%] h-8 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
               />
             </div>
-          </div>
-
-          <div className="flex flex-col px-6 pt-4 w-full gap-2">
             {/* Supplier Dropdown */}
             <div className="flex flex-row justify-between items-center">
               <label className="font-bold w-[30%]" htmlFor="supplier_name">
@@ -135,7 +135,10 @@ const StockIn = () => {
                 >
                   <option value="">Select Supplier</option>
                   {suppliers.map((supplier) => (
-                    <option key={supplier.supplier_id} value={supplier.supplier_id}>
+                    <option
+                      key={supplier.supplier_id}
+                      value={supplier.supplier_id}
+                    >
                       {supplier.supplier_name}
                     </option>
                   ))}
@@ -143,7 +146,9 @@ const StockIn = () => {
                 <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2" />
               </div>
             </div>
+          </div>
 
+          <div className="flex flex-col px-6 pt-4 w-full gap-2">
             {/* Auto-fill supplier details */}
             <div className="flex flex-row justify-between items-center">
               <label className="font-bold w-[30%]" htmlFor="contact_person">
@@ -199,7 +204,7 @@ const StockIn = () => {
                 readOnly
                 className="rounded-md border w-[85%] h-8 pl-4 bg-gray-50 border-slate-300 text-slate-700"
               />
-              </div>
+            </div>
           </div>
         </div>
       </div>
