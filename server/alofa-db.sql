@@ -273,7 +273,7 @@ CREATE TABLE product_variation (
     variation_id SERIAL PRIMARY KEY,
     product_id INT REFERENCES product(product_id) ON DELETE CASCADE,
     product_status_id INT REFERENCES product_status(status_id) ON DELETE CASCADE,
-    name VARCHAR(255),        -- e.g., 'Color', 'Size'
+    type VARCHAR(255),        -- e.g., 'Color', 'Size'
     value VARCHAR(255),       -- e.g., 'Red', 'Large'
     unit_price NUMERIC(10, 2),  -- Price for this specific variation
     sku VARCHAR(100) UNIQUE   -- Unique SKU for the variation
@@ -317,3 +317,51 @@ CREATE TABLE stock_in (
     quantity INT,
     stock_in_date DATE DEFAULT CURRENT_DATE
 );
+
+
+-- SEPTEMBER 11 11PM
+-- create cart table
+CREATE TABLE cart (
+    cart_id SERIAL PRIMARY KEY,                -- Auto-incrementing primary key
+    session_id VARCHAR(255) NULL,              -- Used for guest users
+    customer_id INT NULL,                      -- Used for logged-in users
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,  -- Cart creation time
+    last_activity TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, -- Last update to the cart
+    status VARCHAR(20) DEFAULT 'active',       -- Cart status ('active', 'completed', etc.)
+    FOREIGN KEY (customer_id) REFERENCES Customer(customer_id)  -- Customer foreign key
+);
+
+-- DROP TABLE product_order and order_transaction
+DROP TABLE product_order CASCADE;
+DROP TABLE order_transaction CASCADE;
+
+-- recreate order_transaction table
+CREATE TABLE order_transaction (
+    order_id SERIAL PRIMARY KEY,               -- Auto-incrementing primary key for order
+    customer_id INT,                           -- Link to the customer placing the order
+    total_amount NUMERIC(10, 2) NOT NULL,      -- Total order amount
+    date_ordered TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Time the order was placed
+    order_status VARCHAR(255) NOT NULL,        -- Status of the order (e.g., pending, completed)
+    payment_id INT NOT NULL,                   -- Payment method or reference ID (assumed)
+    shipping_id INT NOT NULL,                  -- Shipping method or reference ID (assumed)
+    FOREIGN KEY (customer_id) REFERENCES customer(customer_id),  -- Link to the customer
+    FOREIGN KEY (payment_id) REFERENCES payment(payment_id),      -- Assuming a Payment table
+    FOREIGN KEY (shipping_id) REFERENCES shipping(shipping_id)    -- Assuming a Shipping table
+);
+
+-- recreate product_order table
+CREATE TABLE product_order (
+    product_order_id SERIAL PRIMARY KEY,       -- Use SERIAL for consistency with cart_id
+    variation_id INT NOT NULL,                 -- Product variation foreign key (assumed)
+    quantity INT NOT NULL,                     -- Quantity of the product in the cart
+    subtotal DECIMAL(10, 2) NOT NULL,          -- Subtotal for the product
+    cart_id INT NOT NULL,                      -- Link to the cart, used for both guests and logged-in users
+    order_id INT NULL,                         -- Link to the order, added after checkout
+    FOREIGN KEY (cart_id) REFERENCES cart(cart_id),   -- Foreign key linking to cart
+    FOREIGN KEY (order_id) REFERENCES order_transaction(order_id), -- Links to order_transaction
+    FOREIGN KEY (variation_id) REFERENCES product_variation(variation_id)  -- Links to product_variation
+);
+
+
+
+

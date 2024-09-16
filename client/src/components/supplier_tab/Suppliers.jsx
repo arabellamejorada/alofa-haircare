@@ -4,7 +4,7 @@ import { MdAddBox } from "react-icons/md";
 import Modal from "../modal/Modal";
 import { IoMdArrowDropdown } from "react-icons/io";
 import {
-  getSuppliers,
+  getAllSuppliers,
   createSupplier,
   updateSupplier,
   archiveSupplier
@@ -28,7 +28,7 @@ const Suppliers = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const suppliersData = await getSuppliers();
+        const suppliersData = await getAllSuppliers();
 
         setSuppliers(suppliersData);
       } catch (err) {
@@ -55,7 +55,7 @@ const Suppliers = () => {
     e.preventDefault();
 
     const newSupplier = {
-     supplier_name : supplier_name,
+      supplier_name : supplier_name,
       contact_person : contact_person,
       contact_number : contact_number,
       email : email,
@@ -68,7 +68,7 @@ const Suppliers = () => {
       console.log(response);
       setShowModal(false);
 
-      const suppliersData = await getSuppliers();
+      const suppliersData = await getAllSuppliers();
       setSuppliers(suppliersData);
     } catch (error) {
       console.error("Error creating supplier: ", error);
@@ -93,7 +93,7 @@ const Suppliers = () => {
       console.log(response);
       setIsModalVisible(false);
 
-      const suppliersData = await getSuppliers();
+      const suppliersData = await getAllSuppliers();
       setSuppliers(suppliersData);
     } catch (error) {
       console.error("Error updating supplier: ", error);
@@ -113,7 +113,7 @@ const Suppliers = () => {
       console.log(response);
   
       // Optionally refresh the suppliers list
-      const suppliersData = await getSuppliers();
+      const suppliersData = await getAllSuppliers();
       setSuppliers(suppliersData);
     } catch (error) {
       console.error("Error archiving supplier: ", error);
