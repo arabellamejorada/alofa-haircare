@@ -80,6 +80,36 @@ export const getCategories = async () => {
     }
 };
 
+export const createCategory = async (categoryData) => {
+    try {
+        const response = await axios.post('/product-category', categoryData);
+        return response.data;
+    } catch (error) {
+        console.error('Error creating category: ', error);
+        throw error;
+    }
+};
+
+export const updateCategory = async (categoryId, categoryData) => {
+    try {
+        const response = await axios.put(`/product-category/${categoryId}`, categoryData);
+        return response.data;
+    } catch (error) {
+        console.error('Error updating category: ', error);
+        throw error;
+    }
+};
+
+export const archiveCategory = async (categoryId) => {
+    try {
+        const response = await axios.put(`/product-category/${categoryId}/archive`);
+        return response.data;
+    } catch (error) {
+        console.error('Error archiving category: ', error);
+        throw error;
+    }
+};
+
 // PRODUCT STATUS
 export const getStatus = async () => {
     try {

@@ -24,16 +24,16 @@ const createProductVariationsWithInventory = async (req, res) => {
   
       for (let i = 0; i < variations.length; i++) {
         const variation = variations[i];
-        const { name, value, unit_price, product_status_id } = variation;
+        const { type, value, unit_price, product_status_id } = variation;
         const image = uploadedFiles[i] ? uploadedFiles[i].path : null;  // Assign corresponding image
   
-        const sku = generateSKU(product_name, name, value, product_id);
+        const sku = generateSKU(product_name, type, value, product_id);
   
         const productVariationResult = await client.query(
-          `INSERT INTO product_variation (product_id, name, value, sku, unit_price, product_status_id, image)
+          `INSERT INTO product_variation (product_id, type, value, sku, unit_price, product_status_id, image)
            VALUES ($1, $2, $3, $4, $5, $6, $7)
            RETURNING variation_id`,
-          [product_id, name, value, sku, unit_price, product_status_id, image]
+          [product_id, type, value, sku, unit_price, product_status_id, image]
         );
   
         const variation_id = productVariationResult.rows[0].variation_id;
@@ -46,8 +46,10 @@ const createProductVariationsWithInventory = async (req, res) => {
            RETURNING inventory_id`,
           [variation_id, stock_quantity, stock_in_date]
         );
+
+        const inventory_id = inventoryResult.rows[0].inventory_id;
   
-        insertedVariations.push({ variation_id, product_id, name, value, sku, unit_price, product_status_id, image });
+        insertedVariations.push({ variation_id, product_id, type, value, sku, unit_price, product_status_id, image });
         insertedInventories.push({ inventory_id, variation_id, stock_quantity, stock_in_date });
       }
   
@@ -127,11 +129,14 @@ const generateSKU = (product_name, variation_type, variation_value, counter) => 
     return sku;
 };
 
-// Get all product variations
+// Get all product variations join with product name and status
 const getAllProductVariations = async (req, res) => {
     try {
         const productVariations = await pool.query(
-            `SELECT * FROM product_variation`
+            `SELECT * FROM product_variation
+            JOIN product ON product_variation.product_id = product.product_id
+            JOIN product_status ON product_variation.product_status_id = product_status.status_id
+            ORDER BY product_variation.variation_id ASC`
         );
         res.status(200).json(productVariations.rows);
     } catch (error) {
@@ -158,14 +163,14 @@ const getProductVariationById = async (req, res) => {
 // Update product variation by ID
 const updateProductVariation = async (req, res) => {
     const id = parseInt(req.params.id);
-    const { name, value, sku, unit_price, product_status_id, image } = req.body;
+    const { type, value, sku, unit_price, product_status_id, image } = req.body;
     try {
         const updatedProductVariation = await pool.query(
             `UPDATE product_variation
-            SET name = $1, value = $2, sku = $3, unit_price = $4, product_status_id = $5, image = $6
+            SET type = $1, value = $2, sku = $3, unit_price = $4, product_status_id = $5, image = $6
             WHERE variation_id = $7
             RETURNING *`,
-            [name, value, sku, unit_price, product_status_id, image, id]
+            [type, value, sku, unit_price, product_status_id, image, id]
         );
         res.status(200).json(updatedProductVariation.rows);
     } catch (error) {
