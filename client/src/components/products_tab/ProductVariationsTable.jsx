@@ -15,17 +15,14 @@ const ProductVariationsTable = ({
         <table className="min-w-full leading-normal">
           <thead>
             <tr>
-              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <th className="px- py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
                 #
               </th>
               <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                Variation Name
+                Variation Type
               </th>
               <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
                 Variation Value
-              </th>
-              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                SKU
               </th>
               <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
                 Unit Price
@@ -44,19 +41,27 @@ const ProductVariationsTable = ({
           <tbody>
             {variations.map((variation, index) => (
               <tr key={index}>
+                {/* index */}
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-center">
                   {index + 1}
                 </td>
+
+                {/* type */}
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-center">
-                  <input
-                    type="text"
+                  <select
                     value={variation.type}
                     onChange={(e) =>
-                      handleVariationChange(index, "name", e.target.value)
+                      handleVariationChange(index, "type", e.target.value)
                     }
-                    className="w-full border border-gray-200 rounded px-2 py-1 text-center"
-                  />
+                    className="w-full border border-gray-200 rounded px-2 py-1 text-center appearance-none"
+                  >
+                    <option value="">Select Type</option>
+                    <option value="Size">Size</option>
+                    <option value="Color">Color</option>
+                  </select>
                 </td>
+                
+                {/* value */}
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-center">
                   <input
                     type="text"
@@ -67,16 +72,8 @@ const ProductVariationsTable = ({
                     className="w-full border border-gray-200 rounded px-2 py-1 text-center"
                   />
                 </td>
-                <td className="px-5 py-2 border-b border-gray-200 text-sm text-center">
-                  <input
-                    type="text"
-                    value={variation.sku}
-                    onChange={(e) =>
-                      handleVariationChange(index, "sku", e.target.value)
-                    }
-                    className="w-full border border-gray-200 rounded px-2 py-1 text-center"
-                  />
-                </td>
+
+                {/* unit_price */}
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-center">
                   <input
                     type="number"
@@ -87,6 +84,8 @@ const ProductVariationsTable = ({
                     className="w-full border border-gray-200 rounded px-2 py-1 text-center"
                   />
                 </td>
+
+                {/* product_status */}
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-center">
                   <select
                     value={variation.product_status_id}
@@ -103,14 +102,19 @@ const ProductVariationsTable = ({
                     ))}
                   </select>
                 </td>
-                <td className="px-5 py-2 border-b border-gray-200 text-sm text-center">
+
+                {/* image */}
+                <td className="px-5 py-2">
                   <input
                     type="file"
                     accept="image/*"
                     onChange={(e) => handleImageChange(index, e.target.files[0])}
-                    className="w-full border border-gray-200 rounded px-2 py-1"
+                    className="w-full px-2 py-1 file:mr-2 file:py-1 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pink-400 file:text-white hover:file:bg-pink-500"
                   />
                 </td>
+
+
+                {/* delete */}
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-center">
                   <button
                     className="text-red-500 hover:text-red-700"

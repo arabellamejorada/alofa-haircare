@@ -22,18 +22,15 @@ const upload = multer({
   storage: storage,
   limits: { fileSize: 1024 * 1024 * 5 },  // Limit files to 5MB
   fileFilter: function (req, file, cb) {
-    const filetypes = /jpeg|jpg|png|gif/;  // Accept only certain image file types
+    const filetypes = /jpeg|jpg|png|gif/;
     const mimetype = filetypes.test(file.mimetype);
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-
+    
     if (mimetype && extname) {
       return cb(null, true);
     }
-    console.log('File rejected: ', file.originalname);
-    cb(new Error('Only images (JPEG, PNG, GIF) are allowed!'));  // Return an error if the file is not an image
+    cb(new Error('Only images (jpeg, jpg, png, gif) are allowed!'));
   }
 });
 
-// Use `upload.array('images', maxCount)` to handle multiple images
-// 'images' is the field name, and '10' is the maximum number of files
-module.exports = upload.array('images', 10);
+module.exports = upload;
