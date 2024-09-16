@@ -279,7 +279,7 @@ const ProductVariations = () => {
       {/* Add Modal */}
       <Modal isVisible={showModal} onClose={handleCloseModal}>
         <form
-          className="p-6 w-full max-w-3xl mx-auto bg-white rounded-lg shadow-lg"
+          className="px-6 w-full max-w-3xl mx-auto bg-white rounded-lg"
           onSubmit={handleSubmit}
           encType="multipart/form-data"
         >

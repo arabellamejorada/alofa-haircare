@@ -15,7 +15,7 @@ const Modal = ({ isVisible, onClose, children }) => {
       className="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm flex justify-center items-center"
       onClick={handleClose}
     >
-      <div className="w-[25rem] flex flex-col gap-1">
+      <div className="w-fit flex flex-col gap-1">
         <IoCloseCircle
           fontSize={24}
           className="text-gray-400 place-self-end hover:text-pink-500 active:text-gray-600"

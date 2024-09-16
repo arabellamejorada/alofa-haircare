@@ -2,9 +2,14 @@ import React, { useState } from "react";
 // import { IoMdArrowDropdown } from "react-icons/io";
 import { MdDelete } from "react-icons/md";
 import { MdAddBox } from "react-icons/md";
+import DataTable from "../shared/DataTable";
+import Modal from "../modal/Modal";
 
 const StockInTable = ({ columns, productVariations }) => {
   const [data, setData] = useState([]);
+
+  const [showModal, setShowModal] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   // Handle adding a new row
   const handleAddRow = () => {
@@ -16,6 +21,11 @@ const StockInTable = ({ columns, productVariations }) => {
       quantity: 1, // Default quantity to 1
     };
     setData([...data, newRow]);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setIsModalVisible(false); // Reset the form
   };
 
   // Handle deleting a row
@@ -44,6 +54,116 @@ const StockInTable = ({ columns, productVariations }) => {
     setData(updatedData);
   };
 
+  const sampleColumns = [
+    { key: "id", header: "ID" },
+    { key: "productName", header: "Product Name" },
+    { key: "quantity", header: "Quantity" },
+    { key: "stockInDate", header: "Stock-In Date" },
+    { key: "supplier", header: "Supplier" },
+  ];
+
+  const sampleData = [
+    {
+      id: 1,
+      productName: "Shampoo",
+      quantity: 50,
+      stockInDate: "2023-10-01",
+      supplier: "Supplier A",
+    },
+    {
+      id: 2,
+      productName: "Conditioner",
+      quantity: 30,
+      stockInDate: "2023-10-02",
+      supplier: "Supplier B",
+    },
+    {
+      id: 3,
+      productName: "Hair Oil",
+      quantity: 20,
+      stockInDate: "2023-10-03",
+      supplier: "Supplier C",
+    },
+    {
+      id: 4,
+      productName: "Hair Gel",
+      quantity: 40,
+      stockInDate: "2023-10-04",
+      supplier: "Supplier D",
+    },
+    {
+      id: 5,
+      productName: "Hair Spray",
+      quantity: 25,
+      stockInDate: "2023-10-05",
+      supplier: "Supplier E",
+    },
+    {
+      id: 5,
+      productName: "Hair Spray",
+      quantity: 25,
+      stockInDate: "2023-10-05",
+      supplier: "Supplier E",
+    },
+    {
+      id: 5,
+      productName: "Hair Spray",
+      quantity: 25,
+      stockInDate: "2023-10-05",
+      supplier: "Supplier E",
+    },
+    {
+      id: 5,
+      productName: "Hair Spray",
+      quantity: 25,
+      stockInDate: "2023-10-05",
+      supplier: "Supplier E",
+    },
+    {
+      id: 5,
+      productName: "Hair Spray",
+      quantity: 25,
+      stockInDate: "2023-10-05",
+      supplier: "Supplier E",
+    },
+    {
+      id: 5,
+      productName: "Hair Spray",
+      quantity: 25,
+      stockInDate: "2023-10-05",
+      supplier: "Supplier E",
+    },
+    {
+      id: 5,
+      productName: "Hair Spray",
+      quantity: 25,
+      stockInDate: "2023-10-05",
+      supplier: "Supplier E",
+    },
+    {
+      id: 5,
+      productName: "Hair Spray",
+      quantity: 25,
+      stockInDate: "2023-10-05",
+      supplier: "Supplier E",
+    },
+    {
+      id: 5,
+      productName: "Hair Spray",
+      quantity: 25,
+      stockInDate: "2023-10-05",
+      supplier: "Supplier E",
+    },
+    {
+      id: 5,
+      productName: "Hair Spray",
+      quantity: 25,
+      stockInDate: "2023-10-05",
+      supplier: "Supplier E",
+    },
+    // Add more sample data as needed
+  ];
+
   return (
     <div className="overflow-x-auto pt-4">
       <div className="flex justify-end pr-6">
@@ -61,7 +181,10 @@ const StockInTable = ({ columns, productVariations }) => {
                 #
               </th>
               {columns
-                .filter(column => column.key !== "stock_in_date" && column.key !== "supplier") // Exclude stock_in_date and supplier
+                .filter(
+                  (column) =>
+                    column.key !== "stock_in_date" && column.key !== "supplier"
+                ) // Exclude stock_in_date and supplier
                 .map((column) => (
                   <th
                     className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
@@ -69,7 +192,7 @@ const StockInTable = ({ columns, productVariations }) => {
                   >
                     {column.header}
                   </th>
-              ))}
+                ))}
               <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
                 Delete
               </th>
@@ -112,7 +235,7 @@ const StockInTable = ({ columns, productVariations }) => {
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-left">
                   {item.value || ""}
                 </td>
-                
+
                 {/* SKU */}
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-left">
                   {item.sku || ""}
@@ -150,10 +273,26 @@ const StockInTable = ({ columns, productVariations }) => {
           </tbody>
         </table>
       </div>
-      <div className="mt-4">
+      <div className="flex flex-row mt-4 gap-2">
         <button className="px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600">
           Save
         </button>
+        <button
+          className="px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600"
+          onClick={() => setShowModal(true)}
+        >
+          View History
+        </button>
+        <Modal isVisible={showModal} onClose={handleCloseModal}>
+          <div className="mx-8">
+            <strong className="text-3xl font-bold text-gray-500">
+              Stock In History
+            </strong>
+            <div className="h-[50rem] overflow-y-scroll">
+              <DataTable columns={sampleColumns} data={sampleData} />
+            </div>
+          </div>
+        </Modal>
       </div>
     </div>
   );

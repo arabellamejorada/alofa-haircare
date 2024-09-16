@@ -45,7 +45,7 @@ const Inventory = () => {
     ...item,
     product_name: productMap[item.product_id]?.name || "Unknown",
     is_archived: productMap[item.product_id]?.is_archived || false,
-    product_variation: `${item.name} - ${item.value}`,
+    product_variation: `${item.type} - ${item.value}`,
   }));
 
   return (
