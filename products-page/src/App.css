@@ -1,7 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
-
+@import './assets/fonts.css'; 
 * {
   font-family: "Montserrat";
+}
+
+h1 {
+  font-family: "Yeseva One";
 }
 
 /* fill: var(--Soft-White, linear-gradient(180deg, #FFF 0%, #FFF8FC 100%));
