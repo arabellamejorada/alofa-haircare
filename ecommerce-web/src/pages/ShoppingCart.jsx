@@ -1,7 +1,11 @@
 import { useState } from 'react';
 import CartTable from '../components/CartTable.jsx';
 import CartSummary from '../components/CartSummary.jsx';
-
+import hairClips from '../../../productImages/hairclips_all.jpeg'
+import hairOil from '../../../productImages/hairoil_60ml.jpeg'
+import jadeComb from '../../../productImages/tools_jadecomb.jpeg'
+import bamBrush from '../../../productImages/tools_bamboobrush.jpeg'
+import scalpBrush from '../../../productImages/tools_scalpbrush.jpeg'
 
 const ShoppingCart = () => {
 
@@ -11,35 +15,35 @@ const ShoppingCart = () => {
       variation: '60 ml',
       price: 280.0,
       quantity: 1,
-      imageUrl: '../../../productImages/hairoil_60ml.jpeg',
+      imageUrl: hairOil,
     },
     {
-      name: 'Jade Hair Brush',
-      variation: '60 ml',
+      name: 'Hair Clips',
+      variation: 'Blossom',
       price: 280.0,
       quantity: 1,
-      imageUrl: '../../../productImages/tools_jadecomb.jpeg',
+      imageUrl: hairClips,
     },
     {
         name: 'Jade Hair Brush',
-        variation: '60 ml',
+        variation: 'White',
         price: 280.0,
         quantity: 1,
-        imageUrl: '../../../productImages/tools_jadecomb.jpeg',
+        imageUrl: jadeComb,
     },
     {
-        name: 'Jade Hair Brush',
-        variation: '60 ml',
+        name: 'Bamboo Hair Brush',
+        variation: 'Brown',
         price: 280.0,
         quantity: 1,
-        imageUrl: '../../../productImages/tools_jadecomb.jpeg',
+        imageUrl: bamBrush,
     },
     {
-        name: 'Jade Hair Brush',
-        variation: '60 ml',
+        name: 'Scalp Brush',
+        variation: 'White',
         price: 280.0,
         quantity: 1,
-        imageUrl: '../../../productImages/tools_jadecomb.jpeg',
+        imageUrl: scalpBrush,
     },
   ]);
 
