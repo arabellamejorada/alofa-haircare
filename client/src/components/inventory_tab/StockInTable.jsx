@@ -2,14 +2,10 @@ import React, { useState } from "react";
 // import { IoMdArrowDropdown } from "react-icons/io";
 import { MdDelete } from "react-icons/md";
 import { MdAddBox } from "react-icons/md";
-import DataTable from "../shared/DataTable";
-import Modal from "../modal/Modal";
+import { Link } from "react-router-dom";
 
 const StockInTable = ({ columns, productVariations }) => {
   const [data, setData] = useState([]);
-
-  const [showModal, setShowModal] = useState(false);
-  const [isModalVisible, setIsModalVisible] = useState(false);
 
   // Handle adding a new row
   const handleAddRow = () => {
@@ -21,11 +17,6 @@ const StockInTable = ({ columns, productVariations }) => {
       quantity: 1, // Default quantity to 1
     };
     setData([...data, newRow]);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setIsModalVisible(false); // Reset the form
   };
 
   // Handle deleting a row
@@ -53,116 +44,6 @@ const StockInTable = ({ columns, productVariations }) => {
     }
     setData(updatedData);
   };
-
-  const sampleColumns = [
-    { key: "id", header: "ID" },
-    { key: "productName", header: "Product Name" },
-    { key: "quantity", header: "Quantity" },
-    { key: "stockInDate", header: "Stock-In Date" },
-    { key: "supplier", header: "Supplier" },
-  ];
-
-  const sampleData = [
-    {
-      id: 1,
-      productName: "Shampoo",
-      quantity: 50,
-      stockInDate: "2023-10-01",
-      supplier: "Supplier A",
-    },
-    {
-      id: 2,
-      productName: "Conditioner",
-      quantity: 30,
-      stockInDate: "2023-10-02",
-      supplier: "Supplier B",
-    },
-    {
-      id: 3,
-      productName: "Hair Oil",
-      quantity: 20,
-      stockInDate: "2023-10-03",
-      supplier: "Supplier C",
-    },
-    {
-      id: 4,
-      productName: "Hair Gel",
-      quantity: 40,
-      stockInDate: "2023-10-04",
-      supplier: "Supplier D",
-    },
-    {
-      id: 5,
-      productName: "Hair Spray",
-      quantity: 25,
-      stockInDate: "2023-10-05",
-      supplier: "Supplier E",
-    },
-    {
-      id: 5,
-      productName: "Hair Spray",
-      quantity: 25,
-      stockInDate: "2023-10-05",
-      supplier: "Supplier E",
-    },
-    {
-      id: 5,
-      productName: "Hair Spray",
-      quantity: 25,
-      stockInDate: "2023-10-05",
-      supplier: "Supplier E",
-    },
-    {
-      id: 5,
-      productName: "Hair Spray",
-      quantity: 25,
-      stockInDate: "2023-10-05",
-      supplier: "Supplier E",
-    },
-    {
-      id: 5,
-      productName: "Hair Spray",
-      quantity: 25,
-      stockInDate: "2023-10-05",
-      supplier: "Supplier E",
-    },
-    {
-      id: 5,
-      productName: "Hair Spray",
-      quantity: 25,
-      stockInDate: "2023-10-05",
-      supplier: "Supplier E",
-    },
-    {
-      id: 5,
-      productName: "Hair Spray",
-      quantity: 25,
-      stockInDate: "2023-10-05",
-      supplier: "Supplier E",
-    },
-    {
-      id: 5,
-      productName: "Hair Spray",
-      quantity: 25,
-      stockInDate: "2023-10-05",
-      supplier: "Supplier E",
-    },
-    {
-      id: 5,
-      productName: "Hair Spray",
-      quantity: 25,
-      stockInDate: "2023-10-05",
-      supplier: "Supplier E",
-    },
-    {
-      id: 5,
-      productName: "Hair Spray",
-      quantity: 25,
-      stockInDate: "2023-10-05",
-      supplier: "Supplier E",
-    },
-    // Add more sample data as needed
-  ];
 
   return (
     <div className="overflow-x-auto pt-4">
@@ -277,22 +158,11 @@ const StockInTable = ({ columns, productVariations }) => {
         <button className="px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600">
           Save
         </button>
-        <button
-          className="px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600"
-          onClick={() => setShowModal(true)}
-        >
-          View History
-        </button>
-        <Modal isVisible={showModal} onClose={handleCloseModal}>
-          <div className="mx-8">
-            <strong className="text-3xl font-bold text-gray-500">
-              Stock In History
-            </strong>
-            <div className="h-[50rem] overflow-y-scroll">
-              <DataTable columns={sampleColumns} data={sampleData} />
-            </div>
-          </div>
-        </Modal>
+        <Link to="/stockinhistory">
+          <button className="px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600">
+            View History
+          </button>
+        </Link>
       </div>
     </div>
   );
