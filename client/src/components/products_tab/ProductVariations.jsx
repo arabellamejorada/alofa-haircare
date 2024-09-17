@@ -21,16 +21,16 @@ const ProductVariations = () => {
 
   const [selectedProductVariation, setSelectedProductVariation] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
 
-   // For Edit Modal (Individual State Variables)
-   const [product_id, setProductId] = useState("");
-   const [type, setType] = useState("");
-   const [value, setValue] = useState("");
-   const [sku, setSku] = useState("");
-   const [unitPrice, setUnitPrice] = useState("");
-   const [productStatusId, setProductStatusId] = useState("");
-   const [image, setImage] = useState(null);
+  // For Edit Modal (Individual State Variables)
+  const [product_id, setProductId] = useState("");
+  const [type, setType] = useState("");
+  const [value, setValue] = useState("");
+  const [sku, setSku] = useState("");
+  const [unitPrice, setUnitPrice] = useState("");
+  const [productStatusId, setProductStatusId] = useState("");
+  const [image, setImage] = useState(null);
 
   const [variations, setVariations] = useState([
     {
@@ -61,7 +61,7 @@ const ProductVariations = () => {
     fetchData();
   }, []);
 
-  // Function to handle form submission
+  // Function to handle form submission for adding new product variations
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -77,23 +77,16 @@ const ProductVariations = () => {
     variations.forEach((variation, index) => {
       formData.append(`variations[${index}][type]`, variation.type);
       formData.append(`variations[${index}][value]`, variation.value);
-      formData.append(`variations[${index}][sku]`, variation.sku);
       formData.append(`variations[${index}][unit_price]`, variation.unit_price);
       formData.append(`variations[${index}][product_status_id]`, variation.product_status_id);
       if (variation.image) {
-        formData.append("images", variation.image); // Append the image for each variation
+        formData.append(`images`, variation.image);
       }
     });
 
     try {
-      let response;
-      if (selectedProductVariation) {
-        response = await updateProductVariation(selectedProductVariation.variation_id, formData);
-        console.log("Product variation updated successfully:", response);
-      } else {
-        response = await createProductVariationWithInventory(formData);
-        console.log("Product variation created successfully:", response);
-      }
+      const response = await createProductVariationWithInventory(formData);
+      console.log("Product variation created successfully:", response);
       handleCloseModal();
       const productVariationsData = await getAllProductVariations();
       setProductVariations(productVariationsData);
@@ -132,27 +125,23 @@ const ProductVariations = () => {
     ]);
   };
 
-  // Delete a variation
-  const deleteVariation = (index) => {
-    const newVariations = variations.filter((_, idx) => idx !== index);
-    setVariations(newVariations);
-  };
-
+  // Handle Edit Modal
   const handleEdit = (product_variation) => {
-    console.log("Editing product:", product_variation);
-      setSelectedProductVariation(product_variation);
-      setProductId(product_variation.product_id || "");
-      setType(product_variation.type || "");
-      setValue(product_variation.value || "");
-      setSku(product_variation.sku || "");
-      setUnitPrice(product_variation.unit_price || "");
-      setProductStatusId(product_variation.product_status_id || "");
-      setImage(product_variation.image || null);
-      setIsModalVisible(true);
+    setSelectedProductVariation(product_variation);
+    setProductId(product_variation.product_id || "");
+    setType(product_variation.type || "");
+    setValue(product_variation.value || "");
+    setSku(product_variation.sku || "");
+    setUnitPrice(product_variation.unit_price || "");
+    setProductStatusId(product_variation.product_status_id || "");
+    setImage(product_variation.image || null);
+    setIsEditModalVisible(true);
   };
 
-  const handleUpdateVariation = async (e) => {
+  // Handle Update Variation
+  const handleUpdate = async (e) => {
     e.preventDefault();
+
     const formData = new FormData();
     formData.append("product_id", product_id);
     formData.append("type", type);
@@ -160,12 +149,12 @@ const ProductVariations = () => {
     formData.append("sku", sku);
     formData.append("unit_price", unitPrice);
     formData.append("product_status_id", productStatusId);
-    if (image) formData.append("image", image);
+    if (image) formData.append("image", image);  
 
     try {
       const response = await updateProductVariation(selectedProductVariation.variation_id, formData);
       console.log("Product variation updated successfully:", response);
-      setIsModalVisible(false);
+      setIsEditModalVisible(false);
       const updatedVariations = await getAllProductVariations();
       setProductVariations(updatedVariations);
     } catch (error) {
@@ -173,6 +162,7 @@ const ProductVariations = () => {
     }
   };
 
+  // Handle Archive
   const handleArchive = async (selectedProductVariation) => {
     if (!selectedProductVariation) return;
 
@@ -181,28 +171,19 @@ const ProductVariations = () => {
     );
     if (!isConfirmed) return;
 
-    const data = {
-      product_status_id: 4, // Archived status
-    };
-
     try {
-      const response = await archiveProductVariation(
-        selectedProductVariation.variation_id,
-        data
-      );
+      const response = await archiveProductVariation(selectedProductVariation.variation_id);
       console.log(response);
-
       const productVariationsData = await getAllProductVariations();
       setProductVariations(productVariationsData);
     } catch (error) {
       console.error("Error archiving product variation: ", error);
-      setError("Failed to update product status to Archived");
     }
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setIsModalVisible(false);
+    setIsEditModalVisible(false);
     setSelectedProductVariation(null);
     setProductId("");
     setVariations([
@@ -214,7 +195,7 @@ const ProductVariations = () => {
         product_status_id: "",
         image: null,
       },
-    ]); // Reset the form
+    ]);
   };
 
   if (error) return <div>{error}</div>;
@@ -226,32 +207,8 @@ const ProductVariations = () => {
     { key: "value", header: "Variation Value" },
     { key: "sku", header: "SKU" },
     { key: "unit_price", header: "Price" },
-    { key: "product_status", header: "Status" },
+    { key: "status_description", header: "Status" },
   ];
-
-  // Map product IDs to names
-  const productMap = products.reduce((acc, product) => {
-    acc[product.product_id] = product.name;
-    return acc;
-  }, {});
-
-  // Map status IDs to descriptions
-  const statusMap = statuses.reduce((acc, status) => {
-    acc[status.status_id] = status.description;
-    return acc;
-  }, {});
-
-  const processedProductVariations = product_variations
-    .map((variation) => ({
-      ...variation,
-      product_name: productMap[variation.product_id] || "Unknown", // Map name from productMap
-      product_status: statusMap[variation.product_status_id] || "Unknown", // Map description from statusMap
-    }))
-    .sort((a, b) => {
-      if (a.product_status_id === 4 && b.product_status_id !== 4) return 1;
-      if (a.product_status_id !== 4 && b.product_status_id === 4) return -1;
-      return 0;
-    });
 
   return (
     <Fragment>
@@ -269,31 +226,27 @@ const ProductVariations = () => {
           </div>
         </div>
         <DataTable
-          data={processedProductVariations}
+          data={product_variations}
           columns={columns}
           onEdit={handleEdit}
           onArchive={handleArchive}
         />
       </div>
 
-      {/* Add Modal */}
-      <Modal isVisible={showModal} onClose={handleCloseModal}>
+   {/* Add Modal */}
+   <Modal isVisible={showModal} onClose={handleCloseModal}>
         <form
-          className="px-6 w-full max-w-3xl mx-auto bg-white rounded-lg"
+          className="px-2 w-full max-w-4xl mx-auto bg-white rounded-lg"
           onSubmit={handleSubmit}
           encType="multipart/form-data"
         >
           <div className="flex flex-col gap-4">
-            <div className="font-extrabold text-2xl md:text-3xl text-pink-400 text-center">
-              {selectedProductVariation
-                ? "Edit Product Variation"
-                : "Add Product Variations"}
+          <div className="font-extrabold text-2xl md:text-3xl text-pink-400 text-center">
+              {selectedProductVariation ? "Edit Product Variation" : "Add Product Variations"}
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="product_id">
-                Product Name:
-              </label>
+              <label className="font-bold" htmlFor="product_id">Product Name:</label>
               <div className="relative">
                 <select
                   id="product_id"
@@ -313,15 +266,16 @@ const ProductVariations = () => {
               </div>
             </div>
 
-            {/* Use the separated ProductVariationsTable component */}
-            <ProductVariationsTable
-              variations={variations}
-              statuses={statuses}
-              handleVariationChange={handleVariationChange}
-              handleImageChange={handleImageChange}
-              addVariation={addVariation}
-              deleteVariation={deleteVariation}
-            />
+            {/* Product Variations Table */}
+            <div className="overflow-x-auto">
+              <ProductVariationsTable
+                variations={variations}
+                statuses={statuses}
+                handleVariationChange={handleVariationChange}
+                handleImageChange={handleImageChange}
+                addVariation={addVariation}
+              />
+            </div>
 
             <div className="flex flex-row justify-between mt-4">
               <button
@@ -343,8 +297,8 @@ const ProductVariations = () => {
       </Modal>
 
       {/* Edit Modal */}
-      <Modal isVisible={isModalVisible} onClose={handleCloseModal}>
-        <form className="p-6" onSubmit={handleUpdateVariation}>
+      <Modal isVisible={isEditModalVisible} onClose={handleCloseModal}>
+        <form className="p-6" onSubmit={handleUpdate}>
           <div className="flex flex-col gap-4">
             <div className="font-extrabold text-3xl text-pink-400">Edit Product Variation</div>
 
@@ -446,7 +400,7 @@ const ProductVariations = () => {
                 >
                   <option value="" disabled>Select Status</option>
                   {statuses.map((status) => (
-                    <option key={status.status_id} value={status.status_id}>
+                    <option key={status.product_status_id} value={status.status_id}>
                       {status.description}
                     </option>
                   ))}

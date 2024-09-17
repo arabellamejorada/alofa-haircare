@@ -129,14 +129,22 @@ const generateSKU = (product_name, variation_type, variation_value, counter) => 
     return sku;
 };
 
-// Get all product variations join with product name and status
+// Get all product variations join with product name and status description
 const getAllProductVariations = async (req, res) => {
     try {
         const productVariations = await pool.query(
-            `SELECT * FROM product_variation
-            JOIN product ON product_variation.product_id = product.product_id
-            JOIN product_status ON product_variation.product_status_id = product_status.status_id
-            ORDER BY product_variation.variation_id ASC`
+            `SELECT 
+                product_variation.*,                     
+                product.name AS product_name,            
+                product_status.description AS status_description  
+            FROM 
+                product_variation
+            JOIN 
+                product ON product_variation.product_id = product.product_id
+            JOIN 
+                product_status ON product_variation.product_status_id = product_status.status_id
+            ORDER BY 
+                product_variation.variation_id ASC;`
         );
         res.status(200).json(productVariations.rows);
     } catch (error) {
@@ -159,25 +167,63 @@ const getProductVariationById = async (req, res) => {
         res.status(500).json({ message: 'Error getting product variation by ID', error: error.message });
     }
 };
-
 // Update product variation by ID
 const updateProductVariation = async (req, res) => {
     const id = parseInt(req.params.id);
-    const { type, value, sku, unit_price, product_status_id, image } = req.body;
+    const { type, value, unit_price, product_status_id } = req.body;
+    let image = null;
+
+    // Check if the image file is part of the request (assuming multipart form data)
+    if (req.file) {
+        image = req.file.path; // Assuming you're storing the path of the uploaded image
+    } else if (req.body.image) {
+        // If image is sent as a string or URL
+        image = req.body.image;
+    }
+
+    console.log("id variation:", id);
+    console.log("Request Body:", req.body);
+
     try {
+        // Fetch the product name to generate the SKU (specifying table aliases to avoid ambiguity)
+        const productResult = await pool.query(
+            `SELECT pv.product_id, p.name FROM product_variation pv
+             JOIN product p ON pv.product_id = p.product_id
+             WHERE pv.variation_id = $1`,
+            [id]
+        );
+
+        if (productResult.rows.length === 0) {
+            return res.status(404).json({ message: 'Product variation not found' });
+        }
+
+        const product_id = productResult.rows[0].product_id;
+        const product_name = productResult.rows[0].name;
+
+        // Generate SKU based on product name, type, and value
+        const sku = generateSKU(product_name, type, value, product_id);
+
+        // Update the product variation
         const updatedProductVariation = await pool.query(
             `UPDATE product_variation
-            SET type = $1, value = $2, sku = $3, unit_price = $4, product_status_id = $5, image = $6
-            WHERE variation_id = $7
-            RETURNING *`,
+             SET type = $1, value = $2, sku = $3, unit_price = $4, product_status_id = $5, image = $6
+             WHERE variation_id = $7
+             RETURNING *`,
             [type, value, sku, unit_price, product_status_id, image, id]
         );
-        res.status(200).json(updatedProductVariation.rows);
+
+        if (updatedProductVariation.rows.length === 0) {
+            return res.status(404).json({ message: 'Product variation update failed' });
+        }
+
+        res.status(200).json(updatedProductVariation.rows[0]);
     } catch (error) {
         console.error('Error updating product variation:', error);
         res.status(500).json({ message: 'Error updating product variation', error: error.message });
     }
 };
+
+
 
 // Archive product variation
 const archiveProductVariation = async (req, res) => {
