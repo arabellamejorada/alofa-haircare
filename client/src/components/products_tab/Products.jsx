@@ -3,7 +3,14 @@ import DataTable from "../shared/DataTable";
 import { MdAddBox } from "react-icons/md";
 import Modal from "../modal/Modal";
 import { IoMdArrowDropdown } from "react-icons/io";
-import { createProduct, getAllProducts, getCategories, getStatus, archiveProduct, updateProduct } from "../../api/products";
+import {
+  createProduct,
+  getAllProducts,
+  getCategories,
+  getStatus,
+  archiveProduct,
+  updateProduct,
+} from "../../api/products";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -38,8 +45,13 @@ const Products = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
-    if (!product_name || !product_status || !product_description || !product_category) {
+
+    if (
+      !product_name ||
+      !product_status ||
+      !product_description ||
+      !product_category
+    ) {
       alert("Please fill out all required fields.");
       return;
     }
@@ -89,7 +101,9 @@ const Products = () => {
   const handleArchiveProduct = async (selectedProduct) => {
     if (!selectedProduct) return;
 
-    const isConfirmed = window.confirm("Are you sure you want to archive this product?");
+    const isConfirmed = window.confirm(
+      "Are you sure you want to archive this product?"
+    );
     if (!isConfirmed) return;
 
     const data = {
@@ -172,8 +186,12 @@ const Products = () => {
       </div>
 
       <Modal isVisible={showModal} onClose={handleCloseModal}>
-        <form className="p-6" onSubmit={handleSubmit} encType="multipart/form-data">
-          <div className="flex flex-col gap-4">
+        <form
+          className="p-6"
+          onSubmit={handleSubmit}
+          encType="multipart/form-data"
+        >
+          <div className="flex flex-col gap-4 w-[20rem]">
             <div className="font-extrabold text-3xl text-pink-400">
               {selectedProduct ? "Edit Product" : "Add New Product"}
             </div>
@@ -223,14 +241,13 @@ const Products = () => {
               <label className="font-bold" htmlFor="product_description">
                 Description:
               </label>
-              <input
-                type="text"
+              <textarea
                 name="product_description"
                 id="product_description"
                 placeholder="Product Description"
                 value={product_description}
                 onChange={(e) => setProductDescription(e.target.value)}
-                className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+                className="rounded-xl border w-full h-32 max-h-64 p-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 resize-y overflow-auto"
               />
             </div>
 
@@ -257,17 +274,17 @@ const Products = () => {
               </div>
             </div>
 
-            <div className="flex flex-row justify-between mt-4">
+            <div className="flex flex-row justify-end gap-4">
               <button
                 type="submit"
-                className="w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-semibold text-white"
+                className="px-4 py-2 text-white bg-pink-400 rounded-lg hover:bg-pink-500"
               >
-                {selectedProduct ? "Apply Changes" : "Add Product"}
+                {selectedProduct ? "Confirm" : "Add Product"}
               </button>
               <button
                 type="button"
                 onClick={handleCloseModal}
-                className="w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-extrabold text-white"
+                className="px-4 py-2 text-white bg-gray-400 rounded-lg hover:bg-gray-500"
               >
                 Cancel
               </button>

@@ -10,30 +10,30 @@ const ProductVariationsTable = ({
   deleteVariation,
 }) => {
   return (
-    <div className="overflow-x-auto pt-4">
+    <div className="pt-4">
       <div className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-        <table className="min-w-full leading-normal">
-          <thead>
+        <table className="w-full leading-normal">
+          <thead className="w-full">
             <tr>
-              <th className="px- py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <th className="px- py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase">
                 #
               </th>
-              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase">
                 Variation Type
               </th>
-              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase">
                 Variation Value
               </th>
-              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase w-[8rem]">
                 Unit Price
               </th>
-              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase">
                 Status
               </th>
-              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase">
                 Image
               </th>
-              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase">
                 Delete
               </th>
             </tr>
@@ -60,7 +60,7 @@ const ProductVariationsTable = ({
                     <option value="Color">Color</option>
                   </select>
                 </td>
-                
+
                 {/* value */}
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-center">
                   <input
@@ -90,7 +90,11 @@ const ProductVariationsTable = ({
                   <select
                     value={variation.product_status_id}
                     onChange={(e) =>
-                      handleVariationChange(index, "product_status_id", e.target.value)
+                      handleVariationChange(
+                        index,
+                        "product_status_id",
+                        e.target.value
+                      )
                     }
                     className="w-full border border-gray-200 rounded px-2 py-1 text-center appearance-none"
                   >
@@ -108,11 +112,12 @@ const ProductVariationsTable = ({
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={(e) => handleImageChange(index, e.target.files[0])}
+                    onChange={(e) =>
+                      handleImageChange(index, e.target.files[0])
+                    }
                     className="w-full px-2 py-1 file:mr-2 file:py-1 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pink-400 file:text-white hover:file:bg-pink-500"
                   />
                 </td>
-
 
                 {/* delete */}
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-center">
@@ -132,10 +137,10 @@ const ProductVariationsTable = ({
         <button
           type="button"
           onClick={addVariation}
-          className="flex items-center px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+          className="flex items-center px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
         >
           <MdAddBox fontSize={24} className="mr-2" />
-          Add Variation
+          Add More Variation
         </button>
       </div>
     </div>

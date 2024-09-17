@@ -7,7 +7,7 @@ import {
   getAllSuppliers,
   createSupplier,
   updateSupplier,
-  archiveSupplier
+  archiveSupplier,
 } from "../../api/suppliers.js";
 
 const Suppliers = () => {
@@ -55,12 +55,12 @@ const Suppliers = () => {
     e.preventDefault();
 
     const newSupplier = {
-      supplier_name : supplier_name,
-      contact_person : contact_person,
-      contact_number : contact_number,
-      email : email,
-      address : address,
-      status : status
+      supplier_name: supplier_name,
+      contact_person: contact_person,
+      contact_number: contact_number,
+      email: email,
+      address: address,
+      status: status,
     };
 
     try {
@@ -87,9 +87,12 @@ const Suppliers = () => {
     formData.append("email", email);
     formData.append("address", address);
     formData.append("status", status);
-  
+
     try {
-      const response = await updateSupplier(selectedSupplier.supplier_id, formData);
+      const response = await updateSupplier(
+        selectedSupplier.supplier_id,
+        formData
+      );
       console.log(response);
       setIsModalVisible(false);
 
@@ -103,15 +106,17 @@ const Suppliers = () => {
 
   const handleArchiveSupplier = async (selectedSupplier) => {
     if (!selectedSupplier) return;
-  
-    const isConfirmed = window.confirm("Are you sure you want to archive this supplier?");
+
+    const isConfirmed = window.confirm(
+      "Are you sure you want to archive this supplier?"
+    );
     if (!isConfirmed) return;
-  
+
     try {
       console.log("Archiving supplier: ", selectedSupplier.supplier_id);
       const response = await archiveSupplier(selectedSupplier.supplier_id);
       console.log(response);
-  
+
       // Optionally refresh the suppliers list
       const suppliersData = await getAllSuppliers();
       setSuppliers(suppliersData);
@@ -120,7 +125,7 @@ const Suppliers = () => {
       setError("Failed to update supplier status to Archived");
     }
   };
-  
+
   const handleEdit = (supplier) => {
     console.log("Selected Supplier:", supplier); // Check if supplier data is correct
 
@@ -141,13 +146,13 @@ const Suppliers = () => {
   };
 
   const columns = [
-    {key: "supplier_id", title: "Supplier ID"},
-    {key: "supplier_name", title: "Supplier Name"},
-    {key: "contact_person", title: "Contact Person"},
-    {key: "contact_number", title: "Contact Number"},
-    {key: "email", title: "Email"},
-    {key: "address", title: "Address"},
-    {key: "status", title: "Status"},
+    { key: "supplier_id", title: "Supplier ID" },
+    { key: "supplier_name", title: "Supplier Name" },
+    { key: "contact_person", title: "Contact Person" },
+    { key: "contact_number", title: "Contact Number" },
+    { key: "email", title: "Email" },
+    { key: "address", title: "Address" },
+    { key: "status", title: "Status" },
   ];
 
   if (error) return <div>{error}</div>;
@@ -204,7 +209,7 @@ const Suppliers = () => {
                   Contact Person:
                 </label>
                 <input
-                  type="text" 
+                  type="text"
                   name="contact_person"
                   id="contact_person"
                   placeholder="Contact Person"
@@ -284,154 +289,154 @@ const Suppliers = () => {
                   <option value="Archived">Archived</option>
                 </select>
                 <IoMdArrowDropdown className="absolute top-3 right-4 text-gray-400" />
-                </div>
-            </div>
-                    
-            <div className="flex flex-row justify-end gap-4">
-                <button
-                    type="button"
-                    onClick={() => setShowModal(false)}
-                    className="px-4 py-2 text-white bg-gray-400 rounded-lg hover:bg-gray-500"
-                >
-                    Cancel
-                </button>
-                <button
-                    type="submit"
-                    className="px-4 py-2 text-white bg-pink-400 rounded-lg hover:bg-pink-500"
-                >
-                    Save
-                </button>
-            </div>
-            </div>
-        </form>
-        </Modal>
-
-        {/* Edit Supplier Modal */}
-        <Modal isVisible={isModalVisible} onClose={handleCloseModal}>
-          <form className="p-6" onSubmit={handleUpdateSupplier}>
-            <div className="flex flex-col gap-4">
-              <div className="font-extrabold text-3xl text-pink-400">
-                Edit Supplier:
               </div>
+            </div>
+
+            <div className="flex flex-row justify-end gap-4">
+              <button
+                type="submit"
+                className="px-4 py-2 text-white bg-pink-400 rounded-lg hover:bg-pink-500"
+              >
+                Save
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowModal(false)}
+                className="px-4 py-2 text-white bg-gray-400 rounded-lg hover:bg-gray-500"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Edit Supplier Modal */}
+      <Modal isVisible={isModalVisible} onClose={handleCloseModal}>
+        <form className="p-6" onSubmit={handleUpdateSupplier}>
+          <div className="flex flex-col gap-4">
+            <div className="font-extrabold text-3xl text-pink-400">
+              Edit Supplier:
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="font-bold" htmlFor="supplier_name">
+                Supplier Name:
+              </label>
+              <input
+                type="text"
+                name="supplier_name"
+                id="supplier_name"
+                value={supplier_name}
+                onChange={(e) => setSupplierName(e.target.value)}
+                className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+              />
+            </div>
+
+            <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-2">
-                <label className="font-bold" htmlFor="supplier_name">
-                  Supplier Name:
+                <label className="font-bold" htmlFor="contact_person">
+                  Contact Person:
                 </label>
                 <input
                   type="text"
-                  name="supplier_name"
-                  id="supplier_name"
-                  value={supplier_name}
-                  onChange={(e) => setSupplierName(e.target.value)}
+                  name="contact_person"
+                  id="contact_person"
+                  value={contact_person}
+                  onChange={(e) => setContactPerson(e.target.value)}
                   className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
                 />
               </div>
+            </div>
 
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-2">
-                  <label className="font-bold" htmlFor="contact_person">
-                    Contact Person:
-                  </label>
-                  <input
-                    type="text"
-                    name="contact_person"
-                    id="contact_person"
-                    value={contact_person}
-                    onChange={(e) => setContactPerson(e.target.value)}
-                    className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-2">
-                  <label className="font-bold" htmlFor="contact_number">
-                    Contact Number:
-                  </label>
-                  <input
-                    type="text"
-                    name="contact_number"
-                    id="contact_number"
-                    value={contact_number}
-                    onChange={(e) => setContactNumber(e.target.value)}
-                    className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-2">
-                  <label className="font-bold" htmlFor="email">
-                    Email:
-                  </label>
-                  <input
-                    type="text"
-                    name="email"
-                    id="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-2">
-                  <label className="font-bold" htmlFor="address">
-                    Address:
-                  </label>
-                  <input
-                    type="text"
-                    name="address"
-                    id="address"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-                  />
-                </div>
-              </div>
-
+            <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-2">
-                <label className="font-bold" htmlFor="status">
-                  Status:
+                <label className="font-bold" htmlFor="contact_number">
+                  Contact Number:
                 </label>
-                <div className="relative">
-                  <select
-                    id="status"
-                    name="status"
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value)}
-                    className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-                  >
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Archived">Archived</option>
-                  </select>
-                  <IoMdArrowDropdown className="absolute top-3 right-4 text-gray-400" />
-                </div>
-              </div>
-
-              <div className="flex flex-row justify-end gap-4">
-                <button
-                  type="button"
-                  onClick={handleCloseModal}
-                  className="px-4 py-2 text-white bg-gray-400 rounded-lg hover:bg-gray-500"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 text-white bg-pink-400 rounded-lg hover:bg-pink-500"
-                >
-                  Save
-                </button>
+                <input
+                  type="text"
+                  name="contact_number"
+                  id="contact_number"
+                  value={contact_number}
+                  onChange={(e) => setContactNumber(e.target.value)}
+                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+                />
               </div>
             </div>
-          </form>
-        </Modal> 
-        </Fragment>
-    );
-}
+
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
+                <label className="font-bold" htmlFor="email">
+                  Email:
+                </label>
+                <input
+                  type="text"
+                  name="email"
+                  id="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
+                <label className="font-bold" htmlFor="address">
+                  Address:
+                </label>
+                <input
+                  type="text"
+                  name="address"
+                  id="address"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="font-bold" htmlFor="status">
+                Status:
+              </label>
+              <div className="relative">
+                <select
+                  id="status"
+                  name="status"
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+                >
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Archived">Archived</option>
+                </select>
+                <IoMdArrowDropdown className="absolute top-3 right-4 text-gray-400" />
+              </div>
+            </div>
+
+            <div className="flex flex-row justify-end gap-4">
+              <button
+                type="submit"
+                className="px-4 py-2 text-white bg-pink-400 rounded-lg hover:bg-pink-500"
+              >
+                Confirm
+              </button>
+              <button
+                type="button"
+                onClick={handleCloseModal}
+                className="px-4 py-2 text-white bg-gray-400 rounded-lg hover:bg-gray-500"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </form>
+      </Modal>
+    </Fragment>
+  );
+};
 
 export default Suppliers;
