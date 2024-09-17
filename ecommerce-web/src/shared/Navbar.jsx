@@ -52,7 +52,7 @@ const Navbar = ({ cartItems, handleQuantityChange, handleDelete }) => {
         onMouseLeave={() => setHovered(false)}
       >
         <div className="p-4 h-full overflow-y-auto">
-          <h1 className="text-2xl text-alofa-pink font-bold mb-4">Cart Summary</h1>
+          <h1 className="text-2xlg text-alofa-pink font-bold mb-4">Cart Summary</h1>
 
           {/* Cart Items */}
           {cartItems && cartItems.length > 0 ? (
