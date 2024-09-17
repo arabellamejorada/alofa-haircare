@@ -19,7 +19,8 @@ const ProductVariations = () => {
   const [statuses, setStatus] = useState([]);
   const [error, setError] = useState(null);
 
-  const [selectedProductVariation, setSelectedProductVariation] = useState(null);
+  const [selectedProductVariation, setSelectedProductVariation] =
+    useState(null);
   const [showModal, setShowModal] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
 
@@ -78,7 +79,10 @@ const ProductVariations = () => {
       formData.append(`variations[${index}][type]`, variation.type);
       formData.append(`variations[${index}][value]`, variation.value);
       formData.append(`variations[${index}][unit_price]`, variation.unit_price);
-      formData.append(`variations[${index}][product_status_id]`, variation.product_status_id);
+      formData.append(
+        `variations[${index}][product_status_id]`,
+        variation.product_status_id
+      );
       if (variation.image) {
         formData.append(`images`, variation.image);
       }
@@ -149,10 +153,13 @@ const ProductVariations = () => {
     formData.append("sku", sku);
     formData.append("unit_price", unitPrice);
     formData.append("product_status_id", productStatusId);
-    if (image) formData.append("image", image);  
+    if (image) formData.append("image", image);
 
     try {
-      const response = await updateProductVariation(selectedProductVariation.variation_id, formData);
+      const response = await updateProductVariation(
+        selectedProductVariation.variation_id,
+        formData
+      );
       console.log("Product variation updated successfully:", response);
       setIsEditModalVisible(false);
       const updatedVariations = await getAllProductVariations();
@@ -172,13 +179,21 @@ const ProductVariations = () => {
     if (!isConfirmed) return;
 
     try {
-      const response = await archiveProductVariation(selectedProductVariation.variation_id);
+      const response = await archiveProductVariation(
+        selectedProductVariation.variation_id
+      );
       console.log(response);
       const productVariationsData = await getAllProductVariations();
       setProductVariations(productVariationsData);
     } catch (error) {
       console.error("Error archiving product variation: ", error);
     }
+  };
+
+  const deleteVariation = (index) => {
+    setVariations((prevVariations) =>
+      prevVariations.filter((_, i) => i !== index)
+    );
   };
 
   const handleCloseModal = () => {
@@ -233,20 +248,24 @@ const ProductVariations = () => {
         />
       </div>
 
-   {/* Add Modal */}
-   <Modal isVisible={showModal} onClose={handleCloseModal}>
+      {/* Add Modal */}
+      <Modal isVisible={showModal} onClose={handleCloseModal}>
         <form
           className="px-2 w-full max-w-4xl mx-auto bg-white rounded-lg"
           onSubmit={handleSubmit}
           encType="multipart/form-data"
         >
           <div className="flex flex-col gap-4">
-          <div className="font-extrabold text-2xl md:text-3xl text-pink-400 text-center">
-              {selectedProductVariation ? "Edit Product Variation" : "Add Product Variations"}
+            <div className="font-extrabold text-2xl md:text-3xl text-pink-400 text-center">
+              {selectedProductVariation
+                ? "Edit Product Variation"
+                : "Add Product Variations"}
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="product_id">Product Name:</label>
+              <label className="font-bold" htmlFor="product_id">
+                Product Name:
+              </label>
               <div className="relative">
                 <select
                   id="product_id"
@@ -267,27 +286,30 @@ const ProductVariations = () => {
             </div>
 
             {/* Product Variations Table */}
-            <div className="overflow-x-auto">
+            <div>
               <ProductVariationsTable
                 variations={variations}
                 statuses={statuses}
                 handleVariationChange={handleVariationChange}
                 handleImageChange={handleImageChange}
                 addVariation={addVariation}
+                deleteVariation={deleteVariation}
               />
             </div>
 
-            <div className="flex flex-row justify-between mt-4">
+            <div className="flex flex-row justify-start gap-4 mt-4">
               <button
                 type="submit"
-                className="w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-semibold text-white"
+                className="px-4 py-2 text-white bg-pink-400 rounded-lg hover:bg-pink-500"
               >
-                {selectedProductVariation ? "Apply Changes" : "Add Product Variations"}
+                {selectedProductVariation
+                  ? "Apply Changes"
+                  : "Add Product Variations"}
               </button>
               <button
                 type="button"
                 onClick={handleCloseModal}
-                className="w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-extrabold text-white"
+                className="px-4 py-2 text-white bg-gray-400 rounded-lg hover:bg-gray-500"
               >
                 Cancel
               </button>
@@ -300,11 +322,15 @@ const ProductVariations = () => {
       <Modal isVisible={isEditModalVisible} onClose={handleCloseModal}>
         <form className="p-6" onSubmit={handleUpdate}>
           <div className="flex flex-col gap-4">
-            <div className="font-extrabold text-3xl text-pink-400">Edit Product Variation</div>
+            <div className="font-extrabold text-3xl text-pink-400">
+              Edit Product Variation
+            </div>
 
             {/* Product Name */}
             <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="product_name">Product Name:</label>
+              <label className="font-bold" htmlFor="product_name">
+                Product Name:
+              </label>
               <div className="relative">
                 <select
                   id="product_id"
@@ -313,7 +339,9 @@ const ProductVariations = () => {
                   onChange={(e) => setProductId(e.target.value)}
                   className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
                 >
-                  <option value="" disabled>Select Product</option>
+                  <option value="" disabled>
+                    Select Product
+                  </option>
                   {products.map((product) => (
                     <option key={product.product_id} value={product.product_id}>
                       {product.name}
@@ -326,7 +354,9 @@ const ProductVariations = () => {
 
             {/* Variation Type */}
             <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="type">Variation Type:</label>
+              <label className="font-bold" htmlFor="type">
+                Variation Type:
+              </label>
               <input
                 type="text"
                 name="type"
@@ -339,7 +369,9 @@ const ProductVariations = () => {
 
             {/* Variation Value */}
             <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="value">Variation Value:</label>
+              <label className="font-bold" htmlFor="value">
+                Variation Value:
+              </label>
               <input
                 type="text"
                 name="value"
@@ -352,7 +384,9 @@ const ProductVariations = () => {
 
             {/* SKU */}
             <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="sku">SKU:</label>
+              <label className="font-bold" htmlFor="sku">
+                SKU:
+              </label>
               <input
                 type="text"
                 name="sku"
@@ -365,7 +399,9 @@ const ProductVariations = () => {
 
             {/* Unit Price */}
             <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="unit_price">Unit Price:</label>
+              <label className="font-bold" htmlFor="unit_price">
+                Unit Price:
+              </label>
               <input
                 type="number"
                 name="unit_price"
@@ -378,7 +414,9 @@ const ProductVariations = () => {
 
             {/* Image Upload */}
             <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="image">Product Image:</label>
+              <label className="font-bold" htmlFor="image">
+                Product Image:
+              </label>
               <input
                 type="file"
                 accept="image/*"
@@ -389,7 +427,9 @@ const ProductVariations = () => {
 
             {/* Product Status */}
             <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="statusId">Status:</label>
+              <label className="font-bold" htmlFor="statusId">
+                Status:
+              </label>
               <div className="relative">
                 <select
                   name="statusId"
@@ -398,9 +438,14 @@ const ProductVariations = () => {
                   onChange={(e) => setProductStatusId(e.target.value)}
                   className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
                 >
-                  <option value="" disabled>Select Status</option>
+                  <option value="" disabled>
+                    Select Status
+                  </option>
                   {statuses.map((status) => (
-                    <option key={status.product_status_id} value={status.status_id}>
+                    <option
+                      key={status.product_status_id}
+                      value={status.status_id}
+                    >
                       {status.description}
                     </option>
                   ))}

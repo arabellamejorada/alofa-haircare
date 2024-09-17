@@ -2,7 +2,12 @@ import React, { Fragment, useEffect, useState } from "react";
 import DataTable from "../shared/DataTable";
 import { MdAddBox } from "react-icons/md";
 import Modal from "../modal/Modal";
-import { createCategory, getCategories, updateCategory, archiveCategory } from "../../api/products";
+import {
+  createCategory,
+  getCategories,
+  updateCategory,
+  archiveCategory,
+} from "../../api/products";
 
 const ProductCategories = () => {
   const [categories, setCategories] = useState([]);
@@ -41,7 +46,10 @@ const ProductCategories = () => {
     try {
       let response;
       if (selectedCategory) {
-        response = await updateCategory(selectedCategory.product_category_id, categoryData);
+        response = await updateCategory(
+          selectedCategory.product_category_id,
+          categoryData
+        );
         console.log("Category updated successfully:", response);
       } else {
         response = await createCategory(categoryData);
@@ -96,7 +104,9 @@ const ProductCategories = () => {
     <Fragment>
       <div className="flex flex-col gap-2">
         <div className="flex flex-row items-center justify-between">
-          <strong className="text-3xl font-bold text-gray-500">Product Categories</strong>
+          <strong className="text-3xl font-bold text-gray-500">
+            Product Categories
+          </strong>
           <div>
             <MdAddBox
               fontSize={30}
@@ -135,17 +145,17 @@ const ProductCategories = () => {
               />
             </div>
 
-            <div className="flex flex-row justify-between mt-4">
+            <div className="flex flex-row justify-end gap-4">
               <button
                 type="submit"
-                className="w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-semibold text-white"
+                className="px-4 py-2 text-white bg-pink-400 rounded-lg hover:bg-pink-500"
               >
-                {selectedCategory ? "Apply Changes" : "Add Category"}
+                {selectedCategory ? "Confirm" : "Add Category"}
               </button>
               <button
                 type="button"
                 onClick={handleCloseModal}
-                className="w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-extrabold text-white"
+                className="px-4 py-2 text-white bg-gray-400 rounded-lg hover:bg-gray-500"
               >
                 Cancel
               </button>
