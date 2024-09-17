@@ -15,31 +15,31 @@ const products = [
   {
     id: 2,
     image: HairClip,
-    name: 'Hair & Body Mist',
+    name: 'Hair Clips',
     price: 540,
   },
   {
     id: 3,
     image: BambooBrush,
-    name: 'All-Natural Hair Oil',
+    name: 'Bamboo Brush',
     price: 380,
   },
   {
     id: 4,
     image: ScalpBrush,
-    name: 'Flower Hair Clip',
+    name: 'Scalp Brush',
     price: 180,
   },
   {
     id: 5,
     image: JadeComb,
-    name: 'Flower Hair Clip',
+    name: 'Jade Comb',
     price: 321.50,
   },
   {
     id: 6,
     image: HairOil,
-    name: 'Flower Hair Clip',
+    name: 'Hair Oil',
     price: 450,
   },
   {
@@ -51,7 +51,7 @@ const products = [
   {
     id: 8,
     image: HairOil,
-    name: 'Flower Hair Clip',
+    name: 'Oil Hair',
     price: 240,
   },
 ];

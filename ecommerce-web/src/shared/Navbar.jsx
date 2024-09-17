@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { FaUserAlt, FaShoppingCart } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import logo from "/images/alofa-logo.png";
-import PropTypes from 'prop-types';
-import CartTable from '../components/CartTable.jsx';
+import { CartContext } from '../components/CartContext'; // Import CartContext
+import CartItem from '../components/CartItem'; // Import the new CartItem component
 
-const Navbar = ({ cartItems, handleQuantityChange, handleDelete }) => {
+const Navbar = () => {
   const [hovered, setHovered] = useState(false);
+  const { cartItems, handleQuantityChange, handleDelete } = useContext(CartContext); // Get cart context
 
   return (
     <header className="bg-white/75 shadow-md py-2px fixed top-0 w-full z-50">
@@ -56,11 +57,16 @@ const Navbar = ({ cartItems, handleQuantityChange, handleDelete }) => {
 
           {/* Cart Items */}
           {cartItems && cartItems.length > 0 ? (
-            <CartTable
-              cartItems={cartItems}
-              handleQuantityChange={handleQuantityChange}
-              handleDelete={handleDelete}
-            />
+            <div>
+              {cartItems.map((item) => (
+                <CartItem
+                  key={item.id}
+                  item={item}
+                  handleQuantityChange={handleQuantityChange}
+                  handleDelete={handleDelete}
+                />
+              ))}
+            </div>
           ) : (
             <p className="text-gray-500 mb-4">Your cart is empty.</p>
           )}
@@ -75,7 +81,7 @@ const Navbar = ({ cartItems, handleQuantityChange, handleDelete }) => {
               </Link>
               <Link to="/checkout">
                 <button className="bg-alofa-pink text-white font-semibold py-2 px-4 rounded-full hover:bg-pink-500">
-                  Checkout
+                  Check Out
                 </button>
               </Link>
             </div>
@@ -84,12 +90,6 @@ const Navbar = ({ cartItems, handleQuantityChange, handleDelete }) => {
       </div>
     </header>
   );
-};
-
-Navbar.propTypes = {
-  cartItems: PropTypes.array.isRequired,
-  handleQuantityChange: PropTypes.func.isRequired,
-  handleDelete: PropTypes.func.isRequired,
 };
 
 export default Navbar;

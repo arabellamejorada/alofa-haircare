@@ -1,7 +1,10 @@
-import PropTypes from 'prop-types';
+import { useContext } from 'react';
 import { FaTrashAlt } from 'react-icons/fa';
+import { CartContext } from './CartContext.jsx';
 
-const CartTable = ({ cartItems, handleQuantityChange, handleDelete }) => {
+const CartTable = () => {
+  const { cartItems, handleQuantityChange, handleDelete } = useContext(CartContext);
+
   return (
     <div className="bg-white rounded-lg shadow-lg p-6">
       <h2 className="text-alofa-pink text-3xl mb-4 font-bold">My Cart</h2>
@@ -17,20 +20,20 @@ const CartTable = ({ cartItems, handleQuantityChange, handleDelete }) => {
           </tr>
         </thead>
         <tbody>
-          {cartItems.map((item, index) => (
-            <tr key={index} className="border-b">
+          {cartItems.map((item) => (
+            <tr key={item.id} className="border-b">
               <td className="p-2 flex items-center">
                 <img src={item.imageUrl} alt={item.name} className="w-12 h-12 mr-3 rounded" />
                 <span>{item.name}</span>
               </td>
-              <td className="p-2">{item.variation}</td>
+              <td className="p-2">{item.variation || 'N/A'}</td>
               <td className="p-2">₱{item.price.toFixed(2)}</td>
               <td className="p-2">
                 <input
                   type="number"
                   className="w-12 border rounded text-center"
                   value={item.quantity}
-                  onChange={(e) => handleQuantityChange(index, e.target.value)}
+                  onChange={(e) => handleQuantityChange(item.id, Number(e.target.value))}
                   min="1"
                 />
               </td>
@@ -38,7 +41,7 @@ const CartTable = ({ cartItems, handleQuantityChange, handleDelete }) => {
               <td className="p-2">
                 <button
                   className="text-red-500 hover:text-red-700"
-                  onClick={() => handleDelete(index)} // Use index to identify which item to delete
+                  onClick={() => handleDelete(item.id)}
                 >
                   <FaTrashAlt />
                 </button>
@@ -49,21 +52,6 @@ const CartTable = ({ cartItems, handleQuantityChange, handleDelete }) => {
       </table>
     </div>
   );
-};
-
-
-CartTable.propTypes = {
-  cartItems: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string.isRequired,
-      variation: PropTypes.string.isRequired,
-      price: PropTypes.number.isRequired,
-      quantity: PropTypes.number.isRequired,
-      imageUrl: PropTypes.string.isRequired,
-    })
-  ).isRequired,
-  handleQuantityChange: PropTypes.func.isRequired,
-  handleDelete: PropTypes.func.isRequired, // Pass handleDelete as a prop
 };
 
 export default CartTable;

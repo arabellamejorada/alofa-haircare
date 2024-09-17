@@ -1,6 +1,16 @@
 import PropTypes from 'prop-types';
+import { useContext } from 'react';
+import { CartContext } from './CartContext.jsx';
 
-const ProductCard = ({ image, name, price }) => {
+const ProductCard = ({ id, image, name, price }) => {
+
+  const { addToCart } = useContext(CartContext);
+
+  const handleAddToCart = () => {
+    addToCart({ id, image, name, price });
+  };
+
+
   return (
     <div className="relative p-2 rounded-lg">
       {/* Inner card with white background */}
@@ -14,7 +24,9 @@ const ProductCard = ({ image, name, price }) => {
           <p className="text-xl font-bold text-gray-900 mt-2">₱{price}</p>
         </div>
         <div className="flex justify-end mt-4 px-4 pb-3">
-          <button className="font-extrabold bg-alofa-pink text-white py-2 px-4 rounded-full hover:bg-alofa-pink-gradient focus:outline-none shadow-m">
+          <button className="font-extrabold bg-alofa-pink text-white py-2 px-4 rounded-full hover:bg-alofa-pink-gradient focus:outline-none shadow-m"
+                  onClick={handleAddToCart}
+                  aria-label={`Add ${name} to cart`}>
             ADD TO CART
           </button>
         </div>
@@ -24,9 +36,10 @@ const ProductCard = ({ image, name, price }) => {
 };
 
 ProductCard.propTypes = {
-  image: PropTypes.string.isRequired, 
-  name: PropTypes.string.isRequired,   
-  price: PropTypes.number.isRequired,  
+  id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  image: PropTypes.string.isRequired,
+  name: PropTypes.string.isRequired,
+  price: PropTypes.number.isRequired, 
 };
 
 export default ProductCard;
