@@ -334,33 +334,6 @@ const deleteProductCategory = async (req, res) => {
     }
 };
 
-const archiveProductCategory = async (req, res) => {
-    const client = await pool.connect();
-    const product_category_id = parseInt
-
-    try {
-        const results = await client.query(
-            `UPDATE product_category
-            SET product_status_id = 4
-            WHERE product_category_id = $1
-            RETURNING *`,
-            [product_category_id]
-        );
-
-        if (results.rows.length === 0) {
-            return res.status(404).json({ message: 'Product category not found' });
-        }
-
-        res.status(200).json(results.rows[0]);
-    }
-    catch (error) {
-        console.error('Error archiving product category:', error);
-        res.status(500).json({ message: 'Error archiving product category', error: error.message });
-    } finally {
-        client.release();
-    }
-};
-
 module.exports = {
     createProduct,
     getAllProducts,
@@ -376,6 +349,5 @@ module.exports = {
     getAllProductCategories,
     getProductCategoryById,
     updateProductCategory,
-    deleteProductCategory,
-    archiveProductCategory
+    deleteProductCategory
 };

@@ -81,7 +81,7 @@ const ProductVariations = () => {
       formData.append(`variations[${index}][unit_price]`, variation.unit_price);
       formData.append(
         `variations[${index}][product_status_id]`,
-        variation.product_status_id
+        variation.product_status_id,
       );
       if (variation.image) {
         formData.append(`images`, variation.image);
@@ -158,7 +158,7 @@ const ProductVariations = () => {
     try {
       const response = await updateProductVariation(
         selectedProductVariation.variation_id,
-        formData
+        formData,
       );
       console.log("Product variation updated successfully:", response);
       setIsEditModalVisible(false);
@@ -174,13 +174,13 @@ const ProductVariations = () => {
     if (!selectedProductVariation) return;
 
     const isConfirmed = window.confirm(
-      "Are you sure you want to archive this product variation?"
+      "Are you sure you want to archive this product variation?",
     );
     if (!isConfirmed) return;
 
     try {
       const response = await archiveProductVariation(
-        selectedProductVariation.variation_id
+        selectedProductVariation.variation_id,
       );
       console.log(response);
       const productVariationsData = await getAllProductVariations();
@@ -192,7 +192,7 @@ const ProductVariations = () => {
 
   const deleteVariation = (index) => {
     setVariations((prevVariations) =>
-      prevVariations.filter((_, i) => i !== index)
+      prevVariations.filter((_, i) => i !== index),
     );
   };
 
@@ -225,6 +225,23 @@ const ProductVariations = () => {
     { key: "status_description", header: "Status" },
   ];
 
+  const statusMap = statuses.reduce((acc, status) => {
+    acc[status.status_id] = status.description;
+    return acc;
+  }, {});
+
+  const processedProductVariations = product_variations
+    .map((product_variation) => ({
+      ...product_variation,
+      product_status:
+        statusMap[product_variation.product_status_id] || "Unknown",
+    }))
+    .sort((a, b) => {
+      if (a.product_status_id === 4 && b.product_status_id !== 4) return 1;
+      if (a.product_status_id !== 4 && b.product_status_id === 4) return -1;
+      return 0;
+    });
+
   return (
     <Fragment>
       <div className="flex flex-col gap-2">
@@ -241,7 +258,7 @@ const ProductVariations = () => {
           </div>
         </div>
         <DataTable
-          data={product_variations}
+          data={processedProductVariations}
           columns={columns}
           onEdit={handleEdit}
           onArchive={handleArchive}
