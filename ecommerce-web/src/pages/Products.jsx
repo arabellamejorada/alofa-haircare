@@ -1,10 +1,11 @@
 import ProductCard from '../components/ProductCard';
-import HairOil from '../../../productImages/hairoil_60ml.jpeg'
-import HairClip from '../../../productImages/hairclips_all.jpeg'
-import BambooBrush from '../../../productImages/tools_bamboobrush.jpeg'
-import JadeComb from '../../../productImages/tools_jadecomb.jpeg'
-import ScalpBrush from '../../../productImages/tools_scalpbrush.jpeg'
-import '../../public/images/body-bg.png'
+import HairOil from '../../../productImages/hairoil_60ml.jpeg';
+import HairClip from '../../../productImages/hairclips_all.jpeg';
+import BambooBrush from '../../../productImages/tools_bamboobrush.jpeg';
+import JadeComb from '../../../productImages/tools_jadecomb.jpeg';
+import ScalpBrush from '../../../productImages/tools_scalpbrush.jpeg';
+import '../../public/images/body-bg.png';
+
 const products = [
   {
     id: 1,
@@ -15,31 +16,31 @@ const products = [
   {
     id: 2,
     image: HairClip,
-    name: 'Hair & Body Mist',
+    name: 'Hair Clips',
     price: 540,
   },
   {
     id: 3,
     image: BambooBrush,
-    name: 'All-Natural Hair Oil',
+    name: 'Bamboo Brush',
     price: 380,
   },
   {
     id: 4,
     image: ScalpBrush,
-    name: 'Flower Hair Clip',
+    name: 'Scalp Brush',
     price: 180,
   },
   {
     id: 5,
     image: JadeComb,
-    name: 'Flower Hair Clip',
+    name: 'Jade Comb',
     price: 321.50,
   },
   {
     id: 6,
     image: HairOil,
-    name: 'Flower Hair Clip',
+    name: 'Hair Oil',
     price: 450,
   },
   {
@@ -51,7 +52,7 @@ const products = [
   {
     id: 8,
     image: HairOil,
-    name: 'Flower Hair Clip',
+    name: 'Oil Hair',
     price: 240,
   },
 ];
@@ -63,9 +64,10 @@ const Products = () => {
         {products.map((product) => (
           <ProductCard
             key={product.id}
-            image={product.image}
-            name={product.name}
-            price={product.price}
+            id={product.id} 
+            image={product.image}  
+            name={product.name}  
+            price={product.price}  
           />
         ))}
       </div>
