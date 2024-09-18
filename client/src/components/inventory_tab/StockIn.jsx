@@ -5,6 +5,7 @@ import { getAllSuppliers, getSupplier } from "../../api/suppliers"; // Mock API 
 import { getAllProductVariations } from "../../api/products"; // Mock data
 import { createStockIn } from "../../api/stockIn"; // API for creating stock in
 import { getEmployees } from "../../api/employees"; // Mock API functions
+import { Link } from "react-router-dom";
 
 const StockIn = () => {
   const [employees, setEmployees] = useState([]);
@@ -269,6 +270,12 @@ const StockIn = () => {
         >
           Save
         </button>
+
+         <Link to="/stockinhistory">
+          <button className="px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600">
+            View History
+          </button>
+        </Link>
       </div>
     </Fragment>
   );
