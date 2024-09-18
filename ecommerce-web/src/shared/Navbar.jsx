@@ -1,13 +1,17 @@
 import { useState, useContext } from 'react';
-import { FaUserAlt, FaShoppingCart } from "react-icons/fa";
+import { FaUserAlt, FaShoppingCart, FaTrashAlt } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import logo from "/images/alofa-logo.png";
-import { CartContext } from '../components/CartContext'; // Import CartContext
-import CartItem from '../components/CartItem'; // Import the new CartItem component
+import { CartContext } from '../components/CartContext';
+// import CartItem from '../components/CartItem';
 
 const Navbar = () => {
   const [hovered, setHovered] = useState(false);
   const { cartItems, handleQuantityChange, handleDelete } = useContext(CartContext); // Get cart context
+
+  // Calculate total price
+  const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2);
+
 
   return (
     <header className="bg-white/75 shadow-md py-2px fixed top-0 w-full z-50">
@@ -27,9 +31,9 @@ const Navbar = () => {
         {/* Account & Cart Button */}
         <div className="text-lg text-alofa-pink sm:flex items-center gap-4 hidden">
           <p><FaUserAlt /></p>
-          <Link to="/" className="hover:text-pink-700 flex items-center gap-2">Login</Link>
+          <Link to="/login" className="hover:text-pink-700 flex items-center gap-2">Login</Link>
           <p>|</p>
-          <Link to="/" className="hover:text-pink-700 flex items-center gap-2">Sign Up</Link>
+          <Link to="/signup" className="hover:text-pink-700 flex items-center gap-2">Sign Up</Link>
 
           {/* Shopping Cart Icon */}
           <div
@@ -52,35 +56,57 @@ const Navbar = () => {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
-        <div className="p-4 h-full overflow-y-auto">
-          <h1 className="text-2xlg text-alofa-pink font-bold mb-4">Cart Summary</h1>
+        <div className="p-4 h-full flex flex-col">
+          <h1 className="text-2xl text-alofa-pink font-bold mb-4">Cart Overview</h1>
 
-          {/* Cart Items */}
-          {cartItems && cartItems.length > 0 ? (
-            <div>
-              {cartItems.map((item) => (
-                <CartItem
-                  key={item.id}
-                  item={item}
-                  handleQuantityChange={handleQuantityChange}
-                  handleDelete={handleDelete}
-                />
-              ))}
+          {/* Cart Items: Make this part scrollable */}
+          <div className="flex-1 overflow-y-auto mb-4">
+            {cartItems && cartItems.length > 0 ? (
+              cartItems.map((item) => (
+                <div key={item.id} className="flex items-center gap-4 mb-4 p-2 bg-white rounded-lg">
+                  <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded-md" />
+                  <div className="flex-1">
+                    <h2 className="font-semibold text-gray-700">{item.name}</h2>
+                    <p className="text-sm text-gray-500">{item.size}</p>
+                    <p className="text-sm text-gray-500">₱{item.price}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      value={item.quantity}
+                      onChange={(e) => handleQuantityChange(item.id, e.target.value)}
+                      className="w-12 border border-gray-300 rounded-md text-center"
+                    />
+                    <button onClick={() => handleDelete(item.id)} className="text-red-500 hover:text-red-700">
+                      <FaTrashAlt />
+                    </button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500 mb-4">Your cart is empty.</p>
+            )}
+          </div>
+
+          {/* Fixed Bottom Section: Subtotal, Total, and Buttons */}
+          <div className="border-t pt-4">
+            <div className="flex justify-between mb-2 text-gray-500">
+              <span>Subtotal</span>
+              <span>₱{totalPrice}</span>
             </div>
-          ) : (
-            <p className="text-gray-500 mb-4">Your cart is empty.</p>
-          )}
+            <div className="flex justify-between text-xl font-semibold mb-4">
+              <span>Total</span>
+              <span>₱{totalPrice}</span>
+            </div>
 
-          {/* View Cart and Checkout Buttons */}
-          <div className="absolute bottom-4 left-0 w-full px-4">
             <div className="flex justify-between">
               <Link to="/shoppingcart">
-                <button className="bg-alofa-pink text-white font-semibold py-2 px-4 rounded-full hover:bg-pink-500">
+                <button className="bg-alofa-pink text-white font-semibold py-2 px-6 rounded-full hover:bg-pink-500">
                   View Cart
                 </button>
               </Link>
               <Link to="/checkout">
-                <button className="bg-alofa-pink text-white font-semibold py-2 px-4 rounded-full hover:bg-pink-500">
+                <button className="bg-alofa-pink text-white font-semibold py-2 px-6 rounded-full hover:bg-pink-500">
                   Check Out
                 </button>
               </Link>
@@ -88,6 +114,7 @@ const Navbar = () => {
           </div>
         </div>
       </div>
+
     </header>
   );
 };

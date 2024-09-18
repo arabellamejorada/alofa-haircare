@@ -14,7 +14,7 @@ const ProductCard = ({ id, image, name, price }) => {
   return (
     <div className="relative p-2 rounded-lg">
       {/* Inner card with white background */}
-      <div className="bg-white border-4 border-pink-300 rounded-lg shadow-md overflow-hidden flex flex-col justify-between w-56 text-center">
+      <div className="bg-white border-4 border-alofa-light-pink rounded-lg shadow-md overflow-hidden flex flex-col justify-between w-56 text-center">
         {/* Square image occupying the whole top */}
         <div className="w-full aspect-square">
           <img src={image} alt={name} className="w-full h-full object-cover" />

@@ -1,10 +1,7 @@
-import { useContext } from 'react';
 import { FaTrashAlt } from 'react-icons/fa';
-import { CartContext } from './CartContext.jsx';
+import PropTypes from 'prop-types';
 
-const CartTable = () => {
-  const { cartItems, handleQuantityChange, handleDelete } = useContext(CartContext);
-
+const CartTable = ({ cartItems, handleQuantityChange, handleDelete }) => {
   return (
     <div className="bg-white rounded-lg shadow-lg p-6">
       <h2 className="text-alofa-pink text-3xl mb-4 font-bold">My Cart</h2>
@@ -20,10 +17,10 @@ const CartTable = () => {
           </tr>
         </thead>
         <tbody>
-          {cartItems.map((item) => (
-            <tr key={item.id} className="border-b">
+          {cartItems.map((item, index) => (
+            <tr key={index} className="border-b">
               <td className="p-2 flex items-center">
-                <img src={item.imageUrl} alt={item.name} className="w-12 h-12 mr-3 rounded" />
+                <img src={item.image} alt={item.name} className="w-12 h-12 mr-3 rounded" />
                 <span>{item.name}</span>
               </td>
               <td className="p-2">{item.variation || 'N/A'}</td>
@@ -33,7 +30,7 @@ const CartTable = () => {
                   type="number"
                   className="w-12 border rounded text-center"
                   value={item.quantity}
-                  onChange={(e) => handleQuantityChange(item.id, Number(e.target.value))}
+                  onChange={(e) => handleQuantityChange(index, e.target.value)}
                   min="1"
                 />
               </td>
@@ -41,7 +38,7 @@ const CartTable = () => {
               <td className="p-2">
                 <button
                   className="text-red-500 hover:text-red-700"
-                  onClick={() => handleDelete(item.id)}
+                  onClick={() => handleDelete(index)}
                 >
                   <FaTrashAlt />
                 </button>
@@ -52,6 +49,20 @@ const CartTable = () => {
       </table>
     </div>
   );
+};
+
+CartTable.propTypes = {
+  cartItems: PropTypes.arrayOf(
+    PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      variation: PropTypes.string,
+      price: PropTypes.number.isRequired,
+      quantity: PropTypes.number.isRequired,
+      image: PropTypes.string.isRequired,
+    })
+  ).isRequired,
+  handleQuantityChange: PropTypes.func.isRequired,
+  handleDelete: PropTypes.func.isRequired,
 };
 
 export default CartTable;

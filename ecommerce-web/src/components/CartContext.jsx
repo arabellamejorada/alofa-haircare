@@ -17,16 +17,13 @@ const CartProvider = ({ children }) => {
 
   // Function to add item to cart
   const addToCart = (product) => {
-    // Check if the item is already in the cart
     const existingItem = cartItems.find(item => item.id === product.id);
 
     if (existingItem) {
-      // Update the quantity
       setCartItems(cartItems.map(item =>
         item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
       ));
     } else {
-      // Add new item to cart
       setCartItems([...cartItems, { ...product, quantity: 1 }]);
     }
   };
@@ -34,7 +31,7 @@ const CartProvider = ({ children }) => {
   // Function to handle quantity change
   const handleQuantityChange = (productId, quantity) => {
     setCartItems(cartItems.map(item =>
-      item.id === productId ? { ...item, quantity } : item
+      item.id === productId ? { ...item, quantity: Number(quantity) } : item
     ));
   };
 
@@ -43,12 +40,19 @@ const CartProvider = ({ children }) => {
     setCartItems(cartItems.filter(item => item.id !== productId));
   };
 
+  // Calculate subtotal
+  const subtotal = cartItems.reduce(
+    (acc, item) => acc + item.price * item.quantity,
+    0
+  );
+
   return (
     <CartContext.Provider value={{
       cartItems,
       addToCart,
       handleQuantityChange,
       handleDelete,
+      subtotal, // Provide subtotal to the context
     }}>
       {children}
     </CartContext.Provider>

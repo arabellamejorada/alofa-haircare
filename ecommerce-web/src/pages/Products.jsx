@@ -1,10 +1,11 @@
 import ProductCard from '../components/ProductCard';
-import HairOil from '../../../productImages/hairoil_60ml.jpeg'
-import HairClip from '../../../productImages/hairclips_all.jpeg'
-import BambooBrush from '../../../productImages/tools_bamboobrush.jpeg'
-import JadeComb from '../../../productImages/tools_jadecomb.jpeg'
-import ScalpBrush from '../../../productImages/tools_scalpbrush.jpeg'
-import '../../public/images/body-bg.png'
+import HairOil from '../../../productImages/hairoil_60ml.jpeg';
+import HairClip from '../../../productImages/hairclips_all.jpeg';
+import BambooBrush from '../../../productImages/tools_bamboobrush.jpeg';
+import JadeComb from '../../../productImages/tools_jadecomb.jpeg';
+import ScalpBrush from '../../../productImages/tools_scalpbrush.jpeg';
+import '../../public/images/body-bg.png';
+
 const products = [
   {
     id: 1,
@@ -63,9 +64,10 @@ const Products = () => {
         {products.map((product) => (
           <ProductCard
             key={product.id}
-            image={product.image}
-            name={product.name}
-            price={product.price}
+            id={product.id} 
+            image={product.image}  
+            name={product.name}  
+            price={product.price}  
           />
         ))}
       </div>
