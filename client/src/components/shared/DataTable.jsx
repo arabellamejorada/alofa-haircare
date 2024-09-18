@@ -87,8 +87,8 @@ const DataTable = ({ data, columns, onEdit, onArchive, isInventory }) => {
                     {column.render
                       ? column.render(item[column.key])
                       : column.key === "stock_in_date"
-                      ? formatDateInLocalTimezone(item[column.key])
-                      : item[column.key]}
+                        ? formatDateInLocalTimezone(item[column.key])
+                        : item[column.key]}
                   </td>
                 ))}
 

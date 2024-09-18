@@ -12,21 +12,24 @@ export const createStockIn = async (requestData) => {
 };
 
 export const getAllStockIn = async () => {
-    try {
-        const response = await axios.get("/stock-in");
-        return response.data;
-    } catch (error) {
-        console.error("Error during get all stock in:", error);
-        return [];
-    }
+  try {
+    const response = await axios.get("http://localhost:3001/stock-in");
+    return response;
+  } catch (error) {
+    console.error("Error fetching stock-in data:", error);
+    throw error;
+  }
 };
+
 
 export const getStockInById = async (id) => {
     try {
-        const response = await axios.get(`/stock-in/${id}`);
+    const response = await axios.get("http://localhost:3001/stock-in/" + id);
         return response.data;
     } catch (error) {
         console.error("Error during get stock in by id:", error);
         throw error;
     }
 };
+
+
