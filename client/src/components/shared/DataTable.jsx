@@ -16,7 +16,14 @@ const formatDateInLocalTimezone = (timestamp) => {
   return date.toLocaleString("en-GB", { timeZone: "Asia/Manila" });
 };
 
-const DataTable = ({ data, columns, onEdit, onArchive, isInventory }) => {
+const DataTable = ({
+  data,
+  columns,
+  onEdit,
+  onArchive,
+  isInventory,
+  isProductCategory,
+}) => {
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 10;
 
@@ -104,15 +111,17 @@ const DataTable = ({ data, columns, onEdit, onArchive, isInventory }) => {
                       >
                         <MdEditDocument fontSize={30} />
                       </div>
-                      <div
-                        className="text-pink-500 hover:text-pink-600"
-                        onClick={() => onArchive(item)}
-                        role="button"
-                        tabIndex={0}
-                        aria-label="Archive"
-                      >
-                        <IoMdArchive fontSize={30} />
-                      </div>
+                      {!isProductCategory && (
+                        <div
+                          className="text-pink-500 hover:text-pink-600"
+                          onClick={() => onArchive(item)}
+                          role="button"
+                          tabIndex={0}
+                          aria-label="Archive"
+                        >
+                          <IoMdArchive fontSize={30} />
+                        </div>
+                      )}
                     </div>
                   </td>
                 )}

@@ -26,11 +26,11 @@ const Inventory = () => {
     { key: "inventory_id", header: "ID" },
     { key: "sku", header: "SKU" },
     { key: "product_name", header: "Product Name" },
-    { key: "product_variation", header: "Variation "},
+    { key: "product_variation", header: "Variation " },
     { key: "stock_quantity", header: "Stock Quantity" },
     { key: "stock_in_date", header: "Last Update" },
   ];
-  
+
   if (error) return <div>{error}</div>;
 
   const productMap = products.reduce((acc, product) => {
@@ -63,8 +63,11 @@ const Inventory = () => {
             />
           </div> */}
         </div>
-
-        <DataTable data={processedInventory} columns={columns} isInventory={true}/>{" "}
+        <DataTable
+          data={processedInventory}
+          columns={columns}
+          isInventory={true}
+        />{" "}
       </div>
     </Fragment>
   );
