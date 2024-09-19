@@ -4,11 +4,11 @@ import { MdEditDocument } from "react-icons/md";
 
 const formatColumnName = (columnName) => {
   if (columnName.toLowerCase() === "id") {
-    return columnName.toUpperCase(); // Special case for "ID"
+    return columnName.toUpperCase();
   }
   return columnName
-    .replace(/_/g, " ") // Replace underscores with spaces
-    .replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize the first letter of each word
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 };
 
 const formatDateInLocalTimezone = (timestamp) => {
@@ -24,15 +24,11 @@ const DataTable = ({ data, columns, onEdit, onArchive, isInventory }) => {
     return <div>No data available</div>;
   }
 
-  // Calculate total pages
   const totalPages = Math.ceil(data.length / rowsPerPage);
-
-  // Get current page data
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
   const currentData = data.slice(indexOfFirstRow, indexOfLastRow);
 
-  // Handle page change
   const handleNextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage((prevPage) => prevPage + 1);
@@ -53,14 +49,14 @@ const DataTable = ({ data, columns, onEdit, onArchive, isInventory }) => {
             <tr>
               {columns.map((column) => (
                 <th
-                  className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                  className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-md font-semibold text-gray-600 uppercase tracking-wider"
                   key={column.key}
                 >
                   {column.header || formatColumnName(column.key)}
                 </th>
               ))}
               {!isInventory && (
-                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-md font-semibold text-gray-600 uppercase w-[20%]">
                   Actions
                 </th>
               )}
@@ -79,22 +75,31 @@ const DataTable = ({ data, columns, onEdit, onArchive, isInventory }) => {
                     : ""
                 }
               >
-                {columns.map((column) => (
-                  <td
-                    className="px-5 py-5 border-b border-gray-200 text-sm text-left"
-                    key={column.key}
-                  >
-                    {column.render
-                      ? column.render(item[column.key])
-                      : column.key === "stock_in_date"
-                      ? formatDateInLocalTimezone(item[column.key])
-                      : item[column.key]}
-                  </td>
-                ))}
+                {columns.map((column) => {
+                  // Determine if the current column is the product name column
+                  const isProductNameColumn = column.key === "product_name";
+
+                  return (
+                    <td
+                      className={`px-5 py-3 border-b border-gray-200 text-sm text-left h-12 ${
+                        isProductNameColumn
+                          ? "whitespace-nowrap overflow-hidden text-ellipsis max-w-xs"
+                          : "whitespace-nowrap"
+                      }`}
+                      key={column.key}
+                    >
+                      {column.render
+                        ? column.render(item[column.key])
+                        : column.key === "stock_in_date"
+                        ? formatDateInLocalTimezone(item[column.key])
+                        : item[column.key]}
+                    </td>
+                  );
+                })}
 
                 {!isInventory && (
-                  <td className="text-center">
-                    <div className="flex justify-center items-center gap-2">
+                  <td className="text-center h-12">
+                    <div className="flex justify-center items-center gap-2 h-full">
                       <div
                         className="text-pink-500 hover:text-pink-600"
                         onClick={() => onEdit(item)}
@@ -102,7 +107,7 @@ const DataTable = ({ data, columns, onEdit, onArchive, isInventory }) => {
                         tabIndex={0}
                         aria-label="Edit"
                       >
-                        <MdEditDocument fontSize={30} />
+                        <MdEditDocument fontSize={24} />
                       </div>
                       <div
                         className="text-pink-500 hover:text-pink-600"
@@ -111,7 +116,7 @@ const DataTable = ({ data, columns, onEdit, onArchive, isInventory }) => {
                         tabIndex={0}
                         aria-label="Archive"
                       >
-                        <IoMdArchive fontSize={30} />
+                        <IoMdArchive fontSize={24} />
                       </div>
                     </div>
                   </td>
