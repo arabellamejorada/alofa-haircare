@@ -75,27 +75,18 @@ const DataTable = ({ data, columns, onEdit, onArchive, isInventory }) => {
                     : ""
                 }
               >
-                {columns.map((column) => {
-                  // Determine if the current column is the product name column
-                  const isProductNameColumn = column.key === "product_name";
-
-                  return (
-                    <td
-                      className={`px-5 py-3 border-b border-gray-200 text-sm text-left h-12 ${
-                        isProductNameColumn
-                          ? "whitespace-nowrap overflow-hidden text-ellipsis max-w-xs"
-                          : "whitespace-nowrap"
-                      }`}
-                      key={column.key}
-                    >
-                      {column.render
-                        ? column.render(item[column.key])
-                        : column.key === "stock_in_date"
-                        ? formatDateInLocalTimezone(item[column.key])
-                        : item[column.key]}
-                    </td>
-                  );
-                })}
+                {columns.map((column) => (
+                  <td
+                    className="px-5 py-5 border-b border-gray-200 text-sm text-left"
+                    key={column.key}
+                  >
+                    {column.render
+                      ? column.render(item[column.key])
+                      : column.key === "stock_in_date"
+                      ? formatDateInLocalTimezone(item[column.key])
+                      : item[column.key]}
+                  </td>
+                ))}
 
                 {!isInventory && (
                   <td className="text-center h-12">

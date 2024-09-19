@@ -14,6 +14,9 @@ export default {
       colors: {
         "alofa-pink" : "#FE699F",
         "alofa-pink-gradient" : "#F8587A",
+        "alofa-light-pink" : "#EFB3C0",
+        "alofa-white" : "#FFF8FC"
+
       },
       fontFamily: {
         'title': ['Yavome', 'sans-serif'],

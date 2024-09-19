@@ -1,5 +1,5 @@
 const pool = require('../db.js');
-//this should be a loop sa front end na mag add variation
+
 // Create product variations + inventory
 const createProductVariationsWithInventory = async (req, res) => {
     const client = await pool.connect();

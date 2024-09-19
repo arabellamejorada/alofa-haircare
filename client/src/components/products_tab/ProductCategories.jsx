@@ -6,7 +6,7 @@ import {
   createCategory,
   getCategories,
   updateCategory,
-  archiveCategory,
+  // archiveCategory,
 } from "../../api/products";
 
 const ProductCategories = () => {
@@ -48,7 +48,7 @@ const ProductCategories = () => {
       if (selectedCategory) {
         response = await updateCategory(
           selectedCategory.product_category_id,
-          categoryData
+          categoryData,
         );
         console.log("Category updated successfully:", response);
       } else {
@@ -64,17 +64,17 @@ const ProductCategories = () => {
     }
   };
 
-  const handleArchive = async (category) => {
-    try {
-      const response = await archiveCategory(category.product_category_id);
-      console.log("Category archived successfully:", response);
-      const categoriesData = await getCategories();
-      setCategories(categoriesData);
-    } catch (error) {
-      console.error("Error archiving category:", error);
-      setError("Error archiving category. Please try again.");
-    }
-  };
+  // const handleArchive = async (category) => {
+  //   try {
+  //     const response = await archiveCategory(category.product_category_id);
+  //     console.log("Category archived successfully:", response);
+  //     const categoriesData = await getCategories();
+  //     setCategories(categoriesData);
+  //   } catch (error) {
+  //     console.error("Error archiving category:", error);
+  //     setError("Error archiving category. Please try again.");
+  //   }
+  // };
 
   const openModal = (category = null) => {
     if (category) {
@@ -118,7 +118,8 @@ const ProductCategories = () => {
         <DataTable
           data={categories}
           columns={columns}
-          onArchive={handleArchive}
+          // onArchive={handleArchive}
+          isInventory={true}
           onEdit={openModal}
         />
       </div>

@@ -1,28 +1,18 @@
-import React, { useState } from "react";
-// import { IoMdArrowDropdown } from "react-icons/io";
+import React from "react";
 import { MdDelete } from "react-icons/md";
 import { MdAddBox } from "react-icons/md";
-import { Link } from "react-router-dom";
 
-const StockInTable = ({ columns, productVariations }) => {
-  const [data, setData] = useState([]);
-
+const StockInTable = ({ columns, productVariations, stockInProducts, setStockInProducts }) => {
   // Handle adding a new row
   const handleAddRow = () => {
-    const newRow = {
-      product_name: "",
-      type: "",
-      value: "",
-      sku: "",
-      quantity: 1, // Default quantity to 1
-    };
-    setData([...data, newRow]);
+    const newRow = { variation_id: "", quantity: 1 }; // Empty product, default quantity 1
+    setStockInProducts([...stockInProducts, newRow]);
   };
 
   // Handle deleting a row
   const handleDeleteRow = (index) => {
-    const updatedData = data.filter((_, i) => i !== index);
-    setData(updatedData);
+    const updatedData = stockInProducts.filter((_, i) => i !== index);
+    setStockInProducts(updatedData);
   };
 
   // Handle product variation change
@@ -31,18 +21,18 @@ const StockInTable = ({ columns, productVariations }) => {
       (variation) => variation.variation_id === parseInt(variationId)
     );
 
-    const updatedData = [...data];
+    const updatedData = [...stockInProducts];
     if (selectedVariation) {
       updatedData[index] = {
         ...updatedData[index],
-        var_ID: selectedVariation.variation_id,
-        product_name: selectedVariation.name,
+        variation_id: selectedVariation.variation_id,
+        product_name: selectedVariation.product_name,
         type: selectedVariation.type,
         value: selectedVariation.value,
         sku: selectedVariation.sku,
       };
     }
-    setData(updatedData);
+    setStockInProducts(updatedData);
   };
 
   return (
@@ -81,7 +71,7 @@ const StockInTable = ({ columns, productVariations }) => {
           </thead>
 
           <tbody>
-            {data.map((item, index) => (
+            {stockInProducts.map((item, index) => (
               <tr key={index}>
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-left">
                   {index + 1}
@@ -90,10 +80,8 @@ const StockInTable = ({ columns, productVariations }) => {
                 {/* Variation Dropdown */}
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-left">
                   <select
-                    value={item.var_ID || ""}
-                    onChange={(e) =>
-                      handleVariationChange(index, e.target.value)
-                    }
+                    value={item.variation_id || ""}
+                    onChange={(e) => handleVariationChange(index, e.target.value)}
                     className="w-64 border border-gray-200 rounded px-2 py-1 text-left appearance-none"
                   >
                     <option value="" disabled>
@@ -101,7 +89,7 @@ const StockInTable = ({ columns, productVariations }) => {
                     </option>
                     {productVariations.map((variation, idx) => (
                       <option key={idx} value={variation.variation_id}>
-                        {`${variation.name} - ${variation.type}: ${variation.value}`}
+                        {`${variation.product_name} - ${variation.type}: ${variation.value}`}
                       </option>
                     ))}
                   </select>
@@ -131,9 +119,9 @@ const StockInTable = ({ columns, productVariations }) => {
                     onChange={(e) => {
                       const value = e.target.value;
                       if (value > 0) {
-                        const updatedData = [...data];
+                        const updatedData = [...stockInProducts];
                         updatedData[index]["quantity"] = value;
-                        setData(updatedData);
+                        setStockInProducts(updatedData);
                       }
                     }}
                     className="w-20 border border-gray-200 rounded px-2 py-1 text-left"
@@ -153,16 +141,6 @@ const StockInTable = ({ columns, productVariations }) => {
             ))}
           </tbody>
         </table>
-      </div>
-      <div className="flex flex-row mt-4 gap-2">
-        <button className="px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600">
-          Save
-        </button>
-        <Link to="/stockinhistory">
-          <button className="px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600">
-            View History
-          </button>
-        </Link>
       </div>
     </div>
   );
