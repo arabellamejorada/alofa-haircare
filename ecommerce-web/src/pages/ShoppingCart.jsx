@@ -1,13 +1,13 @@
 import { useContext } from 'react';
 import CartTable from '../components/CartTable.jsx';
 import CartSummary from '../components/CartSummary.jsx';
-import { CartContext } from '../components/CartContext.jsx'; // Import CartContext
+import { CartContext } from '../components/CartContext.jsx';
 
 const ShoppingCart = () => {
   // Access cart state from CartContext
   const { cartItems, handleQuantityChange, handleDelete, subtotal } = useContext(CartContext);
 
-  const total = subtotal; // You can modify this if you want to add tax or shipping to the total
+  const total = subtotal; // can modify if included ang tax and all
 
   return (
     <div className="pt-20 bg-[url('../../public/images/body-bg.png')] bg-cover bg-center h-screen p-8 flex justify-center">

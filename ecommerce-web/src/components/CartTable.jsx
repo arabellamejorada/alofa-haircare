@@ -38,7 +38,7 @@ const CartTable = ({ cartItems, handleQuantityChange, handleDelete }) => {
               <td className="p-2">
                 <button
                   className="text-red-500 hover:text-red-700"
-                  onClick={() => handleDelete(index)}
+                  onClick={() => handleDelete(item.id)}
                 >
                   <FaTrashAlt />
                 </button>
@@ -54,6 +54,7 @@ const CartTable = ({ cartItems, handleQuantityChange, handleDelete }) => {
 CartTable.propTypes = {
   cartItems: PropTypes.arrayOf(
     PropTypes.shape({
+      id: PropTypes.number.isRequired,
       name: PropTypes.string.isRequired,
       variation: PropTypes.string,
       price: PropTypes.number.isRequired,
