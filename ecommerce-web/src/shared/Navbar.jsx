@@ -101,12 +101,12 @@ const Navbar = () => {
 
             <div className="flex justify-between">
               <Link to="/shoppingcart">
-                <button className="bg-alofa-pink text-white font-semibold py-2 px-6 rounded-full hover:bg-pink-500">
+                <button className="font-extrabold text-white py-2 px-4 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]">
                   View Cart
                 </button>
               </Link>
               <Link to="/checkout">
-                <button className="bg-alofa-pink text-white font-semibold py-2 px-6 rounded-full hover:bg-pink-500">
+                <button className="font-extrabold text-white py-2 px-4 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]">
                   Check Out
                 </button>
               </Link>
