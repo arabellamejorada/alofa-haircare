@@ -16,7 +16,14 @@ const formatDateInLocalTimezone = (timestamp) => {
   return date.toLocaleString("en-GB", { timeZone: "Asia/Manila" });
 };
 
-const DataTable = ({ data, columns, onEdit, onArchive, isInventory }) => {
+const DataTable = ({
+  data,
+  columns,
+  onEdit,
+  onArchive,
+  isInventory,
+  isProductCategory,
+}) => {
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 10;
 
@@ -83,8 +90,8 @@ const DataTable = ({ data, columns, onEdit, onArchive, isInventory }) => {
                     {column.render
                       ? column.render(item[column.key])
                       : column.key === "stock_in_date"
-                      ? formatDateInLocalTimezone(item[column.key])
-                      : item[column.key]}
+                        ? formatDateInLocalTimezone(item[column.key])
+                        : item[column.key]}
                   </td>
                 ))}
 
@@ -100,15 +107,17 @@ const DataTable = ({ data, columns, onEdit, onArchive, isInventory }) => {
                       >
                         <MdEditDocument fontSize={24} />
                       </div>
-                      <div
-                        className="text-pink-500 hover:text-pink-600"
-                        onClick={() => onArchive(item)}
-                        role="button"
-                        tabIndex={0}
-                        aria-label="Archive"
-                      >
-                        <IoMdArchive fontSize={24} />
-                      </div>
+                      {!isProductCategory && (
+                        <div
+                          className="text-pink-500 hover:text-pink-600"
+                          onClick={() => onArchive(item)}
+                          role="button"
+                          tabIndex={0}
+                          aria-label="Archive"
+                        >
+                          <IoMdArchive fontSize={24} />
+                        </div>
+                      )}
                     </div>
                   </td>
                 )}

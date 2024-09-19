@@ -32,7 +32,18 @@ const createStockIn = async (req, res) => {
         `,
         [stock_in_id, product.variation_id, product.quantity]
       );
+
+     // Update inventory quantity by adding the stock_in quantity to current inventory
+      await client.query(
+        `
+        UPDATE inventory
+        SET stock_quantity = stock_quantity + $1
+        WHERE variation_id = $2;
+        `,
+        [product.quantity, product.variation_id]
+      );      
     }
+
 
     await client.query('COMMIT');
 
@@ -79,8 +90,7 @@ const getAllStockIn = async (req, res) => {
       JOIN
           product p ON pv.product_id = p.product_id
       ORDER BY 
-          si.stock_in_date DESC, 
-          si.stock_in_id ASC;
+          si.stock_in_date DESC
     `);
 
     res.status(200).json(stockInResult.rows);

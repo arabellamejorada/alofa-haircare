@@ -22,7 +22,7 @@ const StockIn = () => {
   const [selectedSupplier, setSelectedSupplier] = useState("");
   const [selectedEmployee, setSelectedEmployee] = useState("");
   const [stockInDate, setStockInDate] = useState(
-    new Date().toISOString().substring(0, 10) // Defaults to current date
+    new Date().toISOString().substring(0, 10), // Defaults to current date
   );
   const [stockInProducts, setStockInProducts] = useState([]); // Store stock-in products
 
@@ -58,7 +58,6 @@ const StockIn = () => {
     setSelectedEmployee(employeeId);
   };
 
-
   const handleSubmitStockIn = async () => {
     if (!selectedSupplier || stockInProducts.length === 0) {
       alert("Please select a supplier and add at least one product.");
@@ -73,7 +72,7 @@ const StockIn = () => {
     };
 
     try {
-      await createStockIn(stockInData); 
+      await createStockIn(stockInData);
       alert("Stock In recorded successfully");
       // Reset form fields
       setStockInProducts([]);
@@ -87,7 +86,6 @@ const StockIn = () => {
         address: "",
       });
       generateReferenceNumber();
-      
     } catch (error) {
       console.error("Error saving stock in:", error);
       alert("An error occurred while saving stock in.");
@@ -125,30 +123,32 @@ const StockIn = () => {
               />
             </div>
 
-          {/* Employee Dropdown */}
-          <div className="flex flex-row justify-between items-center">
-            <label className="font-bold w-[30%]" htmlFor="employee">
-              Employee:
-            </label>
-            <div className="relative w-[85%]">
-              <select
-                id="employee"
-                name="employee"
-                value={selectedEmployee}
-                onChange={(e) => handleEmployeeChange(e.target.value)}
-                className="w-full h-8 px-4 appearance-none border rounded-md bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-              >
-                <option value="">Select Employee</option>
-                {employees.map((employee) => (
-                  <option key={employee.employee_id} value={employee.employee_id}>
-                    {employee.first_name} {employee.last_name}
-                  </option>
-                ))}
-              </select>
-              <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2" />
+            {/* Employee Dropdown */}
+            <div className="flex flex-row justify-between items-center">
+              <label className="font-bold w-[30%]" htmlFor="employee">
+                Employee:
+              </label>
+              <div className="relative w-[85%]">
+                <select
+                  id="employee"
+                  name="employee"
+                  value={selectedEmployee}
+                  onChange={(e) => handleEmployeeChange(e.target.value)}
+                  className="w-full h-8 px-4 appearance-none border rounded-md bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+                >
+                  <option value="">Select Employee</option>
+                  {employees.map((employee) => (
+                    <option
+                      key={employee.employee_id}
+                      value={employee.employee_id}
+                    >
+                      {employee.first_name} {employee.last_name}
+                    </option>
+                  ))}
+                </select>
+                <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2" />
+              </div>
             </div>
-          </div>
-
 
             {/* Stock In Date */}
             <div className="flex flex-row justify-between items-center">
@@ -271,7 +271,7 @@ const StockIn = () => {
           Save
         </button>
 
-         <Link to="/stockinhistory">
+        <Link to="/stockinhistory">
           <button className="px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600">
             View History
           </button>

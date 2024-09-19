@@ -119,7 +119,7 @@ const ProductCategories = () => {
           data={categories}
           columns={columns}
           // onArchive={handleArchive}
-          isInventory={true}
+          isProductCategory={true}
           onEdit={openModal}
         />
       </div>
