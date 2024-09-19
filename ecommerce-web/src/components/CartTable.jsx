@@ -1,5 +1,5 @@
-import PropTypes from 'prop-types';
 import { FaTrashAlt } from 'react-icons/fa';
+import PropTypes from 'prop-types';
 
 const CartTable = ({ cartItems, handleQuantityChange, handleDelete }) => {
   return (
@@ -20,10 +20,10 @@ const CartTable = ({ cartItems, handleQuantityChange, handleDelete }) => {
           {cartItems.map((item, index) => (
             <tr key={index} className="border-b">
               <td className="p-2 flex items-center">
-                <img src={item.imageUrl} alt={item.name} className="w-12 h-12 mr-3 rounded" />
+                <img src={item.image} alt={item.name} className="w-12 h-12 mr-3 rounded" />
                 <span>{item.name}</span>
               </td>
-              <td className="p-2">{item.variation}</td>
+              <td className="p-2">{item.variation || 'N/A'}</td>
               <td className="p-2">₱{item.price.toFixed(2)}</td>
               <td className="p-2">
                 <input
@@ -38,7 +38,7 @@ const CartTable = ({ cartItems, handleQuantityChange, handleDelete }) => {
               <td className="p-2">
                 <button
                   className="text-red-500 hover:text-red-700"
-                  onClick={() => handleDelete(index)} // Use index to identify which item to delete
+                  onClick={() => handleDelete(item.id)}
                 >
                   <FaTrashAlt />
                 </button>
@@ -51,19 +51,19 @@ const CartTable = ({ cartItems, handleQuantityChange, handleDelete }) => {
   );
 };
 
-
 CartTable.propTypes = {
   cartItems: PropTypes.arrayOf(
     PropTypes.shape({
+      id: PropTypes.number.isRequired,
       name: PropTypes.string.isRequired,
-      variation: PropTypes.string.isRequired,
+      variation: PropTypes.string,
       price: PropTypes.number.isRequired,
       quantity: PropTypes.number.isRequired,
-      imageUrl: PropTypes.string.isRequired,
+      image: PropTypes.string.isRequired,
     })
   ).isRequired,
   handleQuantityChange: PropTypes.func.isRequired,
-  handleDelete: PropTypes.func.isRequired, // Pass handleDelete as a prop
+  handleDelete: PropTypes.func.isRequired,
 };
 
 export default CartTable;

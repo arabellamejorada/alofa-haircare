@@ -4,11 +4,11 @@ import { MdEditDocument } from "react-icons/md";
 
 const formatColumnName = (columnName) => {
   if (columnName.toLowerCase() === "id") {
-    return columnName.toUpperCase(); // Special case for "ID"
+    return columnName.toUpperCase();
   }
   return columnName
-    .replace(/_/g, " ") // Replace underscores with spaces
-    .replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize the first letter of each word
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 };
 
 const formatDateInLocalTimezone = (timestamp) => {
@@ -31,15 +31,11 @@ const DataTable = ({
     return <div>No data available</div>;
   }
 
-  // Calculate total pages
   const totalPages = Math.ceil(data.length / rowsPerPage);
-
-  // Get current page data
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
   const currentData = data.slice(indexOfFirstRow, indexOfLastRow);
 
-  // Handle page change
   const handleNextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage((prevPage) => prevPage + 1);
@@ -60,14 +56,14 @@ const DataTable = ({
             <tr>
               {columns.map((column) => (
                 <th
-                  className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                  className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-md font-semibold text-gray-600 uppercase tracking-wider"
                   key={column.key}
                 >
                   {column.header || formatColumnName(column.key)}
                 </th>
               ))}
               {!isInventory && (
-                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-md font-semibold text-gray-600 uppercase w-[20%]">
                   Actions
                 </th>
               )}
@@ -100,8 +96,8 @@ const DataTable = ({
                 ))}
 
                 {!isInventory && (
-                  <td className="text-center">
-                    <div className="flex justify-center items-center gap-2">
+                  <td className="text-center h-12">
+                    <div className="flex justify-center items-center gap-2 h-full">
                       <div
                         className="text-pink-500 hover:text-pink-600"
                         onClick={() => onEdit(item)}
@@ -109,7 +105,7 @@ const DataTable = ({
                         tabIndex={0}
                         aria-label="Edit"
                       >
-                        <MdEditDocument fontSize={30} />
+                        <MdEditDocument fontSize={24} />
                       </div>
                       {!isProductCategory && (
                         <div
@@ -119,7 +115,7 @@ const DataTable = ({
                           tabIndex={0}
                           aria-label="Archive"
                         >
-                          <IoMdArchive fontSize={30} />
+                          <IoMdArchive fontSize={24} />
                         </div>
                       )}
                     </div>
