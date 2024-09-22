@@ -11,7 +11,7 @@ const CartSummary = ({ subtotal, total }) => {
         <span>Total:</span>
         <span>₱{total.toFixed(2)}</span>
       </div>
-      <button className="bg-alofa-pink-gradient hover:bg-alofa-pink text-white font-semibold w-full py-2 rounded-full">
+      <button className="font-extrabold text-white w-full py-2 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]">
         CHECKOUT
       </button>
     </div>
