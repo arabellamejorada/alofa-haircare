@@ -3,7 +3,6 @@ import { FaUserAlt, FaShoppingCart, FaTrashAlt } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import logo from "/images/alofa-logo.png";
 import { CartContext } from '../components/CartContext';
-// import CartItem from '../components/CartItem';
 
 const Navbar = () => {
   const [hovered, setHovered] = useState(false);
@@ -41,7 +40,7 @@ const Navbar = () => {
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
           >
-            <div className="text-[#FE699F] p-3 rounded-full transition-colors duration-300 hover:bg-[#FE699F] hover:text-white cursor-pointer">
+            <div className="text-[#FE699F] p-3 rounded-full transition-colors duration-300 hover:delay-700 hover:text-gray-500 cursor-pointer">
               <FaShoppingCart />
             </div>
           </div>
