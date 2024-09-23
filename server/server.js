@@ -13,7 +13,7 @@ const userAccountRoutes = require('./routes/userAccountRoutes.js');
 const inventoryRoutes = require('./routes/inventoryRoutes.js');
 const supplierRoutes = require('./routes/supplierRoutes.js');
 const cartRoutes = require('./routes/cartRoutes.js');
-const stockInRoutes = require('./routes/stockInRoutes.js');
+const stockRoutes = require('./routes/stockRoutes.js');
 
 app.use(cors({
     origin: 'http://localhost:3000',
@@ -30,7 +30,7 @@ app.use('/', customerRoutes);
 app.use('/', userAccountRoutes);
 app.use('/', inventoryRoutes);
 app.use('/', supplierRoutes);
-app.use('/', stockInRoutes);
+app.use('/', stockRoutes);
 
 // Session middleware
 app.use(session({

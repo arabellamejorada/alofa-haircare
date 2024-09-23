@@ -28,7 +28,7 @@ const Inventory = () => {
     { key: "product_name", header: "Product Name" },
     { key: "product_variation", header: "Variation " },
     { key: "stock_quantity", header: "Stock Quantity" },
-    { key: "stock_in_date", header: "Last Update" },
+    { key: "last_updated_date", header: "Last Update" },
   ];
 
   if (error) return <div>{error}</div>;

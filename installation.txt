@@ -36,9 +36,8 @@ npm install prop-types
 
 
 Database:
-install pgadmin4/postgresql from their website
-database name: alofa
-run the alofa-sql.db
+BACKUP DATABASE: pg_dump -U postgres -d alofa -f server/alofa_dbdump.sql
+RESTORE DATABASE: psql -U postgres -d alofa -f server/alofa_dbdump.sql
 
 
 To run:

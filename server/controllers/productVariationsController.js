@@ -37,20 +37,20 @@ const createProductVariationsWithInventory = async (req, res) => {
         );
   
         const variation_id = productVariationResult.rows[0].variation_id;
-        const stock_in_date = new Date();
+        const last_updated_date = new Date();
         const stock_quantity = 0;
   
         const inventoryResult = await client.query(
-          `INSERT INTO inventory (variation_id, stock_quantity, stock_in_date)
+          `INSERT INTO inventory (variation_id, stock_quantity, last_updated_date)
            VALUES ($1, $2, $3)
            RETURNING inventory_id`,
-          [variation_id, stock_quantity, stock_in_date]
+          [variation_id, stock_quantity, last_updated_date]
         );
 
         const inventory_id = inventoryResult.rows[0].inventory_id;
   
         insertedVariations.push({ variation_id, product_id, type, value, sku, unit_price, product_status_id, image });
-        insertedInventories.push({ inventory_id, variation_id, stock_quantity, stock_in_date });
+        insertedInventories.push({ inventory_id, variation_id, stock_quantity, last_updated_date });
       }
   
       await client.query('COMMIT');

@@ -1,5 +1,6 @@
 const pool = require('../db.js');
 
+// do something with the date bc it doesnt display the time !!
 const createStockIn = async (req, res) => {
   const client = await pool.connect();
   const { supplier_id, stockInProducts, reference_number, stock_in_date } = req.body;
@@ -12,13 +13,15 @@ const createStockIn = async (req, res) => {
   try {
     await client.query('BEGIN');
 
+    const formattedDate = new Date(stock_in_date).toISOString();
+
     // Insert stock_in record and get the stock_in_id
     const stockInResult = await client.query(
       `
       INSERT INTO stock_in (supplier_id, stock_in_date, reference_number)
       VALUES ($1, $2, $3) RETURNING stock_in_id;
       `,
-      [supplier_id, stock_in_date, reference_number] 
+      [supplier_id, formattedDate, reference_number] 
     );
 
     const stock_in_id = stockInResult.rows[0].stock_in_id;
@@ -37,21 +40,21 @@ const createStockIn = async (req, res) => {
       await client.query(
         `
         UPDATE inventory
-        SET stock_quantity = stock_quantity + $1
-        WHERE variation_id = $2;
+        SET stock_quantity = stock_quantity + $1,
+        last_updated_date = $2
+        WHERE variation_id = $3;
         `,
-        [product.quantity, product.variation_id]
+        [product.quantity, new Date().toISOString(),product.variation_id]
       );      
     }
-
-
+    
     await client.query('COMMIT');
 
     res.status(201).json({
       message: 'Stock In recorded successfully',
       stock_in_id,
       reference_number,
-      stock_in_date
+      stock_in_date: formattedDate
     });
 
   } catch (error) {
@@ -71,7 +74,7 @@ const getAllStockIn = async (req, res) => {
       SELECT 
           si.stock_in_id, 
           si.reference_number, 
-          si.stock_in_date, 
+          to_char(si.stock_in_date, 'MM-DD-YYYY, HH:MI AM') AS stock_in_date, -- Format date here
           s.supplier_id, 
           s.supplier_name, 
           pv.type, 

@@ -68,7 +68,7 @@ function SidebarLink({ item }) {
         pathname === item.path
           ? "bg-pink-400 text-pink-50 font-bold"
           : "text-pink-100",
-        linkClasses
+        linkClasses,
       )}
     >
       <span className="text-xl">{item.icon}</span>

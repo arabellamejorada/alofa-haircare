@@ -5,6 +5,6 @@ const inventoryController = require('../controllers/inventoryController');
 // INVENTORY ROUTES
 router.get('/inventory', inventoryController.getAllInventories);     // Read all inventories
 router.get('/inventory/:id', inventoryController.getInventoryById);  // Read inventory by ID
-router.put('/inventory/:id', inventoryController.updateInventoryQuantityById); // Update
+router.put('/inventory/:id', inventoryController.updateInventoryById); // Update
 
 module.exports = router;
