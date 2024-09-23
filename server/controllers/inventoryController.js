@@ -10,7 +10,34 @@ const getAllInventories = async (req, res) => {
             JOIN product_variation ON inventory.variation_id = product_variation.variation_id
             JOIN product ON product_variation.product_id = product.product_id`
         );
-        res.json(result.rows);
+
+        // Format the date (assuming `last_updated_date` is a timestamp in the `inventory` table)
+        const formattedResult = result.rows.map(row => {
+            if (row.last_updated_date) {
+                // Convert timestamp to the desired format
+                const date = new Date(row.last_updated_date);
+                const options = {
+                    month: '2-digit',
+                    day: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true,
+                };
+
+                const formattedDate = date.toLocaleString('en-US', options)
+                    .replace('/', '-')
+                    .replace('/', '-')
+                    .replace(', ', ', ')
+                    .toUpperCase();
+
+                // Assign the formatted date back to the row
+                row.last_updated_date = formattedDate;
+            }
+            return row;
+        });
+
+        res.json(formattedResult);
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ message: 'Server error' });
@@ -18,6 +45,7 @@ const getAllInventories = async (req, res) => {
         client.release();
     }
 };
+
 
 // Get inventory by ID merge with product name and variation details
 const getInventoryById = async (req, res) => {
@@ -42,14 +70,14 @@ const getInventoryById = async (req, res) => {
 };
 
 // Update inventory quantity by ID
-const updateInventoryQuantityById = async (req, res) => {
+const updateInventoryById = async (req, res) => {
     const client = await pool.connect();
     try {
         const id = parseInt(req.params.id);
         const { quantity } = req.body;
         const result = await client.query(
             `UPDATE inventory
-            SET quantity = $1
+            SET quantity = $1, last_updated_date = NOW()
             WHERE inventory_id = $2
             RETURNING *`,
             [quantity, id]
@@ -66,5 +94,5 @@ const updateInventoryQuantityById = async (req, res) => {
 module.exports = {
     getAllInventories,
     getInventoryById,
-    updateInventoryQuantityById
+    updateInventoryById
 };

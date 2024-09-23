@@ -9,27 +9,14 @@ const StockInHistory = () => {
   const [stockInData, setStockInData] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const columns = [
-    { key: "index", header: "Index" },
-    { key: "reference_number", header: "Reference Number" },
-    { key: "sku", header: "SKU" },
-    { key: "name", header: "Product Name" },
-    { key: "type", header: "Type" },
-    { key: "value", header: "Value" },
-    { key: "quantity", header: "Quantity" },
-    { key: "supplier_name", header: "Supplier" },
-    { key: "stock_in_date", header: "Stock-In Date" },
-  ];
-
   useEffect(() => {
-    // Fetch the stock-in data from the API
     const fetchStockInData = async () => {
       try {
         const response = await getAllStockIn();
-        // Add index to each row
+        console.log("API response:", response.data);
         const dataWithIndex = response.data.map((item, index) => ({
           ...item,
-          index: index + 1, // Starting the index at 1 instead of 0
+          index: index + 1,
         }));
         setStockInData(dataWithIndex);
       } catch (error) {
@@ -41,6 +28,18 @@ const StockInHistory = () => {
 
     fetchStockInData();
   }, []);
+
+  const columns = [
+    { key: "index", header: "#" },
+    { key: "reference_number", header: "Ref #" },
+    { key: "sku", header: "SKU" },
+    { key: "name", header: "Product Name" },
+    { key: "type", header: "Variation" },
+    { key: "value", header: "Value" },
+    { key: "quantity", header: "Qty" },
+    { key: "supplier_name", header: "Supplier" },
+    { key: "stock_in_date", header: "Stock-In Date" },
+  ];
 
   return (
     <div className="container mx-auto p-4">

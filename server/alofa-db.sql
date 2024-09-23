@@ -73,7 +73,7 @@ CREATE TABLE product_category (
 CREATE TABLE inventory (
     inventory_id SERIAL PRIMARY KEY,
     stock_quantity INTEGER NOT NULL,
-    stock_in_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_updated_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     product_id INT
 );
 CREATE TABLE product (
@@ -94,14 +94,17 @@ CREATE TABLE product_order (
 );
 -- 4. ORDER TRANSACTION
 CREATE TABLE order_transaction (
-    order_transaction_id SERIAL PRIMARY KEY,
-    date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    order_id SERIAL PRIMARY KEY,
+    customer_id INT,
     total_amount NUMERIC(10, 2) NOT NULL,
+    date_ordered TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     order_status VARCHAR(255) NOT NULL,
-    customer_id INT NOT NULL,
-    product_order_id INT NOT NULL,
+    reference_number VARCHAR(255) UNIQUE,
+    payment_id INT NOT NULL,
     shipping_id INT NOT NULL,
-    payment_id INT NOT NULL
+    FOREIGN KEY (customer_id) REFERENCES customer(customer_id),
+    FOREIGN KEY (payment_id) REFERENCES payment(payment_id),
+    FOREIGN KEY (shipping_id) REFERENCES shipping(shipping_id) -- Assuming a Shipping table
 );
 -- 5. PAYMENT
 CREATE TABLE payment_method (
@@ -113,10 +116,10 @@ CREATE TABLE payment (
     date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     amount_paid NUMERIC(10, 2),
     proof_image TEXT NOT NULL,
-    reference_number VARCHAR(255) NOT NULL,
     payment_method_id INT NOT NULL,
-    order_transaction_id INT NOT NULL,
-    payment_verification_id INT NOT NULL
+    order_id INT NOT NULL,
+    FOREIGN KEY (payment_method_id) REFERENCES payment_method(payment_method_id),
+    FOREIGN KEY (order_id) REFERENCES order_transaction(order_id)
 );
 CREATE TABLE payment_verification (
     payment_verification_id SERIAL PRIMARY KEY,
@@ -271,48 +274,55 @@ CREATE TABLE cart (
     -- Cart status ('active', 'completed', etc.)
     FOREIGN KEY (customer_id) REFERENCES Customer(customer_id) -- Customer foreign key
 );
+-- September 20 10:50PM
 -- DROP TABLE product_order and order_transaction
 DROP TABLE product_order CASCADE;
 DROP TABLE order_transaction CASCADE;
 -- recreate order_transaction table
 CREATE TABLE order_transaction (
-    order_id SERIAL PRIMARY KEY,
-    -- Auto-incrementing primary key for order
+    order_transaction_id SERIAL PRIMARY KEY,
     customer_id INT,
-    -- Link to the customer placing the order
     total_amount NUMERIC(10, 2) NOT NULL,
-    -- Total order amount
     date_ordered TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    -- Time the order was placed
     order_status VARCHAR(255) NOT NULL,
-    -- Status of the order (e.g., pending, completed)
+    reference_number VARCHAR(255) UNIQUE,
     payment_id INT NOT NULL,
-    -- Payment method or reference ID (assumed)
     shipping_id INT NOT NULL,
-    -- Shipping method or reference ID (assumed)
     FOREIGN KEY (customer_id) REFERENCES customer(customer_id),
-    -- Link to the customer
     FOREIGN KEY (payment_id) REFERENCES payment(payment_id),
-    -- Assuming a Payment table
     FOREIGN KEY (shipping_id) REFERENCES shipping(shipping_id) -- Assuming a Shipping table
 );
--- recreate product_order table
-CREATE TABLE product_order (
-    product_order_id SERIAL PRIMARY KEY,
-    -- Use SERIAL for consistency with cart_id
+-- Create stock_out table
+CREATE TABLE stock_out (
+    stock_out_id SERIAL PRIMARY KEY,
+    reference_number VARCHAR(255) UNIQUE,
+    stock_out_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    order_transaction_id INT,
+    -- Can be NULL for non-order-related stock-out (e.g., damaged items)
+    employee_id INT,
+    FOREIGN KEY (order_transaction_id) REFERENCES order_transaction(order_transaction_id),
+    FOREIGN KEY (employee_id) REFERENCES employee(employee_id)
+);
+-- Create stock_out_items table
+CREATE TABLE stock_out_items (
+    stock_out_item_id SERIAL PRIMARY KEY,
+    stock_out_id INT NOT NULL,
     variation_id INT NOT NULL,
-    -- Product variation foreign key (assumed)
     quantity INT NOT NULL,
-    -- Quantity of the product in the cart
-    subtotal DECIMAL(10, 2) NOT NULL,
-    -- Subtotal for the product
-    cart_id INT NOT NULL,
-    -- Link to the cart, used for both guests and logged-in users
-    order_id INT NULL,
-    -- Link to the order, added after checkout
-    FOREIGN KEY (cart_id) REFERENCES cart(cart_id),
-    -- Foreign key linking to cart
-    FOREIGN KEY (order_id) REFERENCES order_transaction(order_id),
-    -- Links to order_transaction
-    FOREIGN KEY (variation_id) REFERENCES product_variation(variation_id) -- Links to product_variation
+    reason VARCHAR(255) NOT NULL,
+    FOREIGN KEY (stock_out_id) REFERENCES stock_out(stock_out_id),
+    FOREIGN KEY (variation_id) REFERENCES product_variation(variation_id) -- Link to the product variation being stocked out
+);
+-- DROP TABLE payment
+DROP TABLE payment CASCADE;
+-- CREATE TABLE payment
+CREATE TABLE payment (
+    payment_id SERIAL PRIMARY KEY,
+    date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    amount_paid NUMERIC(10, 2),
+    proof_image TEXT NOT NULL,
+    payment_method_id INT NOT NULL,
+    order_id INT NOT NULL,
+    FOREIGN KEY (payment_method_id) REFERENCES payment_method(payment_method_id),
+    FOREIGN KEY (order_id) REFERENCES order_transaction(order_id)
 );

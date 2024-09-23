@@ -21,9 +21,13 @@ const StockIn = () => {
   const [referenceNumber, setReferenceNumber] = useState("");
   const [selectedSupplier, setSelectedSupplier] = useState("");
   const [selectedEmployee, setSelectedEmployee] = useState("");
-  const [stockInDate, setStockInDate] = useState(
-    new Date().toISOString().substring(0, 10), // Defaults to current date
-  );
+  const [stockInDate, setStockInDate] = useState(() => {
+    const date = new Date();
+    const offset = date.getTimezoneOffset();
+    const localDate = new Date(date.getTime() - offset * 60000); // Adjust to local timezone
+    return localDate.toISOString().slice(0, 16);
+  });
+
   const [stockInProducts, setStockInProducts] = useState([]); // Store stock-in products
 
   // Fetch employee, supplier, and product variation data on component mount
@@ -76,7 +80,7 @@ const StockIn = () => {
       alert("Stock In recorded successfully");
       // Reset form fields
       setStockInProducts([]);
-      setStockInDate(new Date().toISOString().substring(0, 10));
+      setStockInDate(new Date().toISOString().slice(0, 16)); // Reset to current date-time
       setSelectedSupplier("");
       setSelectedEmployee("");
       setSupplierDetails({
@@ -156,7 +160,7 @@ const StockIn = () => {
                 Stock In Date:
               </label>
               <input
-                type="date"
+                type="datetime-local"
                 name="stock_in_date"
                 id="stock_in_date"
                 value={stockInDate}
