@@ -1,3 +1,4 @@
+// StockOutHistory.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DataTable from "../../shared/DataTable";
@@ -73,7 +74,7 @@ const StockOutHistory = () => {
   ];
 
   // Merge the stock-out records and items based on stock_out_id
-  const mergedData = stockOutItems.map((item) => {
+  const mergedData = stockOutItems.map((item, index) => {
     const stockOutRecord = stockOutRecords.find(
       (record) => record.stock_out_id === item.stock_out_id,
     );
@@ -82,6 +83,7 @@ const StockOutHistory = () => {
     );
     return {
       ...item,
+      index: index + 1, // Add index field
       reference_number: stockOutRecord ? stockOutRecord.reference_number : "",
       stock_out_date: stockOutRecord ? stockOutRecord.stock_out_date : "",
       order_transaction_id: stockOutRecord
@@ -93,6 +95,7 @@ const StockOutHistory = () => {
 
   // Define columns for the DataTable
   const columns = [
+    { key: "index", header: "#" }, // Added index column
     { key: "stock_out_id", header: "Stock Out ID" },
     { key: "reference_number", header: "Ref #" },
     { key: "stock_out_date", header: "Date" },
@@ -104,7 +107,7 @@ const StockOutHistory = () => {
   ];
 
   // State for sorting
-  const [sortField, setSortField] = useState("reference_number");
+  const [sortField, setSortField] = useState("index"); // Default to index
   const [sortOrder, setSortOrder] = useState("asc");
 
   // State for filtering
@@ -129,6 +132,12 @@ const StockOutHistory = () => {
     if (sortField === "stock_out_date") {
       fieldA = new Date(fieldA);
       fieldB = new Date(fieldB);
+    }
+
+    // Convert to numbers if sorting by index
+    if (sortField === "index") {
+      fieldA = Number(fieldA);
+      fieldB = Number(fieldB);
     }
 
     // Case-insensitive comparison for strings
@@ -157,29 +166,6 @@ const StockOutHistory = () => {
 
       {/* Filtering Controls */}
       <div className="flex flex-wrap items-center mt-4 gap-4">
-        {/* Employee Filter */}
-        <div className="flex items-center">
-          <label className="mr-2 font-semibold text-gray-700">Employee:</label>
-          <div className="relative">
-            <select
-              value={selectedEmployee}
-              onChange={(e) => setSelectedEmployee(e.target.value)}
-              className="w-[10rem] h-8 px-2 appearance-none border rounded-md bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 focus:outline-none focus:ring-4 focus:ring-pink-50"
-            >
-              <option value="">All Employees</option>
-              {employees.map((employee) => (
-                <option
-                  key={employee.employee_id}
-                  value={employee.employee_name}
-                >
-                  {employee.employee_name}
-                </option>
-              ))}
-            </select>
-            <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2" />
-          </div>
-        </div>
-
         {/* Date Filter */}
         <div className="flex items-center">
           <label className="mr-2 font-semibold text-gray-700">Date:</label>
@@ -199,36 +185,72 @@ const StockOutHistory = () => {
           )}
         </div>
 
-        {/* Sorting Controls */}
-        <label className="mr-2 font-semibold text-gray-700">Sort By:</label>
-        <div className="relative">
-          <select
-            value={sortField}
-            onChange={(e) => setSortField(e.target.value)}
-            className="w-[9rem] h-8 px-2 appearance-none border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-pink-500"
-          >
-            <option value="reference_number">Reference No.</option>
-            <option value="employee_name">Employee</option>
-            <option value="stock_out_date">Date</option>
-          </select>
-          <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2" />
-        </div>
-        <button
-          onClick={() =>
-            setSortOrder((prevOrder) => (prevOrder === "asc" ? "desc" : "asc"))
-          }
-          className="flex items-center border border-gray-300 rounded-md p-2 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
-        >
-          {sortOrder === "asc" ? (
-            <FaArrowUp className="text-gray-700" />
-          ) : (
-            <FaArrowDown className="text-gray-700" />
+        {/* Employee Filter */}
+        <div className="flex items-center">
+          <label className="mr-2 font-semibold text-gray-700">Employee:</label>
+          <div className="relative">
+            <select
+              value={selectedEmployee}
+              onChange={(e) => setSelectedEmployee(e.target.value)}
+              className="w-[10rem] h-8 px-2 appearance-none border rounded-md bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 focus:outline-none focus:ring-4 focus:ring-pink-50"
+            >
+              <option value="">All Employees</option>
+              {employees.map((employee) => (
+                <option
+                  key={employee.employee_id}
+                  value={employee.employee_name}
+                >
+                  {employee.employee_name}
+                </option>
+              ))}
+            </select>
+            <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none" />
+          </div>
+          {selectedEmployee && (
+            <button
+              onClick={() => setSelectedEmployee("")}
+              className="text-sm ml-2 text-pink-500 hover:text-pink-700 focus:outline-none"
+            >
+              Clear
+            </button>
           )}
-        </button>
+        </div>
+
+        {/* Sorting Controls */}
+        <div className="flex items-center gap-4">
+          <label className="mr-2 font-semibold text-gray-700">Sort By:</label>
+          <div className="relative">
+            <select
+              value={sortField}
+              onChange={(e) => setSortField(e.target.value)}
+              className="w-[9rem] h-8 px-2 appearance-none border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-pink-500"
+            >
+              <option value="index">Index</option>
+              <option value="reference_number">Reference No.</option>
+              <option value="employee_name">Employee</option>
+              <option value="stock_out_date">Date</option>
+            </select>
+            <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none" />
+          </div>
+          <button
+            onClick={() =>
+              setSortOrder((prevOrder) =>
+                prevOrder === "asc" ? "desc" : "asc",
+              )
+            }
+            className="flex items-center border border-gray-300 rounded-md p-2 bg-white focus:outline-none focus:ring-2 focus:ring-pink-500"
+          >
+            {sortOrder === "asc" ? (
+              <FaArrowUp className="text-gray-700" />
+            ) : (
+              <FaArrowDown className="text-gray-700" />
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Table */}
-      <div className="h-[48rem] overflow-y-scroll ">
+      <div className="h-[48rem] overflow-y-scroll mt-2">
         {sortedData.length === 0 ? (
           <p>No stock-out records found.</p>
         ) : (

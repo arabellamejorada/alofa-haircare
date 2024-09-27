@@ -12,13 +12,13 @@ const StockInHistory = () => {
   const [loading, setLoading] = useState(true);
 
   // State for sorting
-  const [sortField, setSortField] = useState("reference_number");
+  const [sortField, setSortField] = useState("index"); // Changed default to "index"
   const [sortOrder, setSortOrder] = useState("asc");
 
   // State for filtering
   const [selectedDate, setSelectedDate] = useState("");
-  const [selectedSupplier, setSelectedSupplier] = useState(""); // New state for supplier filter
-  const [supplierList, setSupplierList] = useState([]); // State to hold list of suppliers
+  const [selectedSupplier, setSelectedSupplier] = useState("");
+  const [supplierList, setSupplierList] = useState([]);
 
   useEffect(() => {
     const fetchStockInData = async () => {
@@ -83,6 +83,12 @@ const StockInHistory = () => {
       fieldB = new Date(fieldB);
     }
 
+    // Convert to numbers if sorting by index
+    if (sortField === "index") {
+      fieldA = Number(fieldA);
+      fieldB = Number(fieldB);
+    }
+
     // Case-insensitive comparison for strings
     if (typeof fieldA === "string") fieldA = fieldA.toLowerCase();
     if (typeof fieldB === "string") fieldB = fieldB.toLowerCase();
@@ -109,73 +115,6 @@ const StockInHistory = () => {
 
       {/* Filtering Controls */}
       <div className="flex flex-wrap items-center mt-4 gap-4">
-        {/* Supplier Filter */}
-        <div className="flex items-center">
-          <label
-            htmlFor="supplier-filter"
-            className="mr-2 font-semibold text-gray-700"
-          >
-            Supplier:
-          </label>
-          <div className="relative">
-            <select
-              id="supplier-filter"
-              value={selectedSupplier}
-              onChange={(e) => setSelectedSupplier(e.target.value)}
-              className="w-[10rem] h-8 px-2 appearance-none border rounded-md bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 focus:outline-none focus:ring-4 focus:ring-pink-50"
-            >
-              <option value="">All Suppliers</option>
-              {supplierList.map((supplier, index) => (
-                <option key={index} value={supplier}>
-                  {supplier}
-                </option>
-              ))}
-            </select>
-            <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none" />
-          </div>
-          {selectedSupplier && (
-            <button
-              onClick={() => setSelectedSupplier("")}
-              className="text-sm ml-2 text-pink-500 hover:text-pink-700 focus:outline-none"
-            >
-              Clear
-            </button>
-          )}
-        </div>
-        {/* Supplier Filter */}
-        <div className="flex items-center">
-          <label
-            htmlFor="supplier-filter"
-            className="mr-2 font-semibold text-gray-700"
-          >
-            Supplier:
-          </label>
-          <div className="relative">
-            <select
-              id="supplier-filter"
-              value={selectedSupplier}
-              onChange={(e) => setSelectedSupplier(e.target.value)}
-              className="w-[10rem] h-8 px-2 appearance-none border rounded-md bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 focus:outline-none focus:ring-4 focus:ring-pink-50"
-            >
-              <option value="">All Suppliers</option>
-              {supplierList.map((supplier, index) => (
-                <option key={index} value={supplier}>
-                  {supplier}
-                </option>
-              ))}
-            </select>
-            <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none" />
-          </div>
-          {selectedSupplier && (
-            <button
-              onClick={() => setSelectedSupplier("")}
-              className="text-sm ml-2 text-pink-500 hover:text-pink-700 focus:outline-none"
-            >
-              Clear
-            </button>
-          )}
-        </div>
-
         {/* Date Filter */}
         <div className="flex items-center">
           <label
@@ -201,6 +140,40 @@ const StockInHistory = () => {
           )}
         </div>
 
+        {/* Supplier Filter */}
+        <div className="flex items-center">
+          <label
+            htmlFor="supplier-filter"
+            className="mr-2 font-semibold text-gray-700"
+          >
+            Supplier:
+          </label>
+          <div className="relative">
+            <select
+              id="supplier-filter"
+              value={selectedSupplier}
+              onChange={(e) => setSelectedSupplier(e.target.value)}
+              className="w-[10rem] h-8 px-2 appearance-none border rounded-md bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 focus:outline-none focus:ring-4 focus:ring-pink-50"
+            >
+              <option value="">All Suppliers</option>
+              {supplierList.map((supplier, index) => (
+                <option key={index} value={supplier}>
+                  {supplier}
+                </option>
+              ))}
+            </select>
+            <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none" />
+          </div>
+          {selectedSupplier && (
+            <button
+              onClick={() => setSelectedSupplier("")}
+              className="text-sm ml-2 text-pink-500 hover:text-pink-700 focus:outline-none"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+
         {/* Sorting Controls */}
         <div className="flex items-center gap-4">
           <label
@@ -216,6 +189,7 @@ const StockInHistory = () => {
               onChange={(e) => setSortField(e.target.value)}
               className="w-[10rem] h-8 px-2 appearance-none border rounded-md bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 focus:outline-none focus:ring-4 focus:ring-pink-50"
             >
+              <option value="index">Index</option>
               <option value="reference_number">Reference No.</option>
               <option value="supplier_name">Supplier</option>
               <option value="stock_in_date">Date</option>
