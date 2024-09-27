@@ -1,10 +1,10 @@
 import React, { Fragment, useEffect, useState } from "react";
 import { IoMdArrowDropdown } from "react-icons/io";
 import StockInTable from "./StockInTable";
-import { getAllSuppliers, getSupplier } from "../../api/suppliers"; // Mock API functions
-import { getAllProductVariations } from "../../api/products"; // Mock data
-import { createStockIn } from "../../api/stockIn"; // API for creating stock in
-import { getEmployees } from "../../api/employees"; // Mock API functions
+import { getAllSuppliers, getSupplier } from "../../../api/suppliers"; // Mock API functions
+import { getAllProductVariations } from "../../../api/products"; // Mock data
+import { createStockIn } from "../../../api/stockIn"; // API for creating stock in
+import { getEmployees } from "../../../api/employees"; // Mock API functions
 import { Link } from "react-router-dom";
 
 const StockIn = () => {

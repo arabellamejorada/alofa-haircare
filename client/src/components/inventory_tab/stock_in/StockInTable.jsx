@@ -2,7 +2,12 @@ import React from "react";
 import { MdDelete } from "react-icons/md";
 import { MdAddBox } from "react-icons/md";
 
-const StockInTable = ({ columns, productVariations, stockInProducts, setStockInProducts }) => {
+const StockInTable = ({
+  columns,
+  productVariations,
+  stockInProducts,
+  setStockInProducts,
+}) => {
   // Handle adding a new row
   const handleAddRow = () => {
     const newRow = { variation_id: "", quantity: 1 }; // Empty product, default quantity 1
@@ -18,7 +23,7 @@ const StockInTable = ({ columns, productVariations, stockInProducts, setStockInP
   // Handle product variation change
   const handleVariationChange = (index, variationId) => {
     const selectedVariation = productVariations.find(
-      (variation) => variation.variation_id === parseInt(variationId)
+      (variation) => variation.variation_id === parseInt(variationId),
     );
 
     const updatedData = [...stockInProducts];
@@ -48,23 +53,23 @@ const StockInTable = ({ columns, productVariations, stockInProducts, setStockInP
         <table className="min-w-full leading-normal">
           <thead>
             <tr>
-              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-md font-semibold text-gray-600 uppercase tracking-wider">
+              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-pink-400 to-pink-500 text-gray-100 text-left text-md font-semibold  uppercase tracking-wider">
                 #
               </th>
               {columns
                 .filter(
                   (column) =>
-                    column.key !== "stock_in_date" && column.key !== "supplier"
+                    column.key !== "stock_in_date" && column.key !== "supplier",
                 ) // Exclude stock_in_date and supplier
                 .map((column) => (
                   <th
-                    className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-md font-semibold text-gray-600 uppercase tracking-wider"
+                    className="px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-pink-400 to-pink-500 text-gray-100 text-left text-md font-semibold  uppercase tracking-wider"
                     key={column.key}
                   >
                     {column.header}
                   </th>
                 ))}
-              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-md font-semibold text-gray-600 uppercase tracking-wider">
+              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-pink-400 to-pink-500 text-gray-100 text-center text-md font-semibold  uppercase tracking-wider">
                 Delete
               </th>
             </tr>
@@ -81,7 +86,9 @@ const StockInTable = ({ columns, productVariations, stockInProducts, setStockInP
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-left">
                   <select
                     value={item.variation_id || ""}
-                    onChange={(e) => handleVariationChange(index, e.target.value)}
+                    onChange={(e) =>
+                      handleVariationChange(index, e.target.value)
+                    }
                     className="w-64 border border-gray-200 rounded px-2 py-1 text-left appearance-none"
                   >
                     <option value="" disabled>

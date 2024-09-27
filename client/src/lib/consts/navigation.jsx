@@ -11,7 +11,8 @@ import {
 import { LiaPeopleCarrySolid } from "react-icons/lia";
 import { TbSitemap } from "react-icons/tb";
 import { MdOutlineCategory } from "react-icons/md";
-import { FiTruck } from "react-icons/fi";
+import { FiTruck, FiTrendingDown, FiTrendingUp } from "react-icons/fi";
+import { FaTruckLoading } from "react-icons/fa";
 
 export const DASHBOARD_SIDEBAR_LINKS = [
   {
@@ -81,7 +82,14 @@ export const INVENTORY_SIDEBAR_LINKS = [
     key: "stock_in",
     label: "Stock In",
     path: "/stockin",
-    icon: <FiTruck />,
+    icon: <FiTrendingUp />,
+  },
+
+  {
+    key: "stock_out",
+    label: "Stock Out",
+    path: "/stockout",
+    icon: <FiTrendingDown />,
   },
 
   {
