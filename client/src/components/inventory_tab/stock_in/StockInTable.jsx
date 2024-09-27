@@ -10,7 +10,7 @@ const StockInTable = ({
 }) => {
   // Handle adding a new row
   const handleAddRow = () => {
-    const newRow = { variation_id: "", quantity: 1 }; // Empty product, default quantity 1
+    const newRow = { variation_id: "", quantity: 1 };
     setStockInProducts([...stockInProducts, newRow]);
   };
 

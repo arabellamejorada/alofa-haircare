@@ -3,25 +3,23 @@ const pool = require('../db.js');
 // do something with the date bc it doesnt display the time !!
 const createStockIn = async (req, res) => {
   const client = await pool.connect();
-  const { supplier_id, stockInProducts, reference_number, stock_in_date } = req.body;
+  const { employee_id, supplier_id, stockInProducts, reference_number, stock_in_date } = req.body;
 
   
-  if (!supplier_id || !stockInProducts || stockInProducts.length === 0 || !reference_number || !stock_in_date) {
+  if (!employee_id || !supplier_id || !stockInProducts || stockInProducts.length === 0 || !reference_number || !stock_in_date) {
     return res.status(400).json({ message: "Missing required fields" });
   }
 
   try {
     await client.query('BEGIN');
 
-    const formattedDate = new Date(stock_in_date).toISOString();
-
     // Insert stock_in record and get the stock_in_id
     const stockInResult = await client.query(
       `
-      INSERT INTO stock_in (supplier_id, stock_in_date, reference_number)
-      VALUES ($1, $2, $3) RETURNING stock_in_id;
+      INSERT INTO stock_in (employee_id, supplier_id, stock_in_date, reference_number)
+      VALUES ($1, $2, $3, $4) RETURNING stock_in_id;
       `,
-      [supplier_id, formattedDate, reference_number] 
+      [employee_id,supplier_id, stock_in_date, reference_number] 
     );
 
     const stock_in_id = stockInResult.rows[0].stock_in_id;
@@ -32,7 +30,7 @@ const createStockIn = async (req, res) => {
         `
         INSERT INTO stock_in_items (stock_in_id, variation_id, quantity)
         VALUES ($1, $2, $3);
-        `,
+        `, 
         [stock_in_id, product.variation_id, product.quantity]
       );
 
@@ -54,7 +52,7 @@ const createStockIn = async (req, res) => {
       message: 'Stock In recorded successfully',
       stock_in_id,
       reference_number,
-      stock_in_date: formattedDate
+      stock_in_date
     });
 
   } catch (error) {
@@ -73,15 +71,17 @@ const getAllStockIn = async (req, res) => {
     const stockInResult = await client.query(`
       SELECT 
           si.stock_in_id, 
-          si.reference_number, 
-          to_char(si.stock_in_date, 'MM-DD-YYYY, HH:MI AM') AS stock_in_date, -- Format date here
+          si.reference_number,
+          si.employee_id,
+          to_char(si.stock_in_date, 'MM-DD-YYYY, HH:MI AM') AS stock_in_date,
           s.supplier_id, 
           s.supplier_name, 
           pv.type, 
           pv.value, 
           pv.sku,
           p.name,
-          sii.quantity
+          sii.quantity,
+          e.first_name || ' ' || e.last_name AS employee_name
       FROM 
           stock_in si
       JOIN 
@@ -92,6 +92,8 @@ const getAllStockIn = async (req, res) => {
           product_variation pv ON sii.variation_id = pv.variation_id
       JOIN
           product p ON pv.product_id = p.product_id
+      JOIN 
+          employee e ON si.employee_id = e.employee_id
       ORDER BY 
           si.stock_in_date DESC
     `);
@@ -115,7 +117,9 @@ const getStockInById = async (req, res) => {
           si.stock_in_id, 
           si.reference_number, 
           si.stock_in_date, 
+          si.employee_id,
           sii.quantity,
+          e.first_name || ' ' || e.last_name AS employee_name,
           s.supplier_id, 
           s.supplier_name, 
           pv.type, 
@@ -129,6 +133,8 @@ const getStockInById = async (req, res) => {
       JOIN 
           stock_in_items sii ON si.stock_in_id = sii.stock_in_id
       JOIN 
+          employee e ON so.employee_id = e.employee_id
+      JOIN
           product_variation pv ON sii.variation_id = pv.variation_id
       JOIN
           product p ON pv.product_id = p.product_id
