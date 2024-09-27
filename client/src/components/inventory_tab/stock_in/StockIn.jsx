@@ -1,10 +1,10 @@
 import React, { Fragment, useEffect, useState } from "react";
 import { IoMdArrowDropdown } from "react-icons/io";
 import StockInTable from "./StockInTable";
-import { getAllSuppliers, getSupplier } from "../../../api/suppliers"; // Mock API functions
-import { getAllProductVariations } from "../../../api/products"; // Mock data
-import { createStockIn } from "../../../api/stockIn"; // API for creating stock in
-import { getEmployees } from "../../../api/employees"; // Mock API functions
+import { getAllSuppliers, getSupplier } from "../../../api/suppliers";
+import { getAllProductVariations } from "../../../api/products";
+import { createStockIn } from "../../../api/stockIn";
+import { getEmployees } from "../../../api/employees";
 import { Link } from "react-router-dom";
 
 const StockIn = () => {
@@ -21,6 +21,7 @@ const StockIn = () => {
   const [referenceNumber, setReferenceNumber] = useState("");
   const [selectedSupplier, setSelectedSupplier] = useState("");
   const [selectedEmployee, setSelectedEmployee] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
   const [stockInDate, setStockInDate] = useState(() => {
     const date = new Date();
     const offset = date.getTimezoneOffset();
@@ -58,20 +59,29 @@ const StockIn = () => {
     }
   };
 
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
+  };
+
   const handleEmployeeChange = (employeeId) => {
     setSelectedEmployee(employeeId);
   };
 
   const handleSubmitStockIn = async () => {
-    if (!selectedSupplier || stockInProducts.length === 0) {
+    if (
+      !selectedEmployee ||
+      !selectedSupplier ||
+      stockInProducts.length === 0
+    ) {
       alert("Please select a supplier and add at least one product.");
       return;
     }
 
     const stockInData = {
       supplier_id: selectedSupplier,
+      employee_id: selectedEmployee,
       reference_number: referenceNumber,
-      stock_in_date: stockInDate,
+      stock_in_date: selectedDate || stockInDate,
       stockInProducts,
     };
 
@@ -163,8 +173,8 @@ const StockIn = () => {
                 type="datetime-local"
                 name="stock_in_date"
                 id="stock_in_date"
-                value={stockInDate}
-                onChange={(e) => setStockInDate(e.target.value)}
+                value={selectedDate || stockInDate}
+                onChange={(e) => handleDateChange(e.target.value)}
                 className="rounded-md border w-[85%] h-8 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
               />
             </div>
@@ -263,7 +273,7 @@ const StockIn = () => {
         columns={columns}
         productVariations={productVariations}
         stockInProducts={stockInProducts}
-        setStockInProducts={setStockInProducts} // Pass setter to manage stock-in products
+        setStockInProducts={setStockInProducts}
       />
 
       {/* Submit Button */}

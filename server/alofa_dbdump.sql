@@ -412,7 +412,8 @@ CREATE TABLE public.stock_in (
     stock_in_id integer NOT NULL,
     reference_number character varying(255) NOT NULL,
     supplier_id integer,
-    stock_in_date date DEFAULT CURRENT_DATE
+    stock_in_date timestamp without time zone DEFAULT CURRENT_DATE,
+    employee_id integer
 );
 ALTER TABLE public.stock_in OWNER TO postgres;
 --
@@ -483,6 +484,12 @@ ALTER SEQUENCE public.stock_out_items_stock_out_item_id_seq OWNER TO postgres;
 --
 
 ALTER SEQUENCE public.stock_out_items_stock_out_item_id_seq OWNED BY public.stock_out_items.stock_out_item_id;
+--
+-- Name: stock_out_ref_num_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.stock_out_ref_num_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
+ALTER SEQUENCE public.stock_out_ref_num_seq OWNER TO postgres;
 --
 -- Name: stock_out_stock_out_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
@@ -793,7 +800,7 @@ COPY public.inventory (
     variation_id
 )
 FROM stdin;
-25 0 2024 -09 -19 14 :41 :19.142 + 08 29 23 15 2024 -09 -19 10 :58 :32.056 + 08 27 24 59 2024 -09 -19 14 :41 :19.139 + 08 28 21 -31 2024 -09 -18 16 :08 :21.143 + 08 25 22 -10 2024 -09 -18 16 :08 :21.143 + 08 26 19 -14 2024 -09 -18 16 :08 :21.138 + 08 23 20 2 2024 -09 -18 16 :08 :21.141 + 08 24 \.--
+24 91 2024 -09 -27 19 :10 :20.197 + 08 28 25 87 2024 -09 -23 23 :23 :34.468 + 08 29 21 68 2024 -09 -24 00 :06 :27.167 + 08 25 23 83 2024 -09 -27 21 :13 :06.302 + 08 27 20 284 2024 -09 -27 22 :19 :28 + 08 24 22 90 2024 -09 -18 16 :08 :21.143 + 08 26 19 91 2024 -09 -27 19 :08 :36.264 + 08 23 \.--
 -- Data for Name: order_transaction; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -879,7 +886,7 @@ COPY public.product_variation (
     image
 )
 FROM stdin;
-23 1 Color Seaside FHC - SEAS -0001 199.00 1 public / uploads / untitled -1726646901031 -379276836.jpeg 24 1 Color Blossom FHC - BLOS -0001 189.00 1 public / uploads / untitled -1726646901034 -566618279.jpeg 25 1 Color Meadow FHC - MEAD -0001 199.00 1 public / uploads / untitled -1726646901034 -760109210.jpeg 26 1 Color Midnight FHC - MIDN -0001 189.00 1 public / uploads / untitled -1726646901035 -501807312.jpeg 27 3 Color Sunset MFH - SUNS -0003 199.98 4 public / uploads / untitled -1726714712013 -768143593.jpeg 28 2 Size 30mL OIL - 30ML -0002 199.00 1 public / uploads / untitled -1726728079113 -727812291.jpeg 29 2 Size 60mL OIL - 60ML -0002 199.00 1 public / uploads / untitled -1726728079119 -47955822.jpeg \.--
+23 1 Color Seaside FHC - SEAS -0001 199.00 1 public / uploads / untitled -1726646901031 -379276836.jpeg 24 1 Color Blossom FHC - BLOS -0001 189.00 1 public / uploads / untitled -1726646901034 -566618279.jpeg 25 1 Color Meadow FHC - MEAD -0001 199.00 1 public / uploads / untitled -1726646901034 -760109210.jpeg 26 1 Color Midnight FHC - MIDN -0001 189.00 1 public / uploads / untitled -1726646901035 -501807312.jpeg 28 2 Size 30mL OIL - 30ML -0002 199.00 1 public / uploads / untitled -1726728079113 -727812291.jpeg 29 2 Size 60mL OIL - 60ML -0002 199.00 1 public / uploads / untitled -1726728079119 -47955822.jpeg 27 3 Color Sunset MFH - SUNS -0003 199.98 1 public / uploads / untitled -1726714712013 -768143593.jpeg \.--
 -- Data for Name: role; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -937,10 +944,11 @@ COPY public.stock_in (
     stock_in_id,
     reference_number,
     supplier_id,
-    stock_in_date
+    stock_in_date,
+    employee_id
 )
 FROM stdin;
-8 REF -540851 2 2024 -09 -18 9 REF -383833 2 2024 -09 -19 10 REF -797877 1 2024 -09 -19 11 REF -705390 2 2024 -09 -19 12 REF -236627 2 2024 -09 -19 13 REF -769838 1 2024 -09 -19 14 REF -149717 2 2024 -09 -19 15 REF -847694 1 2024 -09 -19 16 REF -435023 2 2024 -09 -19 17 REF -522151 2 2024 -09 -19 18 REF -313349 1 2024 -09 -23 \.--
+9 REF -383833 2 2024 -09 -19 00 :00 :00 \ N 10 REF -797877 1 2024 -09 -19 00 :00 :00 \ N 11 REF -705390 2 2024 -09 -19 00 :00 :00 \ N 12 REF -236627 2 2024 -09 -19 00 :00 :00 \ N 13 REF -769838 1 2024 -09 -19 00 :00 :00 \ N 14 REF -149717 2 2024 -09 -19 00 :00 :00 \ N 15 REF -847694 1 2024 -09 -19 00 :00 :00 \ N 16 REF -435023 2 2024 -09 -19 00 :00 :00 \ N 17 REF -522151 2 2024 -09 -19 00 :00 :00 \ N 18 REF -313349 1 2024 -09 -23 00 :00 :00 \ N 19 REF -643919 2 2024 -09 -23 00 :00 :00 \ N 20 REF -835597 1 2024 -09 -23 00 :00 :00 \ N 24 REF -969511 1 2024 -09 -23 00 :00 :00 \ N 25 REF -671855 1 2024 -09 -23 00 :00 :00 \ N 8 REF -540851 2 2024 -09 -18 12 :00 :00 \ N 26 REF -610013 2 2024 -09 -23 12 :00 :00 \ N 27 REF -361315 1 2024 -09 -23 23 :28 :00 \ N 29 REF -130861 2 2024 -09 -23 16 :05 :00 \ N 30 REF -742703 1 2024 -09 -23 16 :06 :00 \ N 31 REF -597774 1 2024 -09 -23 16 :07 :00 \ N 32 REF -210217 2 2024 -09 -27 11 :03 :00 \ N 33 REF -905169 2 2024 -09 -27 11 :07 :00 \ N 34 REF -482803 1 2024 -09 -27 11 :08 :00 \ N 35 REF -201268 2 2024 -09 -27 19 :10 :00 \ N 36 REF -246037 1 2024 -09 -27 21 :12 :00 \ N 37 REF -856120 1 2024 -09 -27 21 :12 :00 \ N 38 REF -968806 2 2024 -09 -27 00 :00 :00 \ N 39 REF -575453 2 2024 -09 -27 22 :19 :00 1 \.--
 -- Data for Name: stock_in_items; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -951,7 +959,7 @@ COPY public.stock_in_items (
     quantity
 )
 FROM stdin;
-11 8 23 100 12 8 24 100 13 8 25 100 14 8 26 100 15 9 27 5 16 9 24 3 17 10 27 2 18 11 24 7 19 12 23 1 20 12 24 1 21 12 25 1 22 12 26 1 23 12 27 1 24 13 23 3 25 13 24 3 26 13 25 3 27 13 26 3 28 13 27 3 29 14 25 3 30 14 26 4 31 14 27 4 32 15 23 2 33 16 28 7 34 17 27 3 35 17 25 2 36 17 26 2 37 17 27 4 38 17 28 52 39 18 24 1 \.--
+11 8 23 100 12 8 24 100 13 8 25 100 14 8 26 100 15 9 27 5 16 9 24 3 17 10 27 2 18 11 24 7 19 12 23 1 20 12 24 1 21 12 25 1 22 12 26 1 23 12 27 1 24 13 23 3 25 13 24 3 26 13 25 3 27 13 26 3 28 13 27 3 29 14 25 3 30 14 26 4 31 14 27 4 32 15 23 2 33 16 28 7 34 17 27 3 35 17 25 2 36 17 26 2 37 17 27 4 38 17 28 52 39 18 24 1 40 19 23 100 41 19 24 100 42 19 25 100 43 19 26 100 44 19 27 100 45 19 28 100 46 19 29 100 47 20 24 100 51 24 24 100 52 25 23 1 53 26 29 1 54 27 24 1 56 29 23 1 57 30 25 1 58 31 27 4 59 32 24 1 60 33 23 2 61 34 23 1 62 35 28 1 63 36 24 1 64 37 27 1 65 38 24 1 66 39 24 1 \.--
 -- Data for Name: stock_out; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -963,7 +971,7 @@ COPY public.stock_out (
     employee_id
 )
 FROM stdin;
-5 ADJ20230918 2023 -09 -18 00 :00 :00 \ N \ N 7 ADJ20230917 2023 -09 -18 00 :00 :00 \ N \ N 8 ADJ20230915 2024 -09 -23 09 :22 :28.245978 \ N \ N 10 ADJ202309166 2024 -09 -23 01 :24 :08.623 \ N \ N 12 ADJ20230916 2024 -09 -23 01 :25 :20.429 \ N \ N 17 SO -1235 2024 -09 -23 01 :31 :14.469 \ N \ N \.--
+5 ADJ20230918 2023 -09 -18 00 :00 :00 \ N \ N 7 ADJ20230917 2023 -09 -18 00 :00 :00 \ N \ N 8 ADJ20230915 2024 -09 -23 09 :22 :28.245978 \ N \ N 10 ADJ202309166 2024 -09 -23 01 :24 :08.623 \ N \ N 12 ADJ20230916 2024 -09 -23 01 :25 :20.429 \ N \ N 17 SO -1235 2024 -09 -23 01 :31 :14.469 \ N \ N 18 ADJ -20240927 -7 2024 -09 -27 12 :20 :05.324 \ N 1 19 ADJ -20240927 -8 2024 -09 -27 12 :21 :35.835 \ N 1 20 ADJ -20240927 -9 2024 -09 -27 12 :25 :07.39 \ N 2 21 ADJ -20240927 -10 2024 -09 -27 20 :57 :53.59 \ N 4 22 ADJ -20240927 -11 2024 -09 -27 21 :07 :42.742 \ N 3 23 ADJ -20240927 -12 2024 -09 -27 21 :10 :24.217 \ N 3 24 ADJ -20240927 -13 2024 -09 -27 21 :11 :50.408 \ N 4 25 ADJ -20240927 -14 2024 -09 -27 21 :19 :24.351 \ N 3 26 ADJ -20240927 -15 2024 -09 -27 21 :53 :29.481 \ N 2 27 ADJ -20240927 -16 2024 -09 -27 21 :54 :53.69 \ N 1 28 ADJ -20240927 -17 2024 -09 -27 21 :55 :15.142 \ N 2 29 ADJ -20240927 -20 2024 -09 -27 00 :01 :00 \ N 1 \.--
 -- Data for Name: stock_out_items; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -975,7 +983,7 @@ COPY public.stock_out_items (
     reason
 )
 FROM stdin;
-5 5 23 10 Damaged 6 5 24 5 Adjustment 7 7 25 10 Damaged 8 7 26 5 Adjustment 9 8 25 10 Damaged 10 8 26 5 Adjustment 11 10 25 10 Damaged 12 10 26 5 Adjustment 13 12 25 10 Damaged 14 12 26 5 Adjustment 15 17 23 10 Order 16 17 24 5 Order \.--
+5 5 23 10 Damaged 6 5 24 5 Adjustment 7 7 25 10 Damaged 8 7 26 5 Adjustment 9 8 25 10 Damaged 10 8 26 5 Adjustment 11 10 25 10 Damaged 12 10 26 5 Adjustment 13 12 25 10 Damaged 14 12 26 5 Adjustment 15 17 23 10 Order 16 17 24 5 Order 17 18 25 1 damage 18 19 28 17 Damage 19 19 29 13 Return 20 20 28 35 Return 21 21 24 21 Gift 22 22 27 21 Damage 23 23 28 17 Damaged 24 24 29 1 Return 25 25 24 1 N / A 26 26 25 1 TEST 27 27 27 15 test2 28 28 27 1 test3 29 29 24 1 test4 \.--
 -- Data for Name: supplier; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1121,28 +1129,33 @@ SELECT pg_catalog.setval('public.shipping_shipping_id_seq', 1, false);
 
 SELECT pg_catalog.setval(
         'public.stock_in_items_stock_in_item_id_seq',
-        39,
+        66,
         true
     );
 --
 -- Name: stock_in_stock_in_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.stock_in_stock_in_id_seq', 18, true);
+SELECT pg_catalog.setval('public.stock_in_stock_in_id_seq', 39, true);
 --
 -- Name: stock_out_items_stock_out_item_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
 SELECT pg_catalog.setval(
         'public.stock_out_items_stock_out_item_id_seq',
-        16,
+        29,
         true
     );
+--
+-- Name: stock_out_ref_num_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.stock_out_ref_num_seq', 20, true);
 --
 -- Name: stock_out_stock_out_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.stock_out_stock_out_id_seq', 17, true);
+SELECT pg_catalog.setval('public.stock_out_stock_out_id_seq', 29, true);
 --
 -- Name: supplier_supplier_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1349,6 +1362,12 @@ ADD CONSTRAINT cart_customer_id_fkey FOREIGN KEY (customer_id) REFERENCES public
 ALTER TABLE ONLY public.customer
 ADD CONSTRAINT fk_customer_role FOREIGN KEY (role_id) REFERENCES public.role(role_id);
 --
+-- Name: stock_in fk_employee; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.stock_in
+ADD CONSTRAINT fk_employee FOREIGN KEY (employee_id) REFERENCES public.employee(employee_id);
+--
 -- Name: employee fk_employee_role; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1488,4 +1507,4 @@ ALTER TABLE ONLY public.stock_out
 ADD CONSTRAINT stock_out_order_transaction_id_fkey FOREIGN KEY (order_transaction_id) REFERENCES public.order_transaction(order_transaction_id);
 --
 -- PostgreSQL database dump complete
---
+- -

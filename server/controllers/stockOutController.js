@@ -2,10 +2,14 @@ const pool = require('../db.js');
 
 const createStockOut = async (req, res) => {
   const client = await pool.connect();
-  const { stockOutProducts, order_transaction_id } = req.body;
-  const reference_number = null;
+  const { stockOutProducts, order_transaction_id, employee_id, stock_out_date } = req.body;
+  let reference_number = null;
 
-  if (!stockOutProducts || stockOutProducts.length === 0 ) {
+  console.log("stockOutProducts", stockOutProducts);
+  console.log("order_transaction_id", order_transaction_id);
+  console.log("employee_id", employee_id);
+  console.log("stock_out_date", stock_out_date);
+  if (!stockOutProducts || stockOutProducts.length === 0 || !employee_id || !stock_out_date) {
     return res.status(400).json({ message: "Missing required fields" });
   }
 
@@ -13,26 +17,29 @@ const createStockOut = async (req, res) => {
     await client.query('BEGIN');
 
     if(order_transaction_id) {
-      // Check if the order transaction exists, the REF NO. is the REF NO. in order transaction table
-       reference_number = await client.query(`
+      // Check if the order transaction exists, if yes the REF NO. is the REF NO. from order transaction table
+      reference_number = await client.query(`
         SELECT reference_number 
         FROM order_transaction 
         WHERE order_transaction_id = $1;`,
         [order_transaction_id]);
     } else {
       // Generate a reference number if order transaction id is not provided
-       reference_number = await client.query(`
-        SELECT 'ADJ-' || to_char(NOW(), 'YYYYMMDD') || '-' || nextval('stock_out_ref_num_seq');
+      reference_number = await client.query(`
+        SELECT 'ADJ-' || to_char(NOW(), 'YYYYMMDD') || '-' || nextval('stock_out_ref_num_seq') as reference_number;
       `);
+        // Access the reference number correctly
+        reference_number = reference_number.rows[0].reference_number.substring(0, 255);
+        console.log("reference_number", reference_number);
     }
 
     // Insert stock_out record and explicitly set the stock_out_date
     const stockOutResult = await client.query(
       `
-      INSERT INTO stock_out (reference_number, stock_out_date, order_transaction_id)
-      VALUES ($1, $2, $3) RETURNING stock_out_id;
+      INSERT INTO stock_out (reference_number, stock_out_date, order_transaction_id, employee_id)
+      VALUES ($1, $2, $3, $4) RETURNING stock_out_id;
       `,
-      [reference_number, new Date().toISOString(), order_transaction_id || null]
+      [reference_number, stock_out_date || new Date(), order_transaction_id || null, employee_id]
     );
 
     const stock_out_id = stockOutResult.rows[0].stock_out_id;
@@ -76,7 +83,6 @@ const createStockOut = async (req, res) => {
   }
 };
 
-
 const getAllStockOut = async (req, res) => {
   const client = await pool.connect();
 
@@ -85,7 +91,8 @@ const getAllStockOut = async (req, res) => {
       SELECT 
           so.stock_out_id, 
           so.reference_number, 
-          so.stock_out_date AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Manila' AS stock_out_date,
+          so.employee_id,
+          to_char(so.stock_out_date, 'MM-DD-YYYY, HH:MI AM') AS stock_out_date,
           soi.variation_id,
           soi.quantity,
           soi.reason,
@@ -93,6 +100,7 @@ const getAllStockOut = async (req, res) => {
           pv.value, 
           pv.sku,
           p.name,
+          e.first_name || ' ' || e.last_name AS employee_name,
           soi.quantity
       FROM 
           stock_out so
@@ -102,6 +110,8 @@ const getAllStockOut = async (req, res) => {
           product_variation pv ON soi.variation_id = pv.variation_id
       JOIN
           product p ON pv.product_id = p.product_id
+      JOIN
+          employee e ON so.employee_id = e.employee_id
       ORDER BY 
           so.stock_out_date DESC
     `);

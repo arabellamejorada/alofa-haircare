@@ -1,30 +1,16 @@
 // StockOutTable.jsx
-import React, { useState } from "react";
 import { MdDelete, MdAddBox } from "react-icons/md";
 
-const StockOutTable = () => {
-  // Dummy data for product variations
-  const productVariations = [
-    { variation_id: 1, product_name: "Product A", sku: "SKU001" },
-    { variation_id: 2, product_name: "Product B", sku: "SKU002" },
-    { variation_id: 3, product_name: "Product C", sku: "SKU003" },
-  ];
-
-  // Dummy columns
-  const columns = [
-    { key: "product_name", header: "Product Name" },
-    { key: "sku", header: "SKU" },
-    { key: "quantity", header: "Qty." },
-    { key: "reason", header: "Reason" },
-  ];
-
-  // State to manage stock out products
-  const [stockOutProducts, setStockOutProducts] = useState([]);
-
+const StockOutTable = ({
+  columns,
+  productVariations,
+  inventories,
+  stockOutProducts,
+  setStockOutProducts,
+}) => {
   // Handle adding a new row
   const handleAddRow = () => {
     const newRow = {
-      variation_id: "",
       product_name: "",
       sku: "",
       quantity: 1,
@@ -62,13 +48,6 @@ const StockOutTable = () => {
         sku: "",
       };
     }
-    setStockOutProducts(updatedData);
-  };
-
-  // Handle quantity change
-  const handleQuantityChange = (index, quantity) => {
-    const updatedData = [...stockOutProducts];
-    updatedData[index].quantity = quantity;
     setStockOutProducts(updatedData);
   };
 
@@ -115,8 +94,7 @@ const StockOutTable = () => {
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-left">
                   {index + 1}
                 </td>
-
-                {/* Product Variation Dropdown */}
+                {/* Variation Dropdown */}
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-left">
                   <select
                     value={item.variation_id || ""}
@@ -126,14 +104,11 @@ const StockOutTable = () => {
                     className="w-64 border border-gray-200 rounded px-2 py-1 text-left appearance-none"
                   >
                     <option value="" disabled>
-                      Select Product
+                      Select Variation
                     </option>
-                    {productVariations.map((variation) => (
-                      <option
-                        key={variation.variation_id}
-                        value={variation.variation_id}
-                      >
-                        {variation.product_name}
+                    {productVariations.map((variation, idx) => (
+                      <option key={idx} value={variation.variation_id}>
+                        {`${variation.product_name} - ${variation.type}: ${variation.value}`}
                       </option>
                     ))}
                   </select>
@@ -144,15 +119,27 @@ const StockOutTable = () => {
                   {item.sku || ""}
                 </td>
 
-                {/* Quantity */}
+                {/* Current Stock Quantity  */}
+                <td className="px-5 py-2 border-b border-gray-200 text-sm text-left">
+                  {inventories.find(
+                    (inventory) => inventory.variation_id === item.variation_id,
+                  )?.stock_quantity || 0}
+                </td>
+
+                {/* Quantity to be stocked out*/}
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-left">
                   <input
                     type="number"
                     min="1"
                     value={item.quantity || 1}
-                    onChange={(e) =>
-                      handleQuantityChange(index, parseInt(e.target.value, 10))
-                    }
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value > 0) {
+                        const updatedData = [...stockOutProducts];
+                        updatedData[index]["quantity"] = value;
+                        setStockOutProducts(updatedData);
+                      }
+                    }}
                     className="w-20 border border-gray-200 rounded px-2 py-1 text-left"
                   />
                 </td>

@@ -56,15 +56,21 @@ const StockInHistory = () => {
     { key: "value", header: "Value" },
     { key: "quantity", header: "Qty" },
     { key: "supplier_name", header: "Supplier" },
+    { key: "employee_name", header: "Authorized by" },
     { key: "stock_in_date", header: "Stock-In Date" },
   ];
 
   // Apply filtering to the data
   const filteredData = stockInData.filter((item) => {
+    const itemDate = new Date(item.stock_in_date).toLocaleDateString("en-CA"); // 'en-CA' ensures YYYY-MM-DD format
+
+    // Convert selectedDate to a comparable format if it's provided
     const matchesDate =
-      selectedDate === "" || item.stock_in_date === selectedDate;
+      selectedDate === "" ||
+      new Date(selectedDate).toISOString().split("T")[0] === itemDate;
     const matchesSupplier =
       selectedSupplier === "" || item.supplier_name === selectedSupplier;
+
     return matchesDate && matchesSupplier;
   });
 
