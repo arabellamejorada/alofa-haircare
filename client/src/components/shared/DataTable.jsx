@@ -56,14 +56,14 @@ const DataTable = ({
             <tr>
               {columns.map((column) => (
                 <th
-                  className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-md font-semibold text-gray-600 uppercase tracking-wider"
+                  className="px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-pink-400 to-pink-500 text-gray-100 text-left text-md font-semibold  uppercase tracking-wider"
                   key={column.key}
                 >
                   {column.header || formatColumnName(column.key)}
                 </th>
               ))}
               {!isInventory && (
-                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-md font-semibold text-gray-600 uppercase w-[20%]">
+                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-pink-400 to-pink-500 text-gray-100 text-center text-md font-semibold  uppercase w-[20%]">
                   Actions
                 </th>
               )}
