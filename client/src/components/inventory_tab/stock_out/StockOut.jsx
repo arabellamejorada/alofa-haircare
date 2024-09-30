@@ -44,6 +44,13 @@ const StockOut = () => {
     setSelectedDate(date);
   };
 
+  const adjustToLocalTime = () => {
+    const date = new Date();
+    const offset = date.getTimezoneOffset();
+    const localDate = new Date(date.getTime() - offset * 60000); // Adjust to local timezone
+    return localDate.toISOString().slice(0, 16);
+  };
+
   const handleSubmitStockOut = async () => {
     if (!selectedEmployee || stockOutProducts.length === 0) {
       alert("Please select an employee and add at least one product.");
@@ -61,7 +68,7 @@ const StockOut = () => {
       alert("Stock Out recorded successfully");
       // Reset form fields
       setStockOutProducts([]);
-      setStockOutDate(new Date().toISOString().slice(0, 16));
+      setStockOutDate(adjustToLocalTime());
       setSelectedEmployee("");
     } catch (error) {
       console.error("Error saving stock in:", error);
@@ -82,9 +89,9 @@ const StockOut = () => {
       <div className="flex flex-col">
         <strong className="text-3xl font-bold text-gray-500">Stock Out</strong>
         <div className="flex flex-row justify-between">
-          <div className="flex flex-col px-6 pt-4 w-full gap-2">
+          {/* <div className="flex flex-col px-6 pt-4 w-full gap-2">
             {/* Reference Number */}
-            <div className="flex flex-row justify-between items-center">
+          {/* <div className="flex flex-row justify-between items-center">
               <label className="font-bold w-[30%]" htmlFor="reference_number">
                 Reference Number:
               </label>
@@ -96,8 +103,8 @@ const StockOut = () => {
                 readOnly
                 className="rounded-md border w-[85%] h-8 pl-4 bg-gray-50 border-slate-300 text-slate-700"
               />
-            </div>
-            {/* Transaction ID
+            </div> */}
+          {/* Transaction ID
             <div className="flex flex-row justify-between items-center">
               <label
                 className="font-bold w-[30%]"
@@ -113,7 +120,7 @@ const StockOut = () => {
                 className="rounded-md border w-[85%] h-8 pl-4 bg-gray-50 border-slate-300 text-slate-700"
               />
             </div> */}
-          </div>
+          {/* </div> */}
 
           <div className="flex flex-col px-6 pt-4 w-full gap-2">
             {/* Employee Dropdown */}

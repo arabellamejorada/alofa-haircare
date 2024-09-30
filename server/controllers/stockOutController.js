@@ -58,11 +58,12 @@ const createStockOut = async (req, res) => {
       await client.query(
         `
         UPDATE inventory
-        SET stock_quantity = stock_quantity - $1
-        WHERE variation_id = $2;
+        SET stock_quantity = stock_quantity - $1,
+        last_updated_date = $2
+        WHERE variation_id = $3;
         `,
-        [product.quantity, product.variation_id]
-      );
+        [product.quantity, stock_out_date, product.variation_id]
+      );      
     }
 
     await client.query('COMMIT');

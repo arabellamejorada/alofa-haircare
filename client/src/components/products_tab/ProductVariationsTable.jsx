@@ -15,25 +15,28 @@ const ProductVariationsTable = ({
         <table className="w-full leading-normal">
           <thead className="w-full">
             <tr>
-              <th className="px- py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-md font-semibold text-gray-600 uppercase">
+              <th className="px-2 py-1 border-b-2 border-gray-200 bg-gray-100 text-center text-md font-semibold text-gray-600 uppercase">
                 #
               </th>
-              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-md font-semibold text-gray-600 uppercase">
+              <th className="px-2 py-1 border-b-2 border-gray-200 bg-gray-100 text-center text-md font-semibold text-gray-600 uppercase">
                 Variation Type
               </th>
-              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-md font-semibold text-gray-600 uppercase">
+              <th className="px-2 py-1 border-b-2 border-gray-200 bg-gray-100 text-center text-md font-semibold text-gray-600 uppercase">
                 Variation Value
               </th>
-              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-md font-semibold text-gray-600 uppercase w-[8rem]">
+              <th className="px-2 py-1 border-b-2 border-gray-200 bg-gray-100 text-center text-md font-semibold text-gray-600 uppercase w-[8rem]">
                 Unit Price
               </th>
-              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-md font-semibold text-gray-600 uppercase">
+              <th className="px-2 py-1 border-b-2 border-gray-200 bg-gray-100 text-center text-md font-semibold text-gray-600 uppercase">
+                SKU*
+              </th>
+              <th className="px-2 py-1 border-b-2 border-gray-200 bg-gray-100 text-center text-md font-semibold text-gray-600 uppercase">
                 Status
               </th>
-              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-md font-semibold text-gray-600 uppercase">
+              <th className="px-2 py-1 border-b-2 border-gray-200 bg-gray-100 text-center text-md font-semibold text-gray-600 uppercase">
                 Image
               </th>
-              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-md font-semibold text-gray-600 uppercase">
+              <th className="px-2 py-1 border-b-2 border-gray-200 bg-gray-100 text-center text-md font-semibold text-gray-600 uppercase">
                 Delete
               </th>
             </tr>
@@ -42,12 +45,12 @@ const ProductVariationsTable = ({
             {variations.map((variation, index) => (
               <tr key={index}>
                 {/* index */}
-                <td className="px-5 py-2 border-b border-gray-200 text-sm text-center">
+                <td className="px-2 py-1 border-b border-gray-200 text-sm text-center">
                   {index + 1}
                 </td>
 
                 {/* type */}
-                <td className="px-5 py-2 border-b border-gray-200 text-sm text-center">
+                <td className="px-2 py-1 border-b border-gray-200 text-sm text-center">
                   <select
                     value={variation.type}
                     onChange={(e) =>
@@ -62,10 +65,17 @@ const ProductVariationsTable = ({
                 </td>
 
                 {/* value */}
-                <td className="px-5 py-2 border-b border-gray-200 text-sm text-center">
+                <td className="px-2 py-1 border-b border-gray-200 text-sm text-center">
                   <input
                     type="text"
                     value={variation.value}
+                    placeholder={
+                      variation.type === "Size"
+                        ? "e.g. 30mL"
+                        : variation.type === "Color"
+                          ? "e.g. Sunrise"
+                          : ""
+                    }
                     onChange={(e) =>
                       handleVariationChange(index, "value", e.target.value)
                     }
@@ -74,10 +84,11 @@ const ProductVariationsTable = ({
                 </td>
 
                 {/* unit_price */}
-                <td className="px-5 py-2 border-b border-gray-200 text-sm text-center">
+                <td className="px-2 py-1 border-b border-gray-200 text-sm text-center">
                   <input
                     type="number"
                     value={variation.unit_price}
+                    placeholder="0.00"
                     onChange={(e) =>
                       handleVariationChange(index, "unit_price", e.target.value)
                     }
@@ -85,15 +96,28 @@ const ProductVariationsTable = ({
                   />
                 </td>
 
+                {/* sku */}
+                <td className="px-2 py-1 border-b border-gray-200 text-sm text-center">
+                  <input
+                    type="text"
+                    value={variation.sku}
+                    placeholder="e.g. 123456"
+                    onChange={(e) =>
+                      handleVariationChange(index, "sku", e.target.value)
+                    }
+                    className="w-full border border-gray-200 rounded px-2 py-1 text-center"
+                  />
+                </td>
+
                 {/* product_status */}
-                <td className="px-5 py-2 border-b border-gray-200 text-sm text-center">
+                <td className="px-2 py-1 border-b border-gray-200 text-sm text-center">
                   <select
                     value={variation.product_status_id}
                     onChange={(e) =>
                       handleVariationChange(
                         index,
                         "product_status_id",
-                        e.target.value
+                        e.target.value,
                       )
                     }
                     className="w-full border border-gray-200 rounded px-2 py-1 text-center appearance-none"
@@ -108,7 +132,7 @@ const ProductVariationsTable = ({
                 </td>
 
                 {/* image */}
-                <td className="px-5 py-2">
+                <td className="px-2 py-1">
                   <input
                     type="file"
                     accept="image/*"
@@ -120,7 +144,7 @@ const ProductVariationsTable = ({
                 </td>
 
                 {/* delete */}
-                <td className="px-5 py-2 border-b border-gray-200 text-sm text-center">
+                <td className="px-2 py-1 border-b border-gray-200 text-sm text-center">
                   <button
                     className="text-red-500 hover:text-red-700"
                     onClick={() => deleteVariation(index)}
@@ -143,6 +167,7 @@ const ProductVariationsTable = ({
           Add More Variation
         </button>
       </div>
+      <p>*leave SKU blank if not provided</p>
     </div>
   );
 };
