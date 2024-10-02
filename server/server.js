@@ -31,18 +31,38 @@ app.use('/', userAccountRoutes);
 app.use('/', inventoryRoutes);
 app.use('/', supplierRoutes);
 app.use('/', stockRoutes);
+app.use('/', cartRoutes);
 
-// Session middleware
+const redisClient = redis.createClient({
+    host: 'localhost',
+    port: 6379
+});
+
+redisClient.on('error', (err) => {
+    console.error('Redis error: ', err);
+});
+
 app.use(session({
-    store: new RedisStore({ client }),
-    secret: 'your-secret-key',
-    resave: false,
-    saveUninitialized: false,
-    cookie: { maxAge: 1000 * 60 * 60 * 24 }  // 1 day session expiry
+    store: new RedisStore({ client: redisClient }),
+    secret: 'secret',                // Change this to a random string or a secret key
+    resave: false,                   // Don't save session if unmodified
+    saveUninitialized: false,        // Don't create session until something stored
+    cookie: {
+        secure: false,              // Set this to true if using https
+        httpOnly: true,             // Prevents client side JS from reading the cookie/ XSS attacks
+         maxAge: 1000 * 60 * 60 * 24 * 30,    // Session time = 30 days
+    },
 }));
 
-// Use the cart routes
-app.use(cartRoutes);
+app.get('/', (req, res) => {
+    if (req.session.views) {
+        req.session.views++;
+        res.send(`Views: ${req.session.views}`);
+    } else {
+        req.session.views = 1;
+        res.send('Welcome to the session demo. Refresh the page to track views!');
+    }
+});
 
 // Start the server
 const PORT = process.env.PORT || 3001;

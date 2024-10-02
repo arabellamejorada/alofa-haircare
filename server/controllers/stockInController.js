@@ -42,7 +42,7 @@ const createStockIn = async (req, res) => {
         last_updated_date = $2
         WHERE variation_id = $3;
         `,
-        [product.quantity, new Date().toISOString(),product.variation_id]
+        [product.quantity, stock_in_date, product.variation_id]
       );      
     }
     

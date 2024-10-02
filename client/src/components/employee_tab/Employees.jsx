@@ -9,7 +9,7 @@ import {
   createEmployee,
   updateEmployee,
   archiveEmployee,
-  getEmployeeStatus
+  getEmployeeStatus,
 } from "../../api/employees";
 
 const Employees = () => {
@@ -39,13 +39,12 @@ const Employees = () => {
         let rolesData = await getRoles();
 
         rolesData = rolesData.filter(
-          (role) => role.name === "Admin" || role.name === "Employee"
+          (role) => role.name === "Admin" || role.name === "Employee",
         );
 
         setEmployees(employeesData);
         setRoles(rolesData);
         setStatuses(employeeStatusData);
-
       } catch (err) {
         setError("Failed to fetch data");
       }
@@ -87,7 +86,17 @@ const Employees = () => {
       setShowModal(false);
 
       const employeesData = await getEmployees();
+
       setEmployees(employeesData);
+
+      // Reset fields
+      setFirstName("");
+      setLastName("");
+      setEmail("");
+      setContactNumber("");
+      setRoleId("");
+      setUsername("");
+      setPassword("");
     } catch (error) {
       console.error("Error creating employee: ", error);
     }
@@ -104,7 +113,7 @@ const Employees = () => {
     formData.append("email", email || selectedEmployee.email);
     formData.append(
       "contact_number",
-      contactNumber || selectedEmployee.contact_number
+      contactNumber || selectedEmployee.contact_number,
     );
     formData.append("role_id", roleId || selectedEmployee.role_id);
     formData.append("status_id", statusId || selectedEmployee.status_id);
@@ -112,13 +121,21 @@ const Employees = () => {
     try {
       const response = await updateEmployee(
         selectedEmployee.employee_id,
-        formData
+        formData,
       );
       console.log(response);
       setIsModalVisible(false);
 
       const employeesData = await getEmployees();
       setEmployees(employeesData);
+
+      // Reset fields
+      setFirstName("");
+      setLastName("");
+      setEmail("");
+      setContactNumber("");
+      setRoleId("");
+      setStatusId("");
     } catch (error) {
       console.error("Error updating employee: ", error);
       setError("Failed to update employee");
@@ -127,22 +144,24 @@ const Employees = () => {
 
   const handleArchiveEmployee = async (selectedEmployee) => {
     if (!selectedEmployee) return;
-  
-    const isConfirmed = window.confirm("Are you sure you want to archive this employee?");
+
+    const isConfirmed = window.confirm(
+      "Are you sure you want to archive this employee?",
+    );
     if (!isConfirmed) return;
-  
+
     const data = {
-      status_id: 3
+      status_id: 3,
     };
-  
+
     try {
       console.log("Archiving employee: ", selectedEmployee.employee_id);
       const response = await archiveEmployee(
         selectedEmployee.employee_id,
-        data
+        data,
       );
       console.log(response);
-  
+
       // Optionally refresh the employees list
       const employeesData = await getEmployees();
       setEmployees(employeesData);
@@ -151,7 +170,7 @@ const Employees = () => {
       setError("Failed to update employee status to Archived");
     }
   };
-  
+
   const handleEdit = (employee) => {
     console.log("Selected Employee:", employee); // Check if employee data is correct
 
@@ -178,7 +197,7 @@ const Employees = () => {
     { key: "email", header: "Email" },
     { key: "contact_number", header: "Contact Number" },
     { key: "role_name", header: "Role" },
-    { key: "status_description", header: "Status" }
+    { key: "status_description", header: "Status" },
   ];
 
   if (error) return <div>{error}</div>;
@@ -194,17 +213,17 @@ const Employees = () => {
   }, {});
 
   const processedEmployee = employees
-  .map((item) => ({
-    ...item,
-    role_name: roleMap[item.role_id],
-    status_description: statusMap[item.status_id],
-  }))
-  .sort((a, b) => {
-    // Move archived employees to the end
-    if (a.status_id === 3 && b.status_id !== 3) return 1;
-    if (a.status_id !== 3 && b.status_id === 3) return -1;
-    return 0;
-  });
+    .map((item) => ({
+      ...item,
+      role_name: roleMap[item.role_id],
+      status_description: statusMap[item.status_id],
+    }))
+    .sort((a, b) => {
+      // Move archived employees to the end
+      if (a.status_id === 3 && b.status_id !== 3) return 1;
+      if (a.status_id !== 3 && b.status_id === 3) return -1;
+      return 0;
+    });
 
   return (
     <Fragment>

@@ -25,32 +25,49 @@ const createProductVariationsWithInventory = async (req, res) => {
       for (let i = 0; i < variations.length; i++) {
         const variation = variations[i];
         const { type, value, unit_price, product_status_id } = variation;
+        let { sku } = variation;
         const image = uploadedFiles[i] ? uploadedFiles[i].path : null;  // Assign corresponding image
   
-        const sku = generateSKU(product_name, type, value, product_id);
-  
-        const productVariationResult = await client.query(
-          `INSERT INTO product_variation (product_id, type, value, sku, unit_price, product_status_id, image)
-           VALUES ($1, $2, $3, $4, $5, $6, $7)
-           RETURNING variation_id`,
-          [product_id, type, value, sku, unit_price, product_status_id, image]
-        );
-  
-        const variation_id = productVariationResult.rows[0].variation_id;
-        const last_updated_date = new Date();
-        const stock_quantity = 0;
-  
-        const inventoryResult = await client.query(
-          `INSERT INTO inventory (variation_id, stock_quantity, last_updated_date)
-           VALUES ($1, $2, $3)
-           RETURNING inventory_id`,
-          [variation_id, stock_quantity, last_updated_date]
-        );
+        // If no SKU provided, generate one based on product name, type, value, and product ID
+        if (!sku) {
+          sku = generateSKU(product_name, type, value, product_id);
+        }
 
-        const inventory_id = inventoryResult.rows[0].inventory_id;
+        // Create SAVEPOINT before each variation insertion
+        await client.query('SAVEPOINT before_variation_insert');
   
-        insertedVariations.push({ variation_id, product_id, type, value, sku, unit_price, product_status_id, image });
-        insertedInventories.push({ inventory_id, variation_id, stock_quantity, last_updated_date });
+        try {
+          // Insert into product_variation
+          const productVariationResult = await client.query(
+            `INSERT INTO product_variation (product_id, type, value, sku, unit_price, product_status_id, image)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)
+             RETURNING variation_id`,
+            [product_id, type, value, sku, unit_price, product_status_id, image]
+          );
+  
+          const variation_id = productVariationResult.rows[0].variation_id;
+          const last_updated_date = new Date();
+          const stock_quantity = 0;
+  
+          // Insert into inventory
+          const inventoryResult = await client.query(
+            `INSERT INTO inventory (variation_id, stock_quantity, last_updated_date)
+             VALUES ($1, $2, $3)
+             RETURNING inventory_id`,
+            [variation_id, stock_quantity, last_updated_date]
+          );
+  
+          const inventory_id = inventoryResult.rows[0].inventory_id;
+  
+          insertedVariations.push({ variation_id, product_id, type, value, sku, unit_price, product_status_id, image });
+          insertedInventories.push({ inventory_id, variation_id, stock_quantity, last_updated_date });
+
+        } catch (innerError) {
+          console.error(`Error inserting variation ${i + 1}:`, innerError);
+          // Rollback to the savepoint if the variation insert fails
+          await client.query('ROLLBACK TO SAVEPOINT before_variation_insert');
+          continue; // Continue to the next variation
+        }
       }
   
       await client.query('COMMIT');
@@ -68,6 +85,7 @@ const createProductVariationsWithInventory = async (req, res) => {
       client.release();
     }
   };
+
   
 // Generate SKU with abbreviation mappings
 const generateSKU = (product_name, variation_type, variation_value, counter) => {
@@ -170,7 +188,7 @@ const getProductVariationById = async (req, res) => {
 // Update product variation by ID
 const updateProductVariation = async (req, res) => {
     const id = parseInt(req.params.id);
-    const { type, value, unit_price, product_status_id } = req.body;
+    const { type, value, unit_price, product_status_id, sku } = req.body;
     let image = null;
 
     // Check if the image file is part of the request (assuming multipart form data)
@@ -200,8 +218,8 @@ const updateProductVariation = async (req, res) => {
         const product_id = productResult.rows[0].product_id;
         const product_name = productResult.rows[0].name;
 
-        // Generate SKU based on product name, type, and value
-        const sku = generateSKU(product_name, type, value, product_id);
+        // If SKU is not provided, generate it based on the product name, type, and value
+        let newSku = sku || generateSKU(product_name, type, value, product_id);
 
         // Update the product variation
         const updatedProductVariation = await pool.query(
@@ -209,7 +227,7 @@ const updateProductVariation = async (req, res) => {
              SET type = $1, value = $2, sku = $3, unit_price = $4, product_status_id = $5, image = $6
              WHERE variation_id = $7
              RETURNING *`,
-            [type, value, sku, unit_price, product_status_id, image, id]
+            [type, value, newSku, unit_price, product_status_id, image, id]
         );
 
         if (updatedProductVariation.rows.length === 0) {

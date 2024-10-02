@@ -19,7 +19,7 @@ SET default_table_access_method = heap;
 --
 -- Name: cart; Type: TABLE; Schema: public; Owner: postgres
 --
-
+DROP TABLE IF EXISTS public.cart CASCADE;
 CREATE TABLE public.cart (
     cart_id integer NOT NULL,
     session_id character varying(255),
@@ -41,9 +41,32 @@ ALTER SEQUENCE public.cart_cart_id_seq OWNER TO postgres;
 
 ALTER SEQUENCE public.cart_cart_id_seq OWNED BY public.cart.cart_id;
 --
--- Name: customer; Type: TABLE; Schema: public; Owner: postgres
+-- Name: cart_items; Type: TABLE; Schema: public; Owner: postgres
 --
 
+DROP TABLE IF EXISTS public.cart_items CASCADE;
+CREATE TABLE public.cart_items (
+    cart_item_id integer NOT NULL,
+    cart_id integer NOT NULL,
+    variation_id integer NOT NULL,
+    quantity integer NOT NULL
+);
+ALTER TABLE public.cart_items OWNER TO postgres;
+--
+-- Name: cart_items_cart_item_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.cart_items_cart_item_id_seq AS integer START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
+ALTER SEQUENCE public.cart_items_cart_item_id_seq OWNER TO postgres;
+--
+-- Name: cart_items_cart_item_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.cart_items_cart_item_id_seq OWNED BY public.cart_items.cart_item_id;
+--
+-- Name: customer; Type: TABLE; Schema: public; Owner: postgres
+--
+DROP TABLE IF EXISTS public.customer CASCADE;
 CREATE TABLE public.customer (
     customer_id integer NOT NULL,
     first_name character varying(255) NOT NULL,
@@ -116,7 +139,7 @@ ALTER SEQUENCE public.employee_status_status_id_seq OWNED BY public.employee_sta
 CREATE TABLE public.inventory (
     inventory_id integer NOT NULL,
     stock_quantity integer NOT NULL,
-    last_updated_date timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    last_updated_date timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     variation_id integer
 );
 ALTER TABLE public.inventory OWNER TO postgres;
@@ -138,11 +161,14 @@ ALTER SEQUENCE public.inventory_inventory_id_seq OWNED BY public.inventory.inven
 CREATE TABLE public.order_transaction (
     order_transaction_id integer NOT NULL,
     customer_id integer,
+    cart_id integer NOT NULL,
     total_amount numeric(10, 2) NOT NULL,
     date_ordered timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     order_status character varying(255) NOT NULL,
-    reference_number character varying(255),
-    payment_id integer NOT NULL,
+    payment_method character varying(255) NOT NULL,
+    payment_status character varying(255) NOT NULL,
+    proof_image text NOT NULL,
+    is_verified boolean NOT NULL,
     shipping_id integer NOT NULL
 );
 ALTER TABLE public.order_transaction OWNER TO postgres;
@@ -158,59 +184,16 @@ ALTER SEQUENCE public.order_transaction_order_transaction_id_seq OWNER TO postgr
 
 ALTER SEQUENCE public.order_transaction_order_transaction_id_seq OWNED BY public.order_transaction.order_transaction_id;
 --
--- Name: payment; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.payment (
-    payment_id integer NOT NULL,
-    date timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    amount_paid numeric(10, 2),
-    proof_image text NOT NULL,
-    payment_method_id integer NOT NULL,
-    order_id integer NOT NULL
-);
-ALTER TABLE public.payment OWNER TO postgres;
---
--- Name: payment_method; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.payment_method (
-    payment_method_id integer NOT NULL,
-    description character varying(255) NOT NULL
-);
-ALTER TABLE public.payment_method OWNER TO postgres;
---
--- Name: payment_method_payment_method_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.payment_method_payment_method_id_seq AS integer START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
-ALTER SEQUENCE public.payment_method_payment_method_id_seq OWNER TO postgres;
---
--- Name: payment_method_payment_method_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.payment_method_payment_method_id_seq OWNED BY public.payment_method.payment_method_id;
---
--- Name: payment_payment_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.payment_payment_id_seq AS integer START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
-ALTER SEQUENCE public.payment_payment_id_seq OWNER TO postgres;
---
--- Name: payment_payment_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.payment_payment_id_seq OWNED BY public.payment.payment_id;
---
 -- Name: payment_verification; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public.payment_verification (
     payment_verification_id integer NOT NULL,
-    verification_date date NOT NULL,
+    verification_date timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    reference_number character varying(255) NOT NULL,
     is_verified boolean NOT NULL,
-    employee_id integer,
-    payment_id integer NOT NULL
+    employee_id integer NOT NULL,
+    order_transaction_id integer NOT NULL
 );
 ALTER TABLE public.payment_verification OWNER TO postgres;
 --
@@ -233,7 +216,7 @@ CREATE TABLE public.product (
     name character varying(255) NOT NULL,
     description text NOT NULL,
     product_category_id integer NOT NULL,
-    product_status_id integer
+    product_status_id integer NOT NULL
 );
 ALTER TABLE public.product OWNER TO postgres;
 --
@@ -294,11 +277,11 @@ ALTER SEQUENCE public.product_status_status_id_seq OWNED BY public.product_statu
 CREATE TABLE public.product_variation (
     variation_id integer NOT NULL,
     product_id integer,
+    product_status_id integer,
     type character varying(255),
     value character varying(255),
-    sku character varying(100),
     unit_price numeric(10, 2),
-    product_status_id integer,
+    sku character varying(100),
     image text
 );
 ALTER TABLE public.product_variation OWNER TO postgres;
@@ -352,6 +335,10 @@ ALTER TABLE public.shipping OWNER TO postgres;
 --
 
 CREATE TABLE public.shipping_address (
+    first_name character varying(255) NOT NULL,
+    last_name character varying(255) NOT NULL,
+    contact_number character varying(20) NOT NULL,
+    email character varying(255) NOT NULL,
     shipping_address_id integer NOT NULL,
     address_line character varying(255) NOT NULL,
     barangay character varying(255) NOT NULL,
@@ -412,7 +399,7 @@ CREATE TABLE public.stock_in (
     stock_in_id integer NOT NULL,
     reference_number character varying(255) NOT NULL,
     supplier_id integer,
-    stock_in_date timestamp without time zone DEFAULT CURRENT_DATE,
+    stock_in_date timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     employee_id integer
 );
 ALTER TABLE public.stock_in OWNER TO postgres;
@@ -570,6 +557,13 @@ ALTER TABLE ONLY public.cart
 ALTER COLUMN cart_id
 SET DEFAULT nextval('public.cart_cart_id_seq'::regclass);
 --
+-- Name: cart_items cart_item_id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cart_items
+ALTER COLUMN cart_item_id
+SET DEFAULT nextval('public.cart_items_cart_item_id_seq'::regclass);
+--
 -- Name: customer customer_id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -605,22 +599,6 @@ ALTER TABLE ONLY public.order_transaction
 ALTER COLUMN order_transaction_id
 SET DEFAULT nextval(
         'public.order_transaction_order_transaction_id_seq'::regclass
-    );
---
--- Name: payment payment_id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.payment
-ALTER COLUMN payment_id
-SET DEFAULT nextval('public.payment_payment_id_seq'::regclass);
---
--- Name: payment_method payment_method_id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.payment_method
-ALTER COLUMN payment_method_id
-SET DEFAULT nextval(
-        'public.payment_method_payment_method_id_seq'::regclass
     );
 --
 -- Name: payment_verification payment_verification_id; Type: DEFAULT; Schema: public; Owner: postgres
@@ -757,6 +735,12 @@ COPY public.cart (
 )
 FROM stdin;
 \.--
+-- Data for Name: cart_items; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.cart_items (cart_item_id, cart_id, variation_id, quantity)
+FROM stdin;
+\.--
 -- Data for Name: customer; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -783,13 +767,13 @@ COPY public.employee (
     status_id
 )
 FROM stdin;
-2 Arabella Mejorada agmejorada @addu.edu.ph 09312312312 1 1 1 Cassey Gempesaw catgempesaw @addu.edu.ph 09221234123 2 2 4 Achilleus Castillo accastillo @gmail.com 09123123982 2 3 3 Anthony Tabudlong arjtabudlong @gmail.com 09228446273 1 3 \.--
+1 Arabella Mejorada ara @gmail.com 09228446273 1 1 2 Cassey Gempesaw catgempesaw @gmail.com 09882394857 1 1 3 Anthony Tabudlong arjtabudlong @gmail.com 09123137484 1 1 4 John Doe jdoe @gmail.com 09882394857 2 1 \.--
 -- Data for Name: employee_status; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.employee_status (status_id, description)
 FROM stdin;
-1 Active 2 Inactive 3 Archived \.--
+1 Active 2 Inactive 3 On Leave 4 Terminated \.--
 -- Data for Name: inventory; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -800,39 +784,23 @@ COPY public.inventory (
     variation_id
 )
 FROM stdin;
-24 91 2024 -09 -27 19 :10 :20.197 + 08 28 25 87 2024 -09 -23 23 :23 :34.468 + 08 29 21 68 2024 -09 -24 00 :06 :27.167 + 08 25 23 83 2024 -09 -27 21 :13 :06.302 + 08 27 20 284 2024 -09 -27 22 :19 :28 + 08 24 22 90 2024 -09 -18 16 :08 :21.143 + 08 26 19 91 2024 -09 -27 19 :08 :36.264 + 08 23 \.--
+3 0 2024 -09 -30 23 :52 :33.649 3 4 0 2024 -09 -30 23 :52 :33.652 4 1 276 2024 -09 -30 15 :57 :40.076 1 2 270 2024 -09 -30 23 :59 :00 2 5 190 2024 -10 -01 00 :07 :00 5 6 189 2024 -10 -01 00 :07 :00 6 \.--
 -- Data for Name: order_transaction; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.order_transaction (
     order_transaction_id,
     customer_id,
+    cart_id,
     total_amount,
     date_ordered,
     order_status,
-    reference_number,
-    payment_id,
+    payment_method,
+    payment_status,
+    proof_image,
+    is_verified,
     shipping_id
 )
-FROM stdin;
-\.--
--- Data for Name: payment; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.payment (
-    payment_id,
-    date,
-    amount_paid,
-    proof_image,
-    payment_method_id,
-    order_id
-)
-FROM stdin;
-\.--
--- Data for Name: payment_method; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.payment_method (payment_method_id, description)
 FROM stdin;
 \.--
 -- Data for Name: payment_verification; Type: TABLE DATA; Schema: public; Owner: postgres
@@ -841,9 +809,10 @@ FROM stdin;
 COPY public.payment_verification (
     payment_verification_id,
     verification_date,
+    reference_number,
     is_verified,
     employee_id,
-    payment_id
+    order_transaction_id
 )
 FROM stdin;
 \.--
@@ -858,653 +827,775 @@ COPY public.product (
     product_status_id
 )
 FROM stdin;
-1 Flower Hair Clip Cute 2 2 4 Jade Comb Stimulate hair growth 3 4 2 Hair Oil Rosemary 1 3 3 Mini Flower Hair Clip Mini hair clip,
-comes in pairs 2 1 5 Hair Mist Desc 1 1 \.--
+1 Hair Oil Alofa Natural Hair Growth Oil is Enriched with 8 natural oils formulated to repair
+and rejuvenate hair,
+leaving it smooth
+and silky.This blend of vitamins,
+minerals
+and antioxidants targets different concerns,
+making it suitable for all hair types.3 1 2 Flower Hair Clip Summer all year long with Alofa 's Flower Hair Claw Clips\n\n	1	1
+3	Orchid Hair Clamp	The summer accessory! Our new and improved Orchid Flower Clamp that comes in a various of shades.	1	1
+4	Scalp Massager & Scalp Brush	Gently massage the scalp to promote blood flow and circulation. Improve scalp health and grow hair faster while enjoying the relaxing feeling!\nCan be used in the shower to further cleanse the scalp	2	1
+\.
+
+
+--
 -- Data for Name: product_category; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.product_category (product_category_id, name)
-FROM stdin;
-2 Hair Accessories 4 Body Products 3 Hair Tools 1 Hair Products \.--
+COPY public.product_category (product_category_id, name) FROM stdin;
+1	Hair Accessories
+2	Hair Tools
+3	Hair Products
+\.
+
+
+--
 -- Data for Name: product_status; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.product_status (status_id, description)
-FROM stdin;
-1 Available 2 Out of Stock 3 Discontinued 4 Archived \.--
+COPY public.product_status (status_id, description) FROM stdin;
+1	Available
+2	Out of Stock
+3	Discontinued
+4	Archived
+\.
+
+
+--
 -- Data for Name: product_variation; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.product_variation (
-    variation_id,
-    product_id,
-    type,
-    value,
-    sku,
-    unit_price,
-    product_status_id,
-    image
-)
-FROM stdin;
-23 1 Color Seaside FHC - SEAS -0001 199.00 1 public / uploads / untitled -1726646901031 -379276836.jpeg 24 1 Color Blossom FHC - BLOS -0001 189.00 1 public / uploads / untitled -1726646901034 -566618279.jpeg 25 1 Color Meadow FHC - MEAD -0001 199.00 1 public / uploads / untitled -1726646901034 -760109210.jpeg 26 1 Color Midnight FHC - MIDN -0001 189.00 1 public / uploads / untitled -1726646901035 -501807312.jpeg 28 2 Size 30mL OIL - 30ML -0002 199.00 1 public / uploads / untitled -1726728079113 -727812291.jpeg 29 2 Size 60mL OIL - 60ML -0002 199.00 1 public / uploads / untitled -1726728079119 -47955822.jpeg 27 3 Color Sunset MFH - SUNS -0003 199.98 1 public / uploads / untitled -1726714712013 -768143593.jpeg \.--
+COPY public.product_variation (variation_id, product_id, product_status_id, type, value, unit_price, sku, image) FROM stdin;
+1	1	1	Size	30mL	380.00	OIL-30ML-0001	public/uploads/untitled-1727711503720-876289673.jpeg
+2	1	1	Size	60mL	622.00	OIL-60ML-0001	public/uploads/untitled-1727711503729-422764022.jpeg
+3	2	1	Color	Sunset	180.00	FHC-SUNS-0002	public/uploads/untitled-1727711553604-271075819.jpeg
+4	2	1	Color	Clementine	180.00	FHC-CLEM-0002	public/uploads/untitled-1727711553605-911986321.jpeg
+5	3	1	Color	Pink	199.00	OHC-PINK-0003	public/uploads/untitled-1727711580887-411640974.jpeg
+6	4	1			280.00	SCA-0000-0004	public/uploads/untitled-1727711601257-54134435.jpeg
+\.
+
+
+--
 -- Data for Name: role; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.role (role_id, name, description)
-FROM stdin;
-1 Admin Full access to all system features
-and settings,
-including user management,
-system configuration,
-and data oversight.2 Employee Limited access to specific system functionalities relevant to day - to - day tasks.Includes managing personal information,
-viewing
-and updating assigned tasks,
-and accessing data pertinent to their role.3 Customer Access to personal account details,
-order history,
-and product browsing.Customers can place orders,
-track their purchases,
-and manage their personal information.\.--
+COPY public.role (role_id, name, description) FROM stdin;
+1	Admin	System Administrator
+2	Employee	Employee of the company
+3	Customer	Customer of the company
+\.
+
+
+--
 -- Data for Name: shipping; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.shipping (
-    shipping_id,
-    shipping_date,
-    shipping_fee,
-    tracking_number,
-    shipping_method_id,
-    shipping_address_id
-)
-FROM stdin;
-\.--
+COPY public.shipping (shipping_id, shipping_date, shipping_fee, tracking_number, shipping_method_id, shipping_address_id) FROM stdin;
+\.
+
+
+--
 -- Data for Name: shipping_address; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.shipping_address (
-    shipping_address_id,
-    address_line,
-    barangay,
-    city,
-    province,
-    zip_code,
-    customer_id
-)
-FROM stdin;
-\.--
+COPY public.shipping_address (first_name, last_name, contact_number, email, shipping_address_id, address_line, barangay, city, province, zip_code, customer_id) FROM stdin;
+\.
+
+
+--
 -- Data for Name: shipping_method; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.shipping_method (shipping_method_id, courier, description)
-FROM stdin;
-\.--
+COPY public.shipping_method (shipping_method_id, courier, description) FROM stdin;
+\.
+
+
+--
 -- Data for Name: stock_in; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.stock_in (
-    stock_in_id,
-    reference_number,
-    supplier_id,
-    stock_in_date,
-    employee_id
-)
-FROM stdin;
-9 REF -383833 2 2024 -09 -19 00 :00 :00 \ N 10 REF -797877 1 2024 -09 -19 00 :00 :00 \ N 11 REF -705390 2 2024 -09 -19 00 :00 :00 \ N 12 REF -236627 2 2024 -09 -19 00 :00 :00 \ N 13 REF -769838 1 2024 -09 -19 00 :00 :00 \ N 14 REF -149717 2 2024 -09 -19 00 :00 :00 \ N 15 REF -847694 1 2024 -09 -19 00 :00 :00 \ N 16 REF -435023 2 2024 -09 -19 00 :00 :00 \ N 17 REF -522151 2 2024 -09 -19 00 :00 :00 \ N 18 REF -313349 1 2024 -09 -23 00 :00 :00 \ N 19 REF -643919 2 2024 -09 -23 00 :00 :00 \ N 20 REF -835597 1 2024 -09 -23 00 :00 :00 \ N 24 REF -969511 1 2024 -09 -23 00 :00 :00 \ N 25 REF -671855 1 2024 -09 -23 00 :00 :00 \ N 8 REF -540851 2 2024 -09 -18 12 :00 :00 \ N 26 REF -610013 2 2024 -09 -23 12 :00 :00 \ N 27 REF -361315 1 2024 -09 -23 23 :28 :00 \ N 29 REF -130861 2 2024 -09 -23 16 :05 :00 \ N 30 REF -742703 1 2024 -09 -23 16 :06 :00 \ N 31 REF -597774 1 2024 -09 -23 16 :07 :00 \ N 32 REF -210217 2 2024 -09 -27 11 :03 :00 \ N 33 REF -905169 2 2024 -09 -27 11 :07 :00 \ N 34 REF -482803 1 2024 -09 -27 11 :08 :00 \ N 35 REF -201268 2 2024 -09 -27 19 :10 :00 \ N 36 REF -246037 1 2024 -09 -27 21 :12 :00 \ N 37 REF -856120 1 2024 -09 -27 21 :12 :00 \ N 38 REF -968806 2 2024 -09 -27 00 :00 :00 \ N 39 REF -575453 2 2024 -09 -27 22 :19 :00 1 \.--
+COPY public.stock_in (stock_in_id, reference_number, supplier_id, stock_in_date, employee_id) FROM stdin;
+1	REF-744164	2	2024-09-30 23:57:00	2
+2	REF-621943	2	2024-09-30 23:59:00	4
+3	REF-114826	1	2024-10-01 00:07:00	2
+\.
+
+
+--
 -- Data for Name: stock_in_items; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.stock_in_items (
-    stock_in_item_id,
-    stock_in_id,
-    variation_id,
-    quantity
-)
-FROM stdin;
-11 8 23 100 12 8 24 100 13 8 25 100 14 8 26 100 15 9 27 5 16 9 24 3 17 10 27 2 18 11 24 7 19 12 23 1 20 12 24 1 21 12 25 1 22 12 26 1 23 12 27 1 24 13 23 3 25 13 24 3 26 13 25 3 27 13 26 3 28 13 27 3 29 14 25 3 30 14 26 4 31 14 27 4 32 15 23 2 33 16 28 7 34 17 27 3 35 17 25 2 36 17 26 2 37 17 27 4 38 17 28 52 39 18 24 1 40 19 23 100 41 19 24 100 42 19 25 100 43 19 26 100 44 19 27 100 45 19 28 100 46 19 29 100 47 20 24 100 51 24 24 100 52 25 23 1 53 26 29 1 54 27 24 1 56 29 23 1 57 30 25 1 58 31 27 4 59 32 24 1 60 33 23 2 61 34 23 1 62 35 28 1 63 36 24 1 64 37 27 1 65 38 24 1 66 39 24 1 \.--
+COPY public.stock_in_items (stock_in_item_id, stock_in_id, variation_id, quantity) FROM stdin;
+1	1	1	1
+2	2	2	190
+3	3	5	200
+4	3	6	150
+\.
+
+
+--
 -- Data for Name: stock_out; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.stock_out (
-    stock_out_id,
-    reference_number,
-    stock_out_date,
-    order_transaction_id,
-    employee_id
-)
-FROM stdin;
-5 ADJ20230918 2023 -09 -18 00 :00 :00 \ N \ N 7 ADJ20230917 2023 -09 -18 00 :00 :00 \ N \ N 8 ADJ20230915 2024 -09 -23 09 :22 :28.245978 \ N \ N 10 ADJ202309166 2024 -09 -23 01 :24 :08.623 \ N \ N 12 ADJ20230916 2024 -09 -23 01 :25 :20.429 \ N \ N 17 SO -1235 2024 -09 -23 01 :31 :14.469 \ N \ N 18 ADJ -20240927 -7 2024 -09 -27 12 :20 :05.324 \ N 1 19 ADJ -20240927 -8 2024 -09 -27 12 :21 :35.835 \ N 1 20 ADJ -20240927 -9 2024 -09 -27 12 :25 :07.39 \ N 2 21 ADJ -20240927 -10 2024 -09 -27 20 :57 :53.59 \ N 4 22 ADJ -20240927 -11 2024 -09 -27 21 :07 :42.742 \ N 3 23 ADJ -20240927 -12 2024 -09 -27 21 :10 :24.217 \ N 3 24 ADJ -20240927 -13 2024 -09 -27 21 :11 :50.408 \ N 4 25 ADJ -20240927 -14 2024 -09 -27 21 :19 :24.351 \ N 3 26 ADJ -20240927 -15 2024 -09 -27 21 :53 :29.481 \ N 2 27 ADJ -20240927 -16 2024 -09 -27 21 :54 :53.69 \ N 1 28 ADJ -20240927 -17 2024 -09 -27 21 :55 :15.142 \ N 2 29 ADJ -20240927 -20 2024 -09 -27 00 :01 :00 \ N 1 \.--
+COPY public.stock_out (stock_out_id, reference_number, stock_out_date, order_transaction_id, employee_id) FROM stdin;
+1	ADJ-20240930-21	2024-09-30 23:56:00	\N	2
+2	ADJ-20241001-22	2024-10-01 00:00:00	\N	1
+3	ADJ-20241001-23	2024-10-01 00:07:00	\N	2
+\.
+
+
+--
 -- Data for Name: stock_out_items; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.stock_out_items (
-    stock_out_item_id,
-    stock_out_id,
-    variation_id,
-    quantity,
-    reason
-)
-FROM stdin;
-5 5 23 10 Damaged 6 5 24 5 Adjustment 7 7 25 10 Damaged 8 7 26 5 Adjustment 9 8 25 10 Damaged 10 8 26 5 Adjustment 11 10 25 10 Damaged 12 10 26 5 Adjustment 13 12 25 10 Damaged 14 12 26 5 Adjustment 15 17 23 10 Order 16 17 24 5 Order 17 18 25 1 damage 18 19 28 17 Damage 19 19 29 13 Return 20 20 28 35 Return 21 21 24 21 Gift 22 22 27 21 Damage 23 23 28 17 Damaged 24 24 29 1 Return 25 25 24 1 N / A 26 26 25 1 TEST 27 27 27 15 test2 28 28 27 1 test3 29 29 24 1 test4 \.--
+COPY public.stock_out_items (stock_out_item_id, stock_out_id, variation_id, quantity, reason) FROM stdin;
+1	1	1	5	Damaged
+2	2	2	20	Giveaway
+3	3	5	10	Damage
+4	3	6	11	Stock in error
+\.
+
+
+--
 -- Data for Name: supplier; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.supplier (
-    supplier_id,
-    supplier_name,
-    contact_person,
-    contact_number,
-    email,
-    address,
-    status
-)
-FROM stdin;
-2 XYZ Corp.Mr.John Doe 09228446273 supploer2 @gmail.com Manila Inactive 1 ABC Inc.Ms.Jane Doe 09228446273 supplier1 @gmail.com Davao Active \.--
+COPY public.supplier (supplier_id, supplier_name, contact_person, contact_number, email, address, status) FROM stdin;
+1	ABC Inc.	Ms. Jane Doe	09228446273	abcinc@gmail.com	Toril, Davao City	
+2	XYZ Corp.	Mr. John Smith	09882394857	xyzcorp@gmail.com	Shenzhen Sorting Center, China	
+\.
+
+
+--
 -- Data for Name: user_account; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.user_account (
-    user_account_id,
-    username,
-    password,
-    date_created,
-    employee_id,
-    customer_id
-)
-FROM stdin;
-1 catgempesaw $2b$10$rS.zo0L5qqlOJrf2ABqFieMj62IAN4jvrinvBK.PhUmG3kqLDknkO 2024 -09 -03 19 :45 :47.282035 1 \ N 2 agmejorada $2b$10$v4gflkdZhapRRwFrlZh9WuR2OtVfWA8dNOaF14JCJ9uNzR5IDzL.6 2024 -09 -03 19 :47 :08.633586 2 \ N 3 arjtabudlong $2b$10$MC2b8hTUC09xeTrdS1.VSOQHftI4AOJb7CiYDX3mzi2N0A86aE2U2 2024 -09 -03 20 :16 :27.580753 3 \ N 4 accastillo $2b$10$VMdxIhghQVpoP4OfNttqguwZKFGlh57aF4wa3PRlp7VvH8pkCJhLC 2024 -09 -07 20 :08 :36.410932 4 \ N \.--
+COPY public.user_account (user_account_id, username, password, date_created, employee_id, customer_id) FROM stdin;
+1	aramejorada	$2b$10$PhheiYfHa2Rfw9.ca5SbY.j.ih28xoS.R7H6DP5sU.to4z9r9ONkm	2024-09-30 23:40:43.824667	1	\N
+2	catgempesaw	$2b$10$vrjMT0zXT9DfchEpwihnQ.UcXmGp78EZB.mAHO.KOLR.kTlyWQ78y	2024-09-30 23:41:42.869801	2	\N
+3	arjtabudlong	$2b$10$EyCctDdINIY9KeY0AW1ZF.a6foL/N.e0Nu5997LHADvT5tnkhuz2W	2024-09-30 23:44:19.521894	3	\N
+4	jdoe	$2b$10$AbHyqmrgJ.hl.P5FNXCtMulXVzJVE2s/2HFeqZoB.UrSTEWozFWI2	2024-09-30 23:44:36.805566	4	\N
+\.
+
+
+--
 -- Name: cart_cart_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.cart_cart_id_seq', 1, false);
+SELECT pg_catalog.setval(' public.cart_cart_id_seq ', 1, false);
+
+
+--
+-- Name: cart_items_cart_item_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval(' public.cart_items_cart_item_id_seq ', 1, false);
+
+
 --
 -- Name: customer_customer_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.customer_customer_id_seq', 1, false);
+SELECT pg_catalog.setval(' public.customer_customer_id_seq ', 1, false);
+
+
 --
 -- Name: employee_employee_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.employee_employee_id_seq', 4, true);
+SELECT pg_catalog.setval(' public.employee_employee_id_seq ', 4, true);
+
+
 --
 -- Name: employee_status_status_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.employee_status_status_id_seq', 3, true);
+SELECT pg_catalog.setval(' public.employee_status_status_id_seq ', 4, true);
+
+
 --
 -- Name: inventory_inventory_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.inventory_inventory_id_seq', 25, true);
+SELECT pg_catalog.setval(' public.inventory_inventory_id_seq ', 6, true);
+
+
 --
 -- Name: order_transaction_order_transaction_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval(
-        'public.order_transaction_order_transaction_id_seq',
-        3,
-        true
-    );
---
--- Name: payment_method_payment_method_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
+SELECT pg_catalog.setval(' public.order_transaction_order_transaction_id_seq ', 1, false);
 
-SELECT pg_catalog.setval(
-        'public.payment_method_payment_method_id_seq',
-        1,
-        false
-    );
---
--- Name: payment_payment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
 
-SELECT pg_catalog.setval('public.payment_payment_id_seq', 1, false);
 --
 -- Name: payment_verification_payment_verification_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval(
-        'public.payment_verification_payment_verification_id_seq',
-        1,
-        false
-    );
+SELECT pg_catalog.setval(' public.payment_verification_payment_verification_id_seq ', 1, false);
+
+
 --
 -- Name: product_category_product_category_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval(
-        'public.product_category_product_category_id_seq',
-        4,
-        true
-    );
+SELECT pg_catalog.setval(' public.product_category_product_category_id_seq ', 3, true);
+
+
 --
 -- Name: product_product_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.product_product_id_seq', 5, true);
+SELECT pg_catalog.setval(' public.product_product_id_seq ', 4, true);
+
+
 --
 -- Name: product_status_status_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.product_status_status_id_seq', 4, true);
+SELECT pg_catalog.setval(' public.product_status_status_id_seq ', 4, true);
+
+
 --
 -- Name: product_variation_variation_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval(
-        'public.product_variation_variation_id_seq',
-        29,
-        true
-    );
+SELECT pg_catalog.setval(' public.product_variation_variation_id_seq ', 6, true);
+
+
 --
 -- Name: role_role_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.role_role_id_seq', 3, true);
+SELECT pg_catalog.setval(' public.role_role_id_seq ', 3, true);
+
+
 --
 -- Name: shipping_address_shipping_address_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval(
-        'public.shipping_address_shipping_address_id_seq',
-        1,
-        false
-    );
+SELECT pg_catalog.setval(' public.shipping_address_shipping_address_id_seq ', 1, false);
+
+
 --
 -- Name: shipping_method_shipping_method_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval(
-        'public.shipping_method_shipping_method_id_seq',
-        1,
-        false
-    );
+SELECT pg_catalog.setval(' public.shipping_method_shipping_method_id_seq ', 1, false);
+
+
 --
 -- Name: shipping_shipping_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.shipping_shipping_id_seq', 1, false);
+SELECT pg_catalog.setval(' public.shipping_shipping_id_seq ', 1, false);
+
+
 --
 -- Name: stock_in_items_stock_in_item_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval(
-        'public.stock_in_items_stock_in_item_id_seq',
-        66,
-        true
-    );
+SELECT pg_catalog.setval(' public.stock_in_items_stock_in_item_id_seq ', 4, true);
+
+
 --
 -- Name: stock_in_stock_in_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.stock_in_stock_in_id_seq', 39, true);
+SELECT pg_catalog.setval(' public.stock_in_stock_in_id_seq ', 3, true);
+
+
 --
 -- Name: stock_out_items_stock_out_item_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval(
-        'public.stock_out_items_stock_out_item_id_seq',
-        29,
-        true
-    );
+SELECT pg_catalog.setval(' public.stock_out_items_stock_out_item_id_seq ', 4, true);
+
+
 --
 -- Name: stock_out_ref_num_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.stock_out_ref_num_seq', 20, true);
+SELECT pg_catalog.setval(' public.stock_out_ref_num_seq ', 23, true);
+
+
 --
 -- Name: stock_out_stock_out_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.stock_out_stock_out_id_seq', 29, true);
+SELECT pg_catalog.setval(' public.stock_out_stock_out_id_seq ', 3, true);
+
+
 --
 -- Name: supplier_supplier_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.supplier_supplier_id_seq', 2, true);
+SELECT pg_catalog.setval(' public.supplier_supplier_id_seq ', 2, true);
+
+
 --
 -- Name: user_account_user_account_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval(
-        'public.user_account_user_account_id_seq',
-        4,
-        true
-    );
+SELECT pg_catalog.setval(' public.user_account_user_account_id_seq ', 4, true);
+
+
+--
+-- Name: cart_items cart_items_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cart_items
+    ADD CONSTRAINT cart_items_pkey PRIMARY KEY (cart_item_id);
+
+
 --
 -- Name: cart cart_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.cart
-ADD CONSTRAINT cart_pkey PRIMARY KEY (cart_id);
+    ADD CONSTRAINT cart_pkey PRIMARY KEY (cart_id);
+
+
 --
 -- Name: customer customer_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.customer
-ADD CONSTRAINT customer_pkey PRIMARY KEY (customer_id);
+    ADD CONSTRAINT customer_pkey PRIMARY KEY (customer_id);
+
+
 --
 -- Name: employee employee_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.employee
-ADD CONSTRAINT employee_pkey PRIMARY KEY (employee_id);
+    ADD CONSTRAINT employee_pkey PRIMARY KEY (employee_id);
+
+
 --
 -- Name: employee_status employee_status_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.employee_status
-ADD CONSTRAINT employee_status_pkey PRIMARY KEY (status_id);
+    ADD CONSTRAINT employee_status_pkey PRIMARY KEY (status_id);
+
+
 --
 -- Name: inventory inventory_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.inventory
-ADD CONSTRAINT inventory_pkey PRIMARY KEY (inventory_id);
+    ADD CONSTRAINT inventory_pkey PRIMARY KEY (inventory_id);
+
+
 --
 -- Name: order_transaction order_transaction_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.order_transaction
-ADD CONSTRAINT order_transaction_pkey PRIMARY KEY (order_transaction_id);
---
--- Name: order_transaction order_transaction_reference_number_key; Type: CONSTRAINT; Schema: public; Owner: postgres
---
+    ADD CONSTRAINT order_transaction_pkey PRIMARY KEY (order_transaction_id);
 
-ALTER TABLE ONLY public.order_transaction
-ADD CONSTRAINT order_transaction_reference_number_key UNIQUE (reference_number);
---
--- Name: payment_method payment_method_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
 
-ALTER TABLE ONLY public.payment_method
-ADD CONSTRAINT payment_method_pkey PRIMARY KEY (payment_method_id);
---
--- Name: payment payment_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.payment
-ADD CONSTRAINT payment_pkey PRIMARY KEY (payment_id);
 --
 -- Name: payment_verification payment_verification_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.payment_verification
-ADD CONSTRAINT payment_verification_pkey PRIMARY KEY (payment_verification_id);
+    ADD CONSTRAINT payment_verification_pkey PRIMARY KEY (payment_verification_id);
+
+
 --
 -- Name: product_category product_category_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.product_category
-ADD CONSTRAINT product_category_pkey PRIMARY KEY (product_category_id);
+    ADD CONSTRAINT product_category_pkey PRIMARY KEY (product_category_id);
+
+
 --
 -- Name: product product_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.product
-ADD CONSTRAINT product_pkey PRIMARY KEY (product_id);
+    ADD CONSTRAINT product_pkey PRIMARY KEY (product_id);
+
+
 --
 -- Name: product_status product_status_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.product_status
-ADD CONSTRAINT product_status_pkey PRIMARY KEY (status_id);
+    ADD CONSTRAINT product_status_pkey PRIMARY KEY (status_id);
+
+
 --
 -- Name: product_variation product_variation_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.product_variation
-ADD CONSTRAINT product_variation_pkey PRIMARY KEY (variation_id);
+    ADD CONSTRAINT product_variation_pkey PRIMARY KEY (variation_id);
+
+
 --
 -- Name: product_variation product_variation_sku_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.product_variation
-ADD CONSTRAINT product_variation_sku_key UNIQUE (sku);
+    ADD CONSTRAINT product_variation_sku_key UNIQUE (sku);
+
+
 --
 -- Name: role role_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.role
-ADD CONSTRAINT role_name_key UNIQUE (name);
+    ADD CONSTRAINT role_name_key UNIQUE (name);
+
+
 --
 -- Name: role role_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.role
-ADD CONSTRAINT role_pkey PRIMARY KEY (role_id);
+    ADD CONSTRAINT role_pkey PRIMARY KEY (role_id);
+
+
 --
 -- Name: shipping_address shipping_address_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.shipping_address
-ADD CONSTRAINT shipping_address_pkey PRIMARY KEY (shipping_address_id);
+    ADD CONSTRAINT shipping_address_pkey PRIMARY KEY (shipping_address_id);
+
+
 --
 -- Name: shipping_method shipping_method_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.shipping_method
-ADD CONSTRAINT shipping_method_pkey PRIMARY KEY (shipping_method_id);
+    ADD CONSTRAINT shipping_method_pkey PRIMARY KEY (shipping_method_id);
+
+
 --
 -- Name: shipping shipping_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.shipping
-ADD CONSTRAINT shipping_pkey PRIMARY KEY (shipping_id);
+    ADD CONSTRAINT shipping_pkey PRIMARY KEY (shipping_id);
+
+
 --
 -- Name: stock_in_items stock_in_items_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.stock_in_items
-ADD CONSTRAINT stock_in_items_pkey PRIMARY KEY (stock_in_item_id);
+    ADD CONSTRAINT stock_in_items_pkey PRIMARY KEY (stock_in_item_id);
+
+
 --
 -- Name: stock_in stock_in_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.stock_in
-ADD CONSTRAINT stock_in_pkey PRIMARY KEY (stock_in_id);
+    ADD CONSTRAINT stock_in_pkey PRIMARY KEY (stock_in_id);
+
+
+--
+-- Name: stock_in stock_in_reference_number_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.stock_in
+    ADD CONSTRAINT stock_in_reference_number_key UNIQUE (reference_number);
+
+
 --
 -- Name: stock_out_items stock_out_items_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.stock_out_items
-ADD CONSTRAINT stock_out_items_pkey PRIMARY KEY (stock_out_item_id);
+    ADD CONSTRAINT stock_out_items_pkey PRIMARY KEY (stock_out_item_id);
+
+
 --
 -- Name: stock_out stock_out_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.stock_out
-ADD CONSTRAINT stock_out_pkey PRIMARY KEY (stock_out_id);
+    ADD CONSTRAINT stock_out_pkey PRIMARY KEY (stock_out_id);
+
+
 --
 -- Name: stock_out stock_out_reference_number_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.stock_out
-ADD CONSTRAINT stock_out_reference_number_key UNIQUE (reference_number);
+    ADD CONSTRAINT stock_out_reference_number_key UNIQUE (reference_number);
+
+
 --
 -- Name: supplier supplier_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.supplier
-ADD CONSTRAINT supplier_pkey PRIMARY KEY (supplier_id);
---
--- Name: product_variation unique_sku; Type: CONSTRAINT; Schema: public; Owner: postgres
---
+    ADD CONSTRAINT supplier_pkey PRIMARY KEY (supplier_id);
 
-ALTER TABLE ONLY public.product_variation
-ADD CONSTRAINT unique_sku UNIQUE (sku);
+
 --
 -- Name: user_account user_account_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.user_account
-ADD CONSTRAINT user_account_pkey PRIMARY KEY (user_account_id);
+    ADD CONSTRAINT user_account_pkey PRIMARY KEY (user_account_id);
+
+
 --
 -- Name: user_account user_account_username_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.user_account
-ADD CONSTRAINT user_account_username_key UNIQUE (username);
---
--- Name: fki_fk_payment_verification_payment; Type: INDEX; Schema: public; Owner: postgres
---
+    ADD CONSTRAINT user_account_username_key UNIQUE (username);
 
-CREATE INDEX fki_fk_payment_verification_payment ON public.payment_verification USING btree (payment_id);
+
 --
 -- Name: cart cart_customer_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.cart
-ADD CONSTRAINT cart_customer_id_fkey FOREIGN KEY (customer_id) REFERENCES public.customer(customer_id);
+    ADD CONSTRAINT cart_customer_id_fkey FOREIGN KEY (customer_id) REFERENCES public.customer(customer_id) ON DELETE SET NULL;
+
+
 --
--- Name: customer fk_customer_role; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: cart_items cart_items_cart_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cart_items
+    ADD CONSTRAINT cart_items_cart_id_fkey FOREIGN KEY (cart_id) REFERENCES public.cart(cart_id) ON DELETE CASCADE;
+
+
+--
+-- Name: customer customer_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.customer
-ADD CONSTRAINT fk_customer_role FOREIGN KEY (role_id) REFERENCES public.role(role_id);
---
--- Name: stock_in fk_employee; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
+    ADD CONSTRAINT customer_role_id_fkey FOREIGN KEY (role_id) REFERENCES public.role(role_id);
 
-ALTER TABLE ONLY public.stock_in
-ADD CONSTRAINT fk_employee FOREIGN KEY (employee_id) REFERENCES public.employee(employee_id);
+
 --
--- Name: employee fk_employee_role; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: employee employee_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.employee
-ADD CONSTRAINT fk_employee_role FOREIGN KEY (role_id) REFERENCES public.role(role_id);
+    ADD CONSTRAINT employee_role_id_fkey FOREIGN KEY (role_id) REFERENCES public.role(role_id);
+
+
 --
--- Name: employee fk_employee_status_employee; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: employee employee_status_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.employee
-ADD CONSTRAINT fk_employee_status_employee FOREIGN KEY (status_id) REFERENCES public.employee_status(status_id);
---
--- Name: payment_verification fk_payment_verification_employee; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
+    ADD CONSTRAINT employee_status_id_fkey FOREIGN KEY (status_id) REFERENCES public.employee_status(status_id);
 
-ALTER TABLE ONLY public.payment_verification
-ADD CONSTRAINT fk_payment_verification_employee FOREIGN KEY (employee_id) REFERENCES public.employee(employee_id);
---
--- Name: product fk_product_category; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
 
-ALTER TABLE ONLY public.product
-ADD CONSTRAINT fk_product_category FOREIGN KEY (product_category_id) REFERENCES public.product_category(product_category_id);
---
--- Name: shipping fk_shipping_address; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.shipping
-ADD CONSTRAINT fk_shipping_address FOREIGN KEY (shipping_address_id) REFERENCES public.shipping_address(shipping_address_id);
---
--- Name: shipping_address fk_shipping_address_customer; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.shipping_address
-ADD CONSTRAINT fk_shipping_address_customer FOREIGN KEY (customer_id) REFERENCES public.customer(customer_id);
---
--- Name: shipping fk_shipping_method; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.shipping
-ADD CONSTRAINT fk_shipping_method FOREIGN KEY (shipping_method_id) REFERENCES public.shipping_method(shipping_method_id);
---
--- Name: user_account fk_user_account_customer; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.user_account
-ADD CONSTRAINT fk_user_account_customer FOREIGN KEY (customer_id) REFERENCES public.customer(customer_id);
---
--- Name: user_account fk_user_account_employee; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.user_account
-ADD CONSTRAINT fk_user_account_employee FOREIGN KEY (employee_id) REFERENCES public.employee(employee_id);
 --
 -- Name: inventory inventory_variation_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.inventory
-ADD CONSTRAINT inventory_variation_id_fkey FOREIGN KEY (variation_id) REFERENCES public.product_variation(variation_id) ON DELETE CASCADE;
+    ADD CONSTRAINT inventory_variation_id_fkey FOREIGN KEY (variation_id) REFERENCES public.product_variation(variation_id);
+
+
+--
+-- Name: order_transaction order_transaction_cart_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.order_transaction
+    ADD CONSTRAINT order_transaction_cart_id_fkey FOREIGN KEY (cart_id) REFERENCES public.cart(cart_id) ON DELETE CASCADE;
+
+
 --
 -- Name: order_transaction order_transaction_customer_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.order_transaction
-ADD CONSTRAINT order_transaction_customer_id_fkey FOREIGN KEY (customer_id) REFERENCES public.customer(customer_id);
---
--- Name: order_transaction order_transaction_payment_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
+    ADD CONSTRAINT order_transaction_customer_id_fkey FOREIGN KEY (customer_id) REFERENCES public.customer(customer_id) ON DELETE SET NULL;
 
-ALTER TABLE ONLY public.order_transaction
-ADD CONSTRAINT order_transaction_payment_id_fkey FOREIGN KEY (payment_id) REFERENCES public.payment(payment_id);
+
 --
 -- Name: order_transaction order_transaction_shipping_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.order_transaction
-ADD CONSTRAINT order_transaction_shipping_id_fkey FOREIGN KEY (shipping_id) REFERENCES public.shipping(shipping_id);
+    ADD CONSTRAINT order_transaction_shipping_id_fkey FOREIGN KEY (shipping_id) REFERENCES public.shipping(shipping_id) ON DELETE CASCADE;
+
+
 --
--- Name: payment payment_payment_method_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: payment_verification payment_verification_employee_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.payment
-ADD CONSTRAINT payment_payment_method_id_fkey FOREIGN KEY (payment_method_id) REFERENCES public.payment_method(payment_method_id);
+ALTER TABLE ONLY public.payment_verification
+    ADD CONSTRAINT payment_verification_employee_id_fkey FOREIGN KEY (employee_id) REFERENCES public.employee(employee_id) ON DELETE CASCADE;
+
+
+--
+-- Name: payment_verification payment_verification_order_transaction_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.payment_verification
+    ADD CONSTRAINT payment_verification_order_transaction_id_fkey FOREIGN KEY (order_transaction_id) REFERENCES public.order_transaction(order_transaction_id) ON DELETE CASCADE;
+
+
+--
+-- Name: product product_product_category_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.product
+    ADD CONSTRAINT product_product_category_id_fkey FOREIGN KEY (product_category_id) REFERENCES public.product_category(product_category_id);
+
+
 --
 -- Name: product product_product_status_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.product
-ADD CONSTRAINT product_product_status_id_fkey FOREIGN KEY (product_status_id) REFERENCES public.product_status(status_id) ON DELETE CASCADE;
+    ADD CONSTRAINT product_product_status_id_fkey FOREIGN KEY (product_status_id) REFERENCES public.product_status(status_id);
+
+
 --
 -- Name: product_variation product_variation_product_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.product_variation
-ADD CONSTRAINT product_variation_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.product(product_id) ON DELETE CASCADE;
+    ADD CONSTRAINT product_variation_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.product(product_id) ON DELETE CASCADE;
+
+
+--
+-- Name: product_variation product_variation_product_id_fkey1; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.product_variation
+    ADD CONSTRAINT product_variation_product_id_fkey1 FOREIGN KEY (product_id) REFERENCES public.product(product_id);
+
+
 --
 -- Name: product_variation product_variation_product_status_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.product_variation
-ADD CONSTRAINT product_variation_product_status_id_fkey FOREIGN KEY (product_status_id) REFERENCES public.product_status(status_id) ON DELETE CASCADE;
+    ADD CONSTRAINT product_variation_product_status_id_fkey FOREIGN KEY (product_status_id) REFERENCES public.product_status(status_id) ON DELETE CASCADE;
+
+
+--
+-- Name: product_variation product_variation_product_status_id_fkey1; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.product_variation
+    ADD CONSTRAINT product_variation_product_status_id_fkey1 FOREIGN KEY (product_status_id) REFERENCES public.product_status(status_id);
+
+
+--
+-- Name: shipping_address shipping_address_customer_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.shipping_address
+    ADD CONSTRAINT shipping_address_customer_id_fkey FOREIGN KEY (customer_id) REFERENCES public.customer(customer_id);
+
+
+--
+-- Name: shipping shipping_shipping_address_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.shipping
+    ADD CONSTRAINT shipping_shipping_address_id_fkey FOREIGN KEY (shipping_address_id) REFERENCES public.shipping_address(shipping_address_id);
+
+
+--
+-- Name: shipping shipping_shipping_method_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.shipping
+    ADD CONSTRAINT shipping_shipping_method_id_fkey FOREIGN KEY (shipping_method_id) REFERENCES public.shipping_method(shipping_method_id);
+
+
+--
+-- Name: stock_in stock_in_employee_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.stock_in
+    ADD CONSTRAINT stock_in_employee_id_fkey FOREIGN KEY (employee_id) REFERENCES public.employee(employee_id);
+
+
 --
 -- Name: stock_in_items stock_in_items_stock_in_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.stock_in_items
-ADD CONSTRAINT stock_in_items_stock_in_id_fkey FOREIGN KEY (stock_in_id) REFERENCES public.stock_in(stock_in_id);
+    ADD CONSTRAINT stock_in_items_stock_in_id_fkey FOREIGN KEY (stock_in_id) REFERENCES public.stock_in(stock_in_id);
+
+
+--
+-- Name: stock_in_items stock_in_items_stock_in_id_fkey1; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.stock_in_items
+    ADD CONSTRAINT stock_in_items_stock_in_id_fkey1 FOREIGN KEY (stock_in_id) REFERENCES public.stock_in(stock_in_id);
+
+
 --
 -- Name: stock_in_items stock_in_items_variation_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.stock_in_items
-ADD CONSTRAINT stock_in_items_variation_id_fkey FOREIGN KEY (variation_id) REFERENCES public.product_variation(variation_id);
+    ADD CONSTRAINT stock_in_items_variation_id_fkey FOREIGN KEY (variation_id) REFERENCES public.product_variation(variation_id);
+
+
+--
+-- Name: stock_in_items stock_in_items_variation_id_fkey1; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.stock_in_items
+    ADD CONSTRAINT stock_in_items_variation_id_fkey1 FOREIGN KEY (variation_id) REFERENCES public.product_variation(variation_id);
+
+
 --
 -- Name: stock_in stock_in_supplier_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.stock_in
-ADD CONSTRAINT stock_in_supplier_id_fkey FOREIGN KEY (supplier_id) REFERENCES public.supplier(supplier_id);
+    ADD CONSTRAINT stock_in_supplier_id_fkey FOREIGN KEY (supplier_id) REFERENCES public.supplier(supplier_id);
+
+
 --
 -- Name: stock_out stock_out_employee_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.stock_out
-ADD CONSTRAINT stock_out_employee_id_fkey FOREIGN KEY (employee_id) REFERENCES public.employee(employee_id);
+    ADD CONSTRAINT stock_out_employee_id_fkey FOREIGN KEY (employee_id) REFERENCES public.employee(employee_id);
+
+
 --
--- Name: stock_out_items stock_out_items_variation_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: stock_out_items stock_out_items_stock_out_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.stock_out_items
-ADD CONSTRAINT stock_out_items_variation_id_fkey FOREIGN KEY (variation_id) REFERENCES public.product_variation(variation_id);
+    ADD CONSTRAINT stock_out_items_stock_out_id_fkey FOREIGN KEY (stock_out_id) REFERENCES public.stock_out(stock_out_id);
+
+
 --
--- Name: stock_out stock_out_order_transaction_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: user_account user_account_customer_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.stock_out
-ADD CONSTRAINT stock_out_order_transaction_id_fkey FOREIGN KEY (order_transaction_id) REFERENCES public.order_transaction(order_transaction_id);
+ALTER TABLE ONLY public.user_account
+    ADD CONSTRAINT user_account_customer_id_fkey FOREIGN KEY (customer_id) REFERENCES public.customer(customer_id);
+
+
+--
+-- Name: user_account user_account_employee_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.user_account
+    ADD CONSTRAINT user_account_employee_id_fkey FOREIGN KEY (employee_id) REFERENCES public.employee(employee_id);
+
+
 --
 -- PostgreSQL database dump complete
-- -
+--

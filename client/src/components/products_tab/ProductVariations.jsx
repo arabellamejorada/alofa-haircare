@@ -79,6 +79,7 @@ const ProductVariations = () => {
       formData.append(`variations[${index}][type]`, variation.type);
       formData.append(`variations[${index}][value]`, variation.value);
       formData.append(`variations[${index}][unit_price]`, variation.unit_price);
+      formData.append(`variations[${index}][sku]`, variation.sku);
       formData.append(
         `variations[${index}][product_status_id]`,
         variation.product_status_id,
