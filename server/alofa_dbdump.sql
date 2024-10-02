@@ -19,7 +19,7 @@ SET default_table_access_method = heap;
 --
 -- Name: cart; Type: TABLE; Schema: public; Owner: postgres
 --
-
+DROP TABLE IF EXISTS public.cart CASCADE;
 CREATE TABLE public.cart (
     cart_id integer NOT NULL,
     session_id character varying(255),
@@ -44,6 +44,7 @@ ALTER SEQUENCE public.cart_cart_id_seq OWNED BY public.cart.cart_id;
 -- Name: cart_items; Type: TABLE; Schema: public; Owner: postgres
 --
 
+DROP TABLE IF EXISTS public.cart_items CASCADE;
 CREATE TABLE public.cart_items (
     cart_item_id integer NOT NULL,
     cart_id integer NOT NULL,
@@ -65,7 +66,7 @@ ALTER SEQUENCE public.cart_items_cart_item_id_seq OWNED BY public.cart_items.car
 --
 -- Name: customer; Type: TABLE; Schema: public; Owner: postgres
 --
-
+DROP TABLE IF EXISTS public.customer CASCADE;
 CREATE TABLE public.customer (
     customer_id integer NOT NULL,
     first_name character varying(255) NOT NULL,
