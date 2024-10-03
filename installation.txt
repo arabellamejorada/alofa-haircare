@@ -21,8 +21,6 @@ npm install -D tailwindcss
 npm install react-select
 
 
-
-
 products-page frontend:
 cd products-page
 npm install axios
@@ -36,16 +34,18 @@ npm install prop-types
 
 
 Database:
-BACKUP DATABASE: pg_dump -U postgres -d alofa -f server/alofa_dbdump.sql
-RESTORE DATABASE: pg_restore --clean --dbname=your_database your_dump_file.dump
+BACKUP DATABASE: 
+
+pg_dump -U postgres -d alofa -f server/alofa_dbdump.sql
+pg_dump -U postgres -d alofa -f server/alofa_schema.sql --schema-only
+pg_dump -U postgres -d alofa -f server/alofa_data.sql --data-only
 
 
 
-To run:
-npm start
+RESTORE DATABASE: 
+psql -U postgres -d alofa -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
 
-FAQS:
-common errors:
-1. if meron na existing naga run sa post 3000 (for example), do this:
-Identify the PID using the following command:
-    npx kill-port 3000 3001
+// do the first one lang pero if mag error gawin mo nlg lahat hahahah tapos double check if nagalabas
+psql -U postgres -d alofa -f server/alofa_dbdump.sql
+psql -U postgres -d alofa -f server/alofa_schema.sql --restore-schema-only
+psql -U postgres -d alofa -f server/alofa_data.sql --restore-data-only
