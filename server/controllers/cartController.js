@@ -3,10 +3,18 @@ const pool = require('../db.js');
 const createOrGetCart = async (req, res) => {
     const { customer_id } = req.body;
     const session_id = req.sessionID;
+    const client = await pool.connect();
+
+    // Validate if either session_id or customer_id is present
+    if (!session_id && !customer_id) {
+        return res.status(400).json({
+            message: 'Session ID or Customer ID is required to create or retrieve a cart.',
+        });
+    }
 
     try {
-        const client = await pool.connect();
 
+        // Find cart by customer ID or session ID
         const cartQuery = await client.query(`
             SELECT * FROM cart
             WHERE (customer_id = $1 OR session_id = $2) AND status = 'active'`,
@@ -15,6 +23,7 @@ const createOrGetCart = async (req, res) => {
 
         let cart;
         if (cartQuery.rows.length === 0) {
+            // If no cart found, create a new cart
             const newCartQuery = await client.query(`
                 INSERT INTO cart (customer_id, session_id)
                 VALUES ($1, $2)
@@ -23,13 +32,19 @@ const createOrGetCart = async (req, res) => {
             );
             cart = newCartQuery.rows[0];
         } else {
+            // Use the existing cart
             cart = cartQuery.rows[0];
         }
+
+        res.status(200).json({ message: 'Cart retrieved/created successfully', cart });        
     } catch (error) {
         console.error('Error creating or getting cart: ', error);
         res.status(500).json({ message: "Error creating/retrieving cart", error: error.message });
+    } finally {
+       client.release();
     }
 };
+
 
 const addItemToCart = async (req, res) => {
     const { variation_id, quantity } = req.body;
@@ -86,7 +101,19 @@ const addItemToCart = async (req, res) => {
     }
 };
 
-const viewCart = async (req, res) => {
+// get all cart table
+const getAllCarts = async (req, res) => {
+    try {
+        const client = await pool.connect();
+        const result = await client.query('SELECT * FROM cart');
+        res.status(200).json(result.rows);
+    } catch (error) {
+        console.error('Error getting cart: ', error);
+        res.status(500).json({ message: "Error getting cart", error: error.message });
+    }
+};
+
+const viewCartItemsById = async (req, res) => {
     const session_id = req.sessionID;
 
     try {
@@ -106,11 +133,24 @@ const viewCart = async (req, res) => {
         const cart_id = cartResult.rows[0].cart_id;
 
         const cartItems = await client.query(`
-            SELECT ci.cart_item_id, ci.quantity, pv.price, pv.name, pv.image
-            FROM cart_items ci
-            JOIN product_variations pv ON ci.variation_id = pv.variation_id
-            WHERE ci.cart_id = $1`,
-            [cart_id]
+         SELECT
+            ci.cart_item_id, 
+            ci.quantity, 
+            pv.unit_price, 
+            p.name || ' - ' || pv.value AS product_name,
+            pv.image,
+            SUM(ci.quantity * pv.unit_price) AS subtotal
+        FROM 
+            cart_items ci
+        JOIN 
+            product_variation pv ON ci.variation_id = pv.variation_id
+        JOIN 
+            product p ON pv.product_id = p.product_id
+        WHERE 
+            ci.cart_id = $1
+        GROUP BY 
+            ci.cart_item_id, ci.quantity, pv.unit_price, p.name, pv.value, pv.image;
+        `, [cart_id]
         );
 
         res.status(200).json({ cartItems: cartItems.rows });
@@ -159,6 +199,7 @@ const checkoutCart = async (req, res) => {
 module.exports = {
     createOrGetCart,
     addItemToCart,
-    viewCart,
+    getAllCarts,
+    viewCartItemsById,
     checkoutCart
 };
