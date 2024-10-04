@@ -24,9 +24,9 @@ const redisSessionMiddleware = session({
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: false, // Should be true if using HTTPS
-        httpOnly: true,
-        maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days expiration
+        secure: false,  // For development, should be true in production when using HTTPS
+        httpOnly: true, // Ensures the cookie is inaccessible to JavaScript (XSS protection)
+        maxAge: 1000 * 60 * 60 * 24 * 30, // Cookie expiry time (30 days)
     },
 });
 

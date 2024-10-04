@@ -49,9 +49,9 @@ const createOrGetCart = async (req, res) => {
 const addItemToCart = async (req, res) => {
     const { variation_id, quantity } = req.body;
     const session_id = req.sessionID;
+    const client = await pool.connect();
 
     try {
-        const client = await pool.connect();
 
         const cartResult = await client.query(`
             SELECT * FROM cart
@@ -93,11 +93,20 @@ const addItemToCart = async (req, res) => {
             [cart_id, variation_id, quantity]
         );
 
+        const cartUpdate = await client.query(`
+            UPDATE cart
+            SET last_activity = NOW()
+            WHERE cart_id = $1
+            RETURNING *`,
+            [cart_id]
+        );
         res.status(201).json({ message: "Item added to cart", cartItem: newItem.rows[0] });
 
     } catch (error) {
         console.error('Error adding item to cart: ', error);
         res.status(500).json({ message: "Error adding item to cart", error: error.message });
+    } finally {
+        client.release();
     }
 };
 
@@ -126,7 +135,9 @@ const viewCartItemsById = async (req, res) => {
         );
 
         if (cartResult.rows.length === 0) {
-            res.status(404).json({ message: "Cart not found" });
+            res.status(404).json({ 
+                message: "Session expired or no valid session found. Please start a new session."
+            });
             return;
         }
 
@@ -134,32 +145,86 @@ const viewCartItemsById = async (req, res) => {
 
         const cartItems = await client.query(`
          SELECT
-            ci.cart_item_id, 
-            ci.quantity, 
+            ci.*,
+            c.*,
             pv.unit_price, 
             p.name || ' - ' || pv.value AS product_name,
             pv.image,
-            SUM(ci.quantity * pv.unit_price) AS subtotal
+            ci.quantity * pv.unit_price AS subtotal
         FROM 
             cart_items ci
+        JOIN
+            cart c ON ci.cart_id = c.cart_id
         JOIN 
             product_variation pv ON ci.variation_id = pv.variation_id
         JOIN 
             product p ON pv.product_id = p.product_id
         WHERE 
             ci.cart_id = $1
-        GROUP BY 
-            ci.cart_item_id, ci.quantity, pv.unit_price, p.name, pv.value, pv.image;
         `, [cart_id]
         );
 
-        res.status(200).json({ cartItems: cartItems.rows });
+         if (cartItems.rows.length === 0) {
+            return res.status(404).json({ message: "No items in cart." });
+        }
 
+
+        // Calculate the overall cart total by summing the subtotals
+        const cartTotalResult = await client.query(`
+            SELECT SUM(ci.quantity * pv.unit_price) AS cart_total
+            FROM 
+                cart_items ci
+            JOIN 
+                product_variation pv ON ci.variation_id = pv.variation_id
+            WHERE 
+                ci.cart_id = $1
+        `, [cart_id]);
+
+        const cartTotal = cartTotalResult.rows[0].cart_total;
+
+        res.status(200).json({ 
+            cartItems: cartItems.rows,
+            cart_total: cartTotal 
+        });
     } catch (error) {
         console.error('Error viewing cart: ', error);
         res.status(500).json({ message: "Error viewing cart", error: error.message });
     }
 };
+
+const clearCart = async (req, res) => {
+    const session_id = req.sessionID;
+    const client = await pool.connect();
+
+    try {
+
+        const cartResult = await client.query(`
+            SELECT * FROM cart
+            WHERE session_id = $1 AND status = 'active'`,
+            [session_id]
+        );
+
+        if (cartResult.rows.length === 0) {
+            res.status(404).json({ message: "Cart not found" });
+            return;
+        }
+
+        const cart_id = cartResult.rows[0].cart_id;
+
+        const clearCartItems = await client.query(`
+            DELETE FROM cart_items
+            WHERE cart_id = $1`,
+            [cart_id]
+        );
+
+        res.status(200).json({ message: "Cart cleared" });
+
+    } catch (error) {
+        console.error('Error clearing cart: ', error);
+        res.status(500).json({ message: "Error clearing cart", error: error.message });
+    }
+};
+
 
 const checkoutCart = async (req, res) => {
     const session_id = req.sessionID;
@@ -201,5 +266,6 @@ module.exports = {
     addItemToCart,
     getAllCarts,
     viewCartItemsById,
+    clearCart,
     checkoutCart
 };

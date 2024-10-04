@@ -1,9 +1,9 @@
 import axios from './axios';
 
 // CREATE CART
-export const createCart = async () => {
+export const createCart = async (customer_id) => {
     try {
-        const response = await axios.post('/carts');
+        const response = await axios.post('/cart', { customer_id });
         console.log('Cart created: ', response.data);
         return response.data;
     } catch (error) {
@@ -15,7 +15,7 @@ export const createCart = async () => {
 // ADD ITEM TO CART
 export const addItemToCart = async (variation_id, quantity) => {
     try {
-        const response = await axios.post('/carts/add', { variation_id, quantity });
+        const response = await axios.post('/cart/add-item', { variation_id, quantity });
         console.log('Item added to cart: ', response.data);
         return response.data;
     } catch (error) {
@@ -25,9 +25,9 @@ export const addItemToCart = async (variation_id, quantity) => {
 };
 
 // VIEW CART
-export const viewCart = async () => {
+export const viewCartItemsById = async (cart_id) => {
     try {
-        const response = await axios.get('/cart');
+        const response = await axios.get('/cart/items/:id', { cart_id });
         console.log('Cart fetched: ', response.data);
         return response.data;
     } catch (error) {
