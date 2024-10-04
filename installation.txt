@@ -36,16 +36,26 @@ npm install prop-types
 Database:
 BACKUP DATABASE: 
 
-pg_dump -U postgres -d alofa -f server/alofa_dbdump.sql
-pg_dump -U postgres -d alofa -f server/alofa_schema.sql --schema-only
-pg_dump -U postgres -d alofa -f server/alofa_data.sql --data-only
+    # Full backup (schema + data)
+        pg_dump -U postgres -d alofa -f server/database/alofa_dbdump.sql
+
+    # Schema-only backup
+        pg_dump -U postgres -d alofa -f server/database/alofa_schema.sql 
+
+    # Data-only backup
+        pg_dump -U postgres -d alofa -f server/database/alofa_data.sql
 
 
 
 RESTORE DATABASE: 
-psql -U postgres -d alofa -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+    # Restore full backup
+        psql -U postgres -d alofa -f server/database/alofa_dbdump.sql
 
-// do the first one lang pero if mag error gawin mo nlg lahat hahahah tapos double check if nagalabas
-psql -U postgres -d alofa -f server/alofa_dbdump.sql
-psql -U postgres -d alofa -f server/alofa_schema.sql --restore-schema-only
-psql -U postgres -d alofa -f server/alofa_data.sql --restore-data-only
+    # Restore schema only
+        psql -U postgres -d alofa -f server/database/alofa_schema.sql
+
+    # Restore data only
+        psql -U postgres -d alofa -f server/database/alofa_data.sql
+
+    # Reset the schema -- do this if mag error lang yung sa taas
+        psql -U postgres -d alofa -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
