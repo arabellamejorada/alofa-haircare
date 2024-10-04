@@ -18,6 +18,7 @@ const app = express();
 app.use(cors({
     origin: 'http://localhost:3000',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true,
 }));
 
 // Body Parser Middleware for handling JSON
@@ -48,6 +49,7 @@ app.get('/', (req, res) => {
         res.send('Welcome to the session demo. Refresh the page to track views!');
     }
 });
+
 app.get('/session', (req, res) => {
     if (req.session.views) {
         res.status(200).send(`Session active with ${req.session.views} views.`);
@@ -55,6 +57,7 @@ app.get('/session', (req, res) => {
         res.status(200).send('No active session.');
     }
 });
+
 app.post('/logout', (req, res) => {
     req.session.destroy((err) => {
         if (err) {
