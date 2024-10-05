@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import DataTable from "../../shared/DataTable";
+import StockHistoryTable from "../StockHistoryTable";
 import { IoIosArrowBack } from "react-icons/io";
 import { FaArrowUp, FaArrowDown } from "react-icons/fa";
-import { IoMdArrowDropdown } from "react-icons/io";
+import {
+  IoMdArrowDropdown,
+  IoMdArrowDropdownCircle,
+  IoMdArrowDroprightCircle,
+} from "react-icons/io";
 import { getAllStockOut } from "../../../api/stockOut";
 
 const StockOutHistory = () => {
@@ -12,23 +16,24 @@ const StockOutHistory = () => {
   const [loading, setLoading] = useState(true);
 
   // State for sorting
-  const [sortField, setSortField] = useState("index");
+  const [sortField, setSortField] = useState("reference_number");
   const [sortOrder, setSortOrder] = useState("asc");
 
   // State for filtering
   const [selectedDate, setSelectedDate] = useState("");
 
+  // State to track which rows are expanded
+  const [expandedRows, setExpandedRows] = useState([]);
+
   useEffect(() => {
     const fetchStockOutData = async () => {
       try {
         const response = await getAllStockOut();
-        console.log("API response:", response.data);
-        const dataWithIndex = response.data.map((item, index) => ({
+        const dataWithFormattedDate = response.data.map((item) => ({
           ...item,
-          index: index + 1,
-          stock_out_date: item.stock_out_date.split("T")[0], // Ensure date format is YYYY-MM-DD
+          stock_out_date: item.stock_out_date.split("T")[0], // Format date to YYYY-MM-DD
         }));
-        setStockOutData(dataWithIndex);
+        setStockOutData(dataWithFormattedDate);
       } catch (error) {
         console.error("Error fetching stock-out data:", error);
       } finally {
@@ -39,26 +44,46 @@ const StockOutHistory = () => {
     fetchStockOutData();
   }, []);
 
+  // Group stock-out data by reference number
+  const groupedData = stockOutData.reduce((acc, item) => {
+    const refNumber = item.reference_number;
+    if (!acc[refNumber]) {
+      acc[refNumber] = {
+        reference_number: refNumber,
+        stock_out_date: item.stock_out_date,
+        employee_name: item.employee_name,
+        reason: item.reason,
+        products: [],
+      };
+    }
+    acc[refNumber].products.push(item);
+    return acc;
+  }, {});
+
+  const groupedDataArray = Object.values(groupedData);
+
+  const toggleRow = (refNumber) => {
+    if (expandedRows.includes(refNumber)) {
+      setExpandedRows(expandedRows.filter((id) => id !== refNumber));
+    } else {
+      setExpandedRows([...expandedRows, refNumber]);
+    }
+  };
+
   const columns = [
-    { key: "index", header: "#" },
     { key: "reference_number", header: "Ref #" },
-    { key: "sku", header: "SKU" },
-    { key: "name", header: "Product Name" },
-    { key: "type", header: "Variation" },
-    { key: "value", header: "Value" },
-    { key: "quantity", header: "Qty" },
     { key: "employee_name", header: "Authorized by" },
     { key: "reason", header: "Reason" },
     { key: "stock_out_date", header: "Stock-Out Date" },
   ];
 
-  // Apply filtering to the data
-  const filteredData = stockOutData.filter((item) => {
-    // Extract the local date portion from stock_out_date (ignoring time)
-    const itemDate = new Date(item.stock_out_date).toLocaleDateString("en-CA"); // 'en-CA' ensures YYYY-MM-DD format
+  // Apply filtering to the grouped data
+  const filteredData = groupedDataArray.filter((group) => {
+    const itemDate = new Date(group.stock_out_date).toLocaleDateString("en-CA");
 
-    // selectedDate is already in YYYY-MM-DD format from the date picker, so compare directly
-    const matchesDate = selectedDate === "" || selectedDate === itemDate;
+    const matchesDate =
+      selectedDate === "" ||
+      new Date(selectedDate).toISOString().split("T")[0] === itemDate;
 
     return matchesDate;
   });
@@ -76,12 +101,6 @@ const StockOutHistory = () => {
     if (sortField === "stock_out_date") {
       fieldA = new Date(fieldA);
       fieldB = new Date(fieldB);
-    }
-
-    // Convert to numbers if sorting by index
-    if (sortField === "index") {
-      fieldA = Number(fieldA);
-      fieldB = Number(fieldB);
     }
 
     // Case-insensitive comparison for strings
@@ -150,7 +169,6 @@ const StockOutHistory = () => {
               onChange={(e) => setSortField(e.target.value)}
               className="w-[10rem] h-8 px-2 appearance-none border rounded-md bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 focus:outline-none focus:ring-4 focus:ring-pink-50"
             >
-              <option value="index">Index</option>
               <option value="reference_number">Reference No.</option>
               <option value="stock_out_date">Date</option>
             </select>
@@ -174,13 +192,19 @@ const StockOutHistory = () => {
       </div>
 
       {/* Table */}
-      <div className="h-[48rem] overflow-y-scroll mt-2">
+      <div className="mt-4">
         {loading ? (
           <p>Loading...</p>
         ) : sortedData.length === 0 ? (
           <p>No stock-out records found.</p>
         ) : (
-          <DataTable columns={columns} data={sortedData} isInventory={true} />
+          <StockHistoryTable
+            data={sortedData}
+            columns={columns}
+            isInventory={true}
+            onExpand={toggleRow}
+            expandedRows={expandedRows}
+          />
         )}
       </div>
     </div>
