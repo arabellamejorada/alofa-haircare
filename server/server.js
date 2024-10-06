@@ -1,10 +1,6 @@
+// server.js
 const express = require('express');
 const cors = require('cors');
-const session = require('express-session');
-const RedisStore = require('connect-redis').default;
-const redis = require('redis');
-const client = redis.createClient();
-const app = express();
 const productRoutes = require('./routes/productRoutes.js');
 const roleRoutes = require('./routes/roleRoutes.js');
 const employeeRoutes = require('./routes/employeeRoutes.js');
@@ -14,15 +10,25 @@ const inventoryRoutes = require('./routes/inventoryRoutes.js');
 const supplierRoutes = require('./routes/supplierRoutes.js');
 const cartRoutes = require('./routes/cartRoutes.js');
 const stockRoutes = require('./routes/stockRoutes.js');
+const redisSessionMiddleware = require('./middlewares/redisSession');
 
+const app = express();
+
+// Middleware: CORS configuration
 app.use(cors({
     origin: 'http://localhost:3000',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true,
 }));
 
+// Body Parser Middleware for handling JSON
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ limit: '5mb', extended: true }));
 
+// Session Middleware (Redis)
+app.use(redisSessionMiddleware); // Use the Redis session middleware
+
+// Routes for the application
 app.use('/', productRoutes);
 app.use('/', roleRoutes);
 app.use('/', employeeRoutes);
@@ -31,18 +37,36 @@ app.use('/', userAccountRoutes);
 app.use('/', inventoryRoutes);
 app.use('/', supplierRoutes);
 app.use('/', stockRoutes);
+app.use('/', cartRoutes);
 
-// Session middleware
-app.use(session({
-    store: new RedisStore({ client }),
-    secret: 'your-secret-key',
-    resave: false,
-    saveUninitialized: false,
-    cookie: { maxAge: 1000 * 60 * 60 * 24 }  // 1 day session expiry
-}));
+// Test route to check session functionality
+app.get('/', (req, res) => {
+    if (req.session.views) {
+        req.session.views++;
+        res.send(`Views: ${req.session.views}`);
+    } else {
+        req.session.views = 1;
+        res.send('Welcome to the session demo. Refresh the page to track views!');
+    }
+});
 
-// Use the cart routes
-app.use(cartRoutes);
+app.get('/session', (req, res) => {
+    if (req.session.views) {
+        res.status(200).send(`Session active with ${req.session.views} views.`);
+    } else {
+        res.status(200).send('No active session.');
+    }
+});
+
+app.post('/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            return res.status(500).send('Error ending session');
+        }
+        res.clearCookie('connect.sid'); // Assuming default cookie name for session is 'connect.sid'
+        res.status(200).send('Session ended');
+    });
+});
 
 // Start the server
 const PORT = process.env.PORT || 3001;

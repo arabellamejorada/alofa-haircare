@@ -70,6 +70,13 @@ const Suppliers = () => {
 
       const suppliersData = await getAllSuppliers();
       setSuppliers(suppliersData);
+      // Reset fields
+      setSupplierName("");
+      setContactPerson("");
+      setContactNumber("");
+      setEmail("");
+      setAddress("");
+      setStatus("");
     } catch (error) {
       console.error("Error creating supplier: ", error);
     }
@@ -91,13 +98,21 @@ const Suppliers = () => {
     try {
       const response = await updateSupplier(
         selectedSupplier.supplier_id,
-        formData
+        formData,
       );
       console.log(response);
       setIsModalVisible(false);
 
       const suppliersData = await getAllSuppliers();
       setSuppliers(suppliersData);
+
+      // Reset fields
+      setSupplierName("");
+      setContactPerson("");
+      setContactNumber("");
+      setEmail("");
+      setAddress("");
+      setStatus("");
     } catch (error) {
       console.error("Error updating supplier: ", error);
       setError("Failed to update supplier");
@@ -108,7 +123,7 @@ const Suppliers = () => {
     if (!selectedSupplier) return;
 
     const isConfirmed = window.confirm(
-      "Are you sure you want to archive this supplier?"
+      "Are you sure you want to archive this supplier?",
     );
     if (!isConfirmed) return;
 

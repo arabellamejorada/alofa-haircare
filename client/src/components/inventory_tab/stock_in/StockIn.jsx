@@ -67,6 +67,14 @@ const StockIn = () => {
     setSelectedEmployee(employeeId);
   };
 
+  // Adjust stock-in date to local timezone
+  const adjustToLocalTime = () => {
+    const date = new Date();
+    const offset = date.getTimezoneOffset();
+    const localDate = new Date(date.getTime() - offset * 60000); // Adjust to local timezone
+    return localDate.toISOString().slice(0, 16);
+  };
+
   const handleSubmitStockIn = async () => {
     if (
       !selectedEmployee ||
@@ -90,7 +98,7 @@ const StockIn = () => {
       alert("Stock In recorded successfully");
       // Reset form fields
       setStockInProducts([]);
-      setStockInDate(new Date().toISOString().slice(0, 16)); // Reset to current date-time
+      setStockInDate(adjustToLocalTime());
       setSelectedSupplier("");
       setSelectedEmployee("");
       setSupplierDetails({
