@@ -1,6 +1,7 @@
 // server.js
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const productRoutes = require('./routes/productRoutes.js');
 const roleRoutes = require('./routes/roleRoutes.js');
 const employeeRoutes = require('./routes/employeeRoutes.js');
@@ -16,9 +17,9 @@ const app = express();
 
 // Middleware: CORS configuration
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: ['http://localhost:3000', 'http://localhost:5173'], // Wrap multiple origins in an array
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true,
+    credentials: true, // If you need to allow cookies or other credentials
 }));
 
 // Body Parser Middleware for handling JSON
@@ -27,6 +28,12 @@ app.use(express.urlencoded({ limit: '5mb', extended: true }));
 
 // Session Middleware (Redis)
 app.use(redisSessionMiddleware); // Use the Redis session middleware
+
+// Serve static files from the 'public/uploads' folder
+const uploadsPath = path.join(__dirname, '..', 'public', 'uploads');
+console.log('Serving images from:', uploadsPath); // This logs the path being served for debugging purposes
+
+app.use('/uploads', express.static(uploadsPath));
 
 // Routes for the application
 app.use('/', productRoutes);
