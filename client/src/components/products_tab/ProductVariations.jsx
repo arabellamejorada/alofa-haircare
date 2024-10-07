@@ -18,6 +18,7 @@ const ProductVariations = () => {
   const [products, setProducts] = useState([]);
   const [statuses, setStatus] = useState([]);
   const [error, setError] = useState(null);
+  const [search, setSearch] = useState("");
 
   const [selectedProductVariation, setSelectedProductVariation] =
     useState(null);
@@ -61,6 +62,23 @@ const ProductVariations = () => {
 
     fetchData();
   }, []);
+
+  // Filter product variations based on search query
+  const handleSearchChange = (e) => {
+    setSearch(e.target.value.toLowerCase());
+  };
+
+  // Filtered product variations based on search input
+  const filteredVariations = product_variations.filter((variation) => {
+    return (
+      variation.product_name.toLowerCase().includes(search) ||
+      variation.type.toLowerCase().includes(search) ||
+      variation.value.toLowerCase().includes(search) ||
+      variation.sku.toLowerCase().includes(search) ||
+      (variation.status_description &&
+        variation.status_description.toLowerCase().includes(search))
+    );
+  });
 
   // Function to handle form submission for adding new product variations
   const handleSubmit = async (e) => {
@@ -231,17 +249,10 @@ const ProductVariations = () => {
     return acc;
   }, {});
 
-  const processedProductVariations = product_variations
-    .map((product_variation) => ({
-      ...product_variation,
-      product_status:
-        statusMap[product_variation.product_status_id] || "Unknown",
-    }))
-    .sort((a, b) => {
-      if (a.product_status_id === 4 && b.product_status_id !== 4) return 1;
-      if (a.product_status_id !== 4 && b.product_status_id === 4) return -1;
-      return 0;
-    });
+  const processedProductVariations = filteredVariations.map((variation) => ({
+    ...variation,
+    status_description: statusMap[variation.product_status_id] || "Unknown",
+  }));
 
   return (
     <Fragment>
@@ -250,6 +261,13 @@ const ProductVariations = () => {
           <strong className="text-3xl font-bold text-gray-500">
             Product Variations
           </strong>
+          <input
+            type="text"
+            className="w-[200px] h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+            placeholder="Search variations..."
+            value={search}
+            onChange={handleSearchChange}
+          />
           <div>
             <MdAddBox
               fontSize={30}

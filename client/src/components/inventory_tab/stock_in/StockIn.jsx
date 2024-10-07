@@ -25,13 +25,16 @@ const StockIn = () => {
   const [stockInDate, setStockInDate] = useState(() => {
     const date = new Date();
     const offset = date.getTimezoneOffset();
-    const localDate = new Date(date.getTime() - offset * 60000); // Adjust to local timezone
+    const localDate = new Date(date.getTime() - offset * 60000);
     return localDate.toISOString().slice(0, 16);
   });
 
-  const [stockInProducts, setStockInProducts] = useState([]); // Store stock-in products
+  const [stockInProducts, setStockInProducts] = useState([]);
 
-  // Fetch employee, supplier, and product variation data on component mount
+  const [supplierSearch, setSupplierSearch] = useState(""); // Supplier search input
+  const [isSupplierDropdownVisible, setIsSupplierDropdownVisible] =
+    useState(false); // Control visibility
+
   useEffect(() => {
     const loadData = async () => {
       const employeeData = await getEmployees();
@@ -51,10 +54,12 @@ const StockIn = () => {
     setReferenceNumber(`REF-${randomNumber}`);
   };
 
-  const handleSupplierChange = async (supplierId) => {
+  const handleSupplierChange = async (supplierId, supplierName) => {
     setSelectedSupplier(supplierId);
+    setSupplierSearch(supplierName); // Update the input with the selected supplier's name
+    setIsSupplierDropdownVisible(false); // Hide the dropdown after selection
     if (supplierId) {
-      const details = await getSupplier(supplierId); // Fetch supplier details
+      const details = await getSupplier(supplierId);
       setSupplierDetails(details);
     }
   };
@@ -116,13 +121,17 @@ const StockIn = () => {
 
   const columns = [
     { key: "product_name", header: "Product Name" },
-    { key: "type", header: "Type" },
-    { key: "value", header: "Value" },
+    // { key: "type", header: "Type" },
+    // { key: "value", header: "Value" },
     { key: "sku", header: "SKU" },
     { key: "quantity", header: "Qty." },
     { key: "stock_in_date", header: "Stock In Date" },
     { key: "supplier", header: "Supplier" },
   ];
+
+  const filteredSuppliers = suppliers.filter((supplier) =>
+    supplier.supplier_name.toLowerCase().includes(supplierSearch.toLowerCase()),
+  );
 
   return (
     <Fragment>
@@ -187,30 +196,47 @@ const StockIn = () => {
               />
             </div>
 
-            {/* Supplier Dropdown */}
+            {/* Supplier Searchable Dropdown */}
             <div className="flex flex-row justify-between items-center">
-              <label className="font-bold w-[30%]" htmlFor="supplier_name">
+              <label className="font-bold w-[30%]" htmlFor="supplier_search">
                 Supplier:
               </label>
               <div className="relative w-[85%]">
-                <select
-                  id="supplier_name"
-                  name="supplier_name"
-                  value={selectedSupplier}
-                  onChange={(e) => handleSupplierChange(e.target.value)}
+                <input
+                  type="text"
+                  placeholder="Search Supplier"
+                  value={supplierSearch}
+                  onChange={(e) => {
+                    setSupplierSearch(e.target.value);
+                    setIsSupplierDropdownVisible(true); // Show dropdown when typing
+                  }}
+                  onFocus={() => setIsSupplierDropdownVisible(true)} // Show dropdown when input is focused
                   className="w-full h-8 px-4 appearance-none border rounded-md bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-                >
-                  <option value="">Select Supplier</option>
-                  {suppliers.map((supplier) => (
-                    <option
-                      key={supplier.supplier_id}
-                      value={supplier.supplier_id}
-                    >
-                      {supplier.supplier_name}
-                    </option>
-                  ))}
-                </select>
-                <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2" />
+                />
+                {isSupplierDropdownVisible && (
+                  <div className="absolute left-0 right-0 top-full bg-white border border-slate-300 rounded-md z-10 max-h-40 overflow-y-auto">
+                    {filteredSuppliers.length > 0 ? (
+                      filteredSuppliers.map((supplier) => (
+                        <div
+                          key={supplier.supplier_id}
+                          onClick={() =>
+                            handleSupplierChange(
+                              supplier.supplier_id,
+                              supplier.supplier_name,
+                            )
+                          }
+                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                        >
+                          {supplier.supplier_name}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="px-4 py-2 text-gray-500">
+                        No suppliers found
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>

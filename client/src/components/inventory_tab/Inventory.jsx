@@ -6,6 +6,7 @@ const Inventory = () => {
   const [inventory, setInventory] = useState([]);
   const [products, setProducts] = useState([]);
   const [error, setError] = useState(null);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -22,6 +23,10 @@ const Inventory = () => {
     fetchData();
   }, []);
 
+  const handleSearchChange = (e) => {
+    setSearch(e.target.value);
+  };
+
   const columns = [
     { key: "inventory_id", header: "ID" },
     { key: "sku", header: "SKU" },
@@ -31,8 +36,6 @@ const Inventory = () => {
     { key: "last_updated_date", header: "Last Update" },
   ];
 
-  if (error) return <div>{error}</div>;
-
   const productMap = products.reduce((acc, product) => {
     acc[product.product_id] = {
       name: product.name,
@@ -41,12 +44,25 @@ const Inventory = () => {
     return acc;
   }, {});
 
-  const processedInventory = inventory.map((item) => ({
+  // Filter inventory based on the search input
+  const filteredInventory = inventory.filter((item) => {
+    const productName = productMap[item.product_id]?.name.toLowerCase() || "";
+    const variation = `${item.type} - ${item.value}`.toLowerCase();
+    return (
+      productName.includes(search) ||
+      item.sku.toLowerCase().includes(search) ||
+      variation.includes(search)
+    );
+  });
+
+  const processedInventory = filteredInventory.map((item) => ({
     ...item,
     product_name: productMap[item.product_id]?.name || "Unknown",
     is_archived: productMap[item.product_id]?.is_archived || false,
     product_variation: `${item.type} - ${item.value}`,
   }));
+
+  if (error) return <div>{error}</div>;
 
   return (
     <Fragment>
@@ -55,13 +71,13 @@ const Inventory = () => {
           <strong className="text-3xl font-bold text-gray-500">
             Inventory
           </strong>
-          {/* <div>
-            <MdAddBox
-              fontSize={30}
-              className="text-gray-400 mx-2 hover:text-pink-400 active:text-pink-500"
-              onClick={() => setShowModal(true)}
-            />
-          </div> */}
+          <input
+            type="text"
+            className="w-[200px] h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+            placeholder="Search inventory..."
+            value={search}
+            onChange={handleSearchChange}
+          />
         </div>
         <DataTable
           data={processedInventory}
