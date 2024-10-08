@@ -22,10 +22,10 @@ router.delete('/product-category/:id', productController.deleteProductCategory);
 
 
 // PRODUCT VARIATION
-router.post("/product-variations", upload.array("images", 10), productVariationsController.createProductVariationsWithInventory);
+router.post("/product-variations", upload.array("images", 15), productVariationsController.createProductVariationsWithInventory);
 router.get('/product-variations', productVariationsController.getAllProductVariations);       // Read all
 router.get('/product-variations/:id', productVariationsController.getProductVariationById);     // Read by ID
-router.put('/product-variations/:id', productVariationsController.updateProductVariation);      // Update by ID
+router.put('/product-variations/:id', upload.single('image'), productVariationsController.updateProductVariation);
 router.put('/product-variations/:id/archive', productVariationsController.archiveProductVariation);      // Archive product variation
 router.delete('/product-variations/:id', productVariationsController.deleteProductVariation);   // Delete by ID
 router.delete('/product-variations', productVariationsController.deleteAllProductVariations);   // Delete all

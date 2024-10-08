@@ -40,7 +40,6 @@ const ProductVariations = () => {
       value: "",
       sku: "",
       unit_price: "",
-      product_status_id: "",
       image: null,
     },
   ]);
@@ -63,13 +62,27 @@ const ProductVariations = () => {
     fetchData();
   }, []);
 
+  // Process product variations to include image paths
+  const processedProductVariations = product_variations.map((variation) => {
+    const product = products.find((p) => p.product_id === variation.product_id);
+    const imageName = variation.image?.split("/").pop();
+
+    return {
+      ...variation,
+      product_name: product?.name || "Unnamed Product",
+      image: imageName
+        ? `http://localhost:3001/uploads/${imageName}`
+        : "/default-image.jpg",
+    };
+  });
+
   // Filter product variations based on search query
   const handleSearchChange = (e) => {
     setSearch(e.target.value.toLowerCase());
   };
 
   // Filtered product variations based on search input
-  const filteredVariations = product_variations.filter((variation) => {
+  const filteredVariations = processedProductVariations.filter((variation) => {
     return (
       variation.product_name.toLowerCase().includes(search) ||
       variation.type.toLowerCase().includes(search) ||
@@ -92,20 +105,29 @@ const ProductVariations = () => {
     const formData = new FormData();
     formData.append("product_id", product_id);
 
+    const selectedProduct = products.find(
+      (product) => product.product_id === Number(product_id),
+    );
+    const productName = selectedProduct
+      ? selectedProduct.name
+      : "default-product";
+    const productNameWithVariation = `${productName}-${value}`;
+    formData.append("name", productNameWithVariation);
+
     // Append each variation's data and image to FormData
     variations.forEach((variation, index) => {
       formData.append(`variations[${index}][type]`, variation.type);
       formData.append(`variations[${index}][value]`, variation.value);
       formData.append(`variations[${index}][unit_price]`, variation.unit_price);
       formData.append(`variations[${index}][sku]`, variation.sku);
-      formData.append(
-        `variations[${index}][product_status_id]`,
-        variation.product_status_id,
-      );
       if (variation.image) {
-        formData.append(`images`, variation.image);
+        formData.append("images", variation.image, variation.image.name);
       }
     });
+
+    console.log("Product variation:", productNameWithVariation);
+    console.log("FormData before submission:");
+    formData.forEach((value, key) => console.log(`${key}: ${value}`));
 
     try {
       const response = await createProductVariationWithInventory(formData);
@@ -116,6 +138,7 @@ const ProductVariations = () => {
     } catch (error) {
       console.error("Error saving product variation:", error);
       setError("Error saving product variation. Please try again.");
+      alert("Error: Could not save the product variation."); // Alert to notify users
     }
   };
 
@@ -157,7 +180,14 @@ const ProductVariations = () => {
     setSku(product_variation.sku || "");
     setUnitPrice(product_variation.unit_price || "");
     setProductStatusId(product_variation.product_status_id || "");
-    setImage(product_variation.image || null);
+    // If the variation has an image, set it to the full URL path
+    if (product_variation.image) {
+      setImage(
+        `http://localhost:3001/uploads/${product_variation.image.split("/").pop()}`,
+      );
+    } else {
+      setImage(null);
+    }
     setIsEditModalVisible(true);
   };
 
@@ -165,14 +195,37 @@ const ProductVariations = () => {
   const handleUpdate = async (e) => {
     e.preventDefault();
 
+    if (!product_id) {
+      alert("Please select a product.");
+      return;
+    }
+
     const formData = new FormData();
     formData.append("product_id", product_id);
+
+    const selectedProduct = products.find(
+      (product) => product.product_id === Number(product_id),
+    );
+    const productName = selectedProduct
+      ? selectedProduct.name
+      : "default-product";
+    const productNameWithVariation = `${productName}-${value}`;
+
+    formData.append("name", productNameWithVariation);
     formData.append("type", type);
     formData.append("value", value);
     formData.append("sku", sku);
     formData.append("unit_price", unitPrice);
     formData.append("product_status_id", productStatusId);
-    if (image) formData.append("image", image);
+
+    // Only append image if a new image has been selected
+    if (image && typeof image !== "string") {
+      formData.append("image", image, image.name);
+    }
+
+    formData.forEach((value, key) => {
+      console.log(`FormData - ${key}:`, value);
+    });
 
     try {
       const response = await updateProductVariation(
@@ -185,6 +238,8 @@ const ProductVariations = () => {
       setProductVariations(updatedVariations);
     } catch (error) {
       console.error("Error updating product variation:", error);
+      setError("Error updating product variation. Please try again.");
+      alert("Error: Could not update the product variation.");
     }
   };
 
@@ -230,6 +285,7 @@ const ProductVariations = () => {
         image: null,
       },
     ]);
+    setError(null);
   };
 
   if (error) return <div>{error}</div>;
@@ -248,11 +304,6 @@ const ProductVariations = () => {
     acc[status.status_id] = status.description;
     return acc;
   }, {});
-
-  const processedProductVariations = filteredVariations.map((variation) => ({
-    ...variation,
-    status_description: statusMap[variation.product_status_id] || "Unknown",
-  }));
 
   return (
     <Fragment>
@@ -277,7 +328,7 @@ const ProductVariations = () => {
           </div>
         </div>
         <DataTable
-          data={processedProductVariations}
+          data={filteredVariations}
           columns={columns}
           onEdit={handleEdit}
           onArchive={handleArchive}
@@ -388,19 +439,27 @@ const ProductVariations = () => {
               </div>
             </div>
 
-            {/* Variation Type */}
+            {/* Variation Type Dropdown */}
             <div className="flex flex-col gap-2">
               <label className="font-bold" htmlFor="type">
                 Variation Type:
               </label>
-              <input
-                type="text"
-                name="type"
-                id="type"
-                value={type}
-                onChange={(e) => setType(e.target.value)}
-                className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-              />
+              <div className="relative">
+                <select
+                  name="type"
+                  id="type"
+                  value={type}
+                  onChange={(e) => setType(e.target.value)}
+                  className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+                >
+                  <option value="" disabled>
+                    Select Type
+                  </option>
+                  <option value="size">Size</option>
+                  <option value="color">Color</option>
+                </select>
+                <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500" />
+              </div>
             </div>
 
             {/* Variation Value */}
@@ -448,6 +507,23 @@ const ProductVariations = () => {
               />
             </div>
 
+            {/* Image Preview */}
+            {image && (
+              <div className="mb-2">
+                <img
+                  src={
+                    typeof image === "string"
+                      ? image // Display the existing image URL
+                      : URL.createObjectURL(image) // Display the preview of a newly selected image
+                  }
+                  alt={
+                    selectedProductVariation?.product_name || "Image not found"
+                  }
+                  className="w-24 h-24 object-cover"
+                />
+              </div>
+            )}
+
             {/* Image Upload */}
             <div className="flex flex-col gap-2">
               <label className="font-bold" htmlFor="image">
@@ -462,33 +538,35 @@ const ProductVariations = () => {
             </div>
 
             {/* Product Status */}
-            <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="statusId">
-                Status:
-              </label>
-              <div className="relative">
-                <select
-                  name="statusId"
-                  id="statusId"
-                  value={productStatusId}
-                  onChange={(e) => setProductStatusId(e.target.value)}
-                  className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-                >
-                  <option value="" disabled>
-                    Select Status
-                  </option>
-                  {statuses.map((status) => (
-                    <option
-                      key={status.product_status_id}
-                      value={status.status_id}
-                    >
-                      {status.description}
+            {isEditModalVisible && (
+              <div className="flex flex-col gap-2">
+                <label className="font-bold" htmlFor="statusId">
+                  Status:
+                </label>
+                <div className="relative">
+                  <select
+                    name="statusId"
+                    id="statusId"
+                    value={productStatusId}
+                    onChange={(e) => setProductStatusId(e.target.value)}
+                    className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+                  >
+                    <option value="" disabled>
+                      Select Status
                     </option>
-                  ))}
-                </select>
-                <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500" />
+                    {statuses.map((status) => (
+                      <option
+                        key={status.product_status_id}
+                        value={status.status_id}
+                      >
+                        {status.description}
+                      </option>
+                    ))}
+                  </select>
+                  <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500" />
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Submit Button */}
             <div className="flex justify-end mt-2">
