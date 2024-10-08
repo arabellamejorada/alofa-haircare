@@ -1,5 +1,5 @@
-import { FaTrashAlt } from 'react-icons/fa';
-import PropTypes from 'prop-types';
+import { FaTrashAlt } from "react-icons/fa";
+import PropTypes from "prop-types";
 
 const CartTable = ({ cartItems, handleQuantityChange, handleDelete }) => {
   return (
@@ -20,11 +20,15 @@ const CartTable = ({ cartItems, handleQuantityChange, handleDelete }) => {
           {cartItems.map((item, index) => (
             <tr key={index} className="border-b">
               <td className="p-2 flex items-center">
-                <img src={item.image} alt={item.name} className="w-12 h-12 mr-3 rounded" />
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="w-12 h-12 mr-3 rounded"
+                />
                 <span>{item.name}</span>
               </td>
-              <td className="p-2">{item.variation || 'N/A'}</td>
-              <td className="p-2">₱{item.price.toFixed(2)}</td>
+              <td className="p-2">{item.variation || "N/A"}</td>
+              <td className="p-2">₱{item.price}</td>
               <td className="p-2">
                 <input
                   type="number"
@@ -34,7 +38,9 @@ const CartTable = ({ cartItems, handleQuantityChange, handleDelete }) => {
                   min="1"
                 />
               </td>
-              <td className="p-2">₱{(item.price * item.quantity).toFixed(2)}</td>
+              <td className="p-2">
+                ₱{(item.price * item.quantity).toFixed(2)}
+              </td>
               <td className="p-2">
                 <button
                   className="text-red-500 hover:text-red-700"
@@ -60,7 +66,7 @@ CartTable.propTypes = {
       price: PropTypes.number.isRequired,
       quantity: PropTypes.number.isRequired,
       image: PropTypes.string.isRequired,
-    })
+    }),
   ).isRequired,
   handleQuantityChange: PropTypes.func.isRequired,
   handleDelete: PropTypes.func.isRequired,
