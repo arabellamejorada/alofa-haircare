@@ -30,9 +30,9 @@ const ProductVariationsTable = ({
               <th className="px-2 py-1 border-b-2 border-gray-200 bg-gray-100 text-center text-md font-semibold text-gray-600 uppercase">
                 SKU*
               </th>
-              <th className="px-2 py-1 border-b-2 border-gray-200 bg-gray-100 text-center text-md font-semibold text-gray-600 uppercase">
+              {/* <th className="px-2 py-1 border-b-2 border-gray-200 bg-gray-100 text-center text-md font-semibold text-gray-600 uppercase">
                 Status
-              </th>
+              </th> */}
               <th className="px-2 py-1 border-b-2 border-gray-200 bg-gray-100 text-center text-md font-semibold text-gray-600 uppercase">
                 Image
               </th>
@@ -110,7 +110,7 @@ const ProductVariationsTable = ({
                 </td>
 
                 {/* product_status */}
-                <td className="px-2 py-1 border-b border-gray-200 text-sm text-center">
+                {/* <td className="px-2 py-1 border-b border-gray-200 text-sm text-center">
                   <select
                     value={variation.product_status_id}
                     onChange={(e) =>
@@ -129,7 +129,7 @@ const ProductVariationsTable = ({
                       </option>
                     ))}
                   </select>
-                </td>
+                </td> */}
 
                 {/* image */}
                 <td className="px-2 py-1">
