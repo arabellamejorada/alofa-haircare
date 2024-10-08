@@ -30,7 +30,7 @@ const CartTable = ({ cartItems, handleQuantityChange, handleDelete }) => {
                   type="number"
                   className="w-12 border rounded text-center"
                   value={item.quantity}
-                  onChange={(e) => handleQuantityChange(index, e.target.value)}
+                  onChange={(e) => handleQuantityChange(item.id, e.target.value)}
                   min="1"
                 />
               </td>
