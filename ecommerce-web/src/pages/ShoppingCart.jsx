@@ -4,9 +4,9 @@ import CartSummary from "../components/CartSummary.jsx";
 import { CartContext } from "../components/CartContext.jsx";
 
 const ShoppingCart = () => {
-  // Access cart state from CartContext
-  const { cartItems, handleQuantityChange, handleDelete, subtotal } =
-    useContext(CartContext);
+  
+  const { cartItems, handleQuantityChange, handleDelete, subtotal } = useContext(CartContext);
+
 
   const total = subtotal; // can modify if included ang tax and all
 

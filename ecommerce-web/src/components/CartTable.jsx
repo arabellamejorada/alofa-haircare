@@ -27,14 +27,16 @@ const CartTable = ({ cartItems, handleQuantityChange, handleDelete }) => {
                 />
                 <span>{item.name}</span>
               </td>
-              <td className="p-2">{item.variation || "N/A"}</td>
-              <td className="p-2">₱{item.price}</td>
+
+              <td className="p-2">{item.variation || 'N/A'}</td>
+              <td className="p-2">₱{Number(item.price).toFixed(2)}</td>
+
               <td className="p-2">
                 <input
                   type="number"
                   className="w-12 border rounded text-center"
                   value={item.quantity}
-                  onChange={(e) => handleQuantityChange(index, e.target.value)}
+                  onChange={(e) => handleQuantityChange(item.id, e.target.value)}
                   min="1"
                 />
               </td>
