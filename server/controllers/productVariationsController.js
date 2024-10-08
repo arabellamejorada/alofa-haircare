@@ -11,8 +11,9 @@ const createProductVariationsWithInventory = async (req, res) => {
     }
   
     console.log("Request Body:", req.body);
-    console.log("Uploaded Files:", uploadedFiles);  // Debugging the uploaded files
-  
+    console.log("Received product name:", req.body.name);
+    console.log("Uploaded Files:", uploadedFiles);
+
     try {
       await client.query('BEGIN');
   
@@ -20,18 +21,34 @@ const createProductVariationsWithInventory = async (req, res) => {
       const insertedVariations = [];
   
       const productResult = await client.query(`SELECT name FROM product WHERE product_id = $1`, [product_id]);
-      const product_name = productResult.rows[0].name;
-  
+      const product_name = productResult.rows[0].name || 'default-product';
+        
+      // Get ID for "available" product status
+        const productStatusResult = await client.query(`
+        SELECT status_id 
+        FROM product_status 
+        WHERE LOWER(description) = 'available'
+        `);
+        const availableStatusId = productStatusResult.rows[0]?.status_id;
+
+        if (!availableStatusId) {
+        throw new Error('Status "available" not found in the product_status table');
+        }
+
+      
       for (let i = 0; i < variations.length; i++) {
         const variation = variations[i];
-        const { type, value, unit_price, product_status_id } = variation;
-        let { sku } = variation;
+        const { type, value, unit_price } = variation;
+        let { sku, product_status_id } = variation;
         const image = uploadedFiles[i] ? uploadedFiles[i].path : null;  // Assign corresponding image
   
         // If no SKU provided, generate one based on product name, type, value, and product ID
         if (!sku) {
           sku = generateSKU(product_name, type, value, product_id);
         }
+
+        // Default product status to "available" 
+        product_status_id = availableStatusId;
 
         // Create SAVEPOINT before each variation insertion
         await client.query('SAVEPOINT before_variation_insert');
@@ -42,7 +59,7 @@ const createProductVariationsWithInventory = async (req, res) => {
             `INSERT INTO product_variation (product_id, type, value, sku, unit_price, product_status_id, image)
              VALUES ($1, $2, $3, $4, $5, $6, $7)
              RETURNING variation_id`,
-            [product_id, type, value, sku, unit_price, product_status_id, image]
+            [product_id, type, value, sku, unit_price || 0, product_status_id, image]
           );
   
           const variation_id = productVariationResult.rows[0].variation_id;
@@ -185,61 +202,70 @@ const getProductVariationById = async (req, res) => {
         res.status(500).json({ message: 'Error getting product variation by ID', error: error.message });
     }
 };
-// Update product variation by ID
+
+// Update product variation by ID including image(if uploaded a new one)
 const updateProductVariation = async (req, res) => {
-    const id = parseInt(req.params.id);
-    const { type, value, unit_price, product_status_id, sku } = req.body;
-    let image = null;
+  const id = parseInt(req.params.id);
+  const { type, value, unit_price, product_status_id, sku } = req.body;
+  let image = req.file ? req.file.path : null;
 
-    // Check if the image file is part of the request (assuming multipart form data)
-    if (req.file) {
-        image = req.file.path; // Assuming you're storing the path of the uploaded image
-    } else if (req.body.image) {
-        // If image is sent as a string or URL
-        image = req.body.image;
+  console.log("Request Body:", req.body);
+  console.log("Uploaded Image File:", req.file); // Check if multer processed the file
+  console.log("Received product name:", req.body.name);
+  console.log("Image Path from req.file:", image);
+
+  if (!image && req.body.image) {
+    image = req.body.image; // Use the existing image path if no new file was uploaded
+  }
+  // In your controller, before accessing req.file
+console.log("Multer processed file:", req.file);
+
+
+  try {
+    // Fetch the existing variation to get the current image path
+    const existingVariationResult = await pool.query(
+      `SELECT pv.product_id, pv.image, p.name 
+       FROM product_variation pv
+       JOIN product p ON pv.product_id = p.product_id
+       WHERE pv.variation_id = $1`,
+      [id]
+    );
+
+    if (existingVariationResult.rows.length === 0) {
+      return res.status(404).json({ message: 'Product variation not found' });
     }
 
-    console.log("id variation:", id);
-    console.log("Request Body:", req.body);
+    const existingImage = existingVariationResult.rows[0].image;
+    const product_id = existingVariationResult.rows[0].product_id;
 
-    try {
-        // Fetch the product name to generate the SKU (specifying table aliases to avoid ambiguity)
-        const productResult = await pool.query(
-            `SELECT pv.product_id, p.name FROM product_variation pv
-             JOIN product p ON pv.product_id = p.product_id
-             WHERE pv.variation_id = $1`,
-            [id]
-        );
-
-        if (productResult.rows.length === 0) {
-            return res.status(404).json({ message: 'Product variation not found' });
-        }
-
-        const product_id = productResult.rows[0].product_id;
-        const product_name = productResult.rows[0].name;
-
-        // If SKU is not provided, generate it based on the product name, type, and value
-        let newSku = sku || generateSKU(product_name, type, value, product_id);
-
-        // Update the product variation
-        const updatedProductVariation = await pool.query(
-            `UPDATE product_variation
-             SET type = $1, value = $2, sku = $3, unit_price = $4, product_status_id = $5, image = $6
-             WHERE variation_id = $7
-             RETURNING *`,
-            [type, value, newSku, unit_price, product_status_id, image, id]
-        );
-
-        if (updatedProductVariation.rows.length === 0) {
-            return res.status(404).json({ message: 'Product variation update failed' });
-        }
-
-        res.status(200).json(updatedProductVariation.rows[0]);
-    } catch (error) {
-        console.error('Error updating product variation:', error);
-        res.status(500).json({ message: 'Error updating product variation', error: error.message });
+    // If no new image is provided, keep the existing one
+    if (!image) {
+      image = existingImage;
     }
+
+    console.log("Final image path to be saved:", image);
+
+    // Update the product variation with the new data
+    const updatedProductVariation = await pool.query(
+      `UPDATE product_variation
+       SET type = $1, value = $2, sku = $3, unit_price = $4, product_status_id = $5, image = $6
+       WHERE variation_id = $7
+       RETURNING *`,
+      [type, value, sku, unit_price, product_status_id, image, id]
+    );
+
+    if (updatedProductVariation.rows.length === 0) {
+      return res.status(404).json({ message: 'Product variation update failed' });
+    }
+
+    res.status(200).json(updatedProductVariation.rows[0]);
+  } catch (error) {
+    console.error('Error updating product variation:', error);
+    res.status(500).json({ message: 'Error updating product variation', error: error.message });
+  }
 };
+
+
 
 
 
