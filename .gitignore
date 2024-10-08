@@ -32,6 +32,4 @@ checklist.txt
 # Optional: Ignore lock files for other package managers
 yarn.lock
 ``
-public/uploads/
-
 server/db.js
