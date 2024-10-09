@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import ProductCard from "../components/ProductCard";
 import Filter from "../components/Filter"; // Ensure this import exists if Filter is a custom component
 import { getAllProducts, getAllProductVariations } from "../api/product.js";
@@ -65,7 +65,7 @@ const Products = () => {
     <div className="pt-20 bg-[url('../../public/images/body-bg.png')] bg-cover bg-center min-h-screen p-8 flex flex-col items-center">
       {/* Filter Component */}
       <Filter
-        categories={["All", "Category1", "Category2"]} // Replace with actual category list
+        categories={["Hair Oil", "Hair Clips", "Body Mist", "Stickers"]}
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
         selectedSort={selectedSort}
