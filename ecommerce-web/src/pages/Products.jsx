@@ -45,7 +45,7 @@ const Products = () => {
   });
 
   return (
-    <div className="pt-20 bg-[url('../../public/images/body-bg.png')] bg-cover bg-center h-screen p-8 flex justify-center">
+    <div className="pt-20 bg-[url('../../public/images/body-bg.png')] bg-cover bg-center min-h-screen p-8 flex justify-center">
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-w-screen-xl">
         {processedProductData.map((product) => (
           <ProductCard

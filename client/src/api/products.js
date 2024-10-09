@@ -9,6 +9,8 @@ export const createProductVariationWithInventory = async (productData) => {
                 "Content-Type": "multipart/form-data",
             },
             });
+        
+            console.log('Product variation with inventory created: ', response.data);
         return response.data;
     } catch (error) {
         console.error('Error creating product variation with inventory: ', error);
@@ -51,6 +53,7 @@ export const updateProduct = async (productId, productData) => {
         throw error;
     }
 };
+
 
 export const archiveProduct = async (productId) => {
     try {
@@ -181,15 +184,21 @@ export const getAllProductVariations = async () => {
     }
 };
 
+// Update product variation with image
 export const updateProductVariation = async (variationId, variationData) => {
     try {
-        const response = await axios.put(`/product-variations/${variationId}`, variationData);
+        const response = await axios.put(`/product-variations/${variationId}`, variationData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        });
         return response.data;
     } catch (error) {
-        console.error('Error updating product variation: ', error);
+        console.error('Error updating product variation with image: ', error);
         throw error;
     }
 };
+
 
 export const archiveProductVariation = async (variationId) => {
     try {
