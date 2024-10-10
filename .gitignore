@@ -31,4 +31,3 @@ Thumbs.db
 # Optional: Ignore lock files for other package managers
 yarn.lock
 ``
-server/db.js
