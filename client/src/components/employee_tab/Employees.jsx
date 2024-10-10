@@ -371,12 +371,19 @@ const Employees = () => {
               />
             </div>
 
-            <div className="flex justify-end gap-2 mt-4">
+            <div className="flex flex-row justify-end gap-4">
               <button
                 type="submit"
-                className="px-4 py-2 bg-pink-500 text-white rounded-xl"
+                className="px-4 py-2 text-white bg-pink-400 rounded-lg hover:bg-pink-500"
               >
-                Add
+                Save
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowModal(false)}
+                className="px-4 py-2 text-white bg-gray-400 rounded-lg hover:bg-gray-500"
+              >
+                Cancel
               </button>
             </div>
           </div>

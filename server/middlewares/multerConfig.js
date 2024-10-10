@@ -3,18 +3,19 @@ const path = require('path');
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'public/uploads/');  // Ensure the destination folder exists or create it
+    cb(null, 'public/uploads/'); // Ensure the destination folder exists or create it
   },
   filename: function (req, file, cb) {
-    // We'll sanitize the product or variation name for the file and attach a timestamp
-    const productOrVariationName = (req.body.name || req.body.variations?.[0]?.name || 'untitled')
-      .replace(/[^a-zA-Z0-9]/g, '-')
-      .toLowerCase();
-    
+    // We'll use the product name and variation value for the filename
+    const productName = (req.body.name || 'untitled').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+
+    // Extract the variation value from the request body
+    const variationValue = (req.body.variations?.[0]?.value || 'default').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+
     // Ensure each image has a unique timestamp
     const extname = path.extname(file.originalname);
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);  // Ensure unique filenames
-    cb(null, `${productOrVariationName}-${uniqueSuffix}${extname}`);
+    const uniqueSuffix = Math.round(Math.random() * 1E3);
+    cb(null, `${productName}-${variationValue}-${uniqueSuffix}${extname}`);
   }
 });
 

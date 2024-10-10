@@ -7,6 +7,7 @@ const ProductCard = ({ id, image, name, price }) => {
 
   const handleAddToCart = () => {
     addToCart({ id, image, name, price });
+    alert(`${name} added to cart!`);
   };
 
   return (
@@ -15,10 +16,18 @@ const ProductCard = ({ id, image, name, price }) => {
       <div className="bg-white border-4 border-alofa-light-pink rounded-lg shadow-md overflow-hidden flex flex-col justify-between w-56 text-center">
         {/* Square image occupying the whole top */}
         <div className="w-full aspect-square">
-          <img src={image} alt={name} className="w-full h-full object-cover" />
+          <img
+            src={image}
+            alt={name}
+            className="object-cover w-full h-full"
+            style={{ maxWidth: "1024px", maxHeight: "1024px" }}
+          />
         </div>
         <div className="mt-4 flex flex-col items-start px-4">
-          <h3 className="text-lg font-medium text-gray-700">{name}</h3>
+          <h3 className="text-lg font-medium text-gray-700 h-10 overflow-hidden text-ellipsis whitespace-nowrap">
+            {name}
+          </h3>
+          {/* <h3 className="text-lg font-medium text-gray-700">{name}</h3> */}
           <p className="text-xl font-bold text-gray-900 mt-2">₱{price}</p>
         </div>
         <div className="flex justify-end mt-4 px-4 pb-3">

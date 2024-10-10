@@ -17,6 +17,7 @@ const Products = () => {
   const [categories, setCategories] = useState([]);
   const [statuses, setStatus] = useState([]);
   const [error, setError] = useState(null);
+  const [search, setSearch] = useState("");
 
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -42,6 +43,22 @@ const Products = () => {
 
     fetchData();
   }, []);
+
+  const handleSearchChange = (e) => {
+    setSearch(e.target.value.toLowerCase());
+  };
+
+  // Filter products based on the search input
+  const filteredProducts = products.filter((product) => {
+    return (
+      product.name.toLowerCase().includes(search) ||
+      product.description.toLowerCase().includes(search) ||
+      (product.product_category &&
+        product.product_category.toLowerCase().includes(search)) ||
+      (product.product_status &&
+        product.product_status.toLowerCase().includes(search))
+    );
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -102,7 +119,7 @@ const Products = () => {
     if (!selectedProduct) return;
 
     const isConfirmed = window.confirm(
-      "Are you sure you want to archive this product?"
+      "Are you sure you want to archive this product?",
     );
     if (!isConfirmed) return;
 
@@ -152,7 +169,7 @@ const Products = () => {
     return acc;
   }, {});
 
-  const processedProducts = products
+  const processedProducts = filteredProducts
     .map((product) => ({
       ...product,
       product_category: categoryMap[product.product_category_id] || "Unknown",
@@ -169,6 +186,13 @@ const Products = () => {
       <div className="flex flex-col gap-2">
         <div className="flex flex-row items-center justify-between">
           <strong className="text-3xl font-bold text-gray-500">Products</strong>
+          <input
+            type="text"
+            className="w-[200px] h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+            placeholder="Search products..."
+            value={search}
+            onChange={handleSearchChange}
+          />
           <div>
             <MdAddBox
               fontSize={30}
