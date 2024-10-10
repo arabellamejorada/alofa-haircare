@@ -17,8 +17,8 @@ const CartTable = ({ cartItems, handleQuantityChange, handleDelete }) => {
           </tr>
         </thead>
         <tbody>
-          {cartItems.map((item, index) => (
-            <tr key={index} className="border-b">
+          {cartItems.map((item) => (
+            <tr key={item.id} className="border-b">
               <td className="p-2 flex items-center">
                 <img
                   src={item.image}
@@ -36,7 +36,12 @@ const CartTable = ({ cartItems, handleQuantityChange, handleDelete }) => {
                   type="number"
                   className="w-12 border rounded text-center"
                   value={item.quantity}
-                  onChange={(e) => handleQuantityChange(item.id, e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (/^\d*$/.test(value)) {
+                      handleQuantityChange(item.id, value);
+                    }
+                  }}
                   min="1"
                 />
               </td>

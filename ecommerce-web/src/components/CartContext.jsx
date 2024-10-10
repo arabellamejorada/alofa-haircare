@@ -34,11 +34,20 @@ const CartProvider = ({ children }) => {
 
   // Function to handle quantity change
   const handleQuantityChange = (productId, quantity) => {
-    setCartItems(
-      cartItems.map((item) =>
-        item.id === productId ? { ...item, quantity: Number(quantity) } : item,
-      ),
-    );
+    
+    const newQuantity = Math.floor(Number(quantity));
+  
+    
+    if (newQuantity <= 0) {
+      handleDelete(productId);
+    } else {
+      
+      setCartItems(
+        cartItems.map((item) =>
+          item.id === productId ? { ...item, quantity: newQuantity } : item
+        )
+      );
+    }
   };
 
   // Function to remove item from cart
