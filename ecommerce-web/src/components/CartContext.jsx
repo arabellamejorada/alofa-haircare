@@ -34,21 +34,15 @@ const CartProvider = ({ children }) => {
 
   // Function to handle quantity change
   const handleQuantityChange = (productId, quantity) => {
-    
-    const newQuantity = Math.floor(Number(quantity));
+    const newQuantity = Math.max(1, Math.floor(Number(quantity))); // Ensure the minimum is 1
   
-    
-    if (newQuantity <= 0) {
-      handleDelete(productId);
-    } else {
-      
-      setCartItems(
-        cartItems.map((item) =>
-          item.id === productId ? { ...item, quantity: newQuantity } : item
-        )
-      );
-    }
+    setCartItems(
+      cartItems.map((item) =>
+        item.id === productId ? { ...item, quantity: newQuantity } : item
+      )
+    );
   };
+  
 
   // Function to remove item from cart
   const handleDelete = (productId) => {

@@ -41,7 +41,7 @@ const Products = () => {
         ? `http://localhost:3001/uploads/${imageName}`
         : "/default-image.jpg",
       name: `${product?.name || "Unnamed Product"} ${variation.value}`,
-      price: variation.unit_price || 0, // Ensure a fallback for the price
+      price: parseFloat(variation.unit_price) || 0,
       category: product?.category || "Uncategorized",
     };
   });
