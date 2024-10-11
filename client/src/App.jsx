@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Toaster } from "sonner";
 import Layout from "./components/shared/Layout";
 import Dashboard from "./components/Dashboard";
 import Products from "./components/products_tab/Products";
@@ -15,6 +16,8 @@ import StockOutHistory from "./components/inventory_tab/stock_out/StockOutHistor
 function App() {
   return (
     <Router>
+      {/* Toaster should be accessible across the entire app */}
+      <Toaster position="top-right" />
       <Routes>
         {/* Add the Layout component as the parent route. Sidebar and Header are Layout Components */}
         <Route path="/" element={<Layout />}>
@@ -35,4 +38,5 @@ function App() {
     </Router>
   );
 }
+
 export default App;

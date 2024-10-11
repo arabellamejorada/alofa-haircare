@@ -11,11 +11,6 @@ const formatColumnName = (columnName) => {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 };
 
-const formatDateInLocalTimezone = (timestamp) => {
-  const date = new Date(timestamp);
-  return date.toLocaleString("en-GB", { timeZone: "Asia/Manila" });
-};
-
 const DataTable = ({
   data,
   columns,
@@ -75,11 +70,7 @@ const DataTable = ({
               <tr
                 key={index}
                 className={
-                  item.status_id === 3 ||
-                  item.status === "Archived" ||
-                  item.product_status_id === 4
-                    ? "bg-gray-200"
-                    : ""
+                  item.status_description === "Archived" ? "bg-gray-200" : ""
                 }
               >
                 {columns.map((column) => (

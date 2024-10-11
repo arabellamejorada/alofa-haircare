@@ -69,7 +69,15 @@ const Products = () => {
       !product_description ||
       !product_category
     ) {
-      alert("Please fill out all required fields.");
+      <div role="alert">
+        <div class="bg-red-500 text-white font-bold rounded-t px-4 py-2">
+          Error
+        </div>
+        <div class="border border-t-0 border-red-400 rounded-b bg-red-100 px-4 py-3 text-red-700">
+          <p>Please fill out all required fields.</p>
+        </div>
+      </div>;
+      // alert("Please fill out all required fields.");
       return;
     }
 
@@ -156,7 +164,7 @@ const Products = () => {
     { key: "name", header: "Product Name" },
     { key: "description", header: "Description" },
     { key: "product_category", header: "Category" },
-    { key: "product_status", header: "Status" },
+    { key: "status_description", header: "Status" },
   ];
 
   const categoryMap = categories.reduce((acc, category) => {
@@ -173,7 +181,7 @@ const Products = () => {
     .map((product) => ({
       ...product,
       product_category: categoryMap[product.product_category_id] || "Unknown",
-      product_status: statusMap[product.product_status_id] || "Unknown",
+      status_description: statusMap[product.product_status_id] || "Unknown",
     }))
     .sort((a, b) => {
       if (a.product_status_id === 4 && b.product_status_id !== 4) return 1;
