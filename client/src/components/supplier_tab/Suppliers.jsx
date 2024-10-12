@@ -1,35 +1,50 @@
 import React, { Fragment, useEffect, useState } from "react";
-import DataTable from "../shared/DataTable";
 import { MdAddBox } from "react-icons/md";
-import Modal from "../modal/Modal";
-import { IoMdArrowDropdown } from "react-icons/io";
 import {
   getAllSuppliers,
   createSupplier,
   updateSupplier,
   archiveSupplier,
 } from "../../api/suppliers.js";
+import SupplierTable from "./SupplierTable";
+import SupplierForm from "./SupplierForm";
+import { toast } from "sonner";
+import {
+  validateSupplierForm,
+  validateName,
+  validateEmail,
+  validateContactNumber,
+  validateAddress,
+  validateStatus,
+} from "../../lib/consts/utils/validationUtils";
 
 const Suppliers = () => {
   const [suppliers, setSuppliers] = useState([]);
+  const [selectedSupplier, setSelectedSupplier] = useState(null);
+  const [originalSupplierData, setOriginalSupplierData] = useState(null); // Track original data
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [search, setSearch] = useState("");
+  const [sortField, setSortField] = useState("supplier_id");
+  const [sortOrder, setSortOrder] = useState("asc");
+  const [selectedStatus, setSelectedStatus] = useState(""); // Status filter state
   const [error, setError] = useState(null);
 
-  const [selectedSupplier, setSelectedSupplier] = useState(null);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [showModal, setShowModal] = useState(false);
+  // Supplier form fields
+  const [supplierFormData, setSupplierFormData] = useState({
+    supplier_name: "",
+    contact_person: "",
+    contact_number: "",
+    email: "",
+    address: "",
+    status: "",
+  });
 
-  const [supplier_name, setSupplierName] = useState("");
-  const [contact_person, setContactPerson] = useState("");
-  const [contact_number, setContactNumber] = useState("");
-  const [email, setEmail] = useState("");
-  const [address, setAddress] = useState("");
-  const [status, setStatus] = useState("");
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const suppliersData = await getAllSuppliers();
-        console.log("Suppliers Data: ", suppliersData);
         setSuppliers(suppliersData);
       } catch (err) {
         setError("Failed to fetch data");
@@ -38,418 +53,216 @@ const Suppliers = () => {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    if (!isModalVisible) {
-      // Reset fields when modal is closed
-      setSupplierName("");
-      setContactPerson("");
-      setContactNumber("");
-      setEmail("");
-      setAddress("");
-      setStatus("");
-      setSelectedSupplier(null); // Clear selected supplier
+  const resetForm = () => {
+    setSupplierFormData({
+      supplier_name: "",
+      contact_person: "",
+      contact_number: "",
+      email: "",
+      address: "",
+      status: "",
+    });
+    setErrors({});
+    setSelectedSupplier(null);
+  };
+
+  const validateField = (name, value) => {
+    let error = "";
+    switch (name) {
+      case "supplier_name":
+      case "contact_person":
+        error = validateName(value)
+          ? ""
+          : `${name.replace("_", " ")} is required`;
+        break;
+      case "contact_number":
+        error = validateContactNumber(value)
+          ? ""
+          : "Enter a valid 11-digit phone number";
+        break;
+      case "email":
+        error = validateEmail(value) ? "" : "Enter a valid email address";
+        break;
+      case "address":
+        error = validateAddress(value) ? "" : "Address is required";
+        break;
+      case "status":
+        error = validateStatus(value) ? "" : "Status is required";
+        break;
+      default:
+        break;
     }
-  }, [isModalVisible]);
+    setErrors((prevErrors) => ({ ...prevErrors, [name]: error }));
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setSupplierFormData((prevData) => ({ ...prevData, [name]: value }));
+    validateField(name, value); // Validate the field as user types
+  };
+
+  const validateForm = () => {
+    const formErrors = validateSupplierForm(supplierFormData);
+    setErrors(formErrors);
+    return !Object.values(formErrors).some((error) => error !== "");
+  };
 
   const handleAddSupplier = async (e) => {
     e.preventDefault();
-
-    const newSupplier = {
-      supplier_name: supplier_name,
-      contact_person: contact_person,
-      contact_number: contact_number,
-      email: email,
-      address: address,
-      status: status,
-    };
-
+    if (!validateForm()) {
+      toast.error("Please fill out all required fields correctly.");
+      return;
+    }
     try {
-      const response = await createSupplier(newSupplier);
-      console.log(response);
-      setShowModal(false);
-
-      const suppliersData = await getAllSuppliers();
-      setSuppliers(suppliersData);
-      // Reset fields
-      setSupplierName("");
-      setContactPerson("");
-      setContactNumber("");
-      setEmail("");
-      setAddress("");
-      setStatus("");
+      await createSupplier(supplierFormData);
+      const updatedSuppliers = await getAllSuppliers();
+      setSuppliers(updatedSuppliers);
+      toast.success("Supplier added successfully!");
+      setIsModalVisible(false);
+      resetForm();
     } catch (error) {
-      console.error("Error creating supplier: ", error);
+      toast.error("Failed to add supplier");
     }
   };
 
   const handleUpdateSupplier = async (e) => {
     e.preventDefault();
-
+    if (!validateForm()) {
+      toast.error("Please fill out all required fields correctly.");
+      return;
+    }
     if (!selectedSupplier) return;
-
-    const formData = new FormData();
-    formData.append("supplier_name", supplier_name);
-    formData.append("contact_person", contact_person);
-    formData.append("contact_number", contact_number);
-    formData.append("email", email);
-    formData.append("address", address);
-    formData.append("status", status);
-
     try {
-      const response = await updateSupplier(
-        selectedSupplier.supplier_id,
-        formData,
-      );
-      console.log(response);
+      await updateSupplier(selectedSupplier.supplier_id, supplierFormData);
+      const updatedSuppliers = await getAllSuppliers();
+      setSuppliers(updatedSuppliers);
+      toast.success("Supplier updated successfully");
       setIsModalVisible(false);
-
-      const suppliersData = await getAllSuppliers();
-      setSuppliers(suppliersData);
-
-      // Reset fields
-      setSupplierName("");
-      setContactPerson("");
-      setContactNumber("");
-      setEmail("");
-      setAddress("");
-      setStatus("");
+      resetForm();
     } catch (error) {
-      console.error("Error updating supplier: ", error);
-      setError("Failed to update supplier");
+      toast.error("Failed to update supplier");
     }
   };
 
-  const handleArchiveSupplier = async (selectedSupplier) => {
-    if (!selectedSupplier) return;
-
-    const isConfirmed = window.confirm(
-      "Are you sure you want to archive this supplier?",
-    );
-    if (!isConfirmed) return;
-
-    try {
-      console.log("Archiving supplier: ", selectedSupplier.supplier_id);
-      const response = await archiveSupplier(selectedSupplier.supplier_id);
-      console.log(response);
-
-      // Optionally refresh the suppliers list
-      const suppliersData = await getAllSuppliers();
-      setSuppliers(suppliersData);
-    } catch (error) {
-      console.error("Error archiving supplier: ", error);
-      setError("Failed to update supplier status to Archived");
+  const handleArchiveSupplier = async (supplier) => {
+    if (!supplier) return;
+    if (window.confirm("Are you sure you want to archive this supplier?")) {
+      try {
+        await archiveSupplier(supplier.supplier_id);
+        const updatedSuppliers = await getAllSuppliers();
+        setSuppliers(updatedSuppliers);
+        toast.success("Supplier archived successfully");
+      } catch (error) {
+        toast.error("Failed to archive supplier");
+      }
     }
   };
 
   const handleEdit = (supplier) => {
-    console.log("Selected Supplier:", supplier); // Check if supplier data is correct
-
     setSelectedSupplier(supplier);
-    setSupplierName(supplier.supplier_name || "");
-    setContactPerson(supplier.contact_person || "");
-    setContactNumber(supplier.contact_number || "");
-    setEmail(supplier.email || "");
-    setAddress(supplier.address || "");
-    setStatus(supplier.status || "");
-
+    setOriginalSupplierData(supplier); // Store original data for comparison
+    setSupplierFormData(supplier);
     setIsModalVisible(true);
   };
 
-  const handleCloseModal = () => {
-    setIsModalVisible(false);
-    setSelectedSupplier(null);
+  const isFormModified = () => {
+    return (
+      supplierFormData.supplier_name !== originalSupplierData?.supplier_name ||
+      supplierFormData.contact_person !==
+        originalSupplierData?.contact_person ||
+      supplierFormData.contact_number !==
+        originalSupplierData?.contact_number ||
+      supplierFormData.email !== originalSupplierData?.email ||
+      supplierFormData.address !== originalSupplierData?.address ||
+      supplierFormData.status !== originalSupplierData?.status
+    );
   };
 
-  const columns = [
-    { key: "supplier_id", title: "Supplier ID" },
-    { key: "supplier_name", title: "Supplier Name" },
-    { key: "contact_person", title: "Contact Person" },
-    { key: "contact_number", title: "Contact Number" },
-    { key: "email", title: "Email" },
-    { key: "address", title: "Address" },
-    { key: "status", title: "Status" },
-  ];
+  const handleColumnSort = (field) => {
+    const isAsc = sortField === field && sortOrder === "asc";
+    setSortOrder(isAsc ? "desc" : "asc");
+    setSortField(field);
+  };
 
-  if (error) return <div>{error}</div>;
+  const filteredSuppliers = suppliers
+    .filter((supplier) => {
+      const matchesSearch =
+        supplier.supplier_name.toLowerCase().includes(search.toLowerCase()) ||
+        supplier.address.toLowerCase().includes(search.toLowerCase()) ||
+        supplier.contact_person.toLowerCase().includes(search.toLowerCase()) ||
+        supplier.contact_number.toLowerCase().includes(search.toLowerCase()) ||
+        supplier.email.toLowerCase().includes(search.toLowerCase());
+
+      const matchesStatus = selectedStatus
+        ? supplier.status === selectedStatus
+        : supplier.status !== "Archived"; // Exclude archived by default
+
+      return matchesSearch && matchesStatus;
+    })
+    .sort((a, b) => {
+      if (sortOrder === "asc") {
+        return a[sortField] > b[sortField] ? 1 : -1;
+      } else {
+        return a[sortField] < b[sortField] ? 1 : -1;
+      }
+    });
 
   return (
     <Fragment>
       <div className="flex flex-col gap-2">
-        <div className="flex flex-row items-center justify-between">
-          <strong className="text-3xl font-bold text-gray-500">
-            Suppliers
-          </strong>
-          <div>
-            <MdAddBox
-              fontSize={30}
-              className="text-gray-400 mx-2 hover:text-pink-400 active:text-pink-500"
-              onClick={() => setShowModal(true)}
+        <div className="flex flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <strong className="text-3xl font-bold text-gray-500">
+              Suppliers
+            </strong>
+            <input
+              type="text"
+              placeholder="Search suppliers..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-[300px] h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
             />
+            {/* Status Filter */}
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="w-[150px] h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+            >
+              <option value="">All Statuses</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+              <option value="Pending">Pending</option>
+              <option value="Archived">Archived</option>
+            </select>
           </div>
+          <MdAddBox
+            fontSize={30}
+            className="text-gray-400 hover:text-pink-400 active:text-pink-500"
+            onClick={() => setIsModalVisible(true)}
+          />
         </div>
 
-        {/* Render Table with data*/}
-        <DataTable
-          data={suppliers}
-          columns={columns}
+        <SupplierTable
+          suppliers={filteredSuppliers}
           onEdit={handleEdit}
           onArchive={handleArchiveSupplier}
+          sortField={sortField}
+          sortOrder={sortOrder}
+          handleColumnSort={handleColumnSort}
         />
       </div>
 
-      <Modal isVisible={showModal} onClose={() => setShowModal(false)}>
-        <form className="p-6" onSubmit={handleAddSupplier}>
-          <div className="flex flex-col gap-4">
-            <div className="font-extrabold text-3xl text-pink-400">
-              Register New Supplier:
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="supplier_name">
-                Supplier Name:
-              </label>
-              <input
-                type="text"
-                name="supplier_name"
-                id="supplier_name"
-                placeholder="Supplier Name"
-                value={supplier_name}
-                onChange={(e) => setSupplierName(e.target.value)}
-                className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 dark:text-slate-200"
-              />
-            </div>
-
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <label className="font-bold" htmlFor="contact_person">
-                  Contact Person:
-                </label>
-                <input
-                  type="text"
-                  name="contact_person"
-                  id="contact_person"
-                  placeholder="Contact Person"
-                  value={contact_person}
-                  onChange={(e) => setContactPerson(e.target.value)}
-                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 dark:bg-slate-800 hover:border-pink-500 dark:hover:border-pink-700 hover:bg-white dark:hover:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <label className="font-bold" htmlFor="contact_number">
-                  Contact Number:
-                </label>
-                <input
-                  type="text"
-                  name="contact_number"
-                  id="contact_number"
-                  placeholder="Contact Number"
-                  value={contact_number}
-                  onChange={(e) => setContactNumber(e.target.value)}
-                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 dark:bg-slate-800 hover:border-pink-500 dark:hover:border-pink-700 hover:bg-white dark:hover:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <label className="font-bold" htmlFor="supplier_email">
-                  Email:
-                </label>
-                <input
-                  type="text"
-                  name="supplier_email"
-                  id="supplier_email"
-                  placeholder="supplier@gmail.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 dark:bg-slate-800 hover:border-pink-500 dark:hover:border-pink-700 hover:bg-white dark:hover:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <label className="font-bold" htmlFor="address">
-                  Address:
-                </label>
-                <input
-                  type="text"
-                  name="address"
-                  id="address"
-                  placeholder="Address"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 dark:bg-slate-800 hover:border-pink-500 dark:hover:border-pink-700 hover:bg-white dark:hover:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="status">
-                Status:
-              </label>
-              <div className="relative">
-                <select
-                  id="status"
-                  name="status"
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-                >
-                  <option value="Active">Active</option>
-                  <option value="Inactive">Inactive</option>
-                  <option value="Pending">Pending</option>
-                  <option value="Archived">Archived</option>
-                </select>
-                <IoMdArrowDropdown className="absolute top-3 right-4 text-gray-400" />
-              </div>
-            </div>
-
-            <div className="flex flex-row justify-end gap-4">
-              <button
-                type="submit"
-                className="px-4 py-2 text-white bg-pink-400 rounded-lg hover:bg-pink-500"
-              >
-                Save
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowModal(false)}
-                className="px-4 py-2 text-white bg-gray-400 rounded-lg hover:bg-gray-500"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </form>
-      </Modal>
-
-      {/* Edit Supplier Modal */}
-      <Modal isVisible={isModalVisible} onClose={handleCloseModal}>
-        <form className="p-6" onSubmit={handleUpdateSupplier}>
-          <div className="flex flex-col gap-4">
-            <div className="font-extrabold text-3xl text-pink-400">
-              Edit Supplier:
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="supplier_name">
-                Supplier Name:
-              </label>
-              <input
-                type="text"
-                name="supplier_name"
-                id="supplier_name"
-                value={supplier_name}
-                onChange={(e) => setSupplierName(e.target.value)}
-                className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-              />
-            </div>
-
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <label className="font-bold" htmlFor="contact_person">
-                  Contact Person:
-                </label>
-                <input
-                  type="text"
-                  name="contact_person"
-                  id="contact_person"
-                  value={contact_person}
-                  onChange={(e) => setContactPerson(e.target.value)}
-                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <label className="font-bold" htmlFor="contact_number">
-                  Contact Number:
-                </label>
-                <input
-                  type="text"
-                  name="contact_number"
-                  id="contact_number"
-                  value={contact_number}
-                  onChange={(e) => setContactNumber(e.target.value)}
-                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <label className="font-bold" htmlFor="email">
-                  Email:
-                </label>
-                <input
-                  type="text"
-                  name="email"
-                  id="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <label className="font-bold" htmlFor="address">
-                  Address:
-                </label>
-                <input
-                  type="text"
-                  name="address"
-                  id="address"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="status">
-                Status:
-              </label>
-              <div className="relative">
-                <select
-                  id="status"
-                  name="status"
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-                >
-                  <option value="Active">Active</option>
-                  <option value="Inactive">Inactive</option>
-                  <option value="Pending">Pending</option>
-                  <option value="Archived">Archived</option>
-                </select>
-                <IoMdArrowDropdown className="absolute top-3 right-4 text-gray-400" />
-              </div>
-            </div>
-
-            <div className="flex flex-row justify-end gap-4">
-              <button
-                type="submit"
-                className="px-4 py-2 text-white bg-pink-400 rounded-lg hover:bg-pink-500"
-              >
-                Confirm
-              </button>
-              <button
-                type="button"
-                onClick={handleCloseModal}
-                className="px-4 py-2 text-white bg-gray-400 rounded-lg hover:bg-gray-500"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </form>
-      </Modal>
+      <SupplierForm
+        isVisible={isModalVisible}
+        handleCloseModal={() => setIsModalVisible(false)}
+        selectedSupplier={selectedSupplier}
+        handleUpdateSupplier={handleUpdateSupplier}
+        handleAddSupplier={handleAddSupplier}
+        handleInputChange={handleInputChange}
+        supplierFormData={supplierFormData}
+        isFormModified={isFormModified} // Pass the form modification check
+        errors={errors}
+      />
     </Fragment>
   );
 };

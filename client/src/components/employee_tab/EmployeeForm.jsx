@@ -9,6 +9,7 @@ const EmployeeForm = ({
   handleUpdateEmployee,
   handleAddEmployee,
   handleInputChange,
+  isFormModified,
   firstName,
   lastName,
   email,
@@ -178,9 +179,7 @@ const EmployeeForm = ({
                   }`}
                 />
                 {errors.username && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.username}
-                  </p>
+                  <p className="text-red-500 text-sm mt-1">{errors.username}</p>
                 )}
               </div>
 
@@ -201,9 +200,7 @@ const EmployeeForm = ({
                   }`}
                 />
                 {errors.password && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.password}
-                  </p>
+                  <p className="text-red-500 text-sm mt-1">{errors.password}</p>
                 )}
               </div>
             </>
@@ -241,7 +238,10 @@ const EmployeeForm = ({
           <div className="flex justify-end mt-2">
             <button
               type="submit"
-              className="w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-semibold text-white"
+              disabled={!isFormModified()}
+              className={`w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-semibold text-white ${
+                !isFormModified() ? "opacity-50 cursor-not-allowed" : ""
+              }`}
             >
               {selectedEmployee ? "Update" : "Save"}
             </button>

@@ -2,9 +2,8 @@ import React from "react";
 import DataTable from "../shared/DataTable";
 import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 
-const EmployeeTable = ({
-  sortedEmployees,
-  columns,
+const SupplierTable = ({
+  suppliers,
   onEdit,
   onArchive,
   sortField,
@@ -25,19 +24,30 @@ const EmployeeTable = ({
     </div>
   );
 
-  const enhancedColumns = columns.map((col) => ({
-    ...col,
-    header: renderHeader(col.key, col.header),
-  }));
+  const columns = [
+    { key: "supplier_id", header: renderHeader("supplier_id", "ID") },
+    {
+      key: "supplier_name",
+      header: renderHeader("supplier_name", "Supplier Name"),
+    },
+    {
+      key: "contact_person",
+      header: renderHeader("contact_person", "Contact Person"),
+    },
+    { key: "contact_number", header: "Contact Number" },
+    { key: "email", header: "Email" },
+    { key: "address", header: "Address" },
+    { key: "status", header: "Status" },
+  ];
 
   return (
     <DataTable
-      data={sortedEmployees}
-      columns={enhancedColumns}
+      data={suppliers}
+      columns={columns}
       onEdit={onEdit}
       onArchive={onArchive}
     />
   );
 };
 
-export default EmployeeTable;
+export default SupplierTable;

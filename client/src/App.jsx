@@ -17,7 +17,7 @@ function App() {
   return (
     <Router>
       {/* Toaster should be accessible across the entire app */}
-      <Toaster position="top-right" />
+      <Toaster richColors position="top-right" />
       <Routes>
         {/* Add the Layout component as the parent route. Sidebar and Header are Layout Components */}
         <Route path="/" element={<Layout />}>
