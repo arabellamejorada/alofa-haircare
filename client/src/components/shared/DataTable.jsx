@@ -11,11 +11,6 @@ const formatColumnName = (columnName) => {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 };
 
-const formatDateInLocalTimezone = (timestamp) => {
-  const date = new Date(timestamp);
-  return date.toLocaleString("en-GB", { timeZone: "Asia/Manila" });
-};
-
 const DataTable = ({
   data,
   columns,
@@ -56,14 +51,14 @@ const DataTable = ({
             <tr>
               {columns.map((column) => (
                 <th
-                  className="px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-pink-400 to-pink-500 text-gray-100 text-left text-md font-semibold  uppercase tracking-wider"
+                  className="px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-pink-400 to-pink-500 text-gray-100 text-left text-md font-semibold uppercase tracking-wider"
                   key={column.key}
                 >
                   {column.header || formatColumnName(column.key)}
                 </th>
               ))}
               {!isInventory && (
-                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-pink-400 to-pink-500 text-gray-100 text-center text-md font-semibold  uppercase w-[20%]">
+                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-pink-400 to-pink-500 text-gray-100 text-center text-md font-semibold uppercase w-[8%]">
                   Actions
                 </th>
               )}
@@ -75,16 +70,12 @@ const DataTable = ({
               <tr
                 key={index}
                 className={
-                  item.status_id === 3 ||
-                  item.status === "Archived" ||
-                  item.product_status_id === 4
-                    ? "bg-gray-200"
-                    : ""
+                  item.status_description === "Archived" ? "bg-gray-200" : ""
                 }
               >
                 {columns.map((column) => (
                   <td
-                    className="px-5 py-5 border-b border-gray-200 text-sm text-left"
+                    className="px-5 py-3 border-b border-gray-200 text-sm text-left min-h-[3rem]"
                     key={column.key}
                   >
                     {column.render
@@ -94,7 +85,7 @@ const DataTable = ({
                 ))}
 
                 {!isInventory && (
-                  <td className="text-center h-12">
+                  <td className="text-center px-2 py-3 h-12 w-[8%]">
                     <div className="flex justify-center items-center gap-2 h-full">
                       <div
                         className="text-pink-500 hover:text-pink-600"

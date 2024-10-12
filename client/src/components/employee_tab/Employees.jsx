@@ -1,8 +1,6 @@
-import React, { Fragment, useEffect, useState } from "react";
-import DataTable from "../shared/DataTable";
+import React, { useEffect, useState } from "react";
 import { MdAddBox } from "react-icons/md";
-import Modal from "../modal/Modal";
-import { IoMdArrowDropdown } from "react-icons/io";
+import { showToast } from "../../lib/consts/utils/toastUtils";
 import {
   getEmployees,
   getRoles,
@@ -11,6 +9,9 @@ import {
   archiveEmployee,
   getEmployeeStatus,
 } from "../../api/employees";
+import { validateForm } from "../../lib/consts/utils/validationUtils";
+import EmployeeTable from "./EmployeeTable";
+import EmployeeForm from "./EmployeeForm";
 
 const Employees = () => {
   const [employees, setEmployees] = useState([]);
@@ -18,9 +19,15 @@ const Employees = () => {
   const [statuses, setStatuses] = useState([]);
   const [error, setError] = useState(null);
 
+  // State for filters
+  const [search, setSearch] = useState("");
+  const [selectedRole, setSelectedRole] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("");
+  const [sortField, setSortField] = useState("employee_id");
+  const [sortOrder, setSortOrder] = useState("asc");
+
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [showModal, setShowModal] = useState(false);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -30,6 +37,9 @@ const Employees = () => {
   const [statusId, setStatusId] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+
+  // State for form validation errors
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -66,8 +76,80 @@ const Employees = () => {
     }
   }, [isModalVisible]);
 
+  const handleInputChange = (e, field) => {
+    const value = e.target.value;
+
+    let error = "";
+
+    switch (field) {
+      case "firstName":
+        setFirstName(value);
+        error = value.trim() ? "" : "First name is required";
+        break;
+      case "lastName":
+        setLastName(value);
+        error = value.trim() ? "" : "Last name is required";
+        break;
+      case "email":
+        setEmail(value);
+        error = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+          ? ""
+          : "Enter a valid email address";
+        break;
+      case "contactNumber":
+        setContactNumber(value);
+        error = /^\d{11}$/.test(value)
+          ? ""
+          : "Enter a valid 11-digit phone number";
+        break;
+      case "roleId":
+        setRoleId(value);
+        error = value ? "" : "Role is required";
+        break;
+      case "username":
+        setUsername(value);
+        error = value.trim() ? "" : "Username is required";
+        break;
+      case "password":
+        setPassword(value);
+        error =
+          value.length >= 6 ? "" : "Password must be at least 6 characters";
+        break;
+      default:
+        break;
+    }
+
+    setErrors((prev) => ({
+      ...prev,
+      [field]: error,
+    }));
+  };
+
+  const handleColumnSort = (field) => {
+    const isAsc = sortField === field && sortOrder === "asc";
+    setSortOrder(isAsc ? "desc" : "asc");
+    setSortField(field);
+  };
+
   const handleAddEmployee = async (e) => {
     e.preventDefault();
+
+    const formErrors = validateForm({
+      firstName,
+      lastName,
+      email,
+      contactNumber,
+      roleId,
+      username: selectedEmployee ? "placeholder" : username || "",
+      password: selectedEmployee ? "placeholder" : password || "",
+    });
+
+    setErrors(formErrors);
+
+    if (Object.values(formErrors).some((error) => error !== "")) {
+      showToast("error", "Please fill out all required fields correctly.");
+      return;
+    }
 
     const newEmployee = {
       first_name: firstName,
@@ -83,22 +165,15 @@ const Employees = () => {
     try {
       const response = await createEmployee(newEmployee);
       console.log(response);
-      setShowModal(false);
+      setIsModalVisible(false);
 
       const employeesData = await getEmployees();
-
       setEmployees(employeesData);
 
-      // Reset fields
-      setFirstName("");
-      setLastName("");
-      setEmail("");
-      setContactNumber("");
-      setRoleId("");
-      setUsername("");
-      setPassword("");
+      showToast("success", "Employee added successfully!");
     } catch (error) {
       console.error("Error creating employee: ", error);
+      showToast("error", "Failed to add employee. Please try again.");
     }
   };
 
@@ -106,6 +181,24 @@ const Employees = () => {
     e.preventDefault();
 
     if (!selectedEmployee) return;
+
+    const formErrors = validateForm({
+      firstName: firstName || selectedEmployee.first_name,
+      lastName: lastName || selectedEmployee.last_name,
+      email: email || selectedEmployee.email,
+      contactNumber: contactNumber || selectedEmployee.contact_number,
+      roleId: roleId || selectedEmployee.role_id,
+      username: "",
+      password: "",
+      isEdit: true,
+    });
+
+    setErrors(formErrors);
+
+    if (Object.values(formErrors).some((error) => error !== "")) {
+      showToast("error", "Please fill out all required fields correctly.");
+      return;
+    }
 
     const formData = new FormData();
     formData.append("first_name", firstName || selectedEmployee.first_name);
@@ -129,51 +222,14 @@ const Employees = () => {
       const employeesData = await getEmployees();
       setEmployees(employeesData);
 
-      // Reset fields
-      setFirstName("");
-      setLastName("");
-      setEmail("");
-      setContactNumber("");
-      setRoleId("");
-      setStatusId("");
+      showToast("success", "Employee updated successfully!");
     } catch (error) {
       console.error("Error updating employee: ", error);
-      setError("Failed to update employee");
-    }
-  };
-
-  const handleArchiveEmployee = async (selectedEmployee) => {
-    if (!selectedEmployee) return;
-
-    const isConfirmed = window.confirm(
-      "Are you sure you want to archive this employee?",
-    );
-    if (!isConfirmed) return;
-
-    const data = {
-      status_id: 3,
-    };
-
-    try {
-      console.log("Archiving employee: ", selectedEmployee.employee_id);
-      const response = await archiveEmployee(
-        selectedEmployee.employee_id,
-        data,
-      );
-      console.log(response);
-
-      // Optionally refresh the employees list
-      const employeesData = await getEmployees();
-      setEmployees(employeesData);
-    } catch (error) {
-      console.error("Error archiving employee: ", error);
-      setError("Failed to update employee status to Archived");
+      showToast("error", "Failed to update employee. Please try again.");
     }
   };
 
   const handleEdit = (employee) => {
-    console.log("Selected Employee:", employee); // Check if employee data is correct
-
     setSelectedEmployee(employee);
     setFirstName(employee.first_name);
     setLastName(employee.last_name);
@@ -181,8 +237,8 @@ const Employees = () => {
     setContactNumber(employee.contact_number);
     setRoleId(employee.role_id);
     setStatusId(employee.status_id);
-
     setIsModalVisible(true);
+    setErrors({});
   };
 
   const handleCloseModal = () => {
@@ -200,327 +256,120 @@ const Employees = () => {
     { key: "status_description", header: "Status" },
   ];
 
-  if (error) return <div>{error}</div>;
-
-  const roleMap = roles.reduce((acc, role) => {
-    acc[role.role_id] = role.name;
-    return acc;
-  }, {});
-
-  const statusMap = statuses.reduce((acc, status) => {
-    acc[status.status_id] = status.description;
-    return acc;
-  }, {});
-
-  const processedEmployee = employees
+  const filteredEmployees = employees
+    .filter((employee) => {
+      const fullName =
+        `${employee.first_name} ${employee.last_name}`.toLowerCase();
+      const matchesSearch = search
+        ? fullName.includes(search.toLowerCase())
+        : true;
+      const matchesRole = selectedRole
+        ? employee.role_id === parseInt(selectedRole)
+        : true;
+      const matchesStatus = selectedStatus
+        ? employee.status_id === parseInt(selectedStatus)
+        : true;
+      return matchesSearch && matchesRole && matchesStatus;
+    })
     .map((item) => ({
       ...item,
-      role_name: roleMap[item.role_id],
-      status_description: statusMap[item.status_id],
-    }))
-    .sort((a, b) => {
-      // Move archived employees to the end
-      if (a.status_id === 3 && b.status_id !== 3) return 1;
-      if (a.status_id !== 3 && b.status_id === 3) return -1;
-      return 0;
-    });
+      role_name: roles.find((r) => r.role_id === item.role_id)?.name || "",
+      status_description:
+        statuses.find((s) => s.status_id === item.status_id)?.description ||
+        "Unknown Status",
+    }));
+
+  const sortedEmployees = [...filteredEmployees].sort((a, b) => {
+    if (sortOrder === "asc") {
+      return a[sortField] > b[sortField] ? 1 : -1;
+    } else {
+      return a[sortField] < b[sortField] ? 1 : -1;
+    }
+  });
 
   return (
-    <Fragment>
-      <div className="flex flex-col gap-2">
-        <div className="flex flex-row items-center justify-between">
-          <strong className="text-3xl font-bold text-gray-500">
-            Employees
-          </strong>
-          <div>
-            <MdAddBox
-              fontSize={30}
-              className="text-gray-400 mx-2 hover:text-pink-400 active:text-pink-500"
-              onClick={() => setShowModal(true)}
-            />
-          </div>
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-row items-center justify-between">
+        <strong className="text-3xl font-bold text-gray-500">Employees</strong>
+        <div className="flex gap-2">
+          {/* Search Input */}
+          <input
+            type="text"
+            placeholder="Search by name..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-[200px] h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+          />
+          {/* Role Filter */}
+          <select
+            value={selectedRole}
+            onChange={(e) => setSelectedRole(e.target.value)}
+            className="w-[150px] h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+          >
+            <option value="">All Roles</option>
+            {roles.map((role) => (
+              <option key={role.role_id} value={role.role_id}>
+                {role.name}
+              </option>
+            ))}
+          </select>
+          {/* Status Filter */}
+          <select
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+            className="w-[150px] h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+          >
+            <option value="">All Statuses</option>
+            {statuses.map((status) => (
+              <option key={status.status_id} value={status.status_id}>
+                {status.description}
+              </option>
+            ))}
+          </select>
+          <MdAddBox
+            fontSize={30}
+            className="text-gray-400 mx-2 hover:text-pink-400 active:text-pink-500"
+            onClick={() => {
+              setSelectedEmployee(null); // Clear the selected employee
+              setIsModalVisible(true); // Show the modal
+            }}
+          />
         </div>
-
-        {/* Render Table with data*/}
-        <DataTable
-          data={processedEmployee}
-          columns={columns}
-          onEdit={handleEdit}
-          onArchive={handleArchiveEmployee}
-        />
       </div>
 
-      <Modal isVisible={showModal} onClose={() => setShowModal(false)}>
-        <form className="p-6" onSubmit={handleAddEmployee}>
-          <div className="flex flex-col gap-4">
-            <div className="font-extrabold text-3xl text-pink-400">
-              Register New Employee:
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="employee_first_name">
-                Employee Name:
-              </label>
-              <div className="flex flex-row gap-2">
-                <input
-                  type="text"
-                  name="employee_first_name"
-                  id="employee_first_name"
-                  placeholder="First Name"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 dark:text-slate-200"
-                />
-                <input
-                  type="text"
-                  name="employee_last_name"
-                  id="employee_last_name"
-                  placeholder="Last Name"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 dark:text-slate-200"
-                />
-              </div>
-            </div>
+      {/* Render EmployeeTable */}
+      <EmployeeTable
+        sortedEmployees={sortedEmployees}
+        columns={columns}
+        onEdit={handleEdit}
+        onArchive={archiveEmployee}
+        sortField={sortField}
+        sortOrder={sortOrder}
+        handleColumnSort={handleColumnSort}
+      />
 
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <label className="font-bold" htmlFor="employee_email">
-                  Email:
-                </label>
-                <input
-                  type="text"
-                  name="employee_email"
-                  id="employee_email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 dark:bg-slate-800 hover:border-pink-500 dark:hover:border-pink-700 hover:bg-white dark:hover:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <label className="font-bold" htmlFor="contact_number">
-                  Contact Number:
-                </label>
-                <input
-                  type="text"
-                  name="contact_number"
-                  id="contact_number"
-                  placeholder="Contact Number"
-                  value={contactNumber}
-                  onChange={(e) => setContactNumber(e.target.value)}
-                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 dark:bg-slate-800 hover:border-pink-500 dark:hover:border-pink-700 hover:bg-white dark:hover:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="roleId">
-                Position:
-              </label>
-              <div className="relative">
-                <select
-                  id="roleId"
-                  name="roleId"
-                  value={roleId}
-                  onChange={(e) => setRoleId(e.target.value)}
-                  className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-                >
-                  <option value="" disabled>
-                    Select Role
-                  </option>
-                  {roles.map((role) => (
-                    <option key={role.role_id} value={role.role_id}>
-                      {role.name}
-                    </option>
-                  ))}
-                </select>
-                <IoMdArrowDropdown className="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500" />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="username">
-                Username:
-              </label>
-              <input
-                type="text"
-                name="username"
-                id="username"
-                placeholder="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="rounded-xl border w-full h-10 pl-4 bg-gray-50 dark:bg-slate-800 hover:border-pink-500 dark:hover:border-pink-700 hover:bg-white dark:hover:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200"
-              />
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="password">
-                Password:
-              </label>
-              <input
-                type="password"
-                name="password"
-                id="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="rounded-xl border w-full h-10 pl-4 bg-gray-50 dark:bg-slate-800 hover:border-pink-500 dark:hover:border-pink-700 hover:bg-white dark:hover:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200"
-              />
-            </div>
-
-            <div className="flex flex-row justify-end gap-4">
-              <button
-                type="submit"
-                className="px-4 py-2 text-white bg-pink-400 rounded-lg hover:bg-pink-500"
-              >
-                Save
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowModal(false)}
-                className="px-4 py-2 text-white bg-gray-400 rounded-lg hover:bg-gray-500"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </form>
-      </Modal>
-
-      {/* Edit Employee Modal */}
-      <Modal isVisible={isModalVisible} onClose={handleCloseModal}>
-        <form className="p-6" onSubmit={handleUpdateEmployee}>
-          <div className="flex flex-col gap-4">
-            <div className="font-extrabold text-3xl text-pink-400">
-              Edit Employee:
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="employee_first_name">
-                Employee Name:
-              </label>
-              <div className="flex flex-row gap-2">
-                <input
-                  type="text"
-                  name="employee_first_name"
-                  id="employee_first_name"
-                  placeholder={selectedEmployee?.first_name || "First Name"}
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-                />
-                <input
-                  type="text"
-                  name="employee_last_name"
-                  id="employee_last_name"
-                  placeholder={selectedEmployee?.last_name || "Last Name"}
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <label className="font-bold" htmlFor="employee_email">
-                  Email:
-                </label>
-                <input
-                  type="text"
-                  name="employee_email"
-                  id="employee_email"
-                  placeholder={selectedEmployee?.email || "Email"}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <label className="font-bold" htmlFor="contact_number">
-                  Contact Number:
-                </label>
-                <input
-                  type="text"
-                  name="contact_number"
-                  id="contact_number"
-                  placeholder={
-                    selectedEmployee?.contact_number || "Contact Number"
-                  }
-                  value={contactNumber}
-                  onChange={(e) => setContactNumber(e.target.value)}
-                  className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="roleId">
-                Position:
-              </label>
-              <div className="relative">
-                <select
-                  id="roleId"
-                  name="roleId"
-                  value={roleId}
-                  onChange={(e) => setRoleId(e.target.value)}
-                  className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-                >
-                  <option value="" disabled>
-                    Select Role
-                  </option>
-                  {roles.map((role) => (
-                    <option key={role.role_id} value={role.role_id}>
-                      {role.name}
-                    </option>
-                  ))}
-                </select>
-                <IoMdArrowDropdown className="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500" />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="statusId">
-                Status:
-              </label>
-              <div className="relative">
-                <select
-                  name="statusId"
-                  id="statusId"
-                  value={statusId}
-                  onChange={(e) => setStatusId(e.target.value)}
-                  className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-                >
-                  <option value="" disabled>
-                    Select Status
-                  </option>
-                  {statuses.map((status) => (
-                    <option key={status.status_id} value={status.status_id}>
-                      {status.description}
-                    </option>
-                  ))}
-                </select>
-                <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2" />
-              </div>
-            </div>
-
-            <div className="flex justify-end mt-2">
-              <button
-                type="submit"
-                className="w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-semibold text-white"
-              >
-                Update
-              </button>
-            </div>
-          </div>
-        </form>
-      </Modal>
-    </Fragment>
+      {/* Render EmployeeForm */}
+      <EmployeeForm
+        isVisible={isModalVisible}
+        handleCloseModal={handleCloseModal}
+        handleUpdateEmployee={handleUpdateEmployee}
+        handleAddEmployee={handleAddEmployee}
+        handleInputChange={handleInputChange}
+        selectedEmployee={selectedEmployee}
+        firstName={firstName}
+        lastName={lastName}
+        email={email}
+        contactNumber={contactNumber}
+        roleId={roleId}
+        statusId={statusId}
+        setStatusId={setStatusId}
+        username={username}
+        password={password}
+        roles={roles}
+        statuses={statuses}
+        errors={errors}
+      />
+    </div>
   );
 };
 

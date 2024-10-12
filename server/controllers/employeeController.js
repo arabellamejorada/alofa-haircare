@@ -115,26 +115,41 @@ const archiveEmployee = async (req, res) => {
     const employee_id = parseInt(req.params.id);
 
     try {
+        // Get the status_id for 'Archived' dynamically
+        const statusResult = await client.query(
+            `SELECT status_id FROM employee_status WHERE description = $1`,
+            ['Archived']
+        );
+
+        // Check if 'Archived' status exists
+        if (statusResult.rows.length === 0) {
+            return res.status(404).json({ message: "Archived status not found" });
+        }
+
+        const status_id = statusResult.rows[0].status_id;
+
+        // Update the employee's status to 'Archived'
         const archivedEmployee = await client.query(
             `UPDATE employee 
-            SET status_id = 3
-            WHERE employee_id = $1 
+            SET status_id = $1
+            WHERE employee_id = $2 
             RETURNING *`,
-            [employee_id]
+            [status_id, employee_id]
         );
 
         if (archivedEmployee.rows.length === 0) {
-            return res.status(404).json({ message: 'Employee not found' });
+            return res.status(404).json({ message: "Employee not found" });
         }
 
         res.status(200).json(archivedEmployee.rows[0]);
     } catch (error) {
-        console.error('Error archiving employee:', error);
-        res.status(500).json({ message: 'Error archiving employee', error: error.message });
+        console.error("Error archiving employee:", error);
+        res.status(500).json({ message: "Error archiving employee", error: error.message });
     } finally {
         client.release();
     }
 };
+
 
 const deleteEmployee = async (req, res) => {
     const client = await pool.connect();
@@ -186,7 +201,7 @@ const getEmployeeStatus = async (req, res) => {
     const client = await pool.connect();
 
     try {
-        const statuses = await client.query('SELECT * FROM employee_status ORDER BY status_id ASC');
+        const statuses = await client.query('SELECT status_id, description FROM employee_status ORDER BY status_id ASC');
         res.status(200).json(statuses.rows);
     } catch (error) {
         console.error('Error fetching employee statuses:', error);

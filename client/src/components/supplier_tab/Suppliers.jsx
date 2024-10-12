@@ -29,7 +29,7 @@ const Suppliers = () => {
     const fetchData = async () => {
       try {
         const suppliersData = await getAllSuppliers();
-
+        console.log("Suppliers Data: ", suppliersData);
         setSuppliers(suppliersData);
       } catch (err) {
         setError("Failed to fetch data");
