@@ -23,7 +23,18 @@ const DataTable = ({
   const rowsPerPage = 10;
 
   if (!data || data.length === 0) {
-    return <div>No data available</div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <p className="text-lg font-semibold text-gray-600">
+            No data available
+          </p>
+          <p className="text-sm text-gray-500 mt-2">
+            There are currently no records to display.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   const totalPages = Math.ceil(data.length / rowsPerPage);
@@ -70,7 +81,10 @@ const DataTable = ({
               <tr
                 key={index}
                 className={
-                  item.status_description === "Archived" ? "bg-gray-200" : ""
+                  item.status === "Archived" ||
+                  item.status_description === "Archived"
+                    ? "bg-gray-200"
+                    : ""
                 }
               >
                 {columns.map((column) => (

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { MdAddBox } from "react-icons/md";
-import { showToast } from "../../lib/consts/utils/toastUtils";
+import { toast } from "sonner";
 import {
   getEmployees,
   getRoles,
@@ -9,7 +9,7 @@ import {
   archiveEmployee,
   getEmployeeStatus,
 } from "../../api/employees";
-import { validateForm } from "../../lib/consts/utils/validationUtils";
+import { validateEmployeeForm } from "../../lib/consts/utils/validationUtils";
 import EmployeeTable from "./EmployeeTable";
 import EmployeeForm from "./EmployeeForm";
 
@@ -18,8 +18,8 @@ const Employees = () => {
   const [roles, setRoles] = useState([]);
   const [statuses, setStatuses] = useState([]);
   const [error, setError] = useState(null);
+  const [originalEmployeeData, setOriginalEmployeeData] = useState(null);
 
-  // State for filters
   const [search, setSearch] = useState("");
   const [selectedRole, setSelectedRole] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
@@ -38,7 +38,6 @@ const Employees = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  // State for form validation errors
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
@@ -64,17 +63,26 @@ const Employees = () => {
 
   useEffect(() => {
     if (!isModalVisible) {
-      // Reset fields when modal is closed
-      setFirstName("");
-      setLastName("");
-      setEmail("");
-      setContactNumber("");
-      setRoleId("");
-      setUsername("");
-      setPassword("");
-      setSelectedEmployee(null); // Clear selected employee
+      resetForm();
     }
   }, [isModalVisible]);
+
+  const handleCloseModal = () => {
+    setIsModalVisible(false); // Close the modal
+    resetForm(); // Reset form fields and state
+  };
+
+  const resetForm = () => {
+    setFirstName("");
+    setLastName("");
+    setEmail("");
+    setContactNumber("");
+    setRoleId("");
+    setUsername("");
+    setPassword("");
+    setOriginalEmployeeData(null); // Reset original data
+    setSelectedEmployee(null);
+  };
 
   const handleInputChange = (e, field) => {
     const value = e.target.value;
@@ -125,16 +133,21 @@ const Employees = () => {
     }));
   };
 
-  const handleColumnSort = (field) => {
-    const isAsc = sortField === field && sortOrder === "asc";
-    setSortOrder(isAsc ? "desc" : "asc");
-    setSortField(field);
+  const isFormModified = () => {
+    return (
+      firstName !== originalEmployeeData?.first_name ||
+      lastName !== originalEmployeeData?.last_name ||
+      email !== originalEmployeeData?.email ||
+      contactNumber !== originalEmployeeData?.contact_number ||
+      roleId !== originalEmployeeData?.role_id ||
+      statusId !== originalEmployeeData?.status_id
+    );
   };
 
   const handleAddEmployee = async (e) => {
     e.preventDefault();
 
-    const formErrors = validateForm({
+    const formErrors = validateEmployeeForm({
       firstName,
       lastName,
       email,
@@ -147,7 +160,7 @@ const Employees = () => {
     setErrors(formErrors);
 
     if (Object.values(formErrors).some((error) => error !== "")) {
-      showToast("error", "Please fill out all required fields correctly.");
+      toast.error("Please fill out all required fields correctly.");
       return;
     }
 
@@ -164,16 +177,12 @@ const Employees = () => {
 
     try {
       const response = await createEmployee(newEmployee);
-      console.log(response);
       setIsModalVisible(false);
-
       const employeesData = await getEmployees();
       setEmployees(employeesData);
-
-      showToast("success", "Employee added successfully!");
+      toast.success("Employee added successfully");
     } catch (error) {
-      console.error("Error creating employee: ", error);
-      showToast("error", "Failed to add employee. Please try again.");
+      toast.error("Failed to create employee.");
     }
   };
 
@@ -182,21 +191,21 @@ const Employees = () => {
 
     if (!selectedEmployee) return;
 
-    const formErrors = validateForm({
+    const formErrors = validateEmployeeForm({
       firstName: firstName || selectedEmployee.first_name,
       lastName: lastName || selectedEmployee.last_name,
       email: email || selectedEmployee.email,
       contactNumber: contactNumber || selectedEmployee.contact_number,
       roleId: roleId || selectedEmployee.role_id,
-      username: "",
-      password: "",
-      isEdit: true,
+      username: "", // Skip username validation for edit
+      password: "", // Skip password validation for edit
+      isEdit: true, // Indicate that this is an edit operation
     });
 
     setErrors(formErrors);
 
     if (Object.values(formErrors).some((error) => error !== "")) {
-      showToast("error", "Please fill out all required fields correctly.");
+      toast.error("Please fill out all required fields correctly.");
       return;
     }
 
@@ -212,25 +221,19 @@ const Employees = () => {
     formData.append("status_id", statusId || selectedEmployee.status_id);
 
     try {
-      const response = await updateEmployee(
-        selectedEmployee.employee_id,
-        formData,
-      );
-      console.log(response);
+      await updateEmployee(selectedEmployee.employee_id, formData);
       setIsModalVisible(false);
-
       const employeesData = await getEmployees();
       setEmployees(employeesData);
-
-      showToast("success", "Employee updated successfully!");
+      toast.success("Employee updated successfully!");
     } catch (error) {
-      console.error("Error updating employee: ", error);
-      showToast("error", "Failed to update employee. Please try again.");
+      toast.error("Failed to update employee.");
     }
   };
 
   const handleEdit = (employee) => {
     setSelectedEmployee(employee);
+    setOriginalEmployeeData(employee);
     setFirstName(employee.first_name);
     setLastName(employee.last_name);
     setEmail(employee.email);
@@ -241,20 +244,11 @@ const Employees = () => {
     setErrors({});
   };
 
-  const handleCloseModal = () => {
-    setIsModalVisible(false);
-    setSelectedEmployee(null);
+  const handleColumnSort = (field) => {
+    const isAsc = sortField === field && sortOrder === "asc";
+    setSortOrder(isAsc ? "desc" : "asc");
+    setSortField(field);
   };
-
-  const columns = [
-    { key: "employee_id", header: "ID" },
-    { key: "first_name", header: "First Name" },
-    { key: "last_name", header: "Last Name" },
-    { key: "email", header: "Email" },
-    { key: "contact_number", header: "Contact Number" },
-    { key: "role_name", header: "Role" },
-    { key: "status_description", header: "Status" },
-  ];
 
   const filteredEmployees = employees
     .filter((employee) => {
@@ -268,7 +262,9 @@ const Employees = () => {
         : true;
       const matchesStatus = selectedStatus
         ? employee.status_id === parseInt(selectedStatus)
-        : true;
+        : statuses.find((s) => s.status_id === employee.status_id)
+            ?.description !== "Archived";
+
       return matchesSearch && matchesRole && matchesStatus;
     })
     .map((item) => ({
@@ -290,16 +286,21 @@ const Employees = () => {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-row items-center justify-between">
-        <strong className="text-3xl font-bold text-gray-500">Employees</strong>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-4">
+          {/* Employees Title */}
+          <strong className="text-3xl font-bold text-gray-500">
+            Employees
+          </strong>
+
           {/* Search Input */}
           <input
             type="text"
             placeholder="Search by name..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-[200px] h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+            className="w-[300px] h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
           />
+
           {/* Role Filter */}
           <select
             value={selectedRole}
@@ -313,6 +314,7 @@ const Employees = () => {
               </option>
             ))}
           </select>
+
           {/* Status Filter */}
           <select
             value={selectedStatus}
@@ -326,21 +328,22 @@ const Employees = () => {
               </option>
             ))}
           </select>
-          <MdAddBox
-            fontSize={30}
-            className="text-gray-400 mx-2 hover:text-pink-400 active:text-pink-500"
-            onClick={() => {
-              setSelectedEmployee(null); // Clear the selected employee
-              setIsModalVisible(true); // Show the modal
-            }}
-          />
         </div>
+
+        {/* Add Employee Button */}
+        <MdAddBox
+          fontSize={30}
+          className="text-gray-400 hover:text-pink-400 active:text-pink-500"
+          onClick={() => {
+            setSelectedEmployee(null);
+            resetForm();
+            setIsModalVisible(true);
+          }}
+        />
       </div>
 
-      {/* Render EmployeeTable */}
       <EmployeeTable
         sortedEmployees={sortedEmployees}
-        columns={columns}
         onEdit={handleEdit}
         onArchive={archiveEmployee}
         sortField={sortField}
@@ -348,13 +351,13 @@ const Employees = () => {
         handleColumnSort={handleColumnSort}
       />
 
-      {/* Render EmployeeForm */}
       <EmployeeForm
         isVisible={isModalVisible}
         handleCloseModal={handleCloseModal}
         handleUpdateEmployee={handleUpdateEmployee}
         handleAddEmployee={handleAddEmployee}
         handleInputChange={handleInputChange}
+        isFormModified={isFormModified}
         selectedEmployee={selectedEmployee}
         firstName={firstName}
         lastName={lastName}
