@@ -248,15 +248,28 @@ console.log("Multer processed file:", req.file);
     // Update the product variation with the new data
     const updatedProductVariation = await pool.query(
       `UPDATE product_variation
-       SET type = $1, value = $2, sku = $3, unit_price = $4, product_status_id = $5, image = $6
-       WHERE variation_id = $7
-       RETURNING *`,
+        SET type = $1, value = $2, sku = $3, unit_price = $4, product_status_id = $5, image = $6
+        WHERE variation_id = $7
+        RETURNING *`,
       [type, value, sku, unit_price, product_status_id, image, id]
+    );
+
+    // Update inventory too
+    const updatedInventory = await pool.query(
+      `UPDATE inventory
+        SET last_updated_date = NOW()
+        WHERE variation_id = $1
+        RETURNING *`,
+      [id]
     );
 
     if (updatedProductVariation.rows.length === 0) {
       return res.status(404).json({ message: 'Product variation update failed' });
     }
+
+     if (updatedInventory.rowCount === 0) {
+        console.error('Inventory update failed for variation_id:', id);
+      }
 
     res.status(200).json(updatedProductVariation.rows[0]);
   } catch (error) {
@@ -264,10 +277,6 @@ console.log("Multer processed file:", req.file);
     res.status(500).json({ message: 'Error updating product variation', error: error.message });
   }
 };
-
-
-
-
 
 // Archive product variation
 const archiveProductVariation = async (req, res) => {

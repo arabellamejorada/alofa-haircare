@@ -1,30 +1,31 @@
 import React, { Fragment, useState, useEffect } from "react";
 import DataTable from "../shared/DataTable";
-import { getInventory, getAllProducts } from "../../api/products";
+import { getInventory, getStatus, getAllProducts } from "../../api/products";
 import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 
 const Inventory = () => {
   const [inventory, setInventory] = useState([]);
+  const [productStatuses, setProductStatuses] = useState([]);
   const [products, setProducts] = useState([]);
   const [error, setError] = useState(null);
+
   const [search, setSearch] = useState("");
-  const [selectedProduct, setSelectedProduct] = useState(""); // For dropdown filter
+  const [selectedProduct, setSelectedProduct] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("");
   const [sortField, setSortField] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [inventoryData, productsData] = await Promise.all([
+        const [inventoryData, statusesData, productsData] = await Promise.all([
           getInventory(),
+          getStatus(),
           getAllProducts(),
         ]);
         setInventory(inventoryData);
+        setProductStatuses(statusesData);
         setProducts(productsData);
-
-        // Debugging logs for productMap
-        console.log("Products Data:", productsData);
-        console.log("Inventory Data:", inventoryData);
       } catch (err) {
         setError("Failed to fetch data");
       }
@@ -34,15 +35,8 @@ const Inventory = () => {
   }, []);
 
   const handleSearchChange = (e) => setSearch(e.target.value);
-  const handleProductSelect = (e) => setSelectedProduct(e.target.value); // Handle product selection
-
-  // Function to handle sorting when column header is clicked
-  const handleColumnSort = (key) => {
-    const newSortOrder =
-      sortField === key && sortOrder === "asc" ? "desc" : "asc";
-    setSortField(key);
-    setSortOrder(newSortOrder);
-  };
+  const handleProductSelect = (e) => setSelectedProduct(e.target.value);
+  const handleStatusSelect = (e) => setSelectedStatus(e.target.value);
 
   // Function to render the header with sorting arrows
   const renderHeader = (key, label) => (
@@ -59,66 +53,47 @@ const Inventory = () => {
     </div>
   );
 
-  const productMap = products.reduce((acc, product) => {
-    acc[product.product_id] = {
-      name: product.name,
-      is_archived: product.is_archived,
-    };
-    return acc;
-  }, {});
+  const handleColumnSort = (field) => {
+    const isAsc = sortField === field && sortOrder === "asc";
+    setSortOrder(isAsc ? "desc" : "asc");
+    setSortField(field);
+  };
 
-  // Function to filter and sort inventory based on search, dropdown filter, and sort criteria
-  const filterAndSortInventory = (
-    inventory,
-    search,
-    selectedProduct,
-    sortField,
-    sortOrder,
-  ) => {
-    let filtered = inventory.filter((item) => {
-      const productName =
-        productMap[item.product_id]?.name?.toLowerCase() || "";
-      const variation = `${item.type} - ${item.value}`.toLowerCase();
-
+  const processedInventory = inventory
+    .filter((inventory) => {
+      const productName = inventory.product_name.toLowerCase();
+      const variation = `${inventory.type} - ${inventory.value}`.toLowerCase();
+      const sku = inventory.sku.toLowerCase();
+      // Check if the item matches the search criteria
       const matchesSearch =
         productName.includes(search.toLowerCase()) ||
-        variation.includes(search.toLowerCase());
+        variation.includes(search.toLowerCase()) ||
+        sku.includes(search.toLowerCase());
 
+      // Check if the item matches the selected product and status filters
       const matchesProductFilter =
         selectedProduct === "" ||
         productName.toLowerCase() === selectedProduct.toLowerCase();
 
-      return matchesSearch && matchesProductFilter;
+      const matchesStatusFilter =
+        selectedStatus === "" || inventory.product_status === selectedStatus;
+
+      return (
+        matchesSearch &&
+        matchesProductFilter &&
+        matchesStatusFilter &&
+        (selectedStatus
+          ? inventory.product_status === selectedStatus
+          : inventory.product_status.toLowerCase() !== "archived")
+      );
+    })
+    .sort((a, b) => {
+      if (sortOrder === "asc") {
+        return a[sortField] > b[sortField] ? 1 : -1;
+      } else {
+        return a[sortField] < b[sortField] ? 1 : -1;
+      }
     });
-
-    // Sort by sortField and sortOrder (asc or desc)
-    if (sortField) {
-      filtered = filtered.sort((a, b) => {
-        const aField = a[sortField] || "";
-        const bField = b[sortField] || "";
-
-        if (sortOrder === "asc") {
-          return aField > bField ? 1 : -1;
-        } else {
-          return aField < bField ? 1 : -1;
-        }
-      });
-    }
-
-    return filtered;
-  };
-
-  const processedInventory = filterAndSortInventory(
-    inventory,
-    search,
-    selectedProduct,
-    sortField,
-    sortOrder,
-  ).map((item) => ({
-    ...item,
-    product_name: productMap[item.product_id]?.name || "Unknown", // Add product_name from productMap
-    product_variation: `${item.type} - ${item.value}`, // Combine variation type and value
-  }));
 
   const columns = [
     { key: "inventory_id", header: renderHeader("inventory_id", "ID") },
@@ -128,12 +103,16 @@ const Inventory = () => {
       header: renderHeader("product_name", "Product Name"),
     },
     {
-      key: "product_variation",
-      header: renderHeader("product_variation", "Variation"),
+      key: "variation",
+      header: renderHeader("variation", "Variation"),
     },
     {
       key: "stock_quantity",
       header: renderHeader("stock_quantity", "Stock Quantity"),
+    },
+    {
+      key: "product_status",
+      header: renderHeader("product_status", "Status"),
     },
     {
       key: "last_updated_date",
@@ -156,6 +135,11 @@ const Inventory = () => {
             value={selectedProduct}
             onChange={handleProductSelect}
           />
+          <StatusDropdown
+            value={selectedStatus}
+            onChange={handleStatusSelect}
+            statuses={productStatuses}
+          />
         </div>
         <DataTable
           data={processedInventory}
@@ -166,6 +150,22 @@ const Inventory = () => {
     </Fragment>
   );
 };
+
+// Status dropdown component for selecting status
+const StatusDropdown = ({ value, onChange, statuses }) => (
+  <select
+    value={value}
+    onChange={onChange}
+    className="w-[200px] h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+  >
+    <option value="">All Statuses</option>
+    {statuses.map((status) => (
+      <option key={status.product_status_id} value={status.product_status_id}>
+        {status.description}{" "}
+      </option>
+    ))}
+  </select>
+);
 
 // Dropdown component for selecting product
 const ProductDropdown = ({ products, value, onChange }) => (

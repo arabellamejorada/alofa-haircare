@@ -5,10 +5,20 @@ const getAllInventories = async (req, res) => {
     const client = await pool.connect();
     try {
         const result = await client.query(
-            `SELECT inventory.*, product_variation.*, product.name AS product_name
-            FROM inventory
-            JOIN product_variation ON inventory.variation_id = product_variation.variation_id
-            JOIN product ON product_variation.product_id = product.product_id`
+            `SELECT 
+                inventory.*, 
+                product_variation.*, 
+                product.name AS product_name, 
+                product_status.description AS product_status,
+                CONCAT(product_variation.type, ' - ', product_variation.value) AS variation
+            FROM 
+                inventory
+            JOIN 
+                product_variation ON inventory.variation_id = product_variation.variation_id
+            JOIN 
+                product ON product_variation.product_id = product.product_id
+            JOIN 
+                product_status ON product_variation.product_status_id = product_status.status_id;`
         );
 
         // Format the date (assuming `last_updated_date` is a timestamp in the `inventory` table)
