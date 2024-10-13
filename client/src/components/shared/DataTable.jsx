@@ -82,7 +82,8 @@ const DataTable = ({
                 key={index}
                 className={
                   item.status === "Archived" ||
-                  item.status_description === "Archived"
+                  item.status_description === "Archived" ||
+                  item.product_status === "Archived"
                     ? "bg-gray-200"
                     : ""
                 }

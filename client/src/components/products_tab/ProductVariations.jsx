@@ -455,8 +455,8 @@ const ProductVariations = () => {
                   <option value="" disabled>
                     Select Type
                   </option>
-                  <option value="size">Size</option>
-                  <option value="color">Color</option>
+                  <option value="Size">Size</option>
+                  <option value="Color">Color</option>
                 </select>
                 <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500" />
               </div>
