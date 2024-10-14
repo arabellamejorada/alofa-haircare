@@ -109,28 +109,6 @@ const ProductVariationsTable = ({
                   />
                 </td>
 
-                {/* product_status */}
-                {/* <td className="px-2 py-1 border-b border-gray-200 text-sm text-center">
-                  <select
-                    value={variation.product_status_id}
-                    onChange={(e) =>
-                      handleVariationChange(
-                        index,
-                        "product_status_id",
-                        e.target.value,
-                      )
-                    }
-                    className="w-full border border-gray-200 rounded px-2 py-1 text-center appearance-none"
-                  >
-                    <option value="">Select Status</option>
-                    {statuses.map((status) => (
-                      <option key={status.status_id} value={status.status_id}>
-                        {status.description}
-                      </option>
-                    ))}
-                  </select>
-                </td> */}
-
                 {/* image */}
                 <td className="px-2 py-1">
                   <input
