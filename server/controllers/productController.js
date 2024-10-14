@@ -384,28 +384,49 @@ const updateProductCategory = async (req, res) => {
 };
 
 const deleteProductCategory = async (req, res) => {
-    const client = await pool.connect();
     const product_category_id = parseInt(req.params.id);
+  const client = await pool.connect();
 
-    try {
-        const results = await client.query(
-            `DELETE FROM product_category 
-            WHERE product_category_id = $1 
-            RETURNING product_category_id`, 
-            [product_category_id]);    
+  console.log("id", product_category_id); 
 
-        if (results.rowCount === 0) {
-            return res.status(404).json({ message: 'Product category not found' });
-        }
-        res.status(200).send(`Product category deleted with ID: ${product_category_id}`);
+  try {
+    // First, check if the category has any associated product variations
+    const checkVariationsQuery = `
+      SELECT COUNT(*) AS variation_count 
+      FROM product
+      WHERE product_category_id = $1;
+    `;
+    const checkVariationsResult = await client.query(checkVariationsQuery, [product_category_id]);
+
+    const variationCount = parseInt(checkVariationsResult.rows[0].variation_count, 10);
+
+    if (variationCount > 0) {
+      // If there are associated product variations, return an error
+      return res.status(400).json({ message: "Cannot delete category with associated product variations." });
     }
-    catch (error) {
-        console.error('Error deleting product category:', error);
-        res.status(500).json({ message: 'Error deleting product category', error: error.message });
-    } finally {
-        client.release();
+
+    // If no associated product variations, proceed with deletion
+    const deleteCategoryQuery = `
+      DELETE FROM product_category 
+      WHERE product_category_id = $1 
+      RETURNING *;
+    `;
+    const deleteResult = await client.query(deleteCategoryQuery, [product_category_id]);
+
+    if (deleteResult.rowCount === 0) {
+      return res.status(404).json({ message: "Category not found." });
     }
+
+    return res.status(200).json({ message: "Category deleted successfully." });
+  } catch (error) {
+    console.error("Error deleting category:", error);
+    res.status(500).json({ message: "Error deleting category." });
+  } finally {
+    client.release();
+  }
 };
+
+
 
 module.exports = {
     createProduct,

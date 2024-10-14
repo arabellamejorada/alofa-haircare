@@ -20,7 +20,6 @@ router.get('/product-category/:id', productController.getProductCategoryById);  
 router.put('/product-category/:id', productController.updateProductCategory);   // Update by ID
 router.delete('/product-category/:id', productController.deleteProductCategory);// Delete by ID
 
-
 // PRODUCT VARIATION
 router.post("/product-variations", upload.array("images", 15), productVariationsController.createProductVariationsWithInventory);
 router.get('/product-variations', productVariationsController.getAllProductVariations);       // Read all

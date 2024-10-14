@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { IoMdArchive } from "react-icons/io";
-import { MdEditDocument } from "react-icons/md";
+import { MdEditDocument, MdDelete } from "react-icons/md";
 
 const formatColumnName = (columnName) => {
   if (columnName.toLowerCase() === "id") {
@@ -16,6 +16,7 @@ const DataTable = ({
   columns,
   onEdit,
   onArchive,
+  onDelete,
   isInventory,
   isProductCategory,
 }) => {
@@ -111,7 +112,19 @@ const DataTable = ({
                       >
                         <MdEditDocument fontSize={24} />
                       </div>
-                      {!isProductCategory && (
+                      {isProductCategory ? (
+                        // Show delete icon if it's a product category
+                        <div
+                          className="text-pink-500 hover:text-pink-600"
+                          onClick={() => onDelete(item)} // Trigger delete action
+                          role="button"
+                          tabIndex={0}
+                          aria-label="Delete"
+                        >
+                          <MdDelete fontSize={24} />
+                        </div>
+                      ) : (
+                        // Show archive icon otherwise
                         <div
                           className="text-pink-500 hover:text-pink-600"
                           onClick={() => onArchive(item)}
