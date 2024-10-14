@@ -30,10 +30,24 @@ const createProduct = async (req, res) => {
     }
 };
 
+// Get all products with their respective product category and status names
 const getAllProducts = async (req, res) => {
     const client = await pool.connect();
+
     try {
-        const results = await client.query('SELECT * FROM product ORDER BY product_id ASC');
+        const results = await client.query(
+            `SELECT 
+                p.product_id, 
+                p.name, 
+                p.description, 
+                c.product_category_id, 
+                c.name AS product_category, 
+                s.status_id, 
+                s.description AS product_status 
+            FROM product p
+            JOIN product_category c ON p.product_category_id = c.product_category_id
+            JOIN product_status s ON p.product_status_id = s.status_id`
+        );
         res.status(200).json(results.rows);
     } catch (error) {
         console.error('Error fetching products:', error);
@@ -43,15 +57,32 @@ const getAllProducts = async (req, res) => {
     }
 };
 
+// Get product with its respective product category and status name
 const getProductById = async (req, res) => {
     const client = await pool.connect();
     const product_id = parseInt(req.params.id);
 
     try {
-        const results = await client.query('SELECT * FROM product WHERE product_id = $1', [product_id]);
+        const results = await client.query(
+            `SELECT
+                p.product_id,
+                p.name,
+                p.description,
+                c.product_category_id,
+                c.name AS product_category,
+                s.status_id,
+                s.description AS product_status
+            FROM product p
+            JOIN product_category c ON p.product_category_id = c.product_category_id
+            JOIN product_status s ON p.product_status_id = s.status_id
+            WHERE p.product_id = $1`,
+            [product_id]
+        );
+
         if (results.rows.length === 0) {
             return res.status(404).json({ message: 'Product not found' });
         }
+
         res.status(200).json(results.rows[0]);
     } catch (error) {
         console.error('Error fetching product:', error);
@@ -103,31 +134,53 @@ const updateProduct = async (req, res) => {
     }
 };
 
+// Archive product by setting product_status_id to mapped value of 'Archived' in product_status table
 const archiveProduct = async (req, res) => {
     const client = await pool.connect();
     const product_id = parseInt(req.params.id);
 
     try {
+        await client.query('BEGIN'); // Start transaction
+
+        // Fetch product status id for 'Archived' status
+        const statusResults = await client.query(
+            'SELECT status_id FROM product_status WHERE description = $1',
+            ['Archived'] // Assuming 'description' is the column name
+        );
+        
+        if (statusResults.rows.length === 0) {
+            await client.query('ROLLBACK'); // Rollback in case of failure
+            return res.status(404).json({ message: 'Archived status not found' });
+        }
+
+        const archivedStatusId = statusResults.rows[0].status_id;
+
+        // Update product status to 'Archived'
         const results = await client.query(
             `UPDATE product
-            SET product_status_id = 4
-            WHERE product_id = $1
+            SET product_status_id = $1
+            WHERE product_id = $2
             RETURNING *`,
-            [product_id]
+            [archivedStatusId, product_id]
         );
 
         if (results.rows.length === 0) {
+            await client.query('ROLLBACK'); // Rollback in case of failure
             return res.status(404).json({ message: 'Product not found' });
         }
 
+        await client.query('COMMIT'); // Commit transaction
         res.status(200).json(results.rows[0]);
     } catch (error) {
+        await client.query('ROLLBACK'); // Rollback in case of error
         console.error('Error archiving product:', error);
         res.status(500).json({ message: 'Error archiving product', error: error.message });
     } finally {
         client.release();
     }
 };
+
+
 
 const deleteProduct = async (req, res) => {
     const client = await pool.connect();
@@ -154,6 +207,26 @@ const deleteProduct = async (req, res) => {
 
 
 // PRODUCT STATUS CRUD
+const createProductStatus = async (req, res) => {
+    const client = await pool.connect();
+    const { status } = req.body;
+
+    try {
+        const results = await client.query(
+            `INSERT INTO product_status (status)
+            VALUES ($1)
+            RETURNING product_status_id`,
+            [status]
+        );
+        res.status(201).json({ message: 'Product status added', product_status_id: results.rows[0].product_status_id });
+    } catch (error) {
+        console.error('Error creating product status:', error);
+        res.status(500).json({ message: 'Error creating product status', error: error.message });
+    } finally {
+        client.release();
+    }
+};
+
 const getAllProductStatus = async (req, res) => {
     const client = await pool.connect();
 
@@ -341,6 +414,7 @@ module.exports = {
     updateProduct,
     archiveProduct,
     deleteProduct,
+    createProductStatus,
     getAllProductStatus,
     getProductStatusById,
     updateProductStatus,
