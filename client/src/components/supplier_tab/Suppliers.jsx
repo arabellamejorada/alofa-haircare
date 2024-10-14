@@ -27,7 +27,6 @@ const Suppliers = () => {
   const [sortField, setSortField] = useState("supplier_id");
   const [sortOrder, setSortOrder] = useState("asc");
   const [selectedStatus, setSelectedStatus] = useState(""); // Status filter state
-  const [error, setError] = useState(null);
 
   // Supplier form fields
   const [supplierFormData, setSupplierFormData] = useState({
@@ -46,8 +45,8 @@ const Suppliers = () => {
       try {
         const suppliersData = await getAllSuppliers();
         setSuppliers(suppliersData);
-      } catch (err) {
-        setError("Failed to fetch data");
+      } catch (error) {
+        console.log(error);
       }
     };
     fetchData();
@@ -109,10 +108,12 @@ const Suppliers = () => {
 
   const handleAddSupplier = async (e) => {
     e.preventDefault();
+
     if (!validateForm()) {
       toast.error("Please fill out all required fields correctly.");
       return;
     }
+
     try {
       await createSupplier(supplierFormData);
       const updatedSuppliers = await getAllSuppliers();
@@ -127,10 +128,12 @@ const Suppliers = () => {
 
   const handleUpdateSupplier = async (e) => {
     e.preventDefault();
+
     if (!validateForm()) {
       toast.error("Please fill out all required fields correctly.");
       return;
     }
+
     if (!selectedSupplier) return;
     try {
       await updateSupplier(selectedSupplier.supplier_id, supplierFormData);

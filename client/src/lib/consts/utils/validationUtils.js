@@ -3,6 +3,9 @@
 // Validate that a string is not empty
 export const validateName = (name) => name.trim() !== "";
 
+// Validate that a description is not empty
+export const validateDescription = (description) => description.trim() !== "";
+
 // Validate email format using regex
 export const validateEmail = (email) => /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(email);
 
@@ -22,8 +25,16 @@ export const validatePassword = (password) => password.length >= 6;
 export const validateAddress = (address) => address.trim() !== "";
 
 // Validate that a status is selected
-export const validateStatus = (status) => status.trim() !== "";
+export const validateStatus = (status) => {
+  if (!status) return false; // If status is empty or falsy, it's invalid
+  return typeof status === "string" ? status.trim() !== "" : true; // Use trim only if it's a string
+};
 
+// Validate that a category is selected
+export const validateCategory = (category) => {
+  if (!category) return false; // If category is empty or falsy, it's invalid
+  return typeof category === "string" ? category.trim() !== "" : true; // Use trim only if it's a string
+};
 // Function to validate employee form data
 export const validateEmployeeForm = ({
   firstName,
@@ -77,5 +88,20 @@ export const validateSupplierForm = ({
     email: validateEmail(email) ? "" : "Enter a valid email address",
     address: validateAddress(address) ? "" : "Address is required",
     status: validateStatus(status) ? "" : "Status is required",
+  };
+};
+
+// Function to validate product form data
+export const validateProductForm = ({
+  product_name,
+  product_description,
+  product_status,
+  product_category,
+}) => {
+  return {
+    product_name: validateName(product_name) ? "" : "Product name is required",
+    product_description: validateDescription(product_description) ? "" : "Product description is required",
+    product_status: validateStatus(product_status) ? "" : "Status is required",
+    product_category: validateCategory(product_category) ? "" : "Category is required",
   };
 };

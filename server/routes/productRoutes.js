@@ -31,9 +31,10 @@ router.delete('/product-variations/:id', productVariationsController.deleteProdu
 router.delete('/product-variations', productVariationsController.deleteAllProductVariations);   // Delete all
 
 // PRODUCT STATUS
-router.get('/product-status', productController.getAllProductStatus);       // Read all
-router.get('/product-status/:id', productController.getProductStatusById);     // Read by ID
-router.put('/product-status/:id', productController.updateProductStatus);      // Update by ID
-router.delete('/product-status/:id', productController.deleteAllProductStatus);   // Delete by ID
+router.post('/product-status', productController.createProductStatus);          // Create
+router.get('/product-status', productController.getAllProductStatus);           // Read all
+router.get('/product-status/:id', productController.getProductStatusById);      // Read by ID
+router.put('/product-status/:id', productController.updateProductStatus);       // Update by ID
+router.delete('/product-status/:id', productController.deleteAllProductStatus); // Delete by ID
 
 module.exports = router;
