@@ -61,9 +61,11 @@ const Inventory = () => {
 
   const processedInventory = inventory
     .filter((inventory) => {
-      const productName = inventory.product_name.toLowerCase();
-      const variation = `${inventory.type} - ${inventory.value}`.toLowerCase();
-      const sku = inventory.sku.toLowerCase();
+      const productName = inventory.product_name?.toLowerCase() || "";
+      const variation =
+        `${inventory.type || ""} - ${inventory.value || ""}`.toLowerCase();
+      const sku = inventory.sku?.toLowerCase() || "";
+
       // Check if the item matches the search criteria
       const matchesSearch =
         productName.includes(search.toLowerCase()) ||
@@ -72,8 +74,7 @@ const Inventory = () => {
 
       // Check if the item matches the selected product and status filters
       const matchesProductFilter =
-        selectedProduct === "" ||
-        productName.toLowerCase() === selectedProduct.toLowerCase();
+        selectedProduct === "" || productName === selectedProduct.toLowerCase();
 
       const matchesStatusFilter =
         selectedStatus === "" || inventory.product_status === selectedStatus;
@@ -84,7 +85,7 @@ const Inventory = () => {
         matchesStatusFilter &&
         (selectedStatus
           ? inventory.product_status === selectedStatus
-          : inventory.product_status.toLowerCase() !== "archived")
+          : inventory.product_status?.toLowerCase() !== "archived")
       );
     })
     .sort((a, b) => {
