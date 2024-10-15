@@ -6,7 +6,9 @@ import Products from './pages/Products.jsx';
 import FAQs from './pages/FAQs.jsx';
 import ShoppingCart from './pages/ShoppingCart.jsx';
 import CartItem from './components/CartItem.jsx'
+import Checkout from './pages/Checkout.jsx';
 import './App.css';
+
 
 function App() {
   return (
@@ -19,6 +21,7 @@ function App() {
           <Route path="/frequently-asked-questions" element={<FAQs/>} />
           <Route path="/shoppingcart" element={<ShoppingCart/>} />
           <Route path="/cartitem" element={<CartItem/>} />
+          <Route path="/checkout" element={<Checkout/>} />
         </Routes>
       </Router>
     </CartProvider>
