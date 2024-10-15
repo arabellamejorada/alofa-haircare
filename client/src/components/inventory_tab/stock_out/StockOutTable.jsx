@@ -9,45 +9,123 @@ const StockOutTable = ({
   stockOutProducts,
   setStockOutProducts,
 }) => {
-  // State for search terms and dropdown visibility per row
-  const [searchTerms, setSearchTerms] = useState(stockOutProducts.map(() => ""));
-  const [dropdownVisibility, setDropdownVisibility] = useState(
-    stockOutProducts.map(() => false),
-  );
+  // Initialize rows with a default row if stockOutProducts is empty
+  const [rows, setRows] = useState(() => {
+    if (stockOutProducts && stockOutProducts.length > 0) {
+      return stockOutProducts.map((product) => ({
+        ...product,
+        searchTerm: product.product_name || "",
+        isDropdownVisible: false,
+      }));
+    } else {
+      return [
+        {
+          variation_id: "",
+          product_name: "",
+          sku: "",
+          quantity: 1,
+          reason: "",
+          searchTerm: "",
+          isDropdownVisible: false,
+        },
+      ];
+    }
+  });
+
+  // Ensure stockOutProducts is initialized with a default row
+  useEffect(() => {
+    if (!stockOutProducts || stockOutProducts.length === 0) {
+      setStockOutProducts([
+        {
+          variation_id: "",
+          product_name: "",
+          sku: "",
+          quantity: 1,
+          reason: "",
+        },
+      ]);
+    }
+  }, [stockOutProducts, setStockOutProducts]);
+
+  // Refs and state for dropdown positioning
+  const inputRefs = useRef([]);
+  const dropdownRefs = useRef([]);
+  const [dropdownPositions, setDropdownPositions] = useState([]);
 
   // Handle adding a new row
   const handleAddRow = () => {
     const newRow = {
+      variation_id: "",
       product_name: "",
       sku: "",
       quantity: 1,
       reason: "",
+      searchTerm: "",
+      isDropdownVisible: false,
     };
+    setRows([...rows, newRow]);
     setStockOutProducts([...stockOutProducts, newRow]);
-    setSearchTerms([...searchTerms, ""]); // Add a new search term
-    setDropdownVisibility([...dropdownVisibility, false]); // Add a new dropdown visibility state
   };
 
-  // State for dropdown position
-  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
-  const inputRefs = useRef([]);
-  const dropdownRef = useRef(null);
+  // Handle deleting a row
+  const handleDeleteRow = (index) => {
+    const updatedRows = rows.filter((_, i) => i !== index);
+    setRows(updatedRows);
+    setStockOutProducts(updatedRows);
+  };
 
-  // Handle input focus to show dropdown
-  const handleFocus = (index) => {
+  // Handle variation selection
+  const handleVariationChange = (index, variation) => {
+    const updatedRows = [...rows];
+    updatedRows[index] = {
+      ...updatedRows[index],
+      variation_id: variation.variation_id,
+      product_name: `${variation.product_name} - ${variation.type}: ${variation.value}`,
+      sku: variation.sku,
+      searchTerm: variation.product_name,
+      isDropdownVisible: false,
+    };
+    setRows(updatedRows);
+    setStockOutProducts(updatedRows);
+  };
+
+  // Handle search input change
+  const handleSearchChange = (index, value) => {
+    const updatedRows = [...rows];
+    updatedRows[index].searchTerm = value;
+    updatedRows[index].isDropdownVisible = true;
+    setRows(updatedRows);
+    updateDropdownPosition(index);
+  };
+
+  // Update dropdown position for a specific index
+  const updateDropdownPosition = (index) => {
     const inputElement = inputRefs.current[index];
-    const rect = inputElement.getBoundingClientRect();
-    setDropdownPosition({ top: rect.bottom, left: rect.left });
-
-    const newVisibility = [...dropdownVisibility];
-    newVisibility[index] = true;
-    setDropdownVisibility(newVisibility);
+    if (inputElement) {
+      const rect = inputElement.getBoundingClientRect();
+      const position = {
+        top: rect.bottom + window.scrollY,
+        left: rect.left + window.scrollX,
+        width: rect.width,
+      };
+      const updatedPositions = [...dropdownPositions];
+      updatedPositions[index] = position;
+      setDropdownPositions(updatedPositions);
+    }
   };
 
-  // Handle click outside to close dropdown
+  // Handle click outside to close dropdowns
   const handleClickOutside = (event) => {
-    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-      setDropdownVisibility((prevVisibility) => prevVisibility.map(() => false));
+    const isClickInsideDropdown = dropdownRefs.current.some(
+      (ref) => ref && ref.contains(event.target),
+    );
+    const isClickInsideInput = inputRefs.current.some(
+      (ref) => ref && ref.contains(event.target),
+    );
+    if (!isClickInsideDropdown && !isClickInsideInput) {
+      setRows((prevRows) =>
+        prevRows.map((row) => ({ ...row, isDropdownVisible: false })),
+      );
     }
   };
 
@@ -58,61 +136,21 @@ const StockOutTable = ({
     };
   }, []);
 
-  // Handle deleting a row
-  const handleDeleteRow = (index) => {
-    const updatedData = stockOutProducts.filter((_, i) => i !== index);
-    setStockOutProducts(updatedData);
-    setSearchTerms(searchTerms.filter((_, i) => i !== index)); // Remove the corresponding search term
-    setDropdownVisibility(dropdownVisibility.filter((_, i) => i !== index)); // Remove the corresponding dropdown visibility state
-  };
-
-  // Handle product variation change
-  const handleVariationChange = (index, variationId, productName) => {
-    const selectedVariation = productVariations.find(
-      (variation) => variation.variation_id === parseInt(variationId),
-    );
-
-    const updatedData = [...stockOutProducts];
-    if (selectedVariation) {
-      updatedData[index] = {
-        ...updatedData[index],
-        variation_id: selectedVariation.variation_id,
-        product_name: productName,
-        sku: selectedVariation.sku,
-      };
-    } else {
-      // Clear the selection if no variation is selected
-      updatedData[index] = {
-        ...updatedData[index],
-        variation_id: "",
-        product_name: "",
-        sku: "",
-      };
-    }
-    setStockOutProducts(updatedData);
-
-    // Hide dropdown and reset search term for the row
-    const updatedVisibility = [...dropdownVisibility];
-    updatedVisibility[index] = false;
-    setDropdownVisibility(updatedVisibility);
-
-    const updatedSearchTerms = [...searchTerms];
-    updatedSearchTerms[index] = productName;
-    setSearchTerms(updatedSearchTerms);
-  };
-
   // Handle reason change
   const handleReasonChange = (index, reason) => {
-    const updatedData = [...stockOutProducts];
-    updatedData[index].reason = reason;
-    setStockOutProducts(updatedData);
+    const updatedRows = [...rows];
+    updatedRows[index].reason = reason;
+    setRows(updatedRows);
+    setStockOutProducts(updatedRows);
   };
 
-  // Filter variations based on the search term for a specific row
+  // Filter variations based on the search term
   const getFilteredVariations = (searchTerm) =>
     productVariations.filter(
       (variation) =>
-        variation.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        variation.product_name
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
         variation.value.toLowerCase().includes(searchTerm.toLowerCase()),
     );
 
@@ -147,58 +185,53 @@ const StockOutTable = ({
           </thead>
 
           <tbody>
-            {stockOutProducts.map((item, index) => (
+            {rows.map((row, index) => (
               <tr key={index}>
+                {/* Index */}
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-left">
                   {index + 1}
                 </td>
                 {/* Variation Searchable Dropdown */}
-                <td className="px-5 py-2 border-b border-gray-200 text-sm text-left relative overflow-visible">
+                <td className="px-5 py-2 border-b border-gray-200 text-sm text-left relative">
                   <input
                     type="text"
                     placeholder="Search Product Variation"
-                    value={searchTerms[index]}
-                    onChange={(e) => {
-                      const newSearchTerms = [...searchTerms];
-                      newSearchTerms[index] = e.target.value;
-                      setSearchTerms(newSearchTerms);
-
-                      const newVisibility = [...dropdownVisibility];
-                      newVisibility[index] = true;
-                      setDropdownVisibility(newVisibility);
+                    value={row.searchTerm}
+                    onChange={(e) => handleSearchChange(index, e.target.value)}
+                    onFocus={() => {
+                      handleSearchChange(index, row.searchTerm);
+                      updateDropdownPosition(index);
                     }}
-                    onFocus={() => handleFocus(index)}
                     className="w-64 border border-gray-200 rounded px-2 py-1 text-left"
                     ref={(el) => (inputRefs.current[index] = el)}
                   />
-                  {dropdownVisibility[index] &&
+                  {row.isDropdownVisible &&
+                    dropdownPositions[index] &&
                     ReactDOM.createPortal(
                       <div
-                        ref={dropdownRef}
+                        ref={(el) => (dropdownRefs.current[index] = el)}
                         className="bg-white border border-slate-300 rounded-md z-20 max-h-40 overflow-y-auto"
                         style={{
-                          position: "fixed",
-                          top: dropdownPosition.top,
-                          left: dropdownPosition.left,
-                          width: "256px",
+                          position: "absolute",
+                          top: `${dropdownPositions[index].top}px`,
+                          left: `${dropdownPositions[index].left}px`,
+                          width: `${dropdownPositions[index].width}px`,
                         }}
                       >
-                        {getFilteredVariations(searchTerms[index]).length > 0 ? (
-                          getFilteredVariations(searchTerms[index]).map((variation) => (
-                            <div
-                              key={variation.variation_id}
-                              onClick={() =>
-                                handleVariationChange(
-                                  index,
-                                  variation.variation_id,
-                                  `${variation.product_name} - ${variation.type}: ${variation.value}`,
-                                )
-                              }
-                              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                            >
-                              {`${variation.product_name} - ${variation.type}: ${variation.value}`}
-                            </div>
-                          ))
+                        {getFilteredVariations(row.searchTerm).length > 0 ? (
+                          getFilteredVariations(row.searchTerm).map(
+                            (variation) => (
+                              <div
+                                key={variation.variation_id}
+                                onClick={() =>
+                                  handleVariationChange(index, variation)
+                                }
+                                className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                              >
+                                {`${variation.product_name} - ${variation.type}: ${variation.value}`}
+                              </div>
+                            ),
+                          )
                         ) : (
                           <div className="px-4 py-2 text-gray-500">
                             No products found
@@ -211,13 +244,13 @@ const StockOutTable = ({
 
                 {/* SKU */}
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-left">
-                  {item.sku || ""}
+                  {row.sku || ""}
                 </td>
 
-                {/* Current Stock Quantity  */}
+                {/* Current Stock Quantity */}
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-left">
                   {inventories.find(
-                    (inventory) => inventory.variation_id === item.variation_id,
+                    (inventory) => inventory.variation_id === row.variation_id,
                   )?.stock_quantity || 0}
                 </td>
 
@@ -226,13 +259,14 @@ const StockOutTable = ({
                   <input
                     type="number"
                     min="1"
-                    value={item.quantity || 1}
+                    value={row.quantity || 1}
                     onChange={(e) => {
-                      const value = e.target.value;
+                      const value = parseInt(e.target.value, 10);
                       if (value > 0) {
-                        const updatedData = [...stockOutProducts];
-                        updatedData[index]["quantity"] = value;
-                        setStockOutProducts(updatedData);
+                        const updatedRows = [...rows];
+                        updatedRows[index].quantity = value;
+                        setRows(updatedRows);
+                        setStockOutProducts(updatedRows);
                       }
                     }}
                     className="w-20 border border-gray-200 rounded px-2 py-1 text-left"
@@ -243,7 +277,7 @@ const StockOutTable = ({
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-left">
                   <input
                     type="text"
-                    value={item.reason || ""}
+                    value={row.reason || ""}
                     onChange={(e) => handleReasonChange(index, e.target.value)}
                     className="w-full border border-gray-200 rounded px-2 py-1 text-left"
                   />
