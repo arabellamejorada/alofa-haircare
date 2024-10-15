@@ -9,6 +9,7 @@ export const createProductVariationWithInventory = async (productData) => {
                 "Content-Type": "multipart/form-data",
             },
             });
+            // console.log
         
             console.log('Product variation with inventory created: ', response.data);
         return response.data;
@@ -108,15 +109,16 @@ export const updateCategory = async (categoryId, categoryData) => {
     }
 };
 
-export const archiveCategory = async (categoryId) => {
-    try {
-        const response = await axios.put(`/product-category/${categoryId}/archive`);
+export const deleteCategory = async (categoryId) => {
+    try { 
+        const response = await axios.delete(`/product-category/${categoryId}`);
         return response.data;
     } catch (error) {
-        console.error('Error archiving category: ', error);
+        console.error('Error deleting category: ', error);
         throw error;
     }
 };
+
 
 // PRODUCT STATUS
 export const getStatus = async () => {

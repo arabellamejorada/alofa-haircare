@@ -6,7 +6,7 @@ import Products from "./components/products_tab/products/Products";
 import Inventory from "./components/inventory_tab/Inventory";
 import Employees from "./components/employee_tab/Employees";
 import Suppliers from "./components/supplier_tab/Suppliers";
-import ProductVariations from "./components/products_tab/ProductVariations";
+import ProductVariations from "./components/products_tab/product_variations/ProductVariations";
 import ProductCategories from "./components/products_tab/ProductCategories";
 import StockIn from "./components/inventory_tab/stock_in/StockIn";
 import StockInHistory from "./components/inventory_tab/stock_in/StockInHistory";
