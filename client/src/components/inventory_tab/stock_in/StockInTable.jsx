@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { MdDelete } from "react-icons/md";
 import { MdAddBox } from "react-icons/md";
+import ReactDOM from "react-dom";
 
 const StockInTable = ({
   columns,
@@ -21,6 +22,35 @@ const StockInTable = ({
     setSearchTerms([...searchTerms, ""]); // Add a new search term
     setDropdownVisibility([...dropdownVisibility, false]); // Add a new dropdown visibility state
   };
+
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  const inputRefs = useRef([]);
+  const dropdownRef = useRef(null);
+
+  const handleFocus = (index) => {
+    const inputElement = inputRefs.current[index];
+    const rect = inputElement.getBoundingClientRect();
+    setDropdownPosition({ top: rect.bottom, left: rect.left });
+
+    const newVisibility = [...dropdownVisibility];
+    newVisibility[index] = true;
+    setDropdownVisibility(newVisibility);
+  };
+
+  const handleClickOutside = (event) => {
+    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      setDropdownVisibility((prevVisibility) =>
+        prevVisibility.map(() => false),
+      );
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // Handle deleting a row
   const handleDeleteRow = (index) => {
@@ -126,40 +156,49 @@ const StockInTable = ({
                       newVisibility[index] = true;
                       setDropdownVisibility(newVisibility);
                     }}
-                    onFocus={() => {
-                      const newVisibility = [...dropdownVisibility];
-                      newVisibility[index] = true;
-                      setDropdownVisibility(newVisibility);
-                    }}
+                    onFocus={() => handleFocus(index)}
                     className="w-64 border border-gray-200 rounded px-2 py-1 text-left"
+                    ref={(el) => (inputRefs.current[index] = el)}
                   />
-                  {dropdownVisibility[index] && (
-                    <div className="absolute left-0 right-0 top-full bg-white border border-slate-300 rounded-md z-20 max-h-40 overflow-y-auto">
-                      {getFilteredVariations(searchTerms[index]).length > 0 ? (
-                        getFilteredVariations(searchTerms[index]).map(
-                          (variation) => (
-                            <div
-                              key={variation.variation_id}
-                              onClick={() =>
-                                handleVariationChange(
-                                  index,
-                                  variation.variation_id,
-                                  `${variation.product_name} - ${variation.type}: ${variation.value}`,
-                                )
-                              }
-                              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                            >
-                              {`${variation.product_name} - ${variation.type}: ${variation.value}`}
-                            </div>
-                          ),
-                        )
-                      ) : (
-                        <div className="px-4 py-2 text-gray-500">
-                          No products found
-                        </div>
-                      )}
-                    </div>
-                  )}
+                  {dropdownVisibility[index] &&
+                    ReactDOM.createPortal(
+                      <div
+                        ref={dropdownRef}
+                        className="bg-white border border-slate-300 rounded-md z-20 max-h-40 overflow-y-auto"
+                        style={{
+                          position: "fixed",
+                          top: dropdownPosition.top,
+                          left: dropdownPosition.left,
+                          width: "256px",
+                        }}
+                      >
+                        {getFilteredVariations(searchTerms[index]).length >
+                        0 ? (
+                          getFilteredVariations(searchTerms[index]).map(
+                            (variation) => (
+                              <div
+                                key={variation.variation_id}
+                                onClick={() =>
+                                  handleVariationChange(
+                                    index,
+                                    variation.variation_id,
+                                    `${variation.product_name} - ${variation.type}: ${variation.value}`,
+                                  )
+                                }
+                                className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                              >
+                                {`${variation.product_name} - ${variation.type}: ${variation.value}`}
+                              </div>
+                            ),
+                          )
+                        ) : (
+                          <div className="px-4 py-2 text-gray-500">
+                            No products found
+                          </div>
+                        )}
+                      </div>,
+                      document.body,
+                    )}
                 </td>
 
                 {/* Type */}
