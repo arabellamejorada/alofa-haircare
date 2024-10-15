@@ -4,18 +4,18 @@ import { createContext, useState, useEffect } from "react";
 export const CartContext = createContext();
 
 const CartProvider = ({ children }) => {
-  // Initialize cart from localStorage or empty array
+
   const [cartItems, setCartItems] = useState(() => {
     const savedCart = localStorage.getItem("cartItems");
     return savedCart ? JSON.parse(savedCart) : [];
   });
 
-  // Save cart to localStorage whenever it changes
+  
   useEffect(() => {
     localStorage.setItem("cartItems", JSON.stringify(cartItems));
   }, [cartItems]);
 
-  // Function to add item to cart
+
   const addToCart = (product) => {
     const existingItem = cartItems.find((item) => item.id === product.id);
 
@@ -32,7 +32,6 @@ const CartProvider = ({ children }) => {
     }
   };
 
-  // Function to handle quantity change
   const handleQuantityChange = (productId, quantity) => {
     const newQuantity = Math.max(1, Math.floor(Number(quantity))); // Ensure the minimum is 1
   
@@ -44,12 +43,10 @@ const CartProvider = ({ children }) => {
   };
   
 
-  // Function to remove item from cart
   const handleDelete = (productId) => {
     setCartItems(cartItems.filter((item) => item.id !== productId));
   };
 
-  // Calculate subtotal
   const subtotal = cartItems.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0,
@@ -62,7 +59,7 @@ const CartProvider = ({ children }) => {
         addToCart,
         handleQuantityChange,
         handleDelete,
-        subtotal, // Provide subtotal to the context
+        subtotal,
       }}
     >
       {children}

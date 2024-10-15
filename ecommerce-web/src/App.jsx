@@ -6,9 +6,11 @@ import Products from "./pages/Products.jsx";
 import FAQs from "./pages/FAQs.jsx";
 import ShoppingCart from "./pages/ShoppingCart.jsx";
 import CartItem from "./components/CartItem.jsx";
+import Checkout from './pages/Checkout.jsx';
 import Login from "./pages/Login.jsx";
 import SignUp from "./pages/SignUp.jsx";
 import "./App.css";
+
 
 function App() {
   return (
@@ -23,6 +25,7 @@ function App() {
           <Route path="/cartitem" element={<CartItem />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
+          <Route path="/checkout" element={<Checkout/>} />
         </Routes>
       </Router>
     </CartProvider>
