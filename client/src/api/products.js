@@ -9,6 +9,7 @@ export const createProductVariationWithInventory = async (productData) => {
                 "Content-Type": "multipart/form-data",
             },
             });
+            // console.log
         
             console.log('Product variation with inventory created: ', response.data);
         return response.data;

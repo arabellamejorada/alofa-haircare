@@ -24,6 +24,32 @@ export const validatePassword = (password) => password.length >= 6;
 // Validate that an address is not empty
 export const validateAddress = (address) => address.trim() !== "";
 
+// Validate that a string is not empty
+export const validateType = (type) => type.trim() !== "";
+
+// Validate that a value is not empty
+export const validateValue = (value) => value.trim() !== "";
+
+// Validate SKU format using regex (assuming alphanumeric and dashes are allowed)
+export const validateSku = (sku) => /^[a-zA-Z0-9-]+$/.test(sku);
+
+// Validate that the unit price is a positive number
+export const validateUnitPrice = (unit_price) => !isNaN(unit_price) && unit_price > 0;
+
+// Validate image to be non-empty and an actual image file (if provided)
+export const validateImage = (image) => {
+  return image ? image.type.startsWith("image/") : true; // If there's no image, it's valid (optional field)
+};
+
+export const validateProductStatusId = (product_status_id) => {
+  if (!product_status_id) return false; // If status is empty or falsy, it's invalid
+  // Accept both strings and numbers as valid
+  return (typeof product_status_id === "string" || typeof product_status_id === "number") 
+    ? String(product_status_id).trim() !== "" 
+    : false;
+};
+
+
 // Validate that a status is selected
 export const validateStatus = (status) => {
   if (!status) return false; // If status is empty or falsy, it's invalid
@@ -35,6 +61,45 @@ export const validateCategory = (category) => {
   if (!category) return false; // If category is empty or falsy, it's invalid
   return typeof category === "string" ? category.trim() !== "" : true; // Use trim only if it's a string
 };
+
+// Function to validate product variation form
+export const validateAddProductVariationForm = ({
+  product_id,
+  variations,
+}) => {
+  const errors = {};
+
+  // Validate that a product is selected
+  if (!validateName(product_id)) errors.product_id = "Product must be selected";
+
+  // Iterate through each variation for validation
+  const variationErrors = variations.map((variation, index) => {
+    const error = {};
+    if (!validateType(variation.type)) error.type = `Variation ${index + 1}: Type is required`;
+    if (!validateValue(variation.value)) error.value = `Variation ${index + 1}: Value is required`;
+    if (!validateSku(variation.sku)) error.sku = `Variation ${index + 1}: SKU is invalid`;
+    if (!validateUnitPrice(variation.unit_price)) error.unit_price = `Variation ${index + 1}: Unit price must be positive`;
+    if (variation.image && !validateImage(variation.image)) error.image = `Variation ${index + 1}: Invalid image format`;
+    return error;
+  });
+
+  errors.variations = variationErrors;
+
+  return errors;
+};
+
+export const validateEditProductVariationForm = ({
+  unit_price,
+  product_status_id,
+}) => {
+    console.log('Validating Form:', { unit_price, product_status_id }); // Log the values
+
+  return {    
+    unit_price: validateUnitPrice(unit_price) ? "" : "HELP",
+    product_status_id: validateStatus(product_status_id) ? "" : "Status is required",
+  };
+};
+
 // Function to validate employee form data
 export const validateEmployeeForm = ({
   firstName,
@@ -48,25 +113,12 @@ export const validateEmployeeForm = ({
 }) => {
   const errors = {};
 
-  // First Name Validation
   if (!validateName(firstName)) errors.firstName = "First name is required";
-
-  // Last Name Validation
   if (!validateName(lastName)) errors.lastName = "Last name is required";
-
-  // Email Validation
   if (!validateEmail(email)) errors.email = "Enter a valid email address";
-
-  // Contact Number Validation
   if (!validateContactNumber(contactNumber)) errors.contactNumber = "Enter a valid 11-digit phone number";
-
-  // Role Validation
   if (!validateRole(roleId)) errors.roleId = "Role is required";
-
-  // Username Validation (Only for creating new employee)
   if (!isEdit && !validateUsername(username)) errors.username = "Username is required";
-
-  // Password Validation (Only for creating new employee)
   if (!isEdit && !validatePassword(password)) errors.password = "Password must be at least 6 characters";
 
   return errors;

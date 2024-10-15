@@ -1,14 +1,15 @@
 import React, { Fragment, useEffect, useState } from "react";
 import { MdAddBox } from "react-icons/md";
+import SupplierTable from "./SupplierTable";
+import SupplierForm from "./SupplierForm";
+import { toast } from "sonner";
 import {
   getAllSuppliers,
   createSupplier,
   updateSupplier,
   archiveSupplier,
 } from "../../api/suppliers.js";
-import SupplierTable from "./SupplierTable";
-import SupplierForm from "./SupplierForm";
-import { toast } from "sonner";
+
 import {
   validateSupplierForm,
   validateName,
