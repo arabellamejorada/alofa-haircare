@@ -56,7 +56,7 @@ const Navbar = () => {
         onMouseLeave={() => setHovered(false)}
       >
         <div className="p-4 h-full flex flex-col">
-          <h1 className="text-2xl text-alofa-pink font-bold mb-4">Cart Overview</h1>
+          <h1 className="text-2xl bg-gradient-to-r from-alofa-pink to-alofa-light-pink bg-clip-text text-transparent font-bold mb-4">Cart Overview</h1>
 
           {/* Cart Items: Make this part scrollable */}
           <div className="flex-1 overflow-y-auto mb-4">
