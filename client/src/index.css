@@ -9,18 +9,22 @@
 		font-family: 'Inter', sans-serif;
 		line-height: 1.3;
 	}
-	table {
-	}
+
+	table {}
+
 	th,
 	td {
 		@apply py-3 px-2.5 text-sm text-left border-y border-gray-200;
 	}
+
 	thead {
 		@apply bg-neutral-100;
 	}
+
 	th {
 		@apply font-semibold;
 	}
+
 	a {
 		@apply text-sky-500 hover:underline;
 	}
@@ -29,4 +33,37 @@
 @font-face {
 	font-family: "Yavome";
 	src: url(fonts/YavomeRegular-4BwED.ttf);
+}
+
+/* Custom checkbox styling */
+.custom-checkbox:checked {
+	/* Change the background color when checked */
+	background-color: #ec4899;
+	/* Pink color */
+	border-color: #ec4899;
+	/* Pink color */
+}
+
+/* For browsers that support the appearance property */
+.custom-checkbox {
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	width: 20px;
+	height: 20px;
+	border: 2px solid #d1d5db;
+	/* Default border color */
+	border-radius: 4px;
+	outline: none;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.custom-checkbox:checked::before {
+	content: '\2713';
+	color: white;
+	font-size: 12px;
+	font-weight: bold;
 }

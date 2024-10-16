@@ -14,6 +14,9 @@ const StockInHistory = () => {
   const [sortField, setSortField] = useState("index");
   const [sortOrder, setSortOrder] = useState("asc");
 
+  // State for searching
+  const [searchTerm, setSearchTerm] = useState("");
+
   // State for filtering
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedSupplier, setSelectedSupplier] = useState("");
@@ -104,10 +107,17 @@ const StockInHistory = () => {
     const matchesDate =
       selectedDate === "" ||
       new Date(selectedDate).toISOString().split("T")[0] === itemDate;
+
     const matchesSupplier =
       selectedSupplier === "" || group.supplier_name === selectedSupplier;
 
-    return matchesDate && matchesSupplier;
+    const matchesSearchTerm =
+      searchTerm === "" ||
+      group.reference_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      group.supplier_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      group.employee_name.toLowerCase().includes(searchTerm.toLowerCase());
+
+    return matchesDate && matchesSupplier && matchesSearchTerm;
   });
 
   return (
@@ -179,6 +189,32 @@ const StockInHistory = () => {
             <button
               onClick={() => setSelectedSupplier("")}
               className="text-sm ml-2 text-pink-500 hover:text-pink-700"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+
+        {/* Search Filter */}
+        <div className="flex items-center">
+          <label
+            htmlFor="search-filter"
+            className="mr-2 font-semibold text-gray-700"
+          >
+            Search:
+          </label>
+          <input
+            id="search-filter"
+            type="text"
+            placeholder="Search here..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full max-w-md h-10 px-4 border rounded-xl bg-gray-50 border-slate-300 focus:outline-none focus:border-pink-400 focus:bg-white"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="text-sm ml-2 text-pink-500 hover:text-pink-700 focus:outline-none"
             >
               Clear
             </button>

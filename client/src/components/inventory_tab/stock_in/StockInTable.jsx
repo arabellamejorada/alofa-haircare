@@ -172,7 +172,7 @@ const StockInTable = ({
     <div className="overflow-x-auto pt-4">
       <div className="flex justify-end pr-6">
         <MdAddBox
-          fontSize={30}
+          fontSize={40}
           className="text-gray-400 mb-2 hover:text-pink-400 active:text-pink-500"
           onClick={handleAddRow}
         />

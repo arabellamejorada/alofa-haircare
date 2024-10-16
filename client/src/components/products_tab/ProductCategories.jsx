@@ -204,26 +204,39 @@ const ProductCategories = () => {
   return (
     <Fragment>
       <div className="flex flex-col gap-2">
-        <div className="flex flex-row items-center justify-between gap-4">
+        <strong className="text-3xl font-bold text-gray-500">
+          Product Categories
+        </strong>
+
+        {/* Filters Section */}
+        <div className="flex flex-row flex-wrap items-center justify-between mt-4 gap-4">
           <div className="flex items-center gap-4">
-            <strong className="text-3xl font-bold text-gray-500">
-              Product Categories
-            </strong>
-            <input
-              type="text"
-              className="w-[300px] h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
-              placeholder="Search categories..."
-              value={search}
-              onChange={handleSearchChange}
-            />
+            {/* Search Input with Clear Button */}
+            <div className="relative flex items-center w-[300px]">
+              <input
+                type="text"
+                className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+                placeholder="Search categories..."
+                value={search}
+                onChange={handleSearchChange}
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  className="ml-2 text-pink-500 hover:text-pink-700"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
           </div>
-          <div>
-            <MdAddBox
-              fontSize={30}
-              className="text-gray-400 mx-2 hover:text-pink-400 active:text-pink-500"
-              onClick={() => openModal()}
-            />
-          </div>
+
+          {/* Add Button */}
+          <MdAddBox
+            fontSize={40}
+            className="text-gray-400 mx-2 hover:text-pink-400 active:text-pink-500"
+            onClick={() => openModal()}
+          />
         </div>
 
         <DataTable
