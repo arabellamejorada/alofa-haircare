@@ -14,6 +14,7 @@ const Inventory = () => {
   const [selectedStatus, setSelectedStatus] = useState("");
   const [sortField, setSortField] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
+  const [showArchived, setShowArchived] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -66,13 +67,11 @@ const Inventory = () => {
         `${inventory.type || ""} - ${inventory.value || ""}`.toLowerCase();
       const sku = inventory.sku?.toLowerCase() || "";
 
-      // Check if the item matches the search criteria
       const matchesSearch =
         productName.includes(search.toLowerCase()) ||
         variation.includes(search.toLowerCase()) ||
         sku.includes(search.toLowerCase());
 
-      // Check if the item matches the selected product and status filters
       const matchesProductFilter =
         selectedProduct === "" || productName === selectedProduct.toLowerCase();
 
@@ -83,9 +82,7 @@ const Inventory = () => {
         matchesSearch &&
         matchesProductFilter &&
         matchesStatusFilter &&
-        (selectedStatus
-          ? inventory.product_status === selectedStatus
-          : inventory.product_status?.toLowerCase() !== "archived")
+        (showArchived || inventory.product_status?.toLowerCase() !== "archived")
       );
     })
     .sort((a, b) => {
@@ -126,73 +123,111 @@ const Inventory = () => {
   return (
     <Fragment>
       <div className="flex flex-col gap-2">
-        <div className="flex flex-row items-center gap-4">
+        <div className="flex flex-col gap-2">
           <strong className="text-3xl font-bold text-gray-500">
             Inventory
           </strong>
-          <SearchInput value={search} onChange={handleSearchChange} />
-          <ProductDropdown
-            products={products}
-            value={selectedProduct}
-            onChange={handleProductSelect}
-          />
-          <StatusDropdown
-            value={selectedStatus}
-            onChange={handleStatusSelect}
-            statuses={productStatuses}
+
+          {/* Filters Section */}
+          <div className="flex flex-row flex-wrap items-center gap-4 mt-4">
+            {/* Search Input with Clear Button */}
+            <div className="relative flex items-center w-[220px]">
+              <input
+                type="text"
+                className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+                placeholder="Search inventory..."
+                value={search}
+                onChange={handleSearchChange}
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  className="ml-2 text-pink-500 hover:text-pink-700"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+
+            {/* Product Dropdown with Clear Button */}
+            <div className="relative flex items-center w-[220px]">
+              <select
+                value={selectedProduct}
+                onChange={handleProductSelect}
+                className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+              >
+                <option value="">All Products</option>
+                {products.map((product) => (
+                  <option key={product.product_id} value={product.name}>
+                    {product.name}
+                  </option>
+                ))}
+              </select>
+              {selectedProduct && (
+                <button
+                  onClick={() => setSelectedProduct("")}
+                  className="ml-2 text-pink-500 hover:text-pink-700"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+
+            {/* Status Dropdown with Clear Button */}
+            <div className="flex items-center">
+              <div className="relative w-[200px]">
+                <select
+                  value={selectedStatus}
+                  onChange={handleStatusSelect}
+                  className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+                >
+                  <option value="">All Statuses</option>
+                  {productStatuses.map((status) => (
+                    <option
+                      key={status.product_status_id}
+                      value={status.product_status_id}
+                    >
+                      {status.description}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {selectedStatus && (
+                <button
+                  onClick={() => setSelectedStatus("")}
+                  className="ml-2 text-pink-500 hover:text-pink-700"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+
+            {/* Checkbox for Show/Hide Archived */}
+            {selectedStatus === "" && (
+              <div className="flex items-center ml-4">
+                <input
+                  type="checkbox"
+                  checked={showArchived}
+                  onChange={(e) => setShowArchived(e.target.checked)}
+                  className="h-5 w-5 accent-pink-500"
+                />
+                <label className="ml-2 font-semibold text-gray-700">
+                  {showArchived ? "Hide Archived" : "Show Archived"}
+                </label>
+              </div>
+            )}
+          </div>
+
+          {/* DataTable */}
+          <DataTable
+            data={processedInventory}
+            columns={columns}
+            isInventory={true}
           />
         </div>
-        <DataTable
-          data={processedInventory}
-          columns={columns}
-          isInventory={true}
-        />
       </div>
     </Fragment>
   );
 };
-
-// Status dropdown component for selecting status
-const StatusDropdown = ({ value, onChange, statuses }) => (
-  <select
-    value={value}
-    onChange={onChange}
-    className="w-[200px] h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
-  >
-    <option value="">All Statuses</option>
-    {statuses.map((status) => (
-      <option key={status.product_status_id} value={status.product_status_id}>
-        {status.description}{" "}
-      </option>
-    ))}
-  </select>
-);
-
-// Dropdown component for selecting product
-const ProductDropdown = ({ products, value, onChange }) => (
-  <select
-    value={value}
-    onChange={onChange}
-    className="w-[200px] h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
-  >
-    <option value="">All Products</option>
-    {products.map((product) => (
-      <option key={product.product_id} value={product.name}>
-        {product.name}
-      </option>
-    ))}
-  </select>
-);
-
-// Search input component for reusability
-const SearchInput = ({ value, onChange }) => (
-  <input
-    type="text"
-    className="w-[300px] h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
-    placeholder="Search inventory..."
-    value={value}
-    onChange={onChange}
-  />
-);
 
 export default Inventory;

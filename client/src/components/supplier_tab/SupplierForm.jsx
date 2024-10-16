@@ -25,11 +25,11 @@ const SupplierForm = ({
   return (
     <Modal isVisible={isVisible} onClose={handleCloseModal}>
       <form
-        className="p-6"
+        className="p-6 space-y-4"
         onSubmit={selectedSupplier ? handleUpdateSupplier : handleAddSupplier}
       >
         <div className="flex flex-col gap-4">
-          <div className="font-extrabold text-3xl text-pink-400">
+          <div className="font-extrabold text-3xl text-pink-400 mb-4">
             {selectedSupplier ? "Edit Supplier" : "Register New Supplier"}
           </div>
 
@@ -43,7 +43,7 @@ const SupplierForm = ({
               name="supplier_name"
               id="supplier_name"
               placeholder="Supplier Name"
-              value={supplier_name}
+              value={supplier_name || ""}
               onChange={handleInputChange}
               className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 ${
                 errors.supplier_name ? "border-red-500" : ""
@@ -66,7 +66,7 @@ const SupplierForm = ({
               name="contact_person"
               id="contact_person"
               placeholder="Contact Person"
-              value={contact_person}
+              value={contact_person || ""}
               onChange={handleInputChange}
               className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 ${
                 errors.contact_person ? "border-red-500" : ""
@@ -89,7 +89,7 @@ const SupplierForm = ({
               name="contact_number"
               id="contact_number"
               placeholder="Contact Number"
-              value={contact_number}
+              value={contact_number || ""}
               onChange={handleInputChange}
               className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 ${
                 errors.contact_number ? "border-red-500" : ""
@@ -112,7 +112,7 @@ const SupplierForm = ({
               name="email"
               id="email"
               placeholder="Email"
-              value={email}
+              value={email || ""}
               onChange={handleInputChange}
               className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 ${
                 errors.email ? "border-red-500" : ""
@@ -133,7 +133,7 @@ const SupplierForm = ({
               name="address"
               id="address"
               placeholder="Address"
-              value={address}
+              value={address || ""}
               onChange={handleInputChange}
               className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 ${
                 errors.address ? "border-red-500" : ""
@@ -153,7 +153,7 @@ const SupplierForm = ({
               <select
                 name="status"
                 id="status"
-                value={status}
+                value={status || ""}
                 onChange={handleInputChange}
                 className={`w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 ${
                   errors.status ? "border-red-500" : ""
@@ -174,11 +174,11 @@ const SupplierForm = ({
             )}
           </div>
 
-          {/* Save/Update Button */}
-          <div className="flex justify-end mt-2">
+          {/* Save/Update and Cancel Buttons */}
+          <div className="flex justify-between mt-6 gap-4">
             <button
               type="submit"
-              disabled={selectedSupplier && !isFormModified()} // Disable if no changes made
+              disabled={selectedSupplier && !isFormModified()} // Disable if no changes made when editing
               className={`w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-semibold text-white ${
                 selectedSupplier && !isFormModified()
                   ? "opacity-50 cursor-not-allowed"
@@ -187,6 +187,7 @@ const SupplierForm = ({
             >
               {selectedSupplier ? "Update" : "Save"}
             </button>
+
             <button
               type="button"
               onClick={handleCloseModal}

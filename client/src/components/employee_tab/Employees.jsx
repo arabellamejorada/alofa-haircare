@@ -23,6 +23,8 @@ const Employees = () => {
   const [search, setSearch] = useState("");
   const [selectedRole, setSelectedRole] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
+  const [showArchived, setShowArchived] = useState(false);
+
   const [sortField, setSortField] = useState("employee_id");
   const [sortOrder, setSortOrder] = useState("asc");
 
@@ -262,8 +264,10 @@ const Employees = () => {
         : true;
       const matchesStatus = selectedStatus
         ? employee.status_id === parseInt(selectedStatus)
-        : statuses.find((s) => s.status_id === employee.status_id)
-            ?.description !== "Archived";
+        : !showArchived // Hide archived if checkbox is checked
+          ? statuses.find((s) => s.status_id === employee.status_id)
+              ?.description !== "Archived"
+          : true;
 
       return matchesSearch && matchesRole && matchesStatus;
     })
@@ -285,71 +289,121 @@ const Employees = () => {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex flex-row items-center justify-between">
-        <div className="flex items-center gap-4">
-          {/* Employees Title */}
-          <strong className="text-3xl font-bold text-gray-500">
-            Employees
-          </strong>
+      <div className="flex flex-col">
+        {/* Employees Title */}
+        <strong className="text-3xl font-bold text-gray-500 mb-2">
+          Employees
+        </strong>
 
-          {/* Search Input */}
-          <input
-            type="text"
-            placeholder="Search by name..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-[300px] h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+        {/* Filters Row and Add Button */}
+        <div className="flex flex-wrap items-center gap-4 mb-0 justify-between">
+          <div className="flex items-center gap-4">
+            {/* Search Input with Clear Button */}
+            <div className="flex items-center relative w-[300px]">
+              <input
+                type="text"
+                placeholder="Search by name..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  className="ml-2 text-pink-500 hover:text-pink-700"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+
+            {/* Role Filter with Clear Button */}
+            <div className="flex items-center relative w-[200px]">
+              <select
+                value={selectedRole}
+                onChange={(e) => setSelectedRole(e.target.value)}
+                className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+              >
+                <option value="">All Roles</option>
+                {roles.map((role) => (
+                  <option key={role.role_id} value={role.role_id}>
+                    {role.name}
+                  </option>
+                ))}
+              </select>
+              {selectedRole && (
+                <button
+                  onClick={() => setSelectedRole("")}
+                  className="ml-2 text-pink-500 hover:text-pink-700"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+
+            {/* Status Filter with Clear Button */}
+            <div className="flex items-center relative w-[200px]">
+              <select
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+                className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+              >
+                <option value="">All Statuses</option>
+                {statuses.map((status) => (
+                  <option key={status.status_id} value={status.status_id}>
+                    {status.description}
+                  </option>
+                ))}
+              </select>
+              {selectedStatus && (
+                <button
+                  onClick={() => setSelectedStatus("")}
+                  className="ml-2 text-pink-500 hover:text-pink-700"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+
+            {/* Checkbox for Show/Hide Archived */}
+            {selectedStatus === "" && (
+              <div className="flex items-center ml-4">
+                <input
+                  type="checkbox"
+                  checked={showArchived}
+                  onChange={(e) => setShowArchived(e.target.checked)}
+                  className="h-5 w-5 accent-pink-500"
+                />
+                <label className="ml-2 font-semibold text-gray-700">
+                  {showArchived ? "Hide Archived" : "Show Archived"}
+                </label>
+              </div>
+            )}
+          </div>
+
+          {/* Add Employee Button */}
+          <MdAddBox
+            fontSize={40}
+            className="text-gray-400 hover:text-pink-400 active:text-pink-500 cursor-pointer"
+            onClick={() => {
+              setSelectedEmployee(null);
+              resetForm();
+              setIsModalVisible(true);
+            }}
           />
-
-          {/* Role Filter */}
-          <select
-            value={selectedRole}
-            onChange={(e) => setSelectedRole(e.target.value)}
-            className="w-[150px] h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
-          >
-            <option value="">All Roles</option>
-            {roles.map((role) => (
-              <option key={role.role_id} value={role.role_id}>
-                {role.name}
-              </option>
-            ))}
-          </select>
-
-          {/* Status Filter */}
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="w-[150px] h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
-          >
-            <option value="">All Statuses</option>
-            {statuses.map((status) => (
-              <option key={status.status_id} value={status.status_id}>
-                {status.description}
-              </option>
-            ))}
-          </select>
         </div>
 
-        {/* Add Employee Button */}
-        <MdAddBox
-          fontSize={30}
-          className="text-gray-400 hover:text-pink-400 active:text-pink-500"
-          onClick={() => {
-            setSelectedEmployee(null);
-            resetForm();
-            setIsModalVisible(true);
-          }}
+        {/* Employee Table */}
+        <EmployeeTable
+          sortedEmployees={sortedEmployees}
+          onEdit={handleEdit}
+          onArchive={archiveEmployee}
+          sortField={sortField}
+          sortOrder={sortOrder}
+          handleColumnSort={handleColumnSort}
+          className="mt-2"
         />
       </div>
-
-      <EmployeeTable
-        sortedEmployees={sortedEmployees}
-        onEdit={handleEdit}
-        onArchive={archiveEmployee}
-        sortField={sortField}
-        sortOrder={sortOrder}
-        handleColumnSort={handleColumnSort}
-      />
 
       <EmployeeForm
         isVisible={isModalVisible}

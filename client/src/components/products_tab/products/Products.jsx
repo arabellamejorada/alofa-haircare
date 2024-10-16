@@ -32,6 +32,7 @@ const Products = () => {
   const [selectedStatus, setSelectedStatus] = useState("");
   const [sortField, setSortField] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
+  const [showArchived, setShowArchived] = useState(false);
 
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -219,30 +220,35 @@ const Products = () => {
 
   const filteredProducts = products
     .filter((product) => {
+      // Check if product matches the search term
       const matchesSearch =
         product.name.toLowerCase().includes(search) ||
         product.description.toLowerCase().includes(search);
 
+      // Check if product matches the selected category filter
       const matchesCategory =
         !selectedCategory ||
         product.product_category.toLowerCase() ===
           selectedCategory.toLowerCase();
 
+      // Check if product matches the selected status filter
       const matchesStatus =
         !selectedStatus ||
         product.product_status.toLowerCase() === selectedStatus.toLowerCase();
 
+      // Determine if the product is archived
       const isArchived = product.product_status.toLowerCase() === "archived";
 
-      if (selectedStatus.toLowerCase() === "archived") {
-        return matchesSearch && matchesCategory && matchesStatus && isArchived;
-      }
+      // Show archived products only if the 'showArchived' checkbox is checked
+      const showProduct =
+        selectedStatus.toLowerCase() === "archived" || showArchived
+          ? matchesSearch && matchesCategory && matchesStatus
+          : matchesSearch && matchesCategory && matchesStatus && !isArchived;
 
-      // Hide archived products by default, unless 'Archived' is selected
-      return matchesSearch && matchesCategory && matchesStatus && !isArchived;
+      return showProduct;
     })
     .sort((a, b) => {
-      // Sorting logic based on selected column and order
+      // Sort based on the selected field and order
       const aField = a[sortField] || "";
       const bField = b[sortField] || "";
       if (sortOrder === "asc") {
@@ -257,51 +263,103 @@ const Products = () => {
   return (
     <Fragment>
       <div className="flex flex-col gap-2">
-        <div className="flex flex-row items-center justify-between gap-4">
+        <strong className="text-3xl font-bold text-gray-500">Products</strong>
+
+        {/* Filters Section */}
+        <div className="flex flex-row flex-wrap items-center justify-between mt-4 gap-4">
           <div className="flex items-center gap-4">
-            <strong className="text-3xl font-bold text-gray-500">
-              Products
-            </strong>
-            <input
-              type="text"
-              className="w-[300px] h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
-              placeholder="Search products..."
-              value={search}
-              onChange={handleSearchChange}
-            />
-            <select
-              value={selectedCategory}
-              onChange={handleCategoryChange}
-              className="w-[200px] h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
-            >
-              <option value="">All Categories</option>
-              {categories.map((category) => (
-                <option
-                  key={category.product_category_id}
-                  value={category.name}
+            {/* Search Input with Clear Button */}
+            <div className="relative flex items-center w-[300px]">
+              <input
+                type="text"
+                className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+                placeholder="Search products..."
+                value={search}
+                onChange={handleSearchChange}
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  className="ml-2 text-pink-500 hover:text-pink-700"
                 >
-                  {category.name}
-                </option>
-              ))}
-            </select>
-            <select
-              value={selectedStatus}
-              onChange={handleStatusChange}
-              className="w-[200px] h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
-            >
-              <option value="">All Statuses</option>
-              {statuses.map((status) => (
-                <option
-                  key={status.status_id}
-                  value={status.status_description}
+                  Clear
+                </button>
+              )}
+            </div>
+
+            {/* Category Dropdown with Clear Button */}
+            <div className="relative flex items-center w-[200px]">
+              <select
+                value={selectedCategory}
+                onChange={handleCategoryChange}
+                className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+              >
+                <option value="">All Categories</option>
+                {categories.map((category) => (
+                  <option
+                    key={category.product_category_id}
+                    value={category.name}
+                  >
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+              {selectedCategory && (
+                <button
+                  onClick={() => setSelectedCategory("")}
+                  className="ml-2 text-pink-500 hover:text-pink-700"
                 >
-                  {status.description}
-                </option>
-              ))}
-            </select>
+                  Clear
+                </button>
+              )}
+            </div>
+
+            {/* Status Dropdown with Clear Button */}
+            <div className="relative flex items-center w-[200px]">
+              <select
+                value={selectedStatus}
+                onChange={handleStatusChange}
+                className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+              >
+                <option value="">All Statuses</option>
+                {statuses.map((status) => (
+                  <option
+                    key={status.status_id}
+                    value={status.status_description}
+                  >
+                    {status.description}
+                  </option>
+                ))}
+              </select>
+              {selectedStatus && (
+                <button
+                  onClick={() => setSelectedStatus("")}
+                  className="ml-2 text-pink-500 hover:text-pink-700"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+
+            {/* Checkbox for Show/Hide Archived */}
+            {selectedStatus === "" && (
+              <div className="flex items-center ml-4">
+                <input
+                  type="checkbox"
+                  checked={showArchived}
+                  onChange={(e) => setShowArchived(e.target.checked)}
+                  className="h-5 w-5 accent-pink-500"
+                />
+                <label className="ml-2 font-semibold text-gray-700">
+                  {showArchived ? "Hide Archived" : "Show Archived"}
+                </label>
+              </div>
+            )}
           </div>
+
+          {/* Add Button */}
           <MdAddBox
-            fontSize={30}
+            fontSize={40}
             className="text-gray-400 mx-2 hover:text-pink-400 active:text-pink-500"
             onClick={() => openModal()}
           />
