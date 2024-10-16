@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { MdDelete, MdAddBox } from "react-icons/md";
 import ReactDOM from "react-dom";
+import { validateDropdown } from "../../../lib/consts/utils/validationUtils";
 
 const StockInTable = ({
   columns,
@@ -28,6 +29,7 @@ const StockInTable = ({
           },
         ];
   });
+  const [errors, setErrors] = useState(rows.map(() => false));
 
   useEffect(() => {
     if (stockInProducts.length === 0) {
@@ -91,6 +93,12 @@ const StockInTable = ({
       searchTerm: variation.product_name,
       isDropdownVisible: false,
     };
+
+    // Validate and update errors
+    const updatedErrors = [...errors];
+    updatedErrors[index] = !validateDropdown(variation.variation_id);
+    setErrors(updatedErrors);
+
     setRows(updatedRows);
     setStockInProducts(updatedRows);
   };
@@ -99,6 +107,12 @@ const StockInTable = ({
     const updatedRows = [...rows];
     updatedRows[index].searchTerm = value;
     updatedRows[index].isDropdownVisible = true;
+
+    // Validate when the search term is cleared
+    const updatedErrors = [...errors];
+    updatedErrors[index] = !validateDropdown(value);
+    setErrors(updatedErrors);
+
     setRows(updatedRows);
   };
 
@@ -114,6 +128,12 @@ const StockInTable = ({
       value: "",
       isDropdownVisible: false,
     };
+
+    // Update error state when clearing the search
+    const updatedErrors = [...errors];
+    updatedErrors[index] = true; // Mark this row as having an error
+    setErrors(updatedErrors);
+
     setRows(updatedRows);
     setStockInProducts(updatedRows);
   };
@@ -189,6 +209,7 @@ const StockInTable = ({
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-left">
                   {index + 1}
                 </td>
+
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-left relative">
                   <div className="relative w-full">
                     <input
@@ -199,9 +220,16 @@ const StockInTable = ({
                         handleSearchChange(index, e.target.value)
                       }
                       onFocus={() => handleSearchChange(index, row.searchTerm)}
-                      className="w-64 border border-gray-200 rounded px-2 py-1"
+                      className={`w-full border rounded-md px-2 py-1 ${
+                        errors[index] ? "border-red-500" : "border-gray-200"
+                      }`}
                       ref={(el) => (inputRefs.current[index] = el)}
                     />
+                    {errors[index] && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors[index]}
+                      </p>
+                    )}
                     {row.searchTerm && (
                       <button
                         onClick={() => clearSearch(index)}
@@ -248,6 +276,7 @@ const StockInTable = ({
                       document.body,
                     )}
                 </td>
+
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-left">
                   {row.type && row.value ? `${row.type}: ${row.value}` : "N/A"}
                 </td>
