@@ -18,7 +18,7 @@ export default function Sidebar() {
     <div className="bg-gradient-to-b from-pink-400 to-pink-500 w-[18%] p-3 flex flex-col text-white drop-shadow-[0_0px_5px_rgba(0,0,0,0.6)]">
       <div className="flex flex-col px-1 py-5 mt-5 items-center justify-center">
         {/* <BsFlower1 fontSize={50} /> */}
-        <spn className="text-white text-7xl font-title ">Alofa</spn>
+        <span className="text-white text-7xl font-title ">Alofa</span>
       </div>
       <div className="flex-1 px-5 py-8 flex flex-col gap-0.5">
         <div>

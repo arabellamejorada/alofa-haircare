@@ -6,6 +6,7 @@ import { getAllProductVariations } from "../../../api/products";
 import { createStockIn } from "../../../api/stockIn";
 import { getEmployees } from "../../../api/employees";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 
 const StockIn = () => {
   const [employees, setEmployees] = useState([]);
@@ -86,7 +87,9 @@ const StockIn = () => {
       !selectedSupplier ||
       stockInProducts.length === 0
     ) {
-      alert("Please select a supplier and add at least one product.");
+      toast.error(
+        "Please select an employee, supplier and add at least one product.",
+      );
       return;
     }
 
@@ -100,9 +103,10 @@ const StockIn = () => {
 
     try {
       await createStockIn(stockInData);
-      alert("Stock In recorded successfully");
+      toast.success("Stock In recorded successfully");
+
       // Reset form fields
-      setStockInProducts([]);
+      setStockInProducts([]); // This will trigger the useEffect in StockInTable to clear rows
       setStockInDate(adjustToLocalTime());
       setSelectedSupplier("");
       setSelectedEmployee("");
@@ -112,17 +116,18 @@ const StockIn = () => {
         email: "",
         address: "",
       });
+      setSupplierSearch("");
+
       generateReferenceNumber();
     } catch (error) {
       console.error("Error saving stock in:", error);
-      alert("An error occurred while saving stock in.");
+      toast.error("An error occurred while saving stock in.");
     }
   };
 
   const columns = [
     { key: "product_name", header: "Product Name" },
-    // { key: "type", header: "Type" },
-    // { key: "value", header: "Value" },
+    { key: "variation", header: "Variation" },
     { key: "sku", header: "SKU" },
     { key: "quantity", header: "Qty." },
     { key: "stock_in_date", header: "Stock In Date" },
@@ -130,7 +135,9 @@ const StockIn = () => {
   ];
 
   const filteredSuppliers = suppliers.filter((supplier) =>
-    supplier.supplier_name.toLowerCase().includes(supplierSearch.toLowerCase()),
+    supplier.supplier_name
+      ?.toLowerCase()
+      .includes(supplierSearch.toLowerCase()),
   );
 
   return (
@@ -212,7 +219,25 @@ const StockIn = () => {
                   }}
                   onFocus={() => setIsSupplierDropdownVisible(true)} // Show dropdown when input is focused
                   className="w-full h-8 px-4 appearance-none border rounded-md bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-                />
+                />{" "}
+                {/* Clear supplier */}
+                <button
+                  onClick={() => {
+                    setSupplierSearch("");
+                    setSelectedSupplier("");
+                    setSupplierDetails({
+                      contact_person: "",
+                      contact_number: "",
+                      email: "",
+                      address: "",
+                    });
+                    setIsSupplierDropdownVisible(false);
+                  }}
+                  className="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-pink-500"
+                  aria-label="Clear supplier search"
+                >
+                  &times;
+                </button>
                 {isSupplierDropdownVisible && (
                   <div className="absolute left-0 right-0 top-full bg-white border border-slate-300 rounded-md z-10 max-h-40 overflow-y-auto">
                     {filteredSuppliers.length > 0 ? (
@@ -308,6 +333,7 @@ const StockIn = () => {
         productVariations={productVariations}
         stockInProducts={stockInProducts}
         setStockInProducts={setStockInProducts}
+        resetRows={() => setStockInProducts([])}
       />
 
       {/* Submit Button */}

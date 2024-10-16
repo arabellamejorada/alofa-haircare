@@ -7,6 +7,7 @@ const StockInTable = ({
   productVariations,
   stockInProducts,
   setStockInProducts,
+  resetRows,
 }) => {
   // Initialize rows with a default row if stockInProducts is empty
   const [rows, setRows] = useState(() => {
@@ -32,19 +33,30 @@ const StockInTable = ({
     }
   });
 
-  // Ensure stockInProducts is initialized with a default row
   useEffect(() => {
-    if (!stockInProducts || stockInProducts.length === 0) {
-      setStockInProducts([
-        {
-          variation_id: "",
-          quantity: 1,
-          product_name: "",
-          sku: "",
-          type: "",
-          value: "",
-        },
-      ]);
+    if (stockInProducts.length === 0) {
+      // If stockInProducts is empty, add one default row
+      const defaultRow = {
+        variation_id: "",
+        quantity: 1,
+        product_name: "",
+        searchTerm: "",
+        isDropdownVisible: false,
+        sku: "",
+        type: "",
+        value: "",
+      };
+      setRows([defaultRow]);
+      setStockInProducts([defaultRow]);
+    } else {
+      // Otherwise, map stockInProducts to rows
+      setRows(
+        stockInProducts.map((product) => ({
+          ...product,
+          searchTerm: product.product_name || "",
+          isDropdownVisible: false,
+        })),
+      );
     }
   }, [stockInProducts, setStockInProducts]);
 
@@ -53,7 +65,6 @@ const StockInTable = ({
   const dropdownRefs = useRef([]);
   const [dropdownPositions, setDropdownPositions] = useState([]);
 
-  // Handle adding a new row
   const handleAddRow = () => {
     const newRow = {
       variation_id: "",
@@ -69,14 +80,12 @@ const StockInTable = ({
     setStockInProducts([...stockInProducts, newRow]);
   };
 
-  // Handle deleting a row
   const handleDeleteRow = (index) => {
     const updatedRows = rows.filter((_, i) => i !== index);
     setRows(updatedRows);
     setStockInProducts(updatedRows);
   };
 
-  // Handle variation selection
   const handleVariationChange = (index, variation) => {
     const updatedRows = [...rows];
     updatedRows[index] = {
@@ -93,7 +102,6 @@ const StockInTable = ({
     setStockInProducts(updatedRows);
   };
 
-  // Handle search input change
   const handleSearchChange = (index, value) => {
     const updatedRows = [...rows];
     updatedRows[index].searchTerm = value;
@@ -102,7 +110,6 @@ const StockInTable = ({
     updateDropdownPosition(index);
   };
 
-  // Update dropdown position for a specific index
   const updateDropdownPosition = (index) => {
     const inputElement = inputRefs.current[index];
     if (inputElement) {
@@ -144,10 +151,12 @@ const StockInTable = ({
   const getFilteredVariations = (searchTerm) =>
     productVariations.filter(
       (variation) =>
-        variation.product_name
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        variation.value.toLowerCase().includes(searchTerm.toLowerCase()),
+        (variation.product_name?.toLowerCase() || "").includes(
+          searchTerm.toLowerCase(),
+        ) ||
+        (variation.value?.toLowerCase() || "").includes(
+          searchTerm.toLowerCase(),
+        ),
     );
 
   return (
@@ -187,6 +196,7 @@ const StockInTable = ({
               </th>
             </tr>
           </thead>
+
           {/* Table Body */}
           <tbody>
             {rows.map((row, index) => (
@@ -245,10 +255,16 @@ const StockInTable = ({
                       document.body,
                     )}
                 </td>
+
+                {/* Variation Type And Value */}
+                <td className="px-5 py-2 border-b border-gray-200 text-sm text-left">
+                  {row.type && row.value ? `${row.type}: ${row.value}` : "N/A"}
+                </td>
                 {/* SKU */}
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-left">
                   {row.sku || ""}
                 </td>
+
                 {/* Quantity */}
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-left">
                   <input
