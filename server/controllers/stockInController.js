@@ -1,6 +1,5 @@
 const pool = require('../db.js');
 
-// do something with the date bc it doesnt display the time !!
 const createStockIn = async (req, res) => {
   const client = await pool.connect();
   const { employee_id, supplier_id, stockInProducts, reference_number, stock_in_date } = req.body;
