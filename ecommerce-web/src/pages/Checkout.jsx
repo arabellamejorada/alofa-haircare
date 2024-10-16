@@ -1,5 +1,6 @@
 import { useContext, useState } from 'react';
 import { CartContext } from '../components/CartContext.jsx';
+import { IoChevronBack } from "react-icons/io5";
 
 const Checkout = () => {
   const { cartItems, subtotal } = useContext(CartContext);
@@ -35,7 +36,10 @@ const Checkout = () => {
       <div className="flex flex-col lg:flex-row p-8 justify-between">
         <div className="w-full lg:w-2/3">
           <div className="mb-8">
-            <img src="/logo.png" alt="Alofa" className="w-32 mb-6" />
+            <button onClick={() => window.location.href = '/shoppingcart'}
+            className="text-gray-500 font-bold hover:underline flex items-center">
+            <IoChevronBack />
+            </button>
           </div>
           <div className="bg-white p-6 shadow-lg rounded-lg">
             <h2 className="text-xl font-bold mb-4 text-alofa-pink">Account</h2>
