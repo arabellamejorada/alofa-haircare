@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { IoMdArchive } from "react-icons/io";
-import { MdEditDocument } from "react-icons/md";
+import { FaArrowUp, FaArrowDown } from "react-icons/fa";
+
 import {
   IoMdArrowDropdownCircle,
   IoMdArrowDroprightCircle,
@@ -15,11 +15,11 @@ const formatColumnName = (columnName) => {
 const StockHistoryTable = ({
   data,
   columns,
-  onEdit,
-  onArchive,
   onExpand,
   expandedRows,
-  isInventory,
+  handleSort,
+  sortField,
+  sortOrder,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 10;
@@ -53,10 +53,17 @@ const StockHistoryTable = ({
             <tr>
               {columns.map((column) => (
                 <th
-                  className="px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-pink-400 to-pink-500 text-gray-100 text-left text-md font-semibold uppercase tracking-wider"
                   key={column.key}
+                  onClick={() => handleSort(column.key)}
+                  className="px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-pink-400 to-pink-500 text-gray-100 text-left text-md font-semibold uppercase tracking-wider"
                 >
                   {column.header || formatColumnName(column.key)}
+                  {sortField === column.key &&
+                    (sortOrder === "asc" ? (
+                      <FaArrowUp className="inline ml-2" />
+                    ) : (
+                      <FaArrowDown className="inline ml-2" />
+                    ))}
                 </th>
               ))}
               <th className="px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-pink-400 to-pink-500 text-gray-100 text-center text-md font-semibold uppercase">

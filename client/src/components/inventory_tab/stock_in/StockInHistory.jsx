@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import StockHistoryTable from "../StockHistoryTable";
 import { IoIosArrowBack } from "react-icons/io";
-import { FaArrowUp, FaArrowDown } from "react-icons/fa";
-import { IoMdArrowDropdown, IoMdArrowDropright } from "react-icons/io";
+import { IoMdArrowDropdown } from "react-icons/io";
 import { getAllStockIn } from "../../../api/stockIn";
 
 const StockInHistory = () => {
@@ -82,7 +81,23 @@ const StockInHistory = () => {
     { key: "stock_in_date", header: "Stock-In Date" },
   ];
 
-  // Apply filtering to the grouped data
+  const handleSort = (field) => {
+    // Toggle sort order when the same field is clicked
+    const newSortOrder =
+      sortField === field && sortOrder === "asc" ? "desc" : "asc";
+    setSortField(field);
+    setSortOrder(newSortOrder);
+
+    // Sort the grouped data array based on the selected field and order
+    const sortedData = [...groupedDataArray].sort((a, b) => {
+      if (a[field] < b[field]) return newSortOrder === "asc" ? -1 : 1;
+      if (a[field] > b[field]) return newSortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    setStockInData(sortedData);
+  };
+
   const filteredData = groupedDataArray.filter((group) => {
     const itemDate = new Date(group.stock_in_date).toLocaleDateString("en-CA");
 
@@ -182,6 +197,9 @@ const StockInHistory = () => {
             isInventory={true}
             onExpand={toggleRow}
             expandedRows={expandedRows}
+            handleSort={handleSort}
+            sortField={sortField}
+            sortOrder={sortOrder}
           />
         )}
       </div>

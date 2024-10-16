@@ -62,6 +62,15 @@ export const validateCategory = (category) => {
   return typeof category === "string" ? category.trim() !== "" : true; // Use trim only if it's a string
 };
 
+// Validate dropdown
+export const validateDropdown = (value) => {
+  if (typeof value === "string") {
+    return value.trim() !== "";
+  }
+  console.log('Validating Dropdown:', value); // Log the value
+  return value !== null && value !== undefined; // For non-string values, check if they are not null/undefined
+};
+
 // Function to validate product variation form
 export const validateAddProductVariationForm = ({
   product_id,

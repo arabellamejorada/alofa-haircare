@@ -7,6 +7,7 @@ import { createStockIn } from "../../../api/stockIn";
 import { getEmployees } from "../../../api/employees";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { validateDropdown } from "../../../lib/consts/utils/validationUtils";
 
 const StockIn = () => {
   const supplierInputRef = useRef(null);
@@ -36,6 +37,10 @@ const StockIn = () => {
   const [supplierSearch, setSupplierSearch] = useState("");
   const [isSupplierDropdownVisible, setIsSupplierDropdownVisible] =
     useState(false);
+  const [errors, setErrors] = useState({
+    employee: false,
+    supplier: false,
+  });
 
   useEffect(() => {
     const loadData = async () => {
@@ -79,20 +84,54 @@ const StockIn = () => {
     setSelectedSupplier(supplierId);
     setSupplierSearch(supplierName);
     setIsSupplierDropdownVisible(false);
+
+    // Update validation state
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      supplier: !validateDropdown(supplierId),
+    }));
+
     if (supplierId) {
       const details = await getSupplier(supplierId);
       setSupplierDetails(details);
     }
   };
 
+  const handleSupplierSearchChange = (value) => {
+    setSupplierSearch(value);
+    setIsSupplierDropdownVisible(true);
+
+    // Validate if the supplier ID is cleared
+    if (!value) {
+      setSelectedSupplier("");
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        supplier: true,
+      }));
+    }
+  };
+
   const handleSubmitStockIn = async () => {
-    if (
-      !selectedEmployee ||
-      !selectedSupplier ||
-      stockInProducts.length === 0
-    ) {
+    // Validate employee and supplier dropdowns
+    const newErrors = {
+      supplier: !validateDropdown(selectedSupplier),
+    };
+
+    // Validate stockInProducts
+    const emptyProductRows = stockInProducts.filter(
+      (product) => !product.variation_id || !product.quantity,
+    );
+
+    // If there are any empty rows, show an error
+    if (emptyProductRows.length > 0) {
+      newErrors.stockInProducts = true;
+    }
+
+    setErrors(newErrors);
+
+    if (newErrors.supplier || emptyProductRows.length > 0) {
       toast.error(
-        "Please select an employee, supplier and add at least one product.",
+        "Please fill in all required fields and add valid product variations.",
       );
       return;
     }
@@ -178,8 +217,49 @@ const StockIn = () => {
                 name="employee"
                 value={selectedEmployee}
                 onChange={(e) => setSelectedEmployee(e.target.value)}
-                className="w-full h-8 px-4 appearance-none border rounded-md bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+                className={`w-full h-8 px-4 appearance-none border rounded-md bg-gray-50 ${
+                  errors.employee ? "border-red-500" : "border-slate-300"
+                } text-slate-700`}
               >
+                <input
+                  type="text"
+                  placeholder="Search Supplier"
+                  value={supplierSearch}
+                  onChange={(e) => handleSupplierSearchChange(e.target.value)}
+                  onFocus={() => setIsSupplierDropdownVisible(true)}
+                  className={`w-full h-8 px-4 appearance-none border rounded-md bg-gray-50 ${
+                    errors.supplier ? "border-red-500" : "border-slate-300"
+                  } text-slate-700`}
+                  ref={supplierInputRef}
+                />
+
+                {selectedSupplier && (
+                  <button
+                    onClick={() => {
+                      setSupplierSearch("");
+                      setSelectedSupplier("");
+                      setSupplierDetails({
+                        contact_person: "",
+                        contact_number: "",
+                        email: "",
+                        address: "",
+                      });
+                      setIsSupplierDropdownVisible(false);
+
+                      // Set the error state for supplier
+                      setErrors((prevErrors) => ({
+                        ...prevErrors,
+                        supplier: true,
+                      }));
+                    }}
+                    className="absolute inset-y-0 right-2 flex justify-center items-center text-gray-500 hover:text-pink-500 focus:outline-none"
+                    style={{ height: "100%" }} // Ensures it stays vertically centered
+                    aria-label="Clear supplier search"
+                  >
+                    &times;
+                  </button>
+                )}
+
                 <option value="">Select Employee</option>
                 {employees.map((employee) => (
                   <option
@@ -222,9 +302,14 @@ const StockIn = () => {
                   setIsSupplierDropdownVisible(true);
                 }}
                 onFocus={() => setIsSupplierDropdownVisible(true)}
-                className="w-full h-8 px-4 appearance-none border rounded-md bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+                className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white ${
+                  errors.supplier ? "border-red-500" : "border-slate-300"
+                }`}
                 ref={supplierInputRef}
               />
+              {errors.supplier && (
+                <p className="text-red-500 text-sm mt-1">{errors.supplier}</p>
+              )}
 
               {isSupplierDropdownVisible && (
                 <div
@@ -254,23 +339,31 @@ const StockIn = () => {
                 </div>
               )}
 
-              <button
-                onClick={() => {
-                  setSupplierSearch("");
-                  setSelectedSupplier("");
-                  setSupplierDetails({
-                    contact_person: "",
-                    contact_number: "",
-                    email: "",
-                    address: "",
-                  });
-                  setIsSupplierDropdownVisible(false);
-                }}
-                className="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-pink-500"
-                aria-label="Clear supplier search"
-              >
-                &times;
-              </button>
+              {supplierSearch && (
+                <button
+                  onClick={() => {
+                    setSupplierSearch("");
+                    setSelectedSupplier("");
+                    setSupplierDetails({
+                      contact_person: "",
+                      contact_number: "",
+                      email: "",
+                      address: "",
+                    });
+                    setIsSupplierDropdownVisible(false);
+
+                    // Set the error state for supplier
+                    setErrors((prevErrors) => ({
+                      ...prevErrors,
+                      supplier: true,
+                    }));
+                  }}
+                  className="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-pink-500"
+                  aria-label="Clear supplier search"
+                >
+                  &times;
+                </button>
+              )}
             </div>
           </div>
         </div>
