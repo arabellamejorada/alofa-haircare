@@ -1,17 +1,16 @@
 import React from "react";
-import { MdAddBox, MdDelete } from "react-icons/md";
+import { MdDelete } from "react-icons/md";
 
 const ProductVariationsTable = ({
   variations,
-  statuses,
   handleVariationChange,
   handleImageChange,
   addVariation,
-  deleteVariation,
+  // deleteVariation,
 }) => {
   return (
-    <div className="pt-4">
-      <div className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+    <div className="pt-4 w-full max-w-full">
+      <div className="w-full bg-white shadow-md rounded-lg overflow-hidden">
         <table className="w-full leading-normal">
           <thead className="w-full">
             <tr>
@@ -30,9 +29,6 @@ const ProductVariationsTable = ({
               <th className="px-2 py-1 border-b-2 border-gray-200 bg-gray-100 text-center text-md font-semibold text-gray-600 uppercase">
                 SKU*
               </th>
-              {/* <th className="px-2 py-1 border-b-2 border-gray-200 bg-gray-100 text-center text-md font-semibold text-gray-600 uppercase">
-                Status
-              </th> */}
               <th className="px-2 py-1 border-b-2 border-gray-200 bg-gray-100 text-center text-md font-semibold text-gray-600 uppercase">
                 Image
               </th>
@@ -44,12 +40,12 @@ const ProductVariationsTable = ({
           <tbody>
             {variations.map((variation, index) => (
               <tr key={index}>
-                {/* index */}
+                {/* Index */}
                 <td className="px-2 py-1 border-b border-gray-200 text-sm text-center">
                   {index + 1}
                 </td>
 
-                {/* type */}
+                {/* Variation Type */}
                 <td className="px-2 py-1 border-b border-gray-200 text-sm text-center">
                   <select
                     value={variation.type}
@@ -64,7 +60,7 @@ const ProductVariationsTable = ({
                   </select>
                 </td>
 
-                {/* value */}
+                {/* Variation Value */}
                 <td className="px-2 py-1 border-b border-gray-200 text-sm text-center">
                   <input
                     type="text"
@@ -83,7 +79,7 @@ const ProductVariationsTable = ({
                   />
                 </td>
 
-                {/* unit_price */}
+                {/* Unit Price */}
                 <td className="px-2 py-1 border-b border-gray-200 text-sm text-center">
                   <input
                     type="number"
@@ -96,7 +92,7 @@ const ProductVariationsTable = ({
                   />
                 </td>
 
-                {/* sku */}
+                {/* SKU */}
                 <td className="px-2 py-1 border-b border-gray-200 text-sm text-center">
                   <input
                     type="text"
@@ -109,45 +105,44 @@ const ProductVariationsTable = ({
                   />
                 </td>
 
-                {/* product_status */}
-                {/* <td className="px-2 py-1 border-b border-gray-200 text-sm text-center">
-                  <select
-                    value={variation.product_status_id}
-                    onChange={(e) =>
-                      handleVariationChange(
-                        index,
-                        "product_status_id",
-                        e.target.value,
-                      )
-                    }
-                    className="w-full border border-gray-200 rounded px-2 py-1 text-center appearance-none"
-                  >
-                    <option value="">Select Status</option>
-                    {statuses.map((status) => (
-                      <option key={status.status_id} value={status.status_id}>
-                        {status.description}
-                      </option>
-                    ))}
-                  </select>
-                </td> */}
+                {/* Image */}
+                <td className="px-2 py-1 border-b border-gray-200 text-sm text-center">
+                  <div className="flex items-center gap-4">
+                    {/* Image preview */}
+                    {variation.image && (
+                      <img
+                        src={
+                          typeof variation.image === "string"
+                            ? variation.image
+                            : URL.createObjectURL(variation.image)
+                        }
+                        alt="Uploaded Preview"
+                        className="w-12 h-12 object-cover rounded-md border border-gray-300"
+                      />
+                    )}
 
-                {/* image */}
-                <td className="px-2 py-1">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) =>
-                      handleImageChange(index, e.target.files[0])
-                    }
-                    className="w-full px-2 py-1 file:mr-2 file:py-1 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pink-400 file:text-white hover:file:bg-pink-500"
-                  />
+                    {/* File input */}
+                    <div className="flex items-center gap-2">
+                      <label className="flex items-center px-4 py-2 text-sm font-medium text-white bg-pink-500 rounded-lg cursor-pointer hover:bg-pink-600">
+                        Choose File
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) =>
+                            handleImageChange(index, e.target.files[0])
+                          }
+                          className="sr-only"
+                        />
+                      </label>
+                    </div>
+                  </div>
                 </td>
 
-                {/* delete */}
+                {/* Delete */}
                 <td className="px-2 py-1 border-b border-gray-200 text-sm text-center">
                   <button
                     className="text-red-500 hover:text-red-700"
-                    onClick={() => deleteVariation(index)}
+                    // onClick={() => deleteVariation(index)}
                   >
                     <MdDelete fontSize={24} />
                   </button>
@@ -157,17 +152,20 @@ const ProductVariationsTable = ({
           </tbody>
         </table>
       </div>
-      <div className="flex justify-end mt-2">
+
+      {/* Add More Variation Button */}
+      <div className="flex justify-end mt-4">
         <button
           type="button"
           onClick={addVariation}
-          className="flex items-center px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+          className="flex items-center gap-2 px-6 py-2 text-white bg-pink-500 hover:bg-pink-600 rounded-lg font-semibold shadow-md transition-transform transform hover:scale-105"
         >
-          <MdAddBox fontSize={24} className="mr-2" />
-          Add More Variation
+          <span>+</span> Add More Variation
         </button>
       </div>
-      <p>*leave SKU blank if not provided</p>
+      <p className="text-sm text-gray-500 mt-2">
+        *Leave SKU blank if not provided
+      </p>
     </div>
   );
 };

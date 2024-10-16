@@ -2,40 +2,73 @@ import React, { Fragment, useEffect, useState } from "react";
 import DataTable from "../shared/DataTable";
 import { MdAddBox } from "react-icons/md";
 import Modal from "../modal/Modal";
+import { toast } from "sonner";
 import {
   createCategory,
   getCategories,
   updateCategory,
-  // archiveCategory,
+  deleteCategory,
 } from "../../api/products";
+import { validateName } from "../../lib/consts/utils/validationUtils"; // Assuming you have a validation utility
 
 const ProductCategories = () => {
   const [categories, setCategories] = useState([]);
-  const [error, setError] = useState(null);
+  const [errors, setErrors] = useState({});
+  const [search, setSearch] = useState("");
+  const [sortField, setSortField] = useState("");
+  const [sortOrder, setSortOrder] = useState("asc");
 
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [showModal, setShowModal] = useState(false);
-
   const [category_name, setCategoryName] = useState("");
+  const [originalCategory, setOriginalCategory] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const categoriesData = await getCategories();
         setCategories(categoriesData);
-      } catch (err) {
-        setError("Failed to fetch categories");
+      } catch (error) {
+        toast.error("Failed to fetch categories");
       }
     };
-
     fetchData();
   }, []);
 
+  const handleInputChange = (e) => {
+    const { value } = e.target;
+    setCategoryName(value);
+    // Validate name in real-time
+    if (!validateName(value)) {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        category_name: "Category name is required",
+      }));
+    } else {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        category_name: "",
+      }));
+    }
+  };
+
+  const validateForm = () => {
+    const validationErrors = {};
+    if (!validateName(category_name)) {
+      validationErrors.category_name = "Category name is required";
+    }
+    setErrors(validationErrors);
+    return Object.keys(validationErrors).length === 0;
+  };
+
+  const isFormModified = () => {
+    return category_name !== originalCategory;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!category_name) {
-      alert("Please fill out all required fields.");
+    if (!validateForm()) {
+      toast.error("Please fill in the required fields.");
       return;
     }
 
@@ -50,63 +83,140 @@ const ProductCategories = () => {
           selectedCategory.product_category_id,
           categoryData,
         );
-        console.log("Category updated successfully:", response);
+        toast.success("Category updated successfully.");
       } else {
         response = await createCategory(categoryData);
-        console.log("Category created successfully:", response);
+        console.log("Category created: ", response);
+        toast.success("Category created successfully.");
       }
       handleCloseModal();
       const categoriesData = await getCategories();
       setCategories(categoriesData);
     } catch (error) {
-      console.error("Error saving category:", error);
-      setError("Error saving category. Please try again.");
+      toast.error("Error saving category. Please try again.");
     }
   };
 
-  // const handleArchive = async (category) => {
-  //   try {
-  //     const response = await archiveCategory(category.product_category_id);
-  //     console.log("Category archived successfully:", response);
-  //     const categoriesData = await getCategories();
-  //     setCategories(categoriesData);
-  //   } catch (error) {
-  //     console.error("Error archiving category:", error);
-  //     setError("Error archiving category. Please try again.");
-  //   }
-  // };
-
-  const openModal = (category = null) => {
-    if (category) {
-      setSelectedCategory(category);
-      setCategoryName(category.name || "");
-    } else {
-      setSelectedCategory(null);
-      setCategoryName("");
+  const handleDeleteCategory = async (category) => {
+    if (
+      !window.confirm(
+        `Are you sure you want to delete the category "${category.name}"?
+        Note: Categories with associated product variations cannot be deleted.`,
+      )
+    ) {
+      return;
     }
-    setShowModal(true);
+
+    try {
+      await deleteCategory(category.product_category_id);
+      toast.success("Category deleted successfully.");
+      const categoriesData = await getCategories();
+      setCategories(categoriesData); // Refresh the categories list
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message ||
+          "Error deleting category. Cannot delete categories with associated products.",
+      );
+    }
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
     setSelectedCategory(null);
     setCategoryName("");
+    setOriginalCategory("");
+    setErrors({});
   };
 
-  if (error) return <div>{error}</div>;
+  const openModal = (category = null) => {
+    if (category) {
+      setSelectedCategory(category);
+      setCategoryName(category.name || "");
+      setOriginalCategory(category.name || "");
+    } else {
+      setSelectedCategory(null);
+      setCategoryName("");
+      setOriginalCategory("");
+    }
+    setShowModal(true);
+  };
+
+  const handleSearchChange = (e) => {
+    setSearch(e.target.value.toLowerCase());
+  };
+
+  const handleColumnSort = (field) => {
+    const isAsc = sortField === field && sortOrder === "asc";
+    setSortOrder(isAsc ? "desc" : "asc");
+    setSortField(field);
+  };
+
+  const filteredCategories = categories
+    .filter((category) => category.name.toLowerCase().includes(search))
+    .sort((a, b) => {
+      if (sortField === "name") {
+        if (sortOrder === "asc") {
+          return a.name.localeCompare(b.name);
+        } else {
+          return b.name.localeCompare(a.name);
+        }
+      } else if (sortField === "product_category_id") {
+        if (sortOrder === "asc") {
+          return a.product_category_id - b.product_category_id;
+        } else {
+          return b.product_category_id - a.product_category_id;
+        }
+      }
+      return 0;
+    });
 
   const columns = [
-    { key: "product_category_id", header: "ID" },
-    { key: "name", header: "Category Name" },
+    {
+      key: "product_category_id",
+      header: (
+        <div
+          onClick={() => handleColumnSort("product_category_id")}
+          className="cursor-pointer"
+        >
+          ID{" "}
+          {sortField === "product_category_id" && (
+            <span>{sortOrder === "asc" ? "↑" : "↓"}</span>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "name",
+      header: (
+        <div
+          onClick={() => handleColumnSort("name")}
+          className="cursor-pointer"
+        >
+          Category Name{" "}
+          {sortField === "name" && (
+            <span>{sortOrder === "asc" ? "↑" : "↓"}</span>
+          )}
+        </div>
+      ),
+    },
   ];
 
   return (
     <Fragment>
       <div className="flex flex-col gap-2">
-        <div className="flex flex-row items-center justify-between">
-          <strong className="text-3xl font-bold text-gray-500">
-            Product Categories
-          </strong>
+        <div className="flex flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <strong className="text-3xl font-bold text-gray-500">
+              Product Categories
+            </strong>
+            <input
+              type="text"
+              className="w-[300px] h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+              placeholder="Search categories..."
+              value={search}
+              onChange={handleSearchChange}
+            />
+          </div>
           <div>
             <MdAddBox
               fontSize={30}
@@ -115,12 +225,13 @@ const ProductCategories = () => {
             />
           </div>
         </div>
+
         <DataTable
-          data={categories}
+          data={filteredCategories}
           columns={columns}
-          // onArchive={handleArchive}
-          isProductCategory={true}
           onEdit={openModal}
+          onDelete={handleDeleteCategory}
+          isProductCategory={true}
         />
       </div>
 
@@ -141,17 +252,29 @@ const ProductCategories = () => {
                 id="category_name"
                 placeholder="Category Name"
                 value={category_name}
-                onChange={(e) => setCategoryName(e.target.value)}
-                className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+                onChange={handleInputChange}
+                className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 ${
+                  errors.category_name ? "border-red-500" : ""
+                }`}
               />
+              {errors.category_name && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.category_name}
+                </p>
+              )}
             </div>
 
             <div className="flex flex-row justify-end gap-4">
               <button
                 type="submit"
-                className="px-4 py-2 text-white bg-pink-400 rounded-lg hover:bg-pink-500"
+                disabled={selectedCategory && !isFormModified()} // Disable if no changes
+                className={`px-4 py-2 text-white bg-pink-400 rounded-lg hover:bg-pink-500 ${
+                  selectedCategory && !isFormModified()
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
+                }`}
               >
-                {selectedCategory ? "Confirm" : "Add Category"}
+                {selectedCategory ? "Update Category" : "Add Category"}
               </button>
               <button
                 type="button"

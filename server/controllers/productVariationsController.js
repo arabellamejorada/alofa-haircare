@@ -206,7 +206,7 @@ const getProductVariationById = async (req, res) => {
 // Update product variation by ID including image(if uploaded a new one)
 const updateProductVariation = async (req, res) => {
   const id = parseInt(req.params.id);
-  const { type, value, unit_price, product_status_id, sku } = req.body;
+  const { unit_price, product_status_id } = req.body;
   let image = req.file ? req.file.path : null;
 
   console.log("Request Body:", req.body);
@@ -248,10 +248,10 @@ console.log("Multer processed file:", req.file);
     // Update the product variation with the new data
     const updatedProductVariation = await pool.query(
       `UPDATE product_variation
-        SET type = $1, value = $2, sku = $3, unit_price = $4, product_status_id = $5, image = $6
-        WHERE variation_id = $7
+        SET  unit_price = $1, product_status_id = $2, image = $3
+        WHERE variation_id = $4
         RETURNING *`,
-      [type, value, sku, unit_price, product_status_id, image, id]
+      [unit_price, product_status_id, image, id]
     );
 
     // Update inventory too
