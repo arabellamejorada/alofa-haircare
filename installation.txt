@@ -61,3 +61,14 @@ RESTORE DATABASE:
 
     # Reset the schema -- do this if mag error lang yung sa taas
         psql -U postgres -d alofa -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+
+
+migrate:
+
+1. install docker
+2. uPDATE xCode to latest
+2.1 brew install supabase
+3. pg_dump --clean --if-exists --quote-all-identifiers \
+-h localhost -U postgres -d alofa \ 
+--no-owner --no-privileges > dump.sql
+4. psql -d "postgresql://postgres.hqzdxvlsgjkhtavvkmus:bellajohnsey69@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres" -f dump.sql
