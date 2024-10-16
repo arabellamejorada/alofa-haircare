@@ -1,6 +1,6 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
-import { FiFilter } from "react-icons/fi";
+import { FaFilter } from "react-icons/fa6";
 
 const FilterButton = ({ categories, selectedCategory, setSelectedCategory, selectedSort, setSelectedSort }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -36,7 +36,7 @@ const FilterButton = ({ categories, selectedCategory, setSelectedCategory, selec
         className="flex items-center justify-center bg-white text-pink-500 py-2 px-4 rounded-full shadow-lg hover:bg-pink-100 transition-all w-auto"
         onClick={toggleDropdown}
       >
-        <FiFilter className="mr-2 text-2xl text-pink-500" /> {/* Filter Icon */}
+        <FaFilter className="mr-2 text-2xl text-pink-500" />
         <span className="text-lg font-semibold">Filter</span>
       </button>
 
