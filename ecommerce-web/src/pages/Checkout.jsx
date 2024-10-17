@@ -1,6 +1,8 @@
 import { useContext, useState } from 'react';
 import { IoChevronBack } from 'react-icons/io5';
 import GCashLogo from '../../../public/static/gcash-logo.svg';
+import BPILogo from '../../../public/static/bpi-logo.svg';
+import GCashQR from '../../../public/static/gcash-qr.jpg';
 import { CartContext } from '../components/CartContext.jsx';
 
 const Checkout = () => {
@@ -34,7 +36,7 @@ const Checkout = () => {
     <div className="h-screen flex items-center justify-center">
       <div className="flex flex-col lg:flex-row w-full h-full bg-white">
         {/* Customer Info Section */}
-        <div className="w-full lg:w-2/4 p-16 flex flex-col justify-between h-full mx-auto max-w-5xl">
+        <div className="w-full lg:w-2/3 p-10 flex flex-col justify-between h-full mx-auto">
           <div className="mb-8 flex items-center gap-4">
             <button
               onClick={() => window.location.href = '/shoppingcart'}
@@ -130,27 +132,43 @@ const Checkout = () => {
           </div>
           <div className="mb-6">
             <h2 className="text-xl font-bold mb-4 text-gray-500">Payment</h2>
-            <div className="flex gap-4 mb-6">
-              <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="gcash"
-                  checked={formData.paymentMethod === 'gcash'}
-                  onChange={handleInputChange}
-                />
-                <img src={GCashLogo} alt="GCash Logo" className="w-20" />
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="bank"
-                  checked={formData.paymentMethod === 'bank'}
-                  onChange={handleInputChange}
-                />
-                <img src="/bank.png" alt="Bank Transfer" className="w-20" />
-              </label>
+            <div className="accordion">
+            <div className="border p-4 mb-4 cursor-pointer transition-all duration-700 ease-in-out" 
+                onClick={() => {
+                setFormData({ ...formData, paymentMethod: formData.paymentMethod === 'gcash' ? '' : 'gcash' });
+                document.querySelector('.accordion').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }}>
+                <div className="flex justify-between items-center">
+                  <span className="font-bold">Gcash</span>
+                  <img src={GCashLogo} alt="GCash Logo" className="w-10" />
+                </div>
+                {formData.paymentMethod === 'gcash' && (
+                <div className="mt-4">
+                  <p className="text-sm mb-2">Please scan the QR code below to complete the payment</p>
+                  <img src={GCashQR} alt="GCash QR Code" className="w-32 h-32 mb-4" />
+                  <button className="bg-gray-600 text-white py-2 px-4 rounded flex items-center gap-2">
+                    Upload receipt
+                  </button>
+                </div>
+                )}
+              </div>
+              <div className="border p-4 mb-4 cursor-pointer transition-all duration-700 ease-in-out" onClick={() => setFormData({ ...formData, paymentMethod: formData.paymentMethod === 'bank' ? '' : 'bank' })}>
+                <div className="flex justify-between items-center">
+                  <span className="font-bold">Bank Transfer</span>
+                  <img src={BPILogo} alt="Bank Transfer Logo" className="w-10" />
+                </div>
+                {formData.paymentMethod === 'bank' && (
+                  <div className="mt-4">
+                    <p className="text-sm mb-2">Bank details for transfer:</p>
+                    <p className="text-sm">Bank Name: <b>Bank of the Philippine Islands</b></p>
+                    <p className="text-sm">Account Number: <b>1234-5678-9012</b></p>
+                    <p className="text-sm">Account Name: Alofa Haircare</p>
+                    <button className="bg-gray-600 text-white py-2 px-4 rounded flex items-center gap-2 mt-4">
+                      Upload receipt
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
             <button
               onClick={handleSubmit}
@@ -162,29 +180,30 @@ const Checkout = () => {
         </div>
 
         {/* Orders Section */}
-        <div className="w-full lg:w-1/4 p-8 bg-pink-100 flex flex-col justify-between h-full mx-auto max-w-md">
-          <h2 className="text-xl font-bold mb-6 text-pink-500">Orders</h2>
+        <div className="w-full lg:w-1/3 p-8 bg-gradient-to-b from-alofa-pink to-alofa-light-pink flex flex-col justify-between h-full mx-auto">
+          <h2 className="text-3xl font-extrabold font-body mb-6 text-white">Orders</h2>
           <div className="overflow-y-auto max-h-96 mb-4">
             {cartItems.map((item, index) => (
               <div key={index} className="flex items-center mb-4">
                 <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded mr-4" />
                 <div className="flex justify-between w-full">
-                  <span>{`1x ${item.name}`}</span>
+                  <span>{`${item.quantity}x ${item.name}`}</span>
                   <span>{`₱${item.price.toFixed(2)}`}</span>
                 </div>
               </div>
             ))}
           </div>
-          <div className="border-t pt-4">
-            <div className="flex justify-between mb-2">
-              <span>Subtotal:</span>
+          <div className="border-t pt-4 mt-auto">
+            <div className="flex justify-between mb-2 ">
+              <span>Subtotal</span>
               <span>{`₱${subtotal.toFixed(2)}`}</span>
             </div>
             <div className="flex justify-between mb-2">
-              <span>Shipping:</span>
+              <span>Shipping Fee</span>
+              {/* to edit; for placeholder only */}
               <span>₱150.00</span>
             </div>
-            <div className="flex justify-between text-xl font-bold">
+            <div className="flex justify-between text-3xl font-bold">
               <span>Total:</span>
               <span>{`₱${total.toFixed(2)}`}</span>
             </div>

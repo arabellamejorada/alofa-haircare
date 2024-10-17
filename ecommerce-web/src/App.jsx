@@ -14,7 +14,7 @@ const AppContent = () => {
 
   return (
     <>
-      {/* Conditionally render Navbar */}
+      {/* Navbar to not appear in checkout page */}
       {location.pathname !== '/checkout' && <Navbar />}
       <Routes>
         <Route path="/" element={<Home />} />
