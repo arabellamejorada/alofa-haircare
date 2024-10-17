@@ -29,6 +29,9 @@ npm install react-query
 npm install styled-components
 npm install react-icons --save
 npm install prop-types
+npm install @radix-ui/themes
+
+
 
 ensure localhost:5173
 
