@@ -36,17 +36,17 @@ const Checkout = () => {
     <div className="h-screen flex items-center justify-center">
       <div className="flex flex-col lg:flex-row w-full h-full bg-white">
         {/* Customer Info Section */}
-        <div className="w-full lg:w-2/3 p-10 flex flex-col justify-between h-full mx-auto">
-          <div className="mb-8 flex items-center gap-4">
+        <div className="w-full lg:w-2/3 p-10 ml-20 flex flex-col justify-between h-full mx-auto overflow-y-auto">
+          <div className="mb-6 flex items-center gap-4">
             <button
               onClick={() => window.location.href = '/shoppingcart'}
               className="text-gray-500 font-bold hover:underline flex items-center"
             >
-              <IoChevronBack className="h-6 w-6" />
+              <IoChevronBack className="h-6 w-9" />
             </button>
             <h1 className="text-4xl font-bold font-title bg-gradient-to-b from-alofa-pink to-alofa-light-pink bg-clip-text text-transparent">alofa</h1>
           </div>
-          <div className="mb-6">
+          <div className="mb-2">
             <h2 className="text-xl font-bold mb-4 text-gray-500">Account</h2>
             <input
               type="email"
@@ -57,7 +57,7 @@ const Checkout = () => {
               className="w-full p-3 mb-4 border rounded-md"
             />
           </div>
-          <div className="mb-6">
+          <div className="mb-2">
             <h2 className="text-xl font-bold mb-4 text-gray-500">Shipping Information</h2>
             <div className="flex gap-4 mb-4">
               <input
@@ -132,27 +132,30 @@ const Checkout = () => {
           </div>
           <div className="mb-6">
             <h2 className="text-xl font-bold mb-4 text-gray-500">Payment</h2>
-            <div className="accordion">
-            <div className="border p-4 mb-4 cursor-pointer transition-all duration-700 ease-in-out" 
-                onClick={() => {
-                setFormData({ ...formData, paymentMethod: formData.paymentMethod === 'gcash' ? '' : 'gcash' });
-                document.querySelector('.accordion').scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }}>
+            <div className="accordion overflow-hidden">
+              {/* gcash */}
+              <div className="border p-4 mb-4 cursor-pointer transition-all duration-700 ease-in-out" 
+                onClick={() => { setFormData({ ...formData, paymentMethod: formData.paymentMethod === 'gcash' ? '' : 'gcash' });
+                document.querySelector('.accordion').scrollIntoView({ behavior: 'smooth', block: 'center' }); }}
+              >
                 <div className="flex justify-between items-center">
                   <span className="font-bold">Gcash</span>
                   <img src={GCashLogo} alt="GCash Logo" className="w-10" />
                 </div>
                 {formData.paymentMethod === 'gcash' && (
-                <div className="mt-4">
-                  <p className="text-sm mb-2">Please scan the QR code below to complete the payment</p>
+                <div className="mt-4 transition-max-height duration-700 ease-in-out overflow-hidden max-h-[500px]">
+                  <p className="text-sm mb-2">Please scan the QR code below to complete the payment:</p>
                   <img src={GCashQR} alt="GCash QR Code" className="w-32 h-32 mb-4" />
-                  <button className="bg-gray-600 text-white py-2 px-4 rounded flex items-center gap-2">
+                  <button className="bg-gray-800 text-white py-2 px-4 rounded flex items-center gap-2">
                     Upload receipt
                   </button>
                 </div>
                 )}
               </div>
-              <div className="border p-4 mb-4 cursor-pointer transition-all duration-700 ease-in-out" onClick={() => setFormData({ ...formData, paymentMethod: formData.paymentMethod === 'bank' ? '' : 'bank' })}>
+              {/* bank transfer */}
+              <div className="border p-4 mb-4 cursor-pointer transition-all duration-700 ease-in-out"
+                onClick={() => { setFormData({ ...formData, paymentMethod: formData.paymentMethod === 'bank' ? '' : 'bank' });
+                document.querySelector('.accordion').scrollIntoView({ behavior: 'smooth', block: 'center' }); }}>
                 <div className="flex justify-between items-center">
                   <span className="font-bold">Bank Transfer</span>
                   <img src={BPILogo} alt="Bank Transfer Logo" className="w-10" />
@@ -180,20 +183,21 @@ const Checkout = () => {
         </div>
 
         {/* Orders Section */}
-        <div className="w-full lg:w-1/3 p-8 bg-gradient-to-b from-alofa-pink to-alofa-light-pink flex flex-col justify-between h-full mx-auto">
+        <div className="w-full lg:w-1/3 p-8 bg-alofa-pink flex flex-col justify-between h-full mx-auto shadow-sm shadow-slate-400">
+        {/* bg-gradient-to-b from-[#FF82AF] via-[#FF82AF] to-[#FFCED9] */}
           <h2 className="text-3xl font-extrabold font-body mb-6 text-white">Orders</h2>
           <div className="overflow-y-auto max-h-96 mb-4">
             {cartItems.map((item, index) => (
               <div key={index} className="flex items-center mb-4">
-                <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded mr-4" />
-                <div className="flex justify-between w-full">
+                <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded mr-4 shadow-sm" />
+                <div className="flex justify-between w-full text-white">
                   <span>{`${item.quantity}x ${item.name}`}</span>
-                  <span>{`₱${item.price.toFixed(2)}`}</span>
+                  <span className="font-bold">{`₱${item.price.toFixed(2)}`}</span>
                 </div>
               </div>
             ))}
           </div>
-          <div className="border-t pt-4 mt-auto">
+          <div className="border-t pt-4 mt-auto text-white">
             <div className="flex justify-between mb-2 ">
               <span>Subtotal</span>
               <span>{`₱${subtotal.toFixed(2)}`}</span>
