@@ -135,6 +135,9 @@ const StockHistoryTable = ({
                               <th className="px-3 py-2  bg-gray-50 text-gray-700 text-right text-sm font-semibold">
                                 Quantity
                               </th>
+                              <th className="px-3 py-2  bg-gray-50 text-gray-700 text-right text-sm font-semibold">
+                                Reason
+                              </th>
                             </tr>
                           </thead>
                           <tbody>
@@ -154,6 +157,9 @@ const StockHistoryTable = ({
                                 </td>
                                 <td className="px-3 bg-white py-2  text-sm text-right">
                                   {product.quantity}
+                                </td>
+                                <td className="px-3 bg-white py-2  text-sm text-right">
+                                  {product.reason}
                                 </td>
                               </tr>
                             ))}

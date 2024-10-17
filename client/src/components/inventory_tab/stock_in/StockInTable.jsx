@@ -280,9 +280,11 @@ const StockInTable = ({
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-left">
                   {row.type && row.value ? `${row.type}: ${row.value}` : "N/A"}
                 </td>
+
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-left">
                   {row.sku || ""}
                 </td>
+
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-left">
                   <input
                     type="number"

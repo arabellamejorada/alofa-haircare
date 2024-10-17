@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import StockHistoryTable from "../StockHistoryTable";
 import { IoIosArrowBack } from "react-icons/io";
-import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 import { getAllStockOut } from "../../../api/stockOut";
 
 const StockOutHistory = () => {
@@ -11,8 +10,8 @@ const StockOutHistory = () => {
   const [loading, setLoading] = useState(true);
 
   // State for sorting
-  const [sortField, setSortField] = useState("reference_number");
-  const [sortOrder, setSortOrder] = useState("asc");
+  const [sortField, setSortField] = useState("stock_out_date");
+  const [sortOrder, setSortOrder] = useState("desc");
 
   // State for filtering
   const [selectedDate, setSelectedDate] = useState("");
@@ -48,7 +47,6 @@ const StockOutHistory = () => {
         reference_number: refNumber,
         stock_out_date: item.stock_out_date,
         employee_name: item.employee_name,
-        reason: item.reason,
         products: [],
       };
     }
@@ -69,7 +67,6 @@ const StockOutHistory = () => {
   const columns = [
     { key: "reference_number", header: "Ref #" },
     { key: "employee_name", header: "Authorized by" },
-    { key: "reason", header: "Reason" },
     { key: "stock_out_date", header: "Stock-Out Date" },
   ];
 
