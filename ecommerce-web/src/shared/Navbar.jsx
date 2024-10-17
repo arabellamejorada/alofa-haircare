@@ -1,23 +1,23 @@
 import { useState, useContext } from 'react';
 import { FaUserAlt, FaShoppingCart, FaTrashAlt } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import logo from "/images/alofa-logo.png";
 import { CartContext } from '../components/CartContext';
 
 const Navbar = () => {
   const [hovered, setHovered] = useState(false);
-  const { cartItems, handleQuantityChange, handleDelete } = useContext(CartContext); // Get cart context
+  const { cartItems, handleQuantityChange, handleDelete } = useContext(CartContext);
 
   // Calculate total price
   const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2);
 
-
   return (
-    <header className="bg-white/75 shadow-md py-2px fixed top-0 w-full z-50">
+    <header className="bg-white/75 shadow-md py-2px fixed top-0 w-full z-50 h-16">
       <nav className="container mx-auto flex justify-between items-center px-4 md:py-2 pt-3 pb-2">
         <div className="flex items-center gap-8">
           {/* Logo */}
-          <a href="/"><img src={logo} alt="Alofa logo" /></a>
+          <a href="/" className="bg-gradient-to-b from-alofa-pink to-alofa-light-pink bg-clip-text text-transparent text-4xl font-title mt-2">
+            alofa
+          </a>
 
           {/* Navigation Pages */}
           <div className="text-lg font-semibold text-alofa-pink sm:flex items-center gap-8 hidden">
@@ -56,7 +56,7 @@ const Navbar = () => {
         onMouseLeave={() => setHovered(false)}
       >
         <div className="p-4 h-full flex flex-col">
-          <h1 className="text-2xl text-alofa-pink font-bold mb-4">Cart Overview</h1>
+          <h1 className="text-2xl bg-gradient-to-r from-alofa-pink to-alofa-light-pink bg-clip-text text-transparent font-bold mb-4">Cart Overview</h1>
 
           {/* Cart Items: Make this part scrollable */}
           <div className="flex-1 overflow-y-auto mb-4">
