@@ -2,12 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import StockHistoryTable from "../StockHistoryTable";
 import { IoIosArrowBack } from "react-icons/io";
-import { FaArrowUp, FaArrowDown } from "react-icons/fa";
-import {
-  IoMdArrowDropdown,
-  IoMdArrowDropdownCircle,
-  IoMdArrowDroprightCircle,
-} from "react-icons/io";
 import { getAllStockOut } from "../../../api/stockOut";
 
 const StockOutHistory = () => {
@@ -16,11 +10,12 @@ const StockOutHistory = () => {
   const [loading, setLoading] = useState(true);
 
   // State for sorting
-  const [sortField, setSortField] = useState("reference_number");
-  const [sortOrder, setSortOrder] = useState("asc");
+  const [sortField, setSortField] = useState("stock_out_date");
+  const [sortOrder, setSortOrder] = useState("desc");
 
   // State for filtering
   const [selectedDate, setSelectedDate] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
   // State to track which rows are expanded
   const [expandedRows, setExpandedRows] = useState([]);
@@ -52,7 +47,6 @@ const StockOutHistory = () => {
         reference_number: refNumber,
         stock_out_date: item.stock_out_date,
         employee_name: item.employee_name,
-        reason: item.reason,
         products: [],
       };
     }
@@ -73,44 +67,56 @@ const StockOutHistory = () => {
   const columns = [
     { key: "reference_number", header: "Ref #" },
     { key: "employee_name", header: "Authorized by" },
-    { key: "reason", header: "Reason" },
     { key: "stock_out_date", header: "Stock-Out Date" },
   ];
 
-  // Apply filtering to the grouped data
-  const filteredData = groupedDataArray.filter((group) => {
-    const itemDate = new Date(group.stock_out_date).toLocaleDateString("en-CA");
+  // Handle sorting
+  const handleSort = (field) => {
+    const newSortOrder =
+      sortField === field && sortOrder === "asc" ? "desc" : "asc";
+    setSortField(field);
+    setSortOrder(newSortOrder);
+  };
 
-    const matchesDate =
-      selectedDate === "" ||
-      new Date(selectedDate).toISOString().split("T")[0] === itemDate;
+  // Apply filtering, searching, and sorting to the data
+  const filteredData = groupedDataArray
+    .filter((group) => {
+      const itemDate = new Date(group.stock_out_date).toLocaleDateString(
+        "en-CA",
+      );
+      const matchesDate =
+        selectedDate === "" ||
+        new Date(selectedDate).toISOString().split("T")[0] === itemDate;
 
-    return matchesDate;
-  });
+      const matchesSearch =
+        searchTerm === "" ||
+        group.reference_number
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        group.employee_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        group.reason.toLowerCase().includes(searchTerm.toLowerCase());
 
-  // Apply sorting to the filtered data
-  const sortedData = [...filteredData].sort((a, b) => {
-    let fieldA = a[sortField];
-    let fieldB = b[sortField];
+      return matchesDate && matchesSearch;
+    })
+    .sort((a, b) => {
+      let fieldA = a[sortField];
+      let fieldB = b[sortField];
 
-    // Handle null or undefined values
-    if (fieldA === null || fieldA === undefined) fieldA = "";
-    if (fieldB === null || fieldB === undefined) fieldB = "";
+      if (fieldA === null || fieldA === undefined) fieldA = "";
+      if (fieldB === null || fieldB === undefined) fieldB = "";
 
-    // Convert dates to comparable values
-    if (sortField === "stock_out_date") {
-      fieldA = new Date(fieldA);
-      fieldB = new Date(fieldB);
-    }
+      if (sortField === "stock_out_date") {
+        fieldA = new Date(fieldA);
+        fieldB = new Date(fieldB);
+      }
 
-    // Case-insensitive comparison for strings
-    if (typeof fieldA === "string") fieldA = fieldA.toLowerCase();
-    if (typeof fieldB === "string") fieldB = fieldB.toLowerCase();
+      if (typeof fieldA === "string") fieldA = fieldA.toLowerCase();
+      if (typeof fieldB === "string") fieldB = fieldB.toLowerCase();
 
-    if (fieldA < fieldB) return sortOrder === "asc" ? -1 : 1;
-    if (fieldA > fieldB) return sortOrder === "asc" ? 1 : -1;
-    return 0;
-  });
+      if (fieldA < fieldB) return sortOrder === "asc" ? -1 : 1;
+      if (fieldA > fieldB) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
 
   return (
     <div className="container mx-auto p-4">
@@ -142,7 +148,7 @@ const StockOutHistory = () => {
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="border border-gray-300 rounded-md h-8 p-2 bg-white focus:outline-none focus:ring-2 focus:ring-pink-500"
+            className="w-full max-w-md h-10 px-4 border rounded-xl bg-gray-50 border-slate-300 focus:outline-none focus:border-pink-400 focus:bg-white"
           />
           {selectedDate && (
             <button
@@ -154,40 +160,30 @@ const StockOutHistory = () => {
           )}
         </div>
 
-        {/* Sorting Controls */}
-        <div className="flex items-center gap-4">
+        {/* Search Filter */}
+        <div className="flex items-center">
           <label
-            htmlFor="sort-field"
+            htmlFor="search-filter"
             className="mr-2 font-semibold text-gray-700"
           >
-            Sort By:
+            Search:
           </label>
-          <div className="relative">
-            <select
-              id="sort-field"
-              value={sortField}
-              onChange={(e) => setSortField(e.target.value)}
-              className="w-[10rem] h-8 px-2 appearance-none border rounded-md bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 focus:outline-none focus:ring-4 focus:ring-pink-50"
+          <input
+            id="search-filter"
+            type="text"
+            placeholder="Search here..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full max-w-md h-10 px-4 border rounded-xl bg-gray-50 border-slate-300 focus:outline-none focus:border-pink-400 focus:bg-white"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="text-sm ml-2 text-pink-500 hover:text-pink-700 focus:outline-none"
             >
-              <option value="reference_number">Reference No.</option>
-              <option value="stock_out_date">Date</option>
-            </select>
-            <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none" />
-          </div>
-          <button
-            onClick={() =>
-              setSortOrder((prevOrder) =>
-                prevOrder === "asc" ? "desc" : "asc",
-              )
-            }
-            className="flex items-center border border-gray-300 rounded-md p-2 bg-white focus:outline-none focus:ring-2 focus:ring-pink-500"
-          >
-            {sortOrder === "asc" ? (
-              <FaArrowUp className="text-gray-700" />
-            ) : (
-              <FaArrowDown className="text-gray-700" />
-            )}
-          </button>
+              Clear
+            </button>
+          )}
         </div>
       </div>
 
@@ -195,15 +191,18 @@ const StockOutHistory = () => {
       <div className="mt-4">
         {loading ? (
           <p>Loading...</p>
-        ) : sortedData.length === 0 ? (
+        ) : filteredData.length === 0 ? (
           <p>No stock-out records found.</p>
         ) : (
           <StockHistoryTable
-            data={sortedData}
+            data={filteredData}
             columns={columns}
             isInventory={true}
             onExpand={toggleRow}
             expandedRows={expandedRows}
+            handleSort={handleSort}
+            sortField={sortField}
+            sortOrder={sortOrder}
           />
         )}
       </div>

@@ -235,7 +235,9 @@ const EmployeeForm = ({
           )}
 
           {/* Save/Update Button */}
-          <div className="flex justify-end mt-2">
+          {/* Save/Update and Cancel Buttons */}
+          <div className="flex justify-between mt-2">
+            {/* Save/Update Button */}
             <button
               type="submit"
               disabled={!isFormModified()}
@@ -245,6 +247,8 @@ const EmployeeForm = ({
             >
               {selectedEmployee ? "Update" : "Save"}
             </button>
+
+            {/* Cancel Button */}
             <button
               type="button"
               onClick={handleCloseModal}

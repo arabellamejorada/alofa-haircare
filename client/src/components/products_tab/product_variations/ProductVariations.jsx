@@ -275,14 +275,17 @@ const ProductVariations = () => {
     .filter((variation) => {
       // Check if variation matches the search term
       const matchesSearch = search
-        ? variation.product_name.toLowerCase().includes(search.toLowerCase()) ||
-          variation.type.toLowerCase().includes(search.toLowerCase()) ||
-          variation.value.toLowerCase().includes(search.toLowerCase()) ||
-          variation.sku.toLowerCase().includes(search.toLowerCase()) ||
-          (variation.status_description &&
-            variation.status_description
-              .toLowerCase()
-              .includes(search.toLowerCase()))
+        ? (variation.product_name || "")
+            .toLowerCase()
+            .includes(search.toLowerCase()) ||
+          (variation.type || "").toLowerCase().includes(search.toLowerCase()) ||
+          (variation.value || "")
+            .toLowerCase()
+            .includes(search.toLowerCase()) ||
+          (variation.sku || "").toLowerCase().includes(search.toLowerCase()) ||
+          (variation.status_description || "")
+            .toLowerCase()
+            .includes(search.toLowerCase())
         : true;
 
       const matchesProduct = selectedProduct
@@ -310,11 +313,15 @@ const ProductVariations = () => {
         return sortOrder === "asc" ? priceA - priceB : priceB - priceA;
       } else {
         // Default string comparison for other fields
-        if (sortOrder === "asc") {
-          return a[sortField] > b[sortField] ? 1 : -1;
-        } else {
-          return a[sortField] < b[sortField] ? 1 : -1;
-        }
+        const fieldA = (a[sortField] || "").toString().toLowerCase();
+        const fieldB = (b[sortField] || "").toString().toLowerCase();
+        return sortOrder === "asc"
+          ? fieldA > fieldB
+            ? 1
+            : -1
+          : fieldA < fieldB
+            ? 1
+            : -1;
       }
     });
 
@@ -386,50 +393,93 @@ const ProductVariations = () => {
 
         {/* Filter */}
         {activeTab === "view" && (
-          <div className="mb-4">
-            {/* Search */}
-            <input
-              type="text"
-              placeholder="Search Product Variations..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full max-w-md h-10 px-4 border rounded-xl bg-gray-50 border-slate-300 focus:outline-none focus:border-pink-400 focus:bg-white"
-            />
-            {/* Product Filter */}
-            <select
-              value={selectedProduct}
-              onChange={(e) => setSelectedProduct(e.target.value)}
-              className="w-[150px] h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
-            >
-              <option value="">All Products</option>
-              {products.map((product) => (
-                <option key={product.product_id} value={product.product_id}>
-                  {product.name}
-                </option>
-              ))}
-            </select>
-            {/* Status Filter */}
-            <select
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="w-[150px] h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
-            >
-              <option value="">All Statuses</option>
-              {statuses.map((status) => (
-                <option key={status.status_id} value={status.status_id}>
-                  {status.description}
-                </option>
-              ))}
-            </select>
-            {/* Other filters */}
-            <input
-              type="checkbox"
-              checked={showArchived}
-              onChange={() => setShowArchived(!showArchived)}
-              className="ml-2"
-            />
-            <label className="ml-2">Show Archived</label>
-          </div>
+          <>
+            {/* Filters Row */}
+            {/* Filters Row */}
+            <div className="flex flex-wrap items-center gap-4 mb-2">
+              {/* Search Input with Clear Button */}
+              <div className="flex items-center">
+                <input
+                  type="text"
+                  placeholder="Search Product Variations..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-[300px] h-10 px-4 border rounded-xl bg-gray-50 border-slate-300 focus:outline-none focus:border-pink-400 focus:bg-white"
+                />
+                {search && (
+                  <button
+                    onClick={() => setSearch("")}
+                    className="ml-2 text-pink-500 hover:text-pink-700"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+
+              {/* Product Filter with Clear Button */}
+              <div className="flex items-center">
+                <select
+                  value={selectedProduct}
+                  onChange={(e) => setSelectedProduct(e.target.value)}
+                  className="w-[200px] h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+                >
+                  <option value="">All Products</option>
+                  {products.map((product) => (
+                    <option key={product.product_id} value={product.product_id}>
+                      {product.name}
+                    </option>
+                  ))}
+                </select>
+                {selectedProduct && (
+                  <button
+                    onClick={() => setSelectedProduct("")}
+                    className="ml-2 text-pink-500 hover:text-pink-700"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+
+              {/* Status Filter with Clear Button */}
+              <div className="flex items-center">
+                <select
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  className="w-[200px] h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+                >
+                  <option value="">All Statuses</option>
+                  {statuses.map((status) => (
+                    <option key={status.status_id} value={status.status_id}>
+                      {status.description}
+                    </option>
+                  ))}
+                </select>
+                {selectedStatus && (
+                  <button
+                    onClick={() => setSelectedStatus("")}
+                    className="ml-2 text-pink-500 hover:text-pink-700"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+
+              {/* Checkbox for Show/Hide Archived */}
+              {selectedStatus === "" && (
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={showArchived}
+                    onChange={() => setShowArchived(!showArchived)}
+                    className="h-5 w-5 accent-pink-500"
+                  />
+                  <label className="ml-2 font-semibold text-gray-700">
+                    {showArchived ? "Hide Archived" : "Show Archived"}
+                  </label>
+                </div>
+              )}
+            </div>
+          </>
         )}
 
         {activeTab === "view" ? (

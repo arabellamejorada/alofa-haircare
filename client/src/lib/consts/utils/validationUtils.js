@@ -49,7 +49,6 @@ export const validateProductStatusId = (product_status_id) => {
     : false;
 };
 
-
 // Validate that a status is selected
 export const validateStatus = (status) => {
   if (!status) return false; // If status is empty or falsy, it's invalid
@@ -61,6 +60,27 @@ export const validateCategory = (category) => {
   if (!category) return false; // If category is empty or falsy, it's invalid
   return typeof category === "string" ? category.trim() !== "" : true; // Use trim only if it's a string
 };
+
+// Validate dropdown
+export const validateDropdown = (value) => {
+  if (typeof value === "string") {
+    return value.trim() !== "";
+  }
+  console.log('Validating Dropdown:', value); // Log the value
+  return value !== null && value !== undefined; // For non-string values, check if they are not null/undefined
+};
+
+export const validateQuantity = (quantity, stock) => {
+  if (!quantity) return false; 
+  if (isNaN(quantity) || quantity <= 0) return false;
+  return quantity <= stock; // Quantity should not exceed the available stock
+};
+
+export const validateReason = (reason) => {
+  if (!reason) return false; // If reason is empty or falsy, it's invalid
+  return reason.trim() !== ""; // Reason must be non-empty
+};
+
 
 // Function to validate product variation form
 export const validateAddProductVariationForm = ({
