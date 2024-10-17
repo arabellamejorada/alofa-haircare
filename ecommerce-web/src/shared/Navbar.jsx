@@ -23,7 +23,7 @@ const Navbar = () => {
   }, [isAuthPage]);
 
   return (
-    <header className="bg-white/75 shadow-md py-2px fixed top-0 w-full z-50 h-16">
+    <header className="bg-white shadow-md fixed top-0 w-full z-50 h-16">
       <nav className="container mx-auto flex justify-between items-center px-4 md:py-2 pt-3 pb-2">
         <div className="flex items-center gap-8">
           {/* Logo */}
