@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { MdDelete, MdAddBox } from "react-icons/md";
 import ReactDOM from "react-dom";
+import { validateDropdown } from "../../../lib/consts/utils/validationUtils";
 
 const StockInTable = ({
   columns,
@@ -8,52 +9,56 @@ const StockInTable = ({
   stockInProducts,
   setStockInProducts,
 }) => {
-  // Initialize rows with a default row if stockInProducts is empty
   const [rows, setRows] = useState(() => {
-    if (stockInProducts && stockInProducts.length > 0) {
-      return stockInProducts.map((product) => ({
-        ...product,
-        searchTerm: product.product_name || "",
-        isDropdownVisible: false,
-      }));
-    } else {
-      return [
-        {
-          variation_id: "",
-          quantity: 1,
-          product_name: "",
-          searchTerm: "",
+    return stockInProducts.length > 0
+      ? stockInProducts.map((product) => ({
+          ...product,
+          searchTerm: product.product_name || "",
           isDropdownVisible: false,
-          sku: "",
-          type: "",
-          value: "",
-        },
-      ];
-    }
+        }))
+      : [
+          {
+            variation_id: "",
+            quantity: 1,
+            product_name: "",
+            searchTerm: "",
+            isDropdownVisible: false,
+            sku: "",
+            type: "",
+            value: "",
+          },
+        ];
   });
+  const [errors, setErrors] = useState(rows.map(() => false));
 
-  // Ensure stockInProducts is initialized with a default row
   useEffect(() => {
-    if (!stockInProducts || stockInProducts.length === 0) {
-      setStockInProducts([
-        {
-          variation_id: "",
-          quantity: 1,
-          product_name: "",
-          sku: "",
-          type: "",
-          value: "",
-        },
-      ]);
+    if (stockInProducts.length === 0) {
+      const defaultRow = {
+        variation_id: "",
+        quantity: 1,
+        product_name: "",
+        searchTerm: "",
+        isDropdownVisible: false,
+        sku: "",
+        type: "",
+        value: "",
+      };
+      setRows([defaultRow]);
+      setStockInProducts([defaultRow]);
+    } else {
+      setRows(
+        stockInProducts.map((product) => ({
+          ...product,
+          searchTerm: product.product_name || "",
+          isDropdownVisible: false,
+        })),
+      );
     }
   }, [stockInProducts, setStockInProducts]);
 
-  // Refs and state for dropdown positioning
   const inputRefs = useRef([]);
   const dropdownRefs = useRef([]);
-  const [dropdownPositions, setDropdownPositions] = useState([]);
 
-  // Handle adding a new row
   const handleAddRow = () => {
     const newRow = {
       variation_id: "",
@@ -65,60 +70,74 @@ const StockInTable = ({
       type: "",
       value: "",
     };
-    setRows([...rows, newRow]);
-    setStockInProducts([...stockInProducts, newRow]);
+    const updatedRows = [...rows, newRow];
+    setRows(updatedRows);
+    setStockInProducts(updatedRows);
   };
 
-  // Handle deleting a row
   const handleDeleteRow = (index) => {
     const updatedRows = rows.filter((_, i) => i !== index);
     setRows(updatedRows);
     setStockInProducts(updatedRows);
   };
 
-  // Handle variation selection
   const handleVariationChange = (index, variation) => {
     const updatedRows = [...rows];
     updatedRows[index] = {
       ...updatedRows[index],
       variation_id: variation.variation_id,
-      product_name: `${variation.product_name} - ${variation.type}: ${variation.value}`,
+      product_name: variation.product_name,
       sku: variation.sku,
       type: variation.type,
       value: variation.value,
       searchTerm: variation.product_name,
       isDropdownVisible: false,
     };
+
+    // Validate and update errors
+    const updatedErrors = [...errors];
+    updatedErrors[index] = !validateDropdown(variation.variation_id);
+    setErrors(updatedErrors);
+
     setRows(updatedRows);
     setStockInProducts(updatedRows);
   };
 
-  // Handle search input change
   const handleSearchChange = (index, value) => {
     const updatedRows = [...rows];
     updatedRows[index].searchTerm = value;
     updatedRows[index].isDropdownVisible = true;
+
+    // Validate when the search term is cleared
+    const updatedErrors = [...errors];
+    updatedErrors[index] = !validateDropdown(value);
+    setErrors(updatedErrors);
+
     setRows(updatedRows);
-    updateDropdownPosition(index);
   };
 
-  // Update dropdown position for a specific index
-  const updateDropdownPosition = (index) => {
-    const inputElement = inputRefs.current[index];
-    if (inputElement) {
-      const rect = inputElement.getBoundingClientRect();
-      const position = {
-        top: rect.bottom + window.scrollY,
-        left: rect.left + window.scrollX,
-        width: rect.width,
-      };
-      const updatedPositions = [...dropdownPositions];
-      updatedPositions[index] = position;
-      setDropdownPositions(updatedPositions);
-    }
+  const clearSearch = (index) => {
+    const updatedRows = [...rows];
+    updatedRows[index] = {
+      ...updatedRows[index],
+      searchTerm: "",
+      variation_id: "",
+      product_name: "",
+      sku: "",
+      type: "",
+      value: "",
+      isDropdownVisible: false,
+    };
+
+    // Update error state when clearing the search
+    const updatedErrors = [...errors];
+    updatedErrors[index] = true; // Mark this row as having an error
+    setErrors(updatedErrors);
+
+    setRows(updatedRows);
+    setStockInProducts(updatedRows);
   };
 
-  // Handle click outside to close dropdowns
   const handleClickOutside = (event) => {
     const isClickInsideDropdown = dropdownRefs.current.some(
       (ref) => ref && ref.contains(event.target),
@@ -140,30 +159,26 @@ const StockInTable = ({
     };
   }, []);
 
-  // Filter variations based on search term
   const getFilteredVariations = (searchTerm) =>
     productVariations.filter(
       (variation) =>
         variation.product_name
-          .toLowerCase()
+          ?.toLowerCase()
           .includes(searchTerm.toLowerCase()) ||
-        variation.value.toLowerCase().includes(searchTerm.toLowerCase()),
+        variation.value?.toLowerCase().includes(searchTerm.toLowerCase()),
     );
 
   return (
     <div className="overflow-x-auto pt-4">
-      {/* Add Row Button */}
       <div className="flex justify-end pr-6">
         <MdAddBox
-          fontSize={30}
+          fontSize={40}
           className="text-gray-400 mb-2 hover:text-pink-400 active:text-pink-500"
           onClick={handleAddRow}
         />
       </div>
-      {/* Table */}
       <div className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
         <table className="min-w-full leading-normal">
-          {/* Table Head */}
           <thead>
             <tr>
               <th className="px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-pink-400 to-pink-500 text-gray-100 text-left text-md font-semibold uppercase tracking-wider">
@@ -187,39 +202,55 @@ const StockInTable = ({
               </th>
             </tr>
           </thead>
-          {/* Table Body */}
+
           <tbody>
             {rows.map((row, index) => (
               <tr key={index}>
-                {/* Index */}
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-left">
                   {index + 1}
                 </td>
-                {/* Variation Searchable Dropdown */}
+
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-left relative">
-                  <input
-                    type="text"
-                    placeholder="Search Product Variation"
-                    value={row.searchTerm}
-                    onChange={(e) => handleSearchChange(index, e.target.value)}
-                    onFocus={() => {
-                      handleSearchChange(index, row.searchTerm);
-                      updateDropdownPosition(index);
-                    }}
-                    className="search-input w-64 border border-gray-200 rounded px-2 py-1 text-left"
-                    ref={(el) => (inputRefs.current[index] = el)}
-                  />
+                  <div className="relative w-full">
+                    <input
+                      type="text"
+                      placeholder="Search Product Variation"
+                      value={row.searchTerm}
+                      onChange={(e) =>
+                        handleSearchChange(index, e.target.value)
+                      }
+                      onFocus={() => handleSearchChange(index, row.searchTerm)}
+                      className={`w-full border rounded-md px-2 py-1 ${
+                        errors[index] ? "border-red-500" : "border-gray-200"
+                      }`}
+                      ref={(el) => (inputRefs.current[index] = el)}
+                    />
+                    {errors[index] && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors[index]}
+                      </p>
+                    )}
+                    {row.searchTerm && (
+                      <button
+                        onClick={() => clearSearch(index)}
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-pink-500"
+                        aria-label="Clear search"
+                      >
+                        &times;
+                      </button>
+                    )}
+                  </div>
+
                   {row.isDropdownVisible &&
-                    dropdownPositions[index] &&
                     ReactDOM.createPortal(
                       <div
                         ref={(el) => (dropdownRefs.current[index] = el)}
-                        className="dropdown bg-white border border-slate-300 rounded-md z-20 max-h-40 overflow-y-auto"
+                        className="bg-white border border-slate-300 rounded-md z-20 max-h-40 overflow-y-auto"
                         style={{
                           position: "absolute",
-                          top: `${dropdownPositions[index].top}px`,
-                          left: `${dropdownPositions[index].left}px`,
-                          width: `${dropdownPositions[index].width}px`,
+                          top: `${inputRefs.current[index]?.getBoundingClientRect().bottom + window.scrollY}px`,
+                          left: `${inputRefs.current[index]?.getBoundingClientRect().left + window.scrollX}px`,
+                          width: `${inputRefs.current[index]?.getBoundingClientRect().width}px`,
                         }}
                       >
                         {getFilteredVariations(row.searchTerm).length > 0 ? (
@@ -245,16 +276,20 @@ const StockInTable = ({
                       document.body,
                     )}
                 </td>
-                {/* SKU */}
+
+                <td className="px-5 py-2 border-b border-gray-200 text-sm text-left">
+                  {row.type && row.value ? `${row.type}: ${row.value}` : "N/A"}
+                </td>
+
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-left">
                   {row.sku || ""}
                 </td>
-                {/* Quantity */}
+
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-left">
                   <input
                     type="number"
                     min="1"
-                    value={row.quantity || 1}
+                    value={row.quantity}
                     onChange={(e) => {
                       const value = parseInt(e.target.value, 10);
                       if (value > 0) {
@@ -264,10 +299,9 @@ const StockInTable = ({
                         setStockInProducts(updatedRows);
                       }
                     }}
-                    className="w-20 border border-gray-200 rounded px-2 py-1 text-left"
+                    className="w-20 border border-gray-200 rounded px-2 py-1"
                   />
                 </td>
-                {/* Delete Row Button */}
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-center">
                   <button
                     className="text-red-500 hover:text-red-700"

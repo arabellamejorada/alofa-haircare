@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import StockHistoryTable from "../StockHistoryTable";
 import { IoIosArrowBack } from "react-icons/io";
-import { FaArrowUp, FaArrowDown } from "react-icons/fa";
-import { IoMdArrowDropdown, IoMdArrowDropright } from "react-icons/io";
+import { IoMdArrowDropdown } from "react-icons/io";
 import { getAllStockIn } from "../../../api/stockIn";
 
 const StockInHistory = () => {
@@ -14,6 +13,9 @@ const StockInHistory = () => {
   // State for sorting
   const [sortField, setSortField] = useState("index");
   const [sortOrder, setSortOrder] = useState("asc");
+
+  // State for searching
+  const [searchTerm, setSearchTerm] = useState("");
 
   // State for filtering
   const [selectedDate, setSelectedDate] = useState("");
@@ -82,17 +84,40 @@ const StockInHistory = () => {
     { key: "stock_in_date", header: "Stock-In Date" },
   ];
 
-  // Apply filtering to the grouped data
+  const handleSort = (field) => {
+    // Toggle sort order when the same field is clicked
+    const newSortOrder =
+      sortField === field && sortOrder === "asc" ? "desc" : "asc";
+    setSortField(field);
+    setSortOrder(newSortOrder);
+
+    // Sort the grouped data array based on the selected field and order
+    const sortedData = [...groupedDataArray].sort((a, b) => {
+      if (a[field] < b[field]) return newSortOrder === "asc" ? -1 : 1;
+      if (a[field] > b[field]) return newSortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    setStockInData(sortedData);
+  };
+
   const filteredData = groupedDataArray.filter((group) => {
     const itemDate = new Date(group.stock_in_date).toLocaleDateString("en-CA");
 
     const matchesDate =
       selectedDate === "" ||
       new Date(selectedDate).toISOString().split("T")[0] === itemDate;
+
     const matchesSupplier =
       selectedSupplier === "" || group.supplier_name === selectedSupplier;
 
-    return matchesDate && matchesSupplier;
+    const matchesSearchTerm =
+      searchTerm === "" ||
+      group.reference_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      group.supplier_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      group.employee_name.toLowerCase().includes(searchTerm.toLowerCase());
+
+    return matchesDate && matchesSupplier && matchesSearchTerm;
   });
 
   return (
@@ -169,6 +194,32 @@ const StockInHistory = () => {
             </button>
           )}
         </div>
+
+        {/* Search Filter */}
+        <div className="flex items-center">
+          <label
+            htmlFor="search-filter"
+            className="mr-2 font-semibold text-gray-700"
+          >
+            Search:
+          </label>
+          <input
+            id="search-filter"
+            type="text"
+            placeholder="Search here..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full max-w-md h-10 px-4 border rounded-xl bg-gray-50 border-slate-300 focus:outline-none focus:border-pink-400 focus:bg-white"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="text-sm ml-2 text-pink-500 hover:text-pink-700 focus:outline-none"
+            >
+              Clear
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Table */}
@@ -182,6 +233,9 @@ const StockInHistory = () => {
             isInventory={true}
             onExpand={toggleRow}
             expandedRows={expandedRows}
+            handleSort={handleSort}
+            sortField={sortField}
+            sortOrder={sortOrder}
           />
         )}
       </div>

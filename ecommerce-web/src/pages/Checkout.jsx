@@ -36,7 +36,7 @@ const Checkout = () => {
     <div className="h-screen flex items-center justify-center">
       <div className="flex flex-col lg:flex-row w-full h-full bg-white">
         {/* Customer Info Section */}
-        <div className="w-full lg:w-2/3 p-10 ml-20 flex flex-col justify-between h-full mx-auto overflow-y-scroll">
+        <div className="w-full lg:w-2/3 p-10 ml-20 flex flex-col justify-between h-full mx-auto overflow-y-auto">
           <div className="mb-6 flex items-center gap-4">
             <button
               onClick={() => window.location.href = '/shoppingcart'}

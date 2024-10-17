@@ -35,7 +35,7 @@ const AddProductVariationPage = ({
               name="product_id"
               value={product_id}
               onChange={(e) => setProductId(e.target.value)}
-              className="w-full h-12 px-4 border rounded-xl bg-gray-50 text-gray-700 focus:ring-pink-300 focus:border-pink-400"
+              className="w-full h-12 px-4 border rounded-xl bg-gray-50 text-gray-700 focus:ring-pink-300 focus:border-pink-400 appearance-none"
             >
               <option value="">Select Product</option>
               {products.map((product) => (

@@ -22,12 +22,14 @@ import {
 const Suppliers = () => {
   const [suppliers, setSuppliers] = useState([]);
   const [selectedSupplier, setSelectedSupplier] = useState(null);
-  const [originalSupplierData, setOriginalSupplierData] = useState(null); // Track original data
+  const [originalSupplierData, setOriginalSupplierData] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+
   const [search, setSearch] = useState("");
   const [sortField, setSortField] = useState("supplier_id");
   const [sortOrder, setSortOrder] = useState("asc");
-  const [selectedStatus, setSelectedStatus] = useState(""); // Status filter state
+  const [selectedStatus, setSelectedStatus] = useState("");
+  const [showArchived, setShowArchived] = useState(false);
 
   // Supplier form fields
   const [supplierFormData, setSupplierFormData] = useState({
@@ -199,7 +201,9 @@ const Suppliers = () => {
 
       const matchesStatus = selectedStatus
         ? supplier.status === selectedStatus
-        : supplier.status !== "Archived"; // Exclude archived by default
+        : showArchived // Show archived if checkbox is checked
+          ? true
+          : supplier.status !== "Archived"; // Hide archived by default
 
       return matchesSearch && matchesStatus;
     })
@@ -214,46 +218,87 @@ const Suppliers = () => {
   return (
     <Fragment>
       <div className="flex flex-col gap-2">
-        <div className="flex flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <strong className="text-3xl font-bold text-gray-500">
-              Suppliers
-            </strong>
-            <input
-              type="text"
-              placeholder="Search suppliers..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-[300px] h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+        <div className="flex flex-col gap-2">
+          <strong className="text-3xl font-bold text-gray-500">
+            Suppliers
+          </strong>
+
+          <div className="flex flex-row items-center justify-between gap-4 mt-4">
+            <div className="flex items-center gap-4">
+              {/* Search Input with Clear Button */}
+              <div className="relative flex items-center w-[300px]">
+                <input
+                  type="text"
+                  placeholder="Search suppliers..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+                />
+                {search && (
+                  <button
+                    onClick={() => setSearch("")}
+                    className="ml-2 text-pink-500 hover:text-pink-700"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+
+              {/* Status Filter with Clear Button */}
+              <div className="relative flex items-center w-[200px]">
+                <select
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+                >
+                  <option value="">All Statuses</option>
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Archived">Archived</option>
+                </select>
+                {selectedStatus && (
+                  <button
+                    onClick={() => setSelectedStatus("")}
+                    className="ml-2 text-pink-500 hover:text-pink-700"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+
+              {/* Checkbox for Show/Hide Archived */}
+              {selectedStatus === "" && (
+                <div className="flex items-center ml-4">
+                  <input
+                    type="checkbox"
+                    checked={showArchived}
+                    onChange={(e) => setShowArchived(e.target.checked)}
+                    className="h-5 w-5 accent-pink-500"
+                  />
+                  <label className="ml-2 font-semibold text-gray-700">
+                    {showArchived ? "Hide Archived" : "Show Archived"}
+                  </label>
+                </div>
+              )}
+            </div>
+
+            <MdAddBox
+              fontSize={40}
+              className="text-gray-400 hover:text-pink-400 active:text-pink-500 cursor-pointer"
+              onClick={() => setIsModalVisible(true)}
             />
-            {/* Status Filter */}
-            <select
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="w-[150px] h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
-            >
-              <option value="">All Statuses</option>
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-              <option value="Pending">Pending</option>
-              <option value="Archived">Archived</option>
-            </select>
           </div>
-          <MdAddBox
-            fontSize={30}
-            className="text-gray-400 hover:text-pink-400 active:text-pink-500"
-            onClick={() => setIsModalVisible(true)}
+
+          <SupplierTable
+            suppliers={filteredSuppliers}
+            onEdit={handleEdit}
+            onArchive={handleArchiveSupplier}
+            sortField={sortField}
+            sortOrder={sortOrder}
+            handleColumnSort={handleColumnSort}
           />
         </div>
-
-        <SupplierTable
-          suppliers={filteredSuppliers}
-          onEdit={handleEdit}
-          onArchive={handleArchiveSupplier}
-          sortField={sortField}
-          sortOrder={sortOrder}
-          handleColumnSort={handleColumnSort}
-        />
       </div>
 
       <SupplierForm
@@ -264,7 +309,7 @@ const Suppliers = () => {
         handleAddSupplier={handleAddSupplier}
         handleInputChange={handleInputChange}
         supplierFormData={supplierFormData}
-        isFormModified={isFormModified} // Pass the form modification check
+        isFormModified={isFormModified}
         errors={errors}
       />
     </Fragment>
