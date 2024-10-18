@@ -4,11 +4,16 @@ import Filter from "../components/Filter/Filter.jsx";
 import FilterButton from "../components/Filter/FilterButton.jsx";
 import Search from "../components/Filter/Search.jsx";
 import { FaSearch } from "react-icons/fa"; // Import the search icon
-import { getAllProducts, getAllProductVariations } from "../api/product.js";
+import {
+  getAllProducts,
+  getAllProductVariations,
+  getAllCategories,
+} from "../api/product.js";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
   const [productVariants, setProductVariants] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedSort, setSelectedSort] = useState("none");
   const [searchQuery, setSearchQuery] = useState(""); // State for search query
@@ -19,9 +24,11 @@ const Products = () => {
       try {
         const productsData = await getAllProducts();
         const productVariantsData = await getAllProductVariations();
+        const categoriesData = await getAllCategories();
 
         setProducts(productsData);
         setProductVariants(productVariantsData);
+        setCategories(categoriesData);
       } catch (error) {
         console.error("Error fetching products:", error);
       }
@@ -41,7 +48,7 @@ const Products = () => {
         : "/default-image.jpg",
       name: `${product?.name || "Unnamed Product"} ${variation.value}`,
       price: parseFloat(variation.unit_price) || 0,
-      category: product?.category || "Uncategorized",
+      category: variation.product_category || "Uncategorized",
     };
   });
 
@@ -49,8 +56,9 @@ const Products = () => {
     selectedCategory === "All"
       ? processedProductData
       : processedProductData.filter(
-          (product) => product.category === selectedCategory
+          (product) => product.category === selectedCategory,
         );
+  console.log("filtered", filteredProducts);
 
   if (selectedSort === "low-to-high") {
     filteredProducts = filteredProducts.sort((a, b) => a.price - b.price);
@@ -60,7 +68,7 @@ const Products = () => {
 
   // Filter products based on search query
   filteredProducts = filteredProducts.filter((product) =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase())
+    product.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const handleSearchClick = () => {
@@ -69,17 +77,22 @@ const Products = () => {
 
   return (
     <div className="pt-32 bg-[url('../../public/images/body-bg.png')] bg-cover bg-center min-h-screen p-8 flex flex-col items-center w-full overflow-x-hidden">
-      
       {/* Search and FilterButton in smaller viewports */}
       <div className="block lg:hidden mb-4 w-full gap-4 items-center">
         <div className="flex items-center w-full gap-2">
-          <Search searchQuery={tempSearchQuery} setSearchQuery={setTempSearchQuery} />
-          <button onClick={handleSearchClick} className="p-2 bg-pink-500 text-white rounded">
+          <Search
+            searchQuery={tempSearchQuery}
+            setSearchQuery={setTempSearchQuery}
+          />
+          <button
+            onClick={handleSearchClick}
+            className="p-2 bg-pink-500 text-white rounded"
+          >
             <FaSearch />
           </button>
         </div>
         <FilterButton
-          categories={["Hair Accessories", "Hair Tools", "Hair Products"]}
+          categories={categories}
           selectedCategory={selectedCategory}
           setSelectedCategory={setSelectedCategory}
           selectedSort={selectedSort}
@@ -91,13 +104,20 @@ const Products = () => {
         {/* Search and Filter Component on the left for larger viewports */}
         <div className="hidden lg:block w-1/4 mt-2">
           <div className="flex items-center w-full gap-2 mb-4">
-            <Search searchQuery={tempSearchQuery} setSearchQuery={setTempSearchQuery} />
-            <button onClick={handleSearchClick} className="p-2 bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F] text-white rounded">
+            <Search
+              searchQuery={tempSearchQuery}
+              setSearchQuery={setTempSearchQuery}
+            />
+            <button
+              onClick={handleSearchClick}
+              className="p-2 bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F] text-white rounded"
+            >
               <FaSearch />
             </button>
           </div>
+          ›
           <Filter
-            categories={["Hair Accessories", "Hair Tools", "Hair Products"]}
+            categories={categories}
             selectedCategory={selectedCategory}
             setSelectedCategory={setSelectedCategory}
             selectedSort={selectedSort}

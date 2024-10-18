@@ -169,15 +169,19 @@ const getAllProductVariations = async (req, res) => {
     try {
         const productVariations = await pool.query(
             `SELECT 
-                product_variation.*,                     
-                product.name AS product_name,            
-                product_status.description AS status_description  
+                product_variation.*,    
+                product.product_category_id, 
+                product_category.name AS product_category, 
+                product.name AS product_name, 
+                product_status.description AS status_description
             FROM 
                 product_variation
             JOIN 
                 product ON product_variation.product_id = product.product_id
             JOIN 
                 product_status ON product_variation.product_status_id = product_status.status_id
+            JOIN 
+                product_category ON product.product_category_id = product_category.product_category_id
             ORDER BY 
                 product_variation.variation_id ASC;`
         );
