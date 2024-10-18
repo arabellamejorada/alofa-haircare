@@ -2,7 +2,13 @@ import { useState } from "react";
 import PropTypes from "prop-types";
 import { FaFilter } from "react-icons/fa6";
 
-const FilterButton = ({ categories, selectedCategory, setSelectedCategory, selectedSort, setSelectedSort }) => {
+const FilterButton = ({
+  categories,
+  selectedCategory,
+  setSelectedCategory,
+  selectedSort,
+  setSelectedSort,
+}) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const toggleDropdown = () => {
@@ -44,22 +50,37 @@ const FilterButton = ({ categories, selectedCategory, setSelectedCategory, selec
       {isDropdownOpen && (
         <div className="absolute mt-2 bg-white rounded-lg shadow-lg p-4 w-full max-w-md z-50">
           <div className="flex flex-col md:flex-row gap-4">
-            
             {/* Category Filter */}
             <div>
-              <h3 className="text-lg font-medium text-gray-700 mb-2">Category</h3>
+              <h3 className="text-lg font-medium text-gray-700 mb-2">
+                Category
+              </h3>
               <div className="flex flex-col gap-2">
-                {categories.map((category, index) => (
+                {categories.map((category) => (
                   <button
-                    key={index}
+                    key={category.product_category_id}
+                    value={category.name}
                     className={`py-2 px-4 rounded-full border ${
-                      selectedCategory === category ? 'bg-gray-300' : 'bg-gray-100'
+                      selectedCategory === category.name
+                        ? "bg-gray-300"
+                        : "bg-gray-100"
                     } hover:bg-gray-300 transition`}
-                    onClick={() => handleCategoryClick(category)}
+                    onClick={() => handleCategoryClick(category.name)}
                   >
-                    {category}
+                    {category.name}
                   </button>
                 ))}
+
+                <button
+                  name="category"
+                  value="All"
+                  onClick={() => handleCategoryClick("All")}
+                  className={`py-2 px-4 rounded-full border ${
+                    selectedCategory === "All" ? "bg-gray-300" : "bg-gray-100"
+                  } hover:bg-gray-300 transition`}
+                >
+                  All
+                </button>
               </div>
             </div>
 
@@ -69,7 +90,9 @@ const FilterButton = ({ categories, selectedCategory, setSelectedCategory, selec
               <div className="flex flex-col gap-2">
                 <button
                   className={`py-2 px-4 rounded-full border ${
-                    selectedSort === "low-to-high" ? 'bg-gray-300' : 'bg-gray-100'
+                    selectedSort === "low-to-high"
+                      ? "bg-gray-300"
+                      : "bg-gray-100"
                   } hover:bg-gray-300 transition`}
                   onClick={() => handleSortClick("low-to-high")}
                 >
@@ -77,17 +100,17 @@ const FilterButton = ({ categories, selectedCategory, setSelectedCategory, selec
                 </button>
                 <button
                   className={`py-2 px-4 rounded-full border ${
-                    selectedSort === "high-to-low" ? 'bg-gray-300' : 'bg-gray-100'
+                    selectedSort === "high-to-low"
+                      ? "bg-gray-300"
+                      : "bg-gray-100"
                   } hover:bg-gray-300 transition`}
                   onClick={() => handleSortClick("high-to-low")}
                 >
                   Highest to Lowest
                 </button>
               </div>
-
             </div>
           </div>
-          
         </div>
       )}
     </div>
@@ -95,7 +118,12 @@ const FilterButton = ({ categories, selectedCategory, setSelectedCategory, selec
 };
 
 FilterButton.propTypes = {
-  categories: PropTypes.arrayOf(PropTypes.string).isRequired,
+  categories: PropTypes.arrayOf(
+    PropTypes.shape({
+      name: PropTypes.string.isRequired, // Category name is a string
+      product_category_id: PropTypes.number.isRequired, // Category ID is a number
+    }),
+  ).isRequired,
   selectedCategory: PropTypes.string.isRequired,
   setSelectedCategory: PropTypes.func.isRequired,
   selectedSort: PropTypes.string.isRequired,

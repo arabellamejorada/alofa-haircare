@@ -1,9 +1,17 @@
 import PropTypes from "prop-types";
 
-const Filter = ({ categories, selectedCategory, setSelectedCategory, selectedSort, setSelectedSort }) => {
+const Filter = ({
+  categories,
+  selectedCategory,
+  setSelectedCategory,
+  selectedSort,
+  setSelectedSort,
+}) => {
   return (
     <div className="bg-white p-6 rounded-lg shadow-lg mb-6 w-full max-w-xs bg-opacity-70">
-      <h2 className="text-3xl font-heading font-semibold bg-gradient-to-r from-alofa-pink to-alofa-light-pink bg-clip-text text-transparent mb-4">Filter</h2>
+      <h2 className="text-3xl font-heading font-semibold bg-gradient-to-r from-alofa-pink to-alofa-light-pink bg-clip-text text-transparent mb-4">
+        Filter
+      </h2>
 
       {/* Category Filter */}
       <div className="mb-4">
@@ -14,14 +22,15 @@ const Filter = ({ categories, selectedCategory, setSelectedCategory, selectedSor
               <input
                 type="radio"
                 name="category"
-                value={category}
-                checked={selectedCategory === category}
-                onChange={() => setSelectedCategory(category)}
+                value={category.name}
+                checked={selectedCategory === category.name}
+                onChange={() => setSelectedCategory(category.name)}
                 className="mr-2"
               />
-              {category}
+              {category.name}
             </label>
           ))}
+
           <label className="block text-gray-600 mb-2">
             <input
               type="radio"
@@ -80,7 +89,12 @@ const Filter = ({ categories, selectedCategory, setSelectedCategory, selectedSor
 };
 
 Filter.propTypes = {
-  categories: PropTypes.arrayOf(PropTypes.string).isRequired,
+  categories: PropTypes.arrayOf(
+    PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      product_category_id: PropTypes.number.isRequired,
+    }),
+  ).isRequired,
   selectedCategory: PropTypes.string.isRequired,
   setSelectedCategory: PropTypes.func.isRequired,
   selectedSort: PropTypes.string.isRequired,

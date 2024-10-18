@@ -3,8 +3,6 @@ import axios from './axios';
 // Get all product variations
 export const getAllProductVariations = async () => {
     try {
-        console.log('Fetching products from:', axios.defaults.baseURL);
-
         const response = await axios.get('/product-variations');
         console.log('Product variations fetched: ', response.data);
         return response.data;
@@ -51,12 +49,10 @@ export const getProductById = async (id) => {
     }
 };
 
-
-
 // get all categories
 export const getAllCategories = async () => {
     try {
-        const response = await axios.get('/categories');
+        const response = await axios.get('/product-category');
         console.log('Categories fetched: ', response.data);
         return response.data;
     } catch (error) {
