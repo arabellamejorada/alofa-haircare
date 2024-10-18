@@ -27,13 +27,16 @@ const Navbar = () => {
       <nav className="container mx-auto flex justify-between items-center px-4 md:py-2 pt-3 pb-2">
         <div className="flex items-center gap-8">
           {/* Logo */}
-          <a href="/" className="bg-gradient-to-b from-alofa-pink to-alofa-light-pink bg-clip-text text-transparent text-4xl font-title mt-2">
+          <a
+            href="/"
+            className="bg-gradient-to-b from-alofa-pink to-alofa-light-pink bg-clip-text text-transparent text-4xl font-title mt-2"
+          >
             alofa
           </a>
 
           {/* Navigation Pages */}
           {!isAuthPage && (
-            <div className="text-lg font-semibold text-alofa-pink sm:flex items-center gap-8 hidden">
+            <div className="text-lg font-body text-alofa-pink sm:flex items-center gap-8 hidden">
               <Link
                 to="/"
                 className="hover:text-pink-700 items-baseline gap-2 pl-3"

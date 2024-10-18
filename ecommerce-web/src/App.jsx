@@ -7,6 +7,7 @@ import FAQs from "./pages/FAQs.jsx";
 import ShoppingCart from "./pages/ShoppingCart.jsx";
 import CartItem from "./components/CartItem.jsx";
 import Checkout from "./pages/Checkout.jsx";
+import Checkout from "./pages/Checkout.jsx";
 import Login from "./pages/Login.jsx";
 import SignUp from "./pages/SignUp.jsx";
 import "./App.css";
@@ -15,22 +16,6 @@ const AppContent = () => {
   const location = useLocation();
 
   return (
-    <CartProvider>
-      <Router>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/products" element={<Products />} />
-          <Route path="/frequently-asked-questions" element={<FAQs />} />
-          <Route path="/shoppingcart" element={<ShoppingCart />} />
-          <Route path="/cartitem" element={<CartItem />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
-        </Routes>
-      </Router>
-    </CartProvider>
-  );
-}
     <>
       {/* Navbar to not appear in checkout page */}
       {location.pathname !== "/checkout" && <Navbar />}
@@ -41,6 +26,8 @@ const AppContent = () => {
         <Route path="/shoppingcart" element={<ShoppingCart />} />
         <Route path="/cartitem" element={<CartItem />} />
         <Route path="/checkout" element={<Checkout />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
       </Routes>
     </>
   );

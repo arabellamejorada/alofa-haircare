@@ -3,59 +3,96 @@ import Button from "../components/Button";
 import Input from "../components/Input";
 import * as Checkbox from "@radix-ui/react-checkbox";
 import { CheckIcon } from "@radix-ui/react-icons";
+import AccountCard from "../components/AccountCard";
 import "../../src/styles.css";
 
 const SignUp = () => {
   return (
-    <div className="h-screen">
-      <div className="flex flex-row h-screen">
-        {/* Left Side */}
-        <div className="flex flex-col justify-between text-white pt-[4rem] w-[60%] bg-alofa-light-pink h-full"></div>
-        {/* Right Side */}
-        <div className="flex flex-col justify-center p-8 w-[40%]">
-          <div className="flex flex-col mb-4">
-            <h2 className="text-2xl font-bold">Create an account</h2>
-            {/* <p className="text-md text-gray-600">
-              Enter the details below to create your account
-            </p> */}
-          </div>
-          <div className="mb-4">
-            <label className="text-gray-600" htmlFor="create_email">
-              Email Address:
-            </label>
-            <Input
-              type="email"
-              name="create_email"
-              placeholder="name@example.com"
-              className="mb-4 p-3 w-full border border-gray-300 rounded-md"
-            />
-            <label htmlFor="create_password">Password:</label>
-            <Input
-              type="password"
-              name="create_password"
-              placeholder="Password"
-              className="mb-2 p-3 w-full border border-gray-300 rounded-md"
-            />
-            <div className="flex flex-row gap-2 items-center mb-2">
-              <div className="">
-                <Checkbox.Root className="CheckboxRoot" defaultChecked id="c1">
-                  <Checkbox.Indicator className="CheckboxIndicator">
-                    <CheckIcon />
-                  </Checkbox.Indicator>
-                </Checkbox.Root>
+    <div className="bg-[url('../../public/images/body-bg.png')] bg-cover bg-center min-h-screen ">
+      <flex className="flex h-screen justify-center">
+        <AccountCard>
+          {" "}
+          <div className="flex flex-col p-8">
+            <div className="">
+              <div className="flex text-5xl mb-4 justify-center font-heading text-alofa-pink">
+                Sign Up
               </div>
-              <div>
-                <label className="text-xs leading-3" htmlFor="c1">
-                  I agree to the Terms of Service and Privacy Policy.
-                </label>
+
+              <div className="flex gap-2">
+                <div className="flex flex-col">
+                  <p className="text-gray-600">Name:</p>
+                  <div className="flex gap-2">
+                    <Input
+                      type="first_name"
+                      placeholder="First Name"
+                      className="mb-4 p-3 w-full h-[2rem] border border-gray-300 rounded-md"
+                    />
+                    <Input
+                      type="last_name"
+                      placeholder="Last Name"
+                      className="mb-4 p-3 w-[10rem] h-[2rem] border border-gray-300 rounded-md"
+                    />
+                  </div>
+                </div>
+              </div>
+              <p className="text-gray-600">Email:</p>
+              <Input
+                type="email"
+                placeholder="Email Address"
+                className="mb-4 p-3 w-full h-[2rem] border border-gray-300 rounded-md"
+              />
+              <p className="text-gray-600">Contact Number:</p>
+              <Input
+                type="contact_num"
+                placeholder="Contact #"
+                className="mb-4 p-3 w-full h-[2rem] border border-gray-300 rounded-md"
+              />
+              <p className="text-gray-600">Username:</p>
+              <Input
+                type="username"
+                placeholder="Username"
+                className="mb-4 p-3 w-full h-[2rem] border border-gray-300 rounded-md"
+              />
+              <p className="text-gray-600">Password:</p>
+              <Input
+                type="password"
+                placeholder="Password"
+                className=" p-3 w-full h-[2rem] border border-gray-300 rounded-md"
+              />
+              <div className="flex justify-start mt-2 mb-4">
+                <div className="flex flex-row gap-2 items-center">
+                  <div className="">
+                    <Checkbox.Root
+                      className="CheckboxRoot"
+                      defaultChecked
+                      id="c1"
+                    >
+                      <Checkbox.Indicator className="CheckboxIndicator">
+                        <CheckIcon />
+                      </Checkbox.Indicator>
+                    </Checkbox.Root>
+                  </div>
+                  <div>
+                    <label className="Label text-sm" htmlFor="c1">
+                      Accept terms and conditions.
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col items-center">
+                <div className="flex flex-col">
+                  <Button className="w-[12rem] font-extrabold font-sans text-white my-1 py-2 px-4 rounded-full focus:outline-none bg-gradient-to-b from-[#FE699F] to-[#F8587A]">
+                    CREATE ACCOUNT
+                  </Button>
+                  <p className="text-sm flex justify-center gap-1">
+                    Already have an account?<p className="underline">Log In</p>
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-          <Button className="w-full mb-4 py-2 bg-alofa-pink text-white rounded-md font-bold">
-            Create Account
-          </Button>
-        </div>
-      </div>
+        </AccountCard>
+      </flex>
     </div>
   );
 };
