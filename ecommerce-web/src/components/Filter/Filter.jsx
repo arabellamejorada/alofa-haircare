@@ -91,8 +91,8 @@ const Filter = ({
 Filter.propTypes = {
   categories: PropTypes.arrayOf(
     PropTypes.shape({
-      name: PropTypes.string.isRequired, // Category name is a string
-      product_category_id: PropTypes.number.isRequired, // Category ID is a number
+      name: PropTypes.string.isRequired,
+      product_category_id: PropTypes.number.isRequired,
     }),
   ).isRequired,
   selectedCategory: PropTypes.string.isRequired,
