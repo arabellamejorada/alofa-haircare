@@ -70,6 +70,17 @@ const FilterButton = ({
                     {category.name}
                   </button>
                 ))}
+
+                <button
+                  name="category"
+                  value="All"
+                  onClick={() => handleCategoryClick("All")}
+                  className={`py-2 px-4 rounded-full border ${
+                    selectedCategory === "All" ? "bg-gray-300" : "bg-gray-100"
+                  } hover:bg-gray-300 transition`}
+                >
+                  All
+                </button>
               </div>
             </div>
 
