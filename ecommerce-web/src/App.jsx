@@ -1,4 +1,9 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
 import { CartProvider } from "./components/CartContext.jsx";
 import Navbar from "./shared/Navbar.jsx";
 import Home from "./pages/Home.jsx";
@@ -6,7 +11,6 @@ import Products from "./pages/Products.jsx";
 import FAQs from "./pages/FAQs.jsx";
 import ShoppingCart from "./pages/ShoppingCart.jsx";
 import CartItem from "./components/CartItem.jsx";
-import Checkout from "./pages/Checkout.jsx";
 import Checkout from "./pages/Checkout.jsx";
 import Login from "./pages/Login.jsx";
 import SignUp from "./pages/SignUp.jsx";
