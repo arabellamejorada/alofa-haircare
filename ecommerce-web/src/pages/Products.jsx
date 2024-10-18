@@ -3,7 +3,6 @@ import ProductCard from "../components/ProductCard";
 import Filter from "../components/Filter/Filter.jsx";
 import FilterButton from "../components/Filter/FilterButton.jsx";
 import Search from "../components/Filter/Search.jsx";
-import { FaSearch } from "react-icons/fa"; // Import the search icon
 import {
   getAllProducts,
   getAllProductVariations,
@@ -18,6 +17,7 @@ const Products = () => {
   const [selectedSort, setSelectedSort] = useState("none");
   const [searchQuery, setSearchQuery] = useState(""); // State for search query
   const [tempSearchQuery, setTempSearchQuery] = useState(""); // Temporary state for the input value
+  const [filteredProducts, setFilteredProducts] = useState([]); // State for filtered products
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -36,61 +36,58 @@ const Products = () => {
 
     fetchProducts();
   }, []);
+  useEffect(() => {
+    // Process product data and filter based on category, search, and sort
+    const processedProductData = productVariants.map((variation) => {
+      const product = products.find(
+        (p) => p.product_id === variation.product_id,
+      );
+      const imageName = variation.image?.split("/").pop();
 
-  const processedProductData = productVariants.map((variation) => {
-    const product = products.find((p) => p.product_id === variation.product_id);
-    const imageName = variation.image?.split("/").pop();
+      return {
+        id: variation.variation_id,
+        image: imageName
+          ? `http://localhost:3001/uploads/${imageName}`
+          : "/default-image.jpg",
+        name: `${product?.name || "Unnamed Product"} ${variation.value}`,
+        price: parseFloat(variation.unit_price) || 0,
+        category: variation.product_category || "Uncategorized",
+      };
+    });
 
-    return {
-      id: variation.variation_id,
-      image: imageName
-        ? `http://localhost:3001/uploads/${imageName}`
-        : "/default-image.jpg",
-      name: `${product?.name || "Unnamed Product"} ${variation.value}`,
-      price: parseFloat(variation.unit_price) || 0,
-      category: variation.product_category || "Uncategorized",
-    };
-  });
+    // Filter products by category
+    let updatedProducts =
+      selectedCategory === "All"
+        ? processedProductData
+        : processedProductData.filter(
+            (product) => product.category === selectedCategory,
+          );
 
-  let filteredProducts =
-    selectedCategory === "All"
-      ? processedProductData
-      : processedProductData.filter(
-          (product) => product.category === selectedCategory,
-        );
-  console.log("filtered", filteredProducts);
+    // Filter by search query
+    if (searchQuery) {
+      updatedProducts = updatedProducts.filter((product) =>
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()),
+      );
+    }
 
-  if (selectedSort === "low-to-high") {
-    filteredProducts = filteredProducts.sort((a, b) => a.price - b.price);
-  } else if (selectedSort === "high-to-low") {
-    filteredProducts = filteredProducts.sort((a, b) => b.price - a.price);
-  }
+    // Sort the products by price
+    if (selectedSort === "low-to-high") {
+      updatedProducts = updatedProducts.sort((a, b) => a.price - b.price);
+    } else if (selectedSort === "high-to-low") {
+      updatedProducts = updatedProducts.sort((a, b) => b.price - a.price);
+    }
 
-  // Filter products based on search query
-  filteredProducts = filteredProducts.filter((product) =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
-
-  const handleSearchClick = () => {
-    setSearchQuery(tempSearchQuery);
-  };
+    setFilteredProducts(updatedProducts);
+  }, [searchQuery, selectedCategory, selectedSort, productVariants, products]);
 
   return (
     <div className="pt-32 bg-[url('../../public/images/body-bg.png')] bg-cover bg-center min-h-screen p-8 flex flex-col items-center w-full overflow-x-hidden">
       {/* Search and FilterButton in smaller viewports */}
       <div className="block lg:hidden mb-4 w-full gap-4 items-center">
         <div className="flex items-center w-full gap-2">
-          <Search
-            searchQuery={tempSearchQuery}
-            setSearchQuery={setTempSearchQuery}
-          />
-          <button
-            onClick={handleSearchClick}
-            className="p-2 bg-pink-500 text-white rounded"
-          >
-            <FaSearch />
-          </button>
+          <Search searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
         </div>
+
         <FilterButton
           categories={categories}
           selectedCategory={selectedCategory}
@@ -104,18 +101,9 @@ const Products = () => {
         {/* Search and Filter Component on the left for larger viewports */}
         <div className="hidden lg:block w-1/4 mt-2">
           <div className="flex items-center w-full gap-2 mb-4">
-            <Search
-              searchQuery={tempSearchQuery}
-              setSearchQuery={setTempSearchQuery}
-            />
-            <button
-              onClick={handleSearchClick}
-              className="p-2 bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F] text-white rounded"
-            >
-              <FaSearch />
-            </button>
+            <Search searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
           </div>
-          ›
+
           <Filter
             categories={categories}
             selectedCategory={selectedCategory}
