@@ -36,25 +36,31 @@ const Products = () => {
 
     fetchProducts();
   }, []);
+
   useEffect(() => {
     // Process product data and filter based on category, search, and sort
-    const processedProductData = productVariants.map((variation) => {
-      const product = products.find(
-        (p) => p.product_id === variation.product_id,
-      );
-      const imageName = variation.image?.split("/").pop();
+    const processedProductData = productVariants
+      .filter(
+        (variation) =>
+          variation.status_description.toLowerCase() !== "archived",
+      )
+      .map((variation) => {
+        const product = products.find(
+          (p) => p.product_id === variation.product_id,
+        );
+        const imageName = variation.image?.split("/").pop();
 
-      return {
-        id: variation.variation_id,
-        image: imageName
-          ? `http://localhost:3001/uploads/${imageName}`
-          : "/default-image.jpg",
-        name: `${product?.name || "Unnamed Product"} ${variation.value}`,
-        price: parseFloat(variation.unit_price) || 0,
-        category: variation.product_category || "Uncategorized",
-        sku: variation.sku,
-      };
-    });
+        return {
+          id: variation.variation_id,
+          image: imageName
+            ? `http://localhost:3001/uploads/${imageName}`
+            : "/default-image.jpg",
+          name: `${product?.name || "Unnamed Product"} ${variation.value}`,
+          price: parseFloat(variation.unit_price) || 0,
+          category: variation.product_category || "Uncategorized",
+          sku: variation.sku,
+        };
+      });
 
     // Filter products by category
     let updatedProducts =
