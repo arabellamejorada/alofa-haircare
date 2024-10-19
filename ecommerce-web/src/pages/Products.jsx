@@ -52,6 +52,7 @@ const Products = () => {
         name: `${product?.name || "Unnamed Product"} ${variation.value}`,
         price: parseFloat(variation.unit_price) || 0,
         category: variation.product_category || "Uncategorized",
+        sku: variation.sku,
       };
     });
 
@@ -123,6 +124,7 @@ const Products = () => {
                 image={product.image}
                 name={product.name}
                 price={product.price}
+                sku={product.sku}
               />
             ))}
           </div>

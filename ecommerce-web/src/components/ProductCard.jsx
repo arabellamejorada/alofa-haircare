@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import { useContext } from "react";
 import { CartContext } from "./CartContext.jsx";
 
-const ProductCard = ({ id, image, name, price }) => {
+const ProductCard = ({ id, image, name, price, sku }) => {
   const { addToCart } = useContext(CartContext);
 
   const handleAddToCart = () => {
@@ -27,7 +27,10 @@ const ProductCard = ({ id, image, name, price }) => {
           <h3 className="text-lg font-medium text-gray-700 h-10 overflow-hidden text-ellipsis whitespace-nowrap">
             {name}
           </h3>
-          {/* <h3 className="text-lg font-medium text-gray-700">{name}</h3> */}
+          <p className="text-sm font-medium text-gray-700 h-10 overflow-hidden text-ellipsis whitespace-nowrap">
+            *SKU:{sku}
+          </p>
+          {/* for test only, delete SKU after  */}
           <p className="text-xl font-bold text-gray-900 mt-2">₱{price}</p>
         </div>
         <div className="flex justify-end mt-4 px-4 pb-3">
