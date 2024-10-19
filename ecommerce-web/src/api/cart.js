@@ -1,7 +1,7 @@
 import axios from './axios';
 
 // CREATE CART
-export const createCart = async (customer_id) => {
+export const createOrGetCart = async (customer_id) => {
     try {
         const response = await axios.post('/cart', { customer_id });
         console.log('Cart created: ', response.data);
@@ -27,7 +27,7 @@ export const addItemToCart = async (variation_id, quantity) => {
 // VIEW CART
 export const viewCartItemsById = async (cart_id) => {
     try {
-        const response = await axios.get('/cart/items/:id', { cart_id });
+        const response = await axios.get(`/cart/items/${cart_id}`);
         console.log('Cart fetched: ', response.data);
         return response.data;
     } catch (error) {
