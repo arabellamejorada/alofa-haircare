@@ -116,18 +116,24 @@ const Products = () => {
 
         {/* Products Grid */}
         <div className="w-full lg:w-full h-[730px] overflow-y-auto overflow-x-hidden">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-0.5 gap-y-0.5">
-            {filteredProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                id={product.id}
-                image={product.image}
-                name={product.name}
-                price={product.price}
-                sku={product.sku}
-              />
-            ))}
-          </div>
+          {filteredProducts.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-0.5 gap-y-0.5">
+              {filteredProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  id={product.id}
+                  image={product.image}
+                  name={product.name}
+                  price={product.price}
+                  sku={product.sku}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-full text-gray-500">
+              Sorry, we couldn’t find any products for this filter.
+            </div>
+          )}
         </div>
       </div>
     </div>
