@@ -6,7 +6,7 @@ const ProductVariationsTable = ({
   handleVariationChange,
   handleImageChange,
   addVariation,
-  // deleteVariation,
+  deleteVariation,
 }) => {
   return (
     <div className="pt-4 w-full max-w-full">
@@ -141,8 +141,9 @@ const ProductVariationsTable = ({
                 {/* Delete */}
                 <td className="px-2 py-1 border-b border-gray-200 text-sm text-center">
                   <button
+                    type="button"
                     className="text-red-500 hover:text-red-700"
-                    // onClick={() => deleteVariation(index)}
+                    onClick={() => deleteVariation(index)}
                   >
                     <MdDelete fontSize={24} />
                   </button>

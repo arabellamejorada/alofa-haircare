@@ -11,6 +11,7 @@ const AddProductVariationPage = ({
   handleVariationChange,
   handleImageChange,
   addVariation,
+  deleteVariation,
   statuses,
 }) => {
   return (
@@ -55,7 +56,7 @@ const AddProductVariationPage = ({
           handleVariationChange={handleVariationChange}
           handleImageChange={handleImageChange}
           addVariation={addVariation}
-          // deleteVariation={deleteVariation}
+          deleteVariation={deleteVariation}
         />
 
         {/* Submit Button */}
