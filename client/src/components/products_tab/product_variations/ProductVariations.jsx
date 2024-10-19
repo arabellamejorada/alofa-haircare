@@ -304,7 +304,7 @@ const ProductVariations = () => {
       );
     })
     .sort((a, b) => {
-      if (sortField === "unit_price") {
+      if (sortField === "unit_price" || sortField === "variation_id") {
         // Ensure prices are treated as numbers
         const priceA = parseFloat(a[sortField]) || 0;
         const priceB = parseFloat(b[sortField]) || 0;
