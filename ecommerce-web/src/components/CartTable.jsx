@@ -5,7 +5,7 @@ const CartTable = ({ cartItems, handleQuantityChange, handleDelete }) => {
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 h-[700px]">
       <h2 className="text-alofa-pink text-3xl mb-4 font-bold">My Cart</h2>
-      
+
       {cartItems.length === 0 ? (
         <p className="text-gray-500 text-center">Your cart is empty.</p>
       ) : (
@@ -31,7 +31,7 @@ const CartTable = ({ cartItems, handleQuantityChange, handleDelete }) => {
                   />
                   <span>{item.name}</span>
                 </td>
-                <td className="p-2">{item.variation || 'N/A'}</td>
+                <td className="p-2">{item.value || "N/A"}</td>
                 <td className="p-2">₱{Number(item.price).toFixed(2)}</td>
                 <td className="p-2">
                   <input
@@ -72,7 +72,7 @@ CartTable.propTypes = {
     PropTypes.shape({
       id: PropTypes.number.isRequired,
       name: PropTypes.string.isRequired,
-      variation: PropTypes.string,
+      value: PropTypes.string,
       price: PropTypes.number.isRequired,
       quantity: PropTypes.number.isRequired,
       image: PropTypes.string.isRequired,
