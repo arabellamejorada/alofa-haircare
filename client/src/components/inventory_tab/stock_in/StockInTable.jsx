@@ -1,13 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
 import { MdDelete, MdAddBox } from "react-icons/md";
 import ReactDOM from "react-dom";
-import { validateDropdown } from "../../../lib/consts/utils/validationUtils";
 
 const StockInTable = ({
   columns,
   productVariations,
   stockInProducts,
   setStockInProducts,
+  errors,
+  setErrors,
 }) => {
   const [rows, setRows] = useState(() => {
     return stockInProducts.length > 0
@@ -29,7 +30,6 @@ const StockInTable = ({
           },
         ];
   });
-  const [errors, setErrors] = useState(rows.map(() => false));
 
   useEffect(() => {
     if (stockInProducts.length === 0) {
@@ -56,6 +56,9 @@ const StockInTable = ({
     }
   }, [stockInProducts, setStockInProducts]);
 
+  // Add new state to track selected variations
+  const [selectedVariations, setSelectedVariations] = useState([]);
+
   const inputRefs = useRef([]);
   const dropdownRefs = useRef([]);
 
@@ -77,12 +80,46 @@ const StockInTable = ({
 
   const handleDeleteRow = (index) => {
     const updatedRows = rows.filter((_, i) => i !== index);
+    const removedVariationId = rows[index].variation_id;
+
+    // Update selected variations
+    const updatedSelectedVariations = selectedVariations.filter(
+      (id) => id !== removedVariationId,
+    );
+
+    setSelectedVariations(updatedSelectedVariations); // Update state
+    setRows(updatedRows);
+    setStockInProducts(updatedRows);
+  };
+
+  const handleQuantityChange = (index, value) => {
+    const updatedRows = [...rows];
+    updatedRows[index].quantity = value > 0 ? value : 1;
     setRows(updatedRows);
     setStockInProducts(updatedRows);
   };
 
   const handleVariationChange = (index, variation) => {
     const updatedRows = [...rows];
+
+    // Ensure that the index is within the bounds of the rows array
+    if (index < 0 || index >= updatedRows.length) return;
+
+    // Track previous variation ID
+    const previousVariationId = updatedRows[index].variation_id;
+
+    // Remove the previous variation ID from the selected variations
+    let updatedSelectedVariations = [...selectedVariations];
+    if (previousVariationId) {
+      updatedSelectedVariations = updatedSelectedVariations.filter(
+        (id) => id !== previousVariationId,
+      );
+    }
+
+    // Add the newly selected variation ID
+    updatedSelectedVariations.push(variation.variation_id);
+
+    // Update the selected row with the new variation
     updatedRows[index] = {
       ...updatedRows[index],
       variation_id: variation.variation_id,
@@ -94,13 +131,18 @@ const StockInTable = ({
       isDropdownVisible: false,
     };
 
-    // Validate and update errors
+    // Ensure errors array has enough elements
     const updatedErrors = [...errors];
-    updatedErrors[index] = !validateDropdown(variation.variation_id);
-    setErrors(updatedErrors);
+    while (updatedErrors.length <= index) {
+      updatedErrors.push({ variation: false, quantity: false });
+    }
+    updatedErrors[index].variation = false;
 
+    // Update states
     setRows(updatedRows);
     setStockInProducts(updatedRows);
+    setSelectedVariations(updatedSelectedVariations);
+    setErrors(updatedErrors);
   };
 
   const handleSearchChange = (index, value) => {
@@ -108,32 +150,32 @@ const StockInTable = ({
     updatedRows[index].searchTerm = value;
     updatedRows[index].isDropdownVisible = true;
 
-    // Validate when the search term is cleared
-    const updatedErrors = [...errors];
-    updatedErrors[index] = !validateDropdown(value);
-    setErrors(updatedErrors);
-
     setRows(updatedRows);
   };
 
   const clearSearch = (index) => {
     const updatedRows = [...rows];
+    const clearedVariationId = updatedRows[index].variation_id;
+
     updatedRows[index] = {
       ...updatedRows[index],
-      searchTerm: "",
       variation_id: "",
       product_name: "",
+      searchTerm: "",
       sku: "",
       type: "",
       value: "",
       isDropdownVisible: false,
     };
 
-    // Update error state when clearing the search
-    const updatedErrors = [...errors];
-    updatedErrors[index] = true; // Mark this row as having an error
-    setErrors(updatedErrors);
+    // Update selected variations
+    const updatedSelectedVariations = selectedVariations.filter(
+      (id) => id !== clearedVariationId,
+    );
 
+    errors[index].variation = true;
+
+    setSelectedVariations(updatedSelectedVariations);
     setRows(updatedRows);
     setStockInProducts(updatedRows);
   };
@@ -159,14 +201,19 @@ const StockInTable = ({
     };
   }, []);
 
+  // Filter variations excluding already selected ones
   const getFilteredVariations = (searchTerm) =>
-    productVariations.filter(
-      (variation) =>
-        variation.product_name
-          ?.toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        variation.value?.toLowerCase().includes(searchTerm.toLowerCase()),
-    );
+    productVariations
+      .filter(
+        (variation) =>
+          variation.product_name
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          variation.value?.toLowerCase().includes(searchTerm.toLowerCase()),
+      )
+      .filter(
+        (variation) => !selectedVariations.includes(variation.variation_id),
+      );
 
   return (
     <div className="overflow-x-auto pt-4">
@@ -221,15 +268,18 @@ const StockInTable = ({
                       }
                       onFocus={() => handleSearchChange(index, row.searchTerm)}
                       className={`w-full border rounded-md px-2 py-1 ${
-                        errors[index] ? "border-red-500" : "border-gray-200"
+                        errors[index]?.variation
+                          ? "border-red-500"
+                          : "border-gray-200"
                       }`}
                       ref={(el) => (inputRefs.current[index] = el)}
                     />
-                    {errors[index] && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors[index]}
+                    {errors[index]?.variation && (
+                      <p className="text-red-500 text-xs mt-1">
+                        Please select a product
                       </p>
                     )}
+
                     {row.searchTerm && (
                       <button
                         onClick={() => clearSearch(index)}
@@ -290,17 +340,20 @@ const StockInTable = ({
                     type="number"
                     min="1"
                     value={row.quantity}
-                    onChange={(e) => {
-                      const value = parseInt(e.target.value, 10);
-                      if (value > 0) {
-                        const updatedRows = [...rows];
-                        updatedRows[index].quantity = value;
-                        setRows(updatedRows);
-                        setStockInProducts(updatedRows);
-                      }
-                    }}
-                    className="w-20 border border-gray-200 rounded px-2 py-1"
+                    onChange={(e) =>
+                      handleQuantityChange(index, e.target.value)
+                    }
+                    className={`w-20 border ${
+                      errors[index]?.quantity
+                        ? "border-red-500"
+                        : "border-gray-200"
+                    } rounded px-2 py-1`}
                   />
+                  {errors[index]?.quantity && (
+                    <p className="text-red-500 text-xs mt-1">
+                      Quantity must be greater than 0
+                    </p>
+                  )}
                 </td>
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-center">
                   <button

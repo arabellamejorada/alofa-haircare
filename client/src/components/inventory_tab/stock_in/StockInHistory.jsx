@@ -236,6 +236,7 @@ const StockInHistory = () => {
             handleSort={handleSort}
             sortField={sortField}
             sortOrder={sortOrder}
+            isStockIn={true}
           />
         )}
       </div>

@@ -1,84 +1,53 @@
+// Generalized validation for non-empty strings (for text inputs)
+export const validateNonEmpty = (input) => input?.toString().trim() !== "";
+
+// Generalized validation for dropdown selections (ensures a valid option is selected)
+export const validateDropdown = (selection) => selection !== null && selection !== "";
+
 // Validation utilities
+export const validateName = validateNonEmpty;
+export const validateDescription = validateNonEmpty;
+export const validateUsername = validateNonEmpty;
+export const validateAddress = validateNonEmpty;
+export const validateValue = validateNonEmpty;
+export const validateReason = validateNonEmpty;
 
-// Validate that a string is not empty
-export const validateName = (name) => name.trim() !== "";
+// Dropdown-specific validations
+export const validateRole = validateDropdown;
+export const validateType = validateDropdown;
+export const validateStatus = validateDropdown;
+export const validateCategory = validateDropdown;
+export const validateProductStatusId = validateDropdown;
 
-// Validate that a description is not empty
-export const validateDescription = (description) => description.trim() !== "";
 
 // Validate email format using regex
-export const validateEmail = (email) => /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(email);
+export const validateEmail = (email) => 
+  /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(email);
 
-// Validate that contact number is an 11-digit number
-export const validateContactNumber = (number) => /^\d{11}$/.test(number);
-
-// Validate that a role is not empty
-export const validateRole = (role) => role?.toString().trim() !== "";
-
-// Validate that a username is not empty
-export const validateUsername = (username) => username.trim() !== "";
+// Validate contact number to be an 11-digit number
+export const validateContactNumber = (number) => 
+  /^\d{11}$/.test(number);
 
 // Validate that a password is at least 6 characters long
-export const validatePassword = (password) => password.length >= 6;
-
-// Validate that an address is not empty
-export const validateAddress = (address) => address.trim() !== "";
-
-// Validate that a string is not empty
-export const validateType = (type) => type.trim() !== "";
-
-// Validate that a value is not empty
-export const validateValue = (value) => value.trim() !== "";
+export const validatePassword = (password) => 
+  password.length >= 6;
 
 // Validate SKU format using regex (assuming alphanumeric and dashes are allowed)
-export const validateSku = (sku) => /^[a-zA-Z0-9-]+$/.test(sku);
+export const validateSku = (sku) => 
+  /^[a-zA-Z0-9-]+$/.test(sku);
 
 // Validate that the unit price is a positive number
-export const validateUnitPrice = (unit_price) => !isNaN(unit_price) && unit_price > 0;
+export const validateUnitPrice = (unit_price) => 
+  !isNaN(unit_price) && unit_price > 0;
 
 // Validate image to be non-empty and an actual image file (if provided)
-export const validateImage = (image) => {
-  return image ? image.type.startsWith("image/") : true; // If there's no image, it's valid (optional field)
-};
-
-export const validateProductStatusId = (product_status_id) => {
-  if (!product_status_id) return false; // If status is empty or falsy, it's invalid
-  // Accept both strings and numbers as valid
-  return (typeof product_status_id === "string" || typeof product_status_id === "number") 
-    ? String(product_status_id).trim() !== "" 
-    : false;
-};
-
-// Validate that a status is selected
-export const validateStatus = (status) => {
-  if (!status) return false; // If status is empty or falsy, it's invalid
-  return typeof status === "string" ? status.trim() !== "" : true; // Use trim only if it's a string
-};
-
-// Validate that a category is selected
-export const validateCategory = (category) => {
-  if (!category) return false; // If category is empty or falsy, it's invalid
-  return typeof category === "string" ? category.trim() !== "" : true; // Use trim only if it's a string
-};
-
-// Validate dropdown
-export const validateDropdown = (value) => {
-  if (typeof value === "string") {
-    return value.trim() !== "";
-  }
-  console.log('Validating Dropdown:', value); // Log the value
-  return value !== null && value !== undefined; // For non-string values, check if they are not null/undefined
-};
+export const validateImage = (image) => 
+  image ? image.type.startsWith("image/") : true; // If there's no image, it's valid (optional field)
 
 export const validateQuantity = (quantity, stock) => {
   if (!quantity) return false; 
   if (isNaN(quantity) || quantity <= 0) return false;
   return quantity <= stock; // Quantity should not exceed the available stock
-};
-
-export const validateReason = (reason) => {
-  if (!reason) return false; // If reason is empty or falsy, it's invalid
-  return reason.trim() !== ""; // Reason must be non-empty
 };
 
 
@@ -176,4 +145,45 @@ export const validateProductForm = ({
     product_status: validateStatus(product_status) ? "" : "Status is required",
     product_category: validateCategory(product_category) ? "" : "Category is required",
   };
+};
+
+export const validateStockInForm = ({
+  supplier_id,
+  stockInProducts,
+}) => {
+  const errors = {};
+
+  if (!validateDropdown(supplier_id)) errors.supplier_id = "Supplier is required";
+
+  const productErrors = stockInProducts.map((product, index) => {
+    const error = {};
+    if (!validateDropdown(product.product_id)) error.product_id = `Product ${index + 1}: Product is required`;
+    if (!validateQuantity(product.quantity)) error.quantity = `Product ${index + 1}: Quantity must be a positive number`;
+    return error;
+  });
+
+  errors.stockInProducts = productErrors;
+
+  return errors;
+};
+
+export const validateStockOutForm = ({
+  stockOutProducts,
+  selectedEmployee,
+}) => {
+  const errors = {};
+
+  if (!validateDropdown(selectedEmployee)) errors.selectedEmployee = "Supplier is required";
+
+  const productErrors = stockOutProducts.map((product, index) => {
+    const error = {};
+    if (!validateDropdown(product.variation_id)) error.variation_id = `Product ${index + 1}: Product is required`;
+    if (!validateQuantity(product.quantity)) error.quantity = `Product ${index + 1}: Quantity must be a positive number`;
+    if (!validateReason(product.reason)) error.reason = `Product ${index + 1}: Reason is required`;
+    return error;
+  });
+
+  errors.stockOutProducts = productErrors;
+
+  return errors;
 };

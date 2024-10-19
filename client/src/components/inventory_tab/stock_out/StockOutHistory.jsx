@@ -90,11 +90,16 @@ const StockOutHistory = () => {
 
       const matchesSearch =
         searchTerm === "" ||
-        group.reference_number
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        group.employee_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        group.reason.toLowerCase().includes(searchTerm.toLowerCase());
+        (group.reference_number &&
+          group.reference_number
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())) ||
+        (group.employee_name &&
+          group.employee_name
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())) ||
+        (group.reason &&
+          group.reason.toLowerCase().includes(searchTerm.toLowerCase()));
 
       return matchesDate && matchesSearch;
     })
