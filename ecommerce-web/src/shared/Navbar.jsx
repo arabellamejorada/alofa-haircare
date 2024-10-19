@@ -128,7 +128,9 @@ const Navbar = () => {
                       <h2 className="font-semibold text-gray-700">
                         {item.name}
                       </h2>
-                      <p className="text-sm text-gray-500">{item.size}</p>
+                      {item.value && (
+                        <p className="text-sm text-gray-500">{item.value}</p>
+                      )}
                       <p className="text-sm text-gray-500">₱{item.price}</p>
                     </div>
                     <div className="flex items-center gap-2">
