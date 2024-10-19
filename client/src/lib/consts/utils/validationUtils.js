@@ -146,3 +146,44 @@ export const validateProductForm = ({
     product_category: validateCategory(product_category) ? "" : "Category is required",
   };
 };
+
+export const validateStockInForm = ({
+  supplier_id,
+  stockInProducts,
+}) => {
+  const errors = {};
+
+  if (!validateDropdown(supplier_id)) errors.supplier_id = "Supplier is required";
+
+  const productErrors = stockInProducts.map((product, index) => {
+    const error = {};
+    if (!validateDropdown(product.product_id)) error.product_id = `Product ${index + 1}: Product is required`;
+    if (!validateQuantity(product.quantity)) error.quantity = `Product ${index + 1}: Quantity must be a positive number`;
+    return error;
+  });
+
+  errors.stockInProducts = productErrors;
+
+  return errors;
+};
+
+export const validateStockOutForm = ({
+  stockOutProducts,
+  selectedEmployee,
+}) => {
+  const errors = {};
+
+  if (!validateDropdown(selectedEmployee)) errors.selectedEmployee = "Supplier is required";
+
+  const productErrors = stockOutProducts.map((product, index) => {
+    const error = {};
+    if (!validateDropdown(product.variation_id)) error.variation_id = `Product ${index + 1}: Product is required`;
+    if (!validateQuantity(product.quantity)) error.quantity = `Product ${index + 1}: Quantity must be a positive number`;
+    if (!validateReason(product.reason)) error.reason = `Product ${index + 1}: Reason is required`;
+    return error;
+  });
+
+  errors.stockOutProducts = productErrors;
+
+  return errors;
+};

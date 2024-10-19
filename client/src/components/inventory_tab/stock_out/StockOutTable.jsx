@@ -1,8 +1,7 @@
-import React, { useRef, useEffect, useCallback } from "react";
+import React, { useRef, useEffect, useCallback, useState } from "react";
 import { MdDelete, MdAddBox } from "react-icons/md";
 import ReactDOM from "react-dom";
 import {
-  validateDropdown,
   validateQuantity,
   validateReason,
 } from "../../../lib/consts/utils/validationUtils";
@@ -19,6 +18,7 @@ const StockOutTable = ({
 }) => {
   const inputRefs = useRef([]);
   const dropdownRefs = useRef([]);
+  const [selectedVariations, setSelectedVariations] = useState([]);
 
   // Memoized handleClickOutside function
   const handleClickOutside = useCallback(
@@ -74,8 +74,25 @@ const StockOutTable = ({
 
   const handleVariationChange = (index, variation) => {
     const updatedRows = [...rows];
-    const errors = { ...updatedRows[index].errors };
-    errors.variation = !validateDropdown(variation.variation_id);
+    const previousVariationId = updatedRows[index].variation_id;
+
+    // Remove previous variation ID from selectedVariations
+    let updatedSelectedVariations = [...selectedVariations];
+    if (previousVariationId) {
+      updatedSelectedVariations = updatedSelectedVariations.filter(
+        (id) => id !== previousVariationId,
+      );
+    }
+
+    // Add new variation ID to selectedVariations
+    updatedSelectedVariations.push(variation.variation_id);
+
+    // Reset errors for variation and quantity
+    const errors = {
+      ...updatedRows[index].errors,
+      variation: false,
+      quantity: false,
+    };
 
     updatedRows[index] = {
       ...updatedRows[index],
@@ -91,6 +108,7 @@ const StockOutTable = ({
 
     setRows(updatedRows);
     setStockOutProducts(updatedRows);
+    setSelectedVariations(updatedSelectedVariations);
   };
 
   const handleSearchChange = (index, value) => {
@@ -106,12 +124,19 @@ const StockOutTable = ({
     const inventory = inventories.find(
       (inv) => inv.variation_id === updatedRows[index].variation_id,
     );
+
     const errors = { ...updatedRows[index].errors };
-    errors.quantity = !validateQuantity(value, inventory?.stock_quantity || 0);
+    const isValidQuantity = validateQuantity(
+      value,
+      inventory?.stock_quantity || 0,
+    );
+
+    // Reset the quantity error if valid
+    errors.quantity = !isValidQuantity;
 
     updatedRows[index].quantity = value || "";
-
     updatedRows[index].errors = errors;
+
     setRows(updatedRows);
     setStockOutProducts(updatedRows);
   };
@@ -138,6 +163,16 @@ const StockOutTable = ({
 
   const clearSearch = (index) => {
     const updatedRows = [...rows];
+    const previousVariationId = updatedRows[index].variation_id;
+
+    // Remove the cleared variation ID from selectedVariations
+    let updatedSelectedVariations = [...selectedVariations];
+    if (previousVariationId) {
+      updatedSelectedVariations = updatedSelectedVariations.filter(
+        (id) => id !== previousVariationId,
+      );
+    }
+
     updatedRows[index] = {
       ...updatedRows[index],
       variation_id: "",
@@ -151,8 +186,10 @@ const StockOutTable = ({
       isDropdownVisible: false,
       errors: { ...updatedRows[index].errors, variation: true },
     };
+
     setRows(updatedRows);
     setStockOutProducts(updatedRows);
+    setSelectedVariations(updatedSelectedVariations);
   };
 
   const updateDropdownPosition = (index) => {
@@ -171,10 +208,11 @@ const StockOutTable = ({
   const getFilteredVariations = (searchTerm) =>
     productVariations.filter(
       (variation) =>
-        variation.product_name
+        (variation.product_name
           ?.toLowerCase()
           .includes(searchTerm.toLowerCase()) ||
-        variation.value?.toLowerCase().includes(searchTerm.toLowerCase()),
+          variation.value?.toLowerCase().includes(searchTerm.toLowerCase())) &&
+        !selectedVariations.includes(variation.variation_id),
     );
 
   return (
@@ -182,7 +220,7 @@ const StockOutTable = ({
       <div className="flex justify-end pr-6">
         <MdAddBox
           fontSize={30}
-          className="text-gray-400 mb-2 hover:text-green-500 active:text-green-600 cursor-pointer"
+          className="text-gray-400 mb-2 hover:text-pink-500 active:text-pink-600 cursor-pointer"
           onClick={handleAddRow}
         />
       </div>
@@ -213,6 +251,8 @@ const StockOutTable = ({
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-left">
                   {index + 1}
                 </td>
+
+                {/* Variation Input */}
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-left relative">
                   <div className="relative w-full">
                     <input
@@ -240,7 +280,7 @@ const StockOutTable = ({
                       </button>
                     )}
                     {row.errors.variation && (
-                      <p className="text-red-500 text-xs">
+                      <p className="text-red-500 text-xs mt-1">
                         Please select a product
                       </p>
                     )}
@@ -282,20 +322,24 @@ const StockOutTable = ({
                     )}
                 </td>
 
+                {/* Type: Value */}
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-left">
                   {row.type && row.value ? `${row.type}: ${row.value}` : "N/A"}
                 </td>
 
+                {/* SKU */}
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-left">
                   {row.sku || ""}
                 </td>
 
+                {/* Current Stock */}
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-left">
                   {inventories.find(
                     (inventory) => inventory.variation_id === row.variation_id,
                   )?.stock_quantity || 0}
                 </td>
 
+                {/* Quantity Input */}
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-left">
                   <input
                     type="number"
@@ -305,28 +349,31 @@ const StockOutTable = ({
                       handleQuantityChange(index, e.target.value)
                     }
                     onBlur={() => handleQuantityBlur(index)}
-                    className={`w-20 border ${
+                    className={`w-20 border rounded px-2 py-1 ${
                       row.errors.quantity ? "border-red-500" : "border-gray-200"
-                    } rounded px-2 py-1`}
+                    }`}
                   />
                   {row.errors.quantity && (
-                    <p className="text-red-500 text-xs">
+                    <p className="text-red-500 text-xs mt-1">
                       Quantity must be less than current stock
                     </p>
                   )}
                 </td>
 
+                {/* Reason Input */}
                 <td className="px-5 py-2 border-b border-gray-200 text-sm text-left">
                   <input
                     type="text"
                     value={row.reason || ""}
                     onChange={(e) => handleReasonChange(index, e.target.value)}
-                    className={`w-full border ${
+                    className={`w-full border rounded px-2 py-1 ${
                       row.errors.reason ? "border-red-500" : "border-gray-200"
-                    } rounded px-2 py-1`}
+                    }`}
                   />
                   {row.errors.reason && (
-                    <p className="text-red-500 text-xs">Reason is required</p>
+                    <p className="text-red-500 text-xs mt-1">
+                      Reason is required
+                    </p>
                   )}
                 </td>
 

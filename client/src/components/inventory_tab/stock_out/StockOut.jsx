@@ -72,9 +72,9 @@ const StockOut = () => {
   };
 
   const validateRows = () => {
-    let isValid = true; // Assume rows are valid initially
+    let isValid = true;
 
-    const updatedRows = stockOutProducts.map((row) => {
+    const updatedRows = rows.map((row) => {
       const inventory = inventories.find(
         (inv) => inv.variation_id === row.variation_id,
       );
@@ -88,7 +88,6 @@ const StockOut = () => {
         reason: !validateReason(row.reason),
       };
 
-      // If any of the errors are true, set isValid to false
       if (errors.variation || errors.quantity || errors.reason) {
         isValid = false;
       }
@@ -96,7 +95,7 @@ const StockOut = () => {
       return { ...row, errors };
     });
 
-    // Update the state with the validation errors
+    setRows(updatedRows);
     setStockOutProducts(updatedRows);
 
     return isValid;
@@ -123,13 +122,14 @@ const StockOut = () => {
 
   const handleSubmitStockOut = async () => {
     const isValid = validateRows();
+
     if (!isValid) {
-      alert("Please fill out all required fields correctly.");
+      toast.error("Please fill out all required fields correctly.");
       return;
     }
 
     if (!selectedEmployee || stockOutProducts.length === 0) {
-      alert("Please select an employee and add at least one product.");
+      toast.error("Please select an employee and add at least one product.");
       return;
     }
 
@@ -149,7 +149,7 @@ const StockOut = () => {
       setSelectedEmployee("");
     } catch (error) {
       console.error("Error saving stock out:", error);
-      alert("An error occurred while saving stock out.");
+      toast.error("An error occurred while saving stock out.");
     }
   };
 

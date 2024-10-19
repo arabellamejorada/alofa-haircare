@@ -37,9 +37,14 @@ const StockIn = () => {
   const [supplierSearch, setSupplierSearch] = useState("");
   const [isSupplierDropdownVisible, setIsSupplierDropdownVisible] =
     useState(false);
+
   const [errors, setErrors] = useState({
     employee: false,
     supplier: false,
+    products: stockInProducts.map(() => ({
+      variation: false,
+      quantity: false,
+    })),
   });
 
   useEffect(() => {
@@ -59,6 +64,28 @@ const StockIn = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  const resetRows = () => {
+    setStockInProducts([]);
+    setStockInDate(() => {
+      const date = new Date();
+      const offset = date.getTimezoneOffset();
+      return new Date(date.getTime() - offset * 60000)
+        .toISOString()
+        .slice(0, 16);
+    });
+    setSelectedSupplier("");
+    setSelectedEmployee("");
+    setSupplierDetails({
+      contact_person: "",
+      contact_number: "",
+      email: "",
+      address: "",
+    });
+    setSupplierSearch("");
+
+    generateReferenceNumber();
+  };
 
   const generateReferenceNumber = () => {
     const randomNumber = Math.floor(100000 + Math.random() * 900000);
@@ -97,42 +124,30 @@ const StockIn = () => {
     }
   };
 
-  const handleSupplierSearchChange = (value) => {
-    setSupplierSearch(value);
-    setIsSupplierDropdownVisible(true);
-
-    // Validate if the supplier ID is cleared
-    if (!value) {
-      setSelectedSupplier("");
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        supplier: true,
-      }));
-    }
-  };
-
   const handleSubmitStockIn = async () => {
-    // Validate employee and supplier dropdowns
-    const newErrors = {
-      supplier: !validateDropdown(selectedSupplier),
-    };
+    // Validate product variations
+    const productErrors = stockInProducts.map((row) => ({
+      variation: !validateDropdown(row.variation_id),
+      quantity: row.quantity <= 0,
+    }));
 
-    // Validate stockInProducts
-    const emptyProductRows = stockInProducts.filter(
-      (product) => !product.variation_id || !product.quantity,
-    );
+    // Validate supplier
+    const supplierError = !validateDropdown(selectedSupplier);
 
-    // If there are any empty rows, show an error
-    if (emptyProductRows.length > 0) {
-      newErrors.stockInProducts = true;
-    }
+    // Update the error state
+    setErrors({
+      ...errors,
+      supplier: supplierError,
+      products: productErrors,
+    });
 
-    setErrors(newErrors);
+    // Check if there are any errors
+    const hasErrors =
+      supplierError ||
+      productErrors.some((err) => err.variation || err.quantity);
 
-    if (newErrors.supplier || emptyProductRows.length > 0) {
-      toast.error(
-        "Please fill in all required fields and add valid product variations.",
-      );
+    if (hasErrors) {
+      toast.error("Please fill in all required fields correctly.");
       return;
     }
 
@@ -148,25 +163,7 @@ const StockIn = () => {
       await createStockIn(stockInData);
       toast.success("Stock In recorded successfully");
 
-      setStockInProducts([]);
-      setStockInDate(() => {
-        const date = new Date();
-        const offset = date.getTimezoneOffset();
-        return new Date(date.getTime() - offset * 60000)
-          .toISOString()
-          .slice(0, 16);
-      });
-      setSelectedSupplier("");
-      setSelectedEmployee("");
-      setSupplierDetails({
-        contact_person: "",
-        contact_number: "",
-        email: "",
-        address: "",
-      });
-      setSupplierSearch("");
-
-      generateReferenceNumber();
+      resetRows(); // Reset rows and state after successful submission
     } catch (error) {
       console.error("Error saving stock in:", error);
       toast.error("An error occurred while saving stock in.");
@@ -193,6 +190,7 @@ const StockIn = () => {
       <strong className="text-3xl font-bold text-gray-500">Stock In</strong>
       <div className="flex flex-row justify-between">
         <div className="flex flex-col px-6 pt-4 w-full gap-2">
+          {/* Reference Number */}
           <div className="flex flex-row justify-between items-center">
             <label className="font-bold w-[30%]" htmlFor="reference_number">
               Reference Number:
@@ -206,7 +204,21 @@ const StockIn = () => {
               className="rounded-md border w-[85%] h-8 pl-4 bg-gray-50 border-slate-300 text-slate-700"
             />
           </div>
-
+          {/* Stock In Date */}
+          <div className="flex flex-row justify-between items-center">
+            <label className="font-bold w-[30%]" htmlFor="stock_in_date">
+              Stock In Date:
+            </label>
+            <input
+              type="datetime-local"
+              name="stock_in_date"
+              id="stock_in_date"
+              value={selectedDate || stockInDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="rounded-md border w-[85%] h-8 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+            />
+          </div>
+          {/* Employee */}
           <div className="flex flex-row justify-between items-center">
             <label className="font-bold w-[30%]" htmlFor="employee">
               Employee:
@@ -217,49 +229,8 @@ const StockIn = () => {
                 name="employee"
                 value={selectedEmployee}
                 onChange={(e) => setSelectedEmployee(e.target.value)}
-                className={`w-full h-8 px-4 appearance-none border rounded-md bg-gray-50 ${
-                  errors.employee ? "border-red-500" : "border-slate-300"
-                } text-slate-700`}
+                className="w-full h-8 px-4 appearance-none border rounded-md bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
               >
-                <input
-                  type="text"
-                  placeholder="Search Supplier"
-                  value={supplierSearch}
-                  onChange={(e) => handleSupplierSearchChange(e.target.value)}
-                  onFocus={() => setIsSupplierDropdownVisible(true)}
-                  className={`w-full h-8 px-4 appearance-none border rounded-md bg-gray-50 ${
-                    errors.supplier ? "border-red-500" : "border-slate-300"
-                  } text-slate-700`}
-                  ref={supplierInputRef}
-                />
-
-                {selectedSupplier && (
-                  <button
-                    onClick={() => {
-                      setSupplierSearch("");
-                      setSelectedSupplier("");
-                      setSupplierDetails({
-                        contact_person: "",
-                        contact_number: "",
-                        email: "",
-                        address: "",
-                      });
-                      setIsSupplierDropdownVisible(false);
-
-                      // Set the error state for supplier
-                      setErrors((prevErrors) => ({
-                        ...prevErrors,
-                        supplier: true,
-                      }));
-                    }}
-                    className="absolute inset-y-0 right-2 flex justify-center items-center text-gray-500 hover:text-pink-500 focus:outline-none"
-                    style={{ height: "100%" }} // Ensures it stays vertically centered
-                    aria-label="Clear supplier search"
-                  >
-                    &times;
-                  </button>
-                )}
-
                 <option value="">Select Employee</option>
                 {employees.map((employee) => (
                   <option
@@ -274,20 +245,7 @@ const StockIn = () => {
             </div>
           </div>
 
-          <div className="flex flex-row justify-between items-center">
-            <label className="font-bold w-[30%]" htmlFor="stock_in_date">
-              Stock In Date:
-            </label>
-            <input
-              type="datetime-local"
-              name="stock_in_date"
-              id="stock_in_date"
-              value={selectedDate || stockInDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="rounded-md border w-[85%] h-8 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
-            />
-          </div>
-
+          {/* Supplier */}
           <div className="flex flex-row justify-between items-center">
             <label className="font-bold w-[30%]" htmlFor="supplier_search">
               Supplier:
@@ -308,7 +266,9 @@ const StockIn = () => {
                 ref={supplierInputRef}
               />
               {errors.supplier && (
-                <p className="text-red-500 text-sm mt-1">{errors.supplier}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  Please select a supplier
+                </p>
               )}
 
               {isSupplierDropdownVisible && (
@@ -432,6 +392,13 @@ const StockIn = () => {
         productVariations={productVariations}
         stockInProducts={stockInProducts}
         setStockInProducts={setStockInProducts}
+        errors={errors.products}
+        setErrors={(updatedErrors) => {
+          setErrors((prevErrors) => ({
+            ...prevErrors,
+            products: updatedErrors,
+          }));
+        }}
       />
 
       <div className="flex flex-row mt-4 gap-2">

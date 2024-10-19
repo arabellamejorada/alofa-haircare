@@ -20,6 +20,7 @@ const StockHistoryTable = ({
   handleSort,
   sortField,
   sortOrder,
+  isStockIn,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 10;
@@ -135,9 +136,11 @@ const StockHistoryTable = ({
                               <th className="px-3 py-2  bg-gray-50 text-gray-700 text-right text-sm font-semibold">
                                 Quantity
                               </th>
-                              <th className="px-3 py-2  bg-gray-50 text-gray-700 text-right text-sm font-semibold">
-                                Reason
-                              </th>
+                              {!isStockIn && (
+                                <th className="px-3 py-2  bg-gray-50 text-gray-700 text-right text-sm font-semibold">
+                                  Reason
+                                </th>
+                              )}
                             </tr>
                           </thead>
                           <tbody>
@@ -158,9 +161,11 @@ const StockHistoryTable = ({
                                 <td className="px-3 bg-white py-2  text-sm text-right">
                                   {product.quantity}
                                 </td>
-                                <td className="px-3 bg-white py-2  text-sm text-right">
-                                  {product.reason}
-                                </td>
+                                {!isStockIn && (
+                                  <td className="px-3 bg-white py-2  text-sm text-right">
+                                    {product.reason}
+                                  </td>
+                                )}
                               </tr>
                             ))}
                           </tbody>
