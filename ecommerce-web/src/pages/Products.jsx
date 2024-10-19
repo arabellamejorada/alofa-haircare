@@ -16,7 +16,6 @@ const Products = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedSort, setSelectedSort] = useState("none");
   const [searchQuery, setSearchQuery] = useState(""); // State for search query
-  const [tempSearchQuery, setTempSearchQuery] = useState(""); // Temporary state for the input value
   const [filteredProducts, setFilteredProducts] = useState([]); // State for filtered products
 
   useEffect(() => {
@@ -49,13 +48,14 @@ const Products = () => {
           (p) => p.product_id === variation.product_id,
         );
         const imageName = variation.image?.split("/").pop();
-
+        // console.log("variation:", variation);
         return {
           id: variation.variation_id,
           image: imageName
             ? `http://localhost:3001/uploads/${imageName}`
             : "/default-image.jpg",
-          name: `${product?.name || "Unnamed Product"} ${variation.value}`,
+          name: `${product?.name || "Unnamed Product"}`,
+          value: variation.value,
           price: parseFloat(variation.unit_price) || 0,
           category: variation.product_category || "Uncategorized",
           sku: variation.sku,
@@ -72,8 +72,10 @@ const Products = () => {
 
     // Filter by search query
     if (searchQuery) {
-      updatedProducts = updatedProducts.filter((product) =>
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()),
+      updatedProducts = updatedProducts.filter(
+        (product) =>
+          product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          product.value.toLowerCase().includes(searchQuery.toLowerCase()),
       );
     }
 
@@ -130,6 +132,7 @@ const Products = () => {
                   id={product.id}
                   image={product.image}
                   name={product.name}
+                  value={product.value}
                   price={product.price}
                   sku={product.sku}
                 />

@@ -46,7 +46,7 @@ const createOrGetCart = async (req, res) => {
 };
 
 
-const addItemToCart = async (req, res) => {
+const addCartItem = async (req, res) => {
     const { variation_id, quantity } = req.body;
     const session_id = req.sessionID;
     const client = await pool.connect();
@@ -100,11 +100,63 @@ const addItemToCart = async (req, res) => {
             RETURNING *`,
             [cart_id]
         );
-        res.status(201).json({ message: "Item added to cart", cartItem: newItem.rows[0] });
+
+        res.status(201).json({ 
+            message: "Item added to cart", 
+            cartItem: newItem.rows[0],
+            cart: cartUpdate.rows[0]
+        });
 
     } catch (error) {
         console.error('Error adding item to cart: ', error);
         res.status(500).json({ message: "Error adding item to cart", error: error.message });
+    } finally {
+        client.release();
+    }
+};
+
+const updateCartItem = async (req, res) => {
+    const { cart_id, variation_id, quantity } = req.body;
+    const client = await pool.connect();
+
+    try {
+
+        const updateItem = await client.query(`
+            UPDATE cart_items
+            SET quantity = $1
+            WHERE cart_id = $2 AND variation_id = $3
+            RETURNING *`,
+            [quantity, cart_id, variation_id]
+        );
+
+        res.status(200).json({ message: "Item quantity updated", cartItem: updateItem.rows[0] });
+
+    } catch (error) {
+        console.error('Error updating item in cart: ', error);
+        res.status(500).json({ message: "Error updating item in cart", error: error.message });
+    } finally {
+        client.release();
+    }
+};
+
+const deleteCartItem = async (req, res) => {
+    const { cart_id, variation_id } = req.body;
+    const client = await pool.connect();
+
+    try {
+
+        const deleteItem = await client.query(`
+            DELETE FROM cart_items
+            WHERE cart_id = $1 AND variation_id = $2
+            RETURNING *`,
+            [cart_id, variation_id]
+        );
+
+        res.status(200).json({ message: "Item deleted from cart", cartItem: deleteItem.rows[0] });
+
+    } catch (error) {
+        console.error('Error deleting item from cart: ', error);
+        res.status(500).json({ message: "Error deleting item from cart", error: error.message });
     } finally {
         client.release();
     }
@@ -263,7 +315,9 @@ const checkoutCart = async (req, res) => {
 
 module.exports = {
     createOrGetCart,
-    addItemToCart,
+    addCartItem,
+    updateCartItem,
+    deleteCartItem,
     getAllCarts,
     viewCartItemsById,
     clearCart,

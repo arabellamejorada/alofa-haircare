@@ -15,12 +15,14 @@ import Checkout from "./pages/Checkout.jsx";
 import Login from "./pages/Login.jsx";
 import SignUp from "./pages/SignUp.jsx";
 import "./App.css";
+import { Toaster } from "sonner";
 
 const AppContent = () => {
   const location = useLocation();
 
   return (
     <>
+      <Toaster richColors position="top-center" />
       {/* Navbar to not appear in checkout page */}
       {location.pathname !== "/checkout" && <Navbar />}
       <Routes>

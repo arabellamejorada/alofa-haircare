@@ -1,13 +1,14 @@
 import PropTypes from "prop-types";
 import { useContext } from "react";
 import { CartContext } from "./CartContext.jsx";
+import { toast } from "sonner";
 
-const ProductCard = ({ id, image, name, price, sku }) => {
+const ProductCard = ({ id, image, name, value, price, sku }) => {
   const { addToCart } = useContext(CartContext);
 
   const handleAddToCart = () => {
-    addToCart({ id, image, name, price });
-    alert(`${name} added to cart!`);
+    addToCart({ id, image, name, value, price });
+    toast.success(`${name} ${value} added to cart!`);
   };
 
   return (
@@ -27,17 +28,16 @@ const ProductCard = ({ id, image, name, price, sku }) => {
           <h3 className="text-lg font-medium text-gray-700 h-10 overflow-hidden text-ellipsis whitespace-nowrap">
             {name}
           </h3>
-          <p className="text-sm font-medium text-gray-700 h-10 overflow-hidden text-ellipsis whitespace-nowrap">
-            *SKU:{sku}
+          <p className="text-md font-medium text-gray-700 h-10 overflow-hidden text-ellipsis whitespace-nowrap">
+            {value}
           </p>
-          {/* for test only, delete SKU after  */}
           <p className="text-xl font-bold text-gray-900 mt-2">₱{price}</p>
         </div>
         <div className="flex justify-end mt-4 px-4 pb-3">
           <button
             className="font-extrabold text-white py-2 px-4 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]"
             onClick={handleAddToCart}
-            aria-label={`Add ${name} to cart`}
+            aria-label={`Add ${name} ${value} to cart`}
           >
             ADD TO CART
           </button>
@@ -51,6 +51,7 @@ ProductCard.propTypes = {
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   image: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
+  value: PropTypes.string,
   price: PropTypes.number.isRequired,
 };
 

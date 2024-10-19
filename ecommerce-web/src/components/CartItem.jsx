@@ -21,9 +21,7 @@ const CartItem = ({ item, handleQuantityChange, handleDelete }) => {
       {/* Product Info */}
       <div className="flex flex-col justify-between flex-1 ml-4">
         <h3 className="font-medium text-gray-900">{item.name}</h3>
-        <p className="text-gray-500">
-          {item.variation} / {item.size}
-        </p>
+        <p className="text-gray-500">{item.value}</p>
         <p className="text-lg font-bold text-gray-900">
           ₱{item.price.toFixed(2)}
         </p>
@@ -61,8 +59,7 @@ CartItem.propTypes = {
   item: PropTypes.shape({
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     name: PropTypes.string.isRequired,
-    variation: PropTypes.string,
-    size: PropTypes.string,
+    value: PropTypes.string,
     price: PropTypes.number.isRequired,
     quantity: PropTypes.number.isRequired,
     imageUrl: PropTypes.string.isRequired,
