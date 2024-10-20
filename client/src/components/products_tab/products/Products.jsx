@@ -30,7 +30,7 @@ const Products = () => {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
-  const [sortField, setSortField] = useState("");
+  const [sortField, setSortField] = useState("product_id");
   const [sortOrder, setSortOrder] = useState("asc");
   const [showArchived, setShowArchived] = useState(false);
 

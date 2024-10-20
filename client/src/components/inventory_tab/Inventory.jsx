@@ -12,7 +12,7 @@ const Inventory = () => {
   const [search, setSearch] = useState("");
   const [selectedProduct, setSelectedProduct] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
-  const [sortField, setSortField] = useState("");
+  const [sortField, setSortField] = useState("inventory_id");
   const [sortOrder, setSortOrder] = useState("asc");
   const [showArchived, setShowArchived] = useState(false);
 

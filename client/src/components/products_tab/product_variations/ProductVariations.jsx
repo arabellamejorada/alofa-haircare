@@ -26,7 +26,7 @@ const ProductVariations = () => {
   const [originalProductData, setOriginalProductData] = useState(null);
 
   const [search, setSearch] = useState("");
-  const [sortField, setSortField] = useState("");
+  const [sortField, setSortField] = useState("variation_id");
   const [sortOrder, setSortOrder] = useState("asc");
   const [errors, setErrors] = useState({});
   const [selectedProduct, setSelectedProduct] = useState("");
