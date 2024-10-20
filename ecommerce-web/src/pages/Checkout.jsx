@@ -36,7 +36,7 @@ const Checkout = () => {
     <div className="h-screen flex items-center justify-center">
       <div className="flex flex-col lg:flex-row w-full h-full bg-white">
         {/* Customer Info Section */}
-        <div className="w-full lg:w-2/3 p-10 ml-20 flex flex-col justify-between h-full mx-auto overflow-y-auto">
+        <div className="w-full lg:w-2/3 p-8 pl-20 pr-20 flex flex-col justify-between h-full mx-auto overflow-y-auto">
           <div className="mb-6 flex items-center gap-4">
             <button
               onClick={() => window.location.href = '/shoppingcart'}
@@ -146,7 +146,7 @@ const Checkout = () => {
                 <div className="mt-4 transition-max-height duration-700 ease-in-out overflow-hidden max-h-[500px]">
                   <p className="text-sm mb-2">Please scan the QR code below to complete the payment:</p>
                   <img src={GCashQR} alt="GCash QR Code" className="w-32 h-32 mb-4" />
-                  <button className="bg-gray-800 text-white py-2 px-4 rounded flex items-center gap-2">
+                  <button className="bg-gray-600 hover:bg-gray-800 text-white py-2 px-4 rounded flex items-center gap-2">
                     Upload receipt
                   </button>
                 </div>
@@ -166,7 +166,7 @@ const Checkout = () => {
                     <p className="text-sm">Bank Name: <b>Bank of the Philippine Islands</b></p>
                     <p className="text-sm">Account Number: <b>1234-5678-9012</b></p>
                     <p className="text-sm">Account Name: Alofa Haircare</p>
-                    <button className="bg-gray-600 text-white py-2 px-4 rounded flex items-center gap-2 mt-4">
+                    <button className="bg-gray-600 hover:bg-gray-800 text-white py-2 px-4 rounded flex items-center gap-2 mt-4">
                       Upload receipt
                     </button>
                   </div>
@@ -191,7 +191,10 @@ const Checkout = () => {
               <div key={index} className="flex items-center mb-4">
                 <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded mr-4 shadow-sm" />
                 <div className="flex justify-between w-full text-white">
-                  <span>{`${item.quantity}x ${item.name}`}</span>
+                <span>
+                  <span className="font-bold">{`${item.quantity}x`}</span>
+                  {` ${item.name}`}
+                  </span>
                   <span className="font-bold">{`₱${item.price.toFixed(2)}`}</span>
                 </div>
               </div>

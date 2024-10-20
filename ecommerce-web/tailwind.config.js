@@ -25,6 +25,15 @@ export default {
       }
     },
   },
-  plugins: [],
+  plugins: [
+    function({ addUtilities }) {
+      const newUtilities = {
+        '.gradient-heading': {
+          '@apply bg-gradient-to-r from-alofa-pink to-alofa-light-pink bg-clip-text text-transparent': {},
+        },
+      }
+      addUtilities(newUtilities, ['responsive', 'hover']);
+    },
+  ],
 }
 
