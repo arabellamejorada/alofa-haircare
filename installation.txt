@@ -61,3 +61,6 @@ RESTORE DATABASE:
 
     # Reset the schema -- do this if mag error lang yung sa taas
         psql -U postgres -d alofa -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+
+Supabase Migrate:
+npm install @supabase/supabase-js

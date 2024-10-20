@@ -13,6 +13,9 @@ import StockInHistory from "./components/inventory_tab/stock_in/StockInHistory";
 import StockOut from "./components/inventory_tab/stock_out/StockOut";
 import StockOutHistory from "./components/inventory_tab/stock_out/StockOutHistory";
 
+// //Supabase
+// import { supabase } from "../../supabase/supabaseClient";
+
 function App() {
   return (
     <Router>
