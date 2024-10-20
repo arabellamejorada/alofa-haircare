@@ -9,7 +9,7 @@ const Filter = ({
 }) => {
   return (
     <div className="bg-white p-6 rounded-lg shadow-lg mb-6 w-full max-w-xs bg-opacity-70">
-      <h2 className="text-3xl font-heading font-semibold bg-gradient-to-r from-alofa-pink to-alofa-light-pink bg-clip-text text-transparent mb-4">
+      <h2 className="text-3xl font-heading font-semibold gradient-heading mb-4">
         Filter
       </h2>
 

@@ -3,7 +3,7 @@ import { FaTimes } from "react-icons/fa";
 
 const Search = ({ searchQuery, setSearchQuery }) => {
   return (
-    <div className="relative w-full lg:w-auto">
+    <div className="relative w-full max-w-xs">
       <input
         type="text"
         placeholder="Search products..."
