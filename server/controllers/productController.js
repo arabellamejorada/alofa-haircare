@@ -1,34 +1,233 @@
 const pool = require('../db.js');
 
-const createProduct = async (req, res) => {
-    const client = await pool.connect();
-    const { name, description, product_category_id, product_status_id } = req.body;
+const createProductWithVariationAndInventory = async (req, res) => {
+  const client = await pool.connect();
+  const { name, description, product_category_id, product_status_id, variations, product_id } = req.body;
+  const uploadedFiles = req.files;  // Array of uploaded images
 
-    console.log('Request Body:', req.body);
-    if (!name || !description || !product_category_id || !product_status_id) {
+  console.log('Request Body:', req.body);
+  if(!product_id){
+    if (!name || !description || !product_category_id || !product_status_id || !variations) {
         return res.status(400).json({ message: 'Missing required fields' });
     }
+  }
+  
 
-    try {
-        await client.query('BEGIN');
+  try {
+    await client.query('BEGIN');
 
-        const results = await client.query(
-            `INSERT INTO product (name, description, product_category_id, product_status_id)
-            VALUES ($1, $2, $3, $4)
-            RETURNING product_id`,
-            [name, description, product_category_id, product_status_id]
-        );
-        await client.query('COMMIT'); 
+    // Insert or find product
+    let productId;
+    let productResult;
+    if (product_id) {
+      productId = product_id;
+    } else {
+      productResult = await client.query(
+        `INSERT INTO product (name, description, product_category_id, product_status_id)
+        VALUES ($1, $2, $3, $4)
+        RETURNING product_id`,
+        [name, description, product_category_id, product_status_id]
+      );
+      
+      if (productResult.rows.length === 0) {
+        throw new Error('Product insertion failed');
+      }
 
-        res.status(201).json({ message: 'Product added', product_id: results.rows[0].product_id });
-    } catch (error) {
-        await client.query('ROLLBACK'); 
-        console.error('Error creating product:', error);
-        res.status(500).json({ message: 'Error creating product', error: error.message });
-    } finally {
-        client.release();
+      productId = productResult.rows[0].product_id;
+      console.log('Product Insert Result:', productResult);
     }
+
+    console.log('Product ID:', productId);
+
+    const insertedVariations = [];
+    const insertedInventories = [];
+
+    // Get ID for "available" product status
+    const productStatusResult = await client.query(`
+        SELECT status_id 
+        FROM product_status 
+        WHERE LOWER(description) = 'available'
+    `);
+    const availableStatusId = productStatusResult.rows[0]?.status_id;
+
+    if (!availableStatusId) {
+      throw new Error('Status "available" not found in the product_status table');
+    }
+
+    const productQueryResult = await client.query(`SELECT name FROM product WHERE product_id = $1`, [productId]);
+    if (productQueryResult.rows.length === 0) {
+      throw new Error('Product retrieval failed');
+    }
+    const product_name = productQueryResult.rows[0].name || 'default-product';
+
+    // Insert product variations and inventory
+    for (let i = 0; i < variations.length; i++) {
+      const variation = variations[i];
+      const { type, value, unit_price } = variation;
+      let { sku, product_status_id } = variation;
+      const image = uploadedFiles && uploadedFiles[i] ? uploadedFiles[i].path : null;  // Assign corresponding image
+
+      // If no SKU provided, generate one based on product name, type, value, and product ID
+      if (!sku) {
+        sku = generateSKU(product_name, type, value, productId);
+      }
+
+      // Default product status to "available" 
+      product_status_id = availableStatusId;
+
+      // Create SAVEPOINT before each variation insertion
+      await client.query('SAVEPOINT before_variation_insert');
+
+      try {
+        // Insert into product_variation
+        const productVariationResult = await client.query(
+          `INSERT INTO product_variation (product_id, type, value, sku, unit_price, product_status_id, image)
+           VALUES ($1, $2, $3, $4, $5, $6, $7)
+           RETURNING variation_id`,
+          [productId, type, value, sku, unit_price || 0, product_status_id, image]
+        );
+
+        if (productVariationResult.rows.length === 0) {
+          throw new Error(`Product variation insertion failed for variation ${i + 1}`);
+        }
+
+        const variation_id = productVariationResult.rows[0].variation_id;
+        const last_updated_date = new Date();
+        const stock_quantity = 0;
+
+        // Insert into inventory
+        const inventoryResult = await client.query(
+          `INSERT INTO inventory (variation_id, stock_quantity, last_updated_date)
+           VALUES ($1, $2, $3)
+           RETURNING inventory_id`,
+          [variation_id, stock_quantity, last_updated_date]
+        );
+
+        if (inventoryResult.rows.length === 0) {
+          throw new Error(`Inventory insertion failed for variation ${i + 1}`);
+        }
+
+        const inventory_id = inventoryResult.rows[0].inventory_id;
+
+        insertedVariations.push({ variation_id, productId, type, value, sku, unit_price, product_status_id, image });
+        insertedInventories.push({ inventory_id, variation_id, stock_quantity, last_updated_date });
+
+      } catch (innerError) {
+        console.error(`Error inserting variation ${i + 1}:`, innerError);
+        // Rollback to the savepoint if the variation insert fails
+        await client.query('ROLLBACK TO SAVEPOINT before_variation_insert');
+        continue; // Continue to the next variation
+      }
+    }
+
+    await client.query('COMMIT');
+
+    res.status(201).json({
+      message: 'Product and variations created successfully!',
+      product_id: productId,
+      product_variations: insertedVariations,
+      inventories: insertedInventories
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Transaction error:', error);
+    res.status(500).json({ message: 'Error creating product and variations', error: error.message });
+  } finally {
+    client.release();
+  }
 };
+
+
+// Generate SKU with abbreviation mappings
+const generateSKU = (product_name, variation_type, variation_value, counter) => {
+    const abbreviationMap = {
+        'Name': {
+            'Flower Hair Clip': 'FHC',
+            'Mini Flower Hair Clip': 'MFH',
+            'Orchid Hair Clamp': 'OHC',
+            'Hair Oil': 'OIL',
+            'Bamboo Brush': 'BRS',
+            'Hair Mist': 'MST',
+            'Scalp Massager': 'MSG',
+            'Jade Comb': 'CMB'
+        },
+        'Color': {
+            'Sunrise': 'SUNR',
+            'Sunset': 'SUNS',
+            'Seaside': 'SEAS',
+            'Blossom': 'BLOS',
+            'Meadow': 'MEAD',
+            'Midnight': 'MIDN',
+            'Clementine': 'CLEM',
+            'Lilac': 'LILA',
+            'Moss': 'MOSS',
+            'Shoreline': 'SHOR'
+        },
+        'Size': {
+            '30mL': '30ML',
+            '50mL': '50ML',
+            '60mL': '60ML',
+            '100mL': '100ML',
+            '150mL': '150ML'
+        }
+    };
+
+    // Get product abbreviation, fallback to first three letters if product is new
+    const productAbbreviation = abbreviationMap['Name'][product_name] || product_name.toUpperCase().slice(0, 3);
+
+    // Handle different variant types (e.g., color or size)
+    let variantAbbreviation = '0000';
+    if (variation_type === 'Color') {
+        variantAbbreviation = abbreviationMap['Color'][variation_value] || variation_value.toUpperCase().slice(0, 4); // 4 characters max
+    } else if (variation_type === 'Size') {
+        variantAbbreviation = abbreviationMap['Size'][variation_value] || variation_value.toUpperCase().slice(0, 4); // 4 characters max
+    }
+
+    // Format counter as 4 digits
+    const formattedCounter = String(counter).padStart(4, '0');
+
+    // Generate SKU in fixed length (12 characters total)
+    let sku = `${productAbbreviation}-${variantAbbreviation}-${formattedCounter}`;
+
+    // Ensure SKU is exactly 13 characters
+    if (sku.length > 14) {
+        sku = sku.slice(0, 13);  // Truncate if necessary
+    }
+
+    console.log("Generated SKU:", sku);
+    return sku;
+};
+
+
+// const createProduct = async (req, res) => {
+//     const client = await pool.connect();
+//     const { name, description, product_category_id, product_status_id } = req.body;
+
+//     console.log('Request Body:', req.body);
+//     if (!name || !description || !product_category_id || !product_status_id) {
+//         return res.status(400).json({ message: 'Missing required fields' });
+//     }
+
+//     try {
+//         await client.query('BEGIN');
+
+//         const results = await client.query(
+//             `INSERT INTO product (name, description, product_category_id, product_status_id)
+//             VALUES ($1, $2, $3, $4)
+//             RETURNING product_id`,
+//             [name, description, product_category_id, product_status_id]
+//         );
+//         await client.query('COMMIT'); 
+
+//         res.status(201).json({ message: 'Product added', product_id: results.rows[0].product_id });
+//     } catch (error) {
+//         await client.query('ROLLBACK'); 
+//         console.error('Error creating product:', error);
+//         res.status(500).json({ message: 'Error creating product', error: error.message });
+//     } finally {
+//         client.release();
+//     }
+// };
 
 // Get all products with their respective product category and status names
 const getAllProducts = async (req, res) => {
@@ -429,7 +628,9 @@ const deleteProductCategory = async (req, res) => {
 
 
 module.exports = {
-    createProduct,
+    createProductWithVariationAndInventory,
+    generateSKU,
+    // createProduct,
     getAllProducts,
     getProductById,
     updateProduct,

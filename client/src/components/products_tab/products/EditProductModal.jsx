@@ -2,7 +2,7 @@ import React from "react";
 import Modal from "../../modal/Modal";
 import { IoMdArrowDropdown } from "react-icons/io";
 
-const ProductForm = ({
+const EditProductModal = ({
   isVisible,
   onClose,
   selectedProduct,
@@ -156,4 +156,4 @@ const ProductForm = ({
   );
 };
 
-export default ProductForm;
+export default EditProductModal;

@@ -57,12 +57,12 @@ export const PRODUCT_SIDEBAR_LINKS = [
     path: "/products",
     icon: <HiOutlineCube />,
   },
-  {
-    key: "product_variations",
-    label: "Product Variations",
-    path: "/productvariations",
-    icon: <TbSitemap />,
-  },
+  // {
+  //   key: "product_variations",
+  //   label: "Product Variations",
+  //   path: "/productvariations",
+  //   icon: <TbSitemap />,
+  // },
   {
     key: "product_categories",
     label: "Product Categories",

@@ -1,24 +1,46 @@
 import axios from './axios';
 
 // PRODUCTS
-
-export const createProductVariationWithInventory = async (productData) => {
+export const createProductWithVariationAndInventory = async (productData) => {
     try {
-        const response = await axios.post('/product-variations', productData, {
+        const response = await axios.post('/products', productData, {
             headers: {
                 "Content-Type": "multipart/form-data",
             },
-            });
-            // console.log
-        
-            console.log('Product variation with inventory created: ', response.data);
+        });
+        console.log('Product with variations and inventory created: ', response.data);
         return response.data;
     } catch (error) {
-        console.error('Error creating product variation with inventory: ', error);
+        console.error('Error creating product with variations and inventory: ', error);
         throw error;
     }
 };
 
+
+// export const createProductVariationWithInventory = async (productData) => {
+//     try {
+//         const response = await axios.post('/product-variations', productData, {
+//             headers: {
+//                 "Content-Type": "multipart/form-data",
+//             },
+//             });        
+//             console.log('Product variation with inventory created: ', response.data);
+//         return response.data;
+//     } catch (error) {
+//         console.error('Error creating product variation with inventory: ', error);
+//         throw error;
+//     }
+// };
+
+// export const createProduct = async (productData) => {
+//     try {
+//         const response = await axios.post('/products', productData);
+//         return response.data;
+//     } catch (error) {
+//         console.error('Error creating product: ', error);
+//         throw error;
+//     }
+// };
 
 export const getAllProducts = async () => {
     try {
@@ -34,17 +56,6 @@ export const getAllProducts = async () => {
         throw error;
     }
 };
-
-export const createProduct = async (productData) => {
-    try {
-        const response = await axios.post('/products', productData);
-        return response.data;
-    } catch (error) {
-        console.error('Error creating product: ', error);
-        throw error;
-    }
-};
-
 export const updateProduct = async (productId, productData) => {
     try {
         const response = await axios.put(`/products/${productId}`, productData);

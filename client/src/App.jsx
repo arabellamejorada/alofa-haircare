@@ -2,11 +2,11 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
 import Layout from "./components/shared/Layout";
 import Dashboard from "./components/Dashboard";
-import Products from "./components/products_tab/products/Products";
+import Products from "./components/products_tab/Products";
 import Inventory from "./components/inventory_tab/Inventory";
 import Employees from "./components/employee_tab/Employees";
 import Suppliers from "./components/supplier_tab/Suppliers";
-import ProductVariations from "./components/products_tab/product_variations/ProductVariations";
+// import ProductVariations from "./components/products_tab/product_variations/ProductVariations";
 import ProductCategories from "./components/products_tab/ProductCategories";
 import StockIn from "./components/inventory_tab/stock_in/StockIn";
 import StockInHistory from "./components/inventory_tab/stock_in/StockInHistory";
@@ -23,7 +23,7 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<Dashboard />} />
           <Route path="products" element={<Products />} />
-          <Route path="productvariations" element={<ProductVariations />} />
+          {/* <Route path="productvariations" element={<ProductVariations />} /> */}
           <Route path="productcategories" element={<ProductCategories />} />
           <Route path="inventory" element={<Inventory />} />
           <Route path="stockin" element={<StockIn />} />
