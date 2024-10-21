@@ -51,31 +51,27 @@ export const validateQuantity = (quantity, stock) => {
 };
 
 
-// Function to validate product variation form
-export const validateAddProductVariationForm = ({
-  product_id,
-  variations,
-}) => {
-  const errors = {};
-
-  // Validate that a product is selected
-  if (!validateName(product_id)) errors.product_id = "Product must be selected";
-
-  // Iterate through each variation for validation
-  const variationErrors = variations.map((variation, index) => {
-    const error = {};
-    if (!validateType(variation.type)) error.type = `Variation ${index + 1}: Type is required`;
-    if (!validateValue(variation.value)) error.value = `Variation ${index + 1}: Value is required`;
-    if (!validateSku(variation.sku)) error.sku = `Variation ${index + 1}: SKU is invalid`;
-    if (!validateUnitPrice(variation.unit_price)) error.unit_price = `Variation ${index + 1}: Unit price must be positive`;
-    if (variation.image && !validateImage(variation.image)) error.image = `Variation ${index + 1}: Invalid image format`;
-    return error;
-  });
-
-  errors.variations = variationErrors;
-
-  return errors;
+// Function to validate product form data
+export const validateProductForm = (productFormData) => {
+  return {
+    product_name: validateName(productFormData.product_name) ? "" : "Product name is required",
+    product_description: validateDescription(productFormData.product_description) ? "" : "Product description is required",
+    product_status: validateStatus(productFormData.product_status) ? "" : "Product Status is required",
+    product_category: validateCategory(productFormData.product_category) ? "" : "Product Category is required",
+  };
 };
+
+  export const validateAddProductVariationForm = (variations) => {
+    const errors = [];
+    variations.forEach((variation, index) => {
+      const error = {};
+      if (!variation.type.trim()) error.type = "Variation type is required";
+      if (variation.type !== "Default" && !variation.value.trim()) error.value = "Variation value is required";
+      if (!variation.unit_price) error.unit_price = "Unit price is required";
+      errors[index] = error;
+    });
+    return errors;
+  };
 
 export const validateEditProductVariationForm = ({
   unit_price,
@@ -132,20 +128,6 @@ export const validateSupplierForm = ({
   };
 };
 
-// Function to validate product form data
-export const validateProductForm = ({
-  product_name,
-  product_description,
-  product_status,
-  product_category,
-}) => {
-  return {
-    product_name: validateName(product_name) ? "" : "Product name is required",
-    product_description: validateDescription(product_description) ? "" : "Product description is required",
-    product_status: validateStatus(product_status) ? "" : "Status is required",
-    product_category: validateCategory(product_category) ? "" : "Category is required",
-  };
-};
 
 export const validateStockInForm = ({
   supplier_id,
@@ -187,3 +169,4 @@ export const validateStockOutForm = ({
 
   return errors;
 };
+

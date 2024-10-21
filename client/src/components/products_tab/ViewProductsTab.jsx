@@ -65,20 +65,16 @@ const ProductsTab = () => {
     let error = "";
     switch (name) {
       case "product_name":
-        error = validateName(value)
-          ? ""
-          : `${name.replace("_", " ")} is required`;
+        error = validateName(value);
         break;
       case "description":
-        error = validateDescription(value)
-          ? ""
-          : `${name.replace("_", " ")} is required`;
+        error = validateDescription(value);
         break;
       case "status":
-        error = validateStatus(value) ? "" : "Status is required";
+        error = validateStatus(value);
         break;
       case "category":
-        error = validateCategory(value) ? "" : "Category is required";
+        error = validateCategory(value);
         break;
       default:
         break;
@@ -204,6 +200,7 @@ const ProductsTab = () => {
       product_status: "",
       product_category: "",
     });
+    setErrors({});
   };
 
   const handleColumnSort = (field) => {

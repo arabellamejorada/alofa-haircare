@@ -8,10 +8,12 @@ const AddProductVariationsTable = ({
   handleImageChange,
   addVariationRow,
   deleteVariationRow,
+  existingProduct,
+  variationErrors = [],
+  existingProductFormErrors,
   products,
   productId,
   setProductId,
-  existingProduct,
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -66,7 +68,7 @@ const AddProductVariationsTable = ({
     <div className="pt-4 w-full max-w-full">
       {existingProduct && (
         <div className="relative w-full">
-          {/* Input Box for Product Search */}
+          {/* Input Box for Product Name Search/Select */}
           <div className="relative w-1/3">
             <label className="font-bold" htmlFor="product">
               Product Name:
@@ -77,14 +79,22 @@ const AddProductVariationsTable = ({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onFocus={() => setIsDropdownVisible(true)}
-              className="w-full rounded-2xl border border-gray-300 h-10 px-4 pr-8 mt-2 bg-gray-100 text-gray-500 focus:outline-none focus:border-pink-500 focus:bg-white"
+              className={`w-full rounded-2xl border border-gray-300 h-10 px-4 pr-8 mt-2 bg-gray-100 text-gray-500 focus:outline-none focus:border-pink-500 focus:bg-white ${
+                existingProductFormErrors.product_search ? "border-red-500" : ""
+              }`}
               ref={inputRef}
             />
+            {existingProductFormErrors.product_search && (
+              <p className="text-red-500 text-xs mt-1">
+                {existingProductFormErrors.product_search}
+              </p>
+            )}
+
             {/* Clear Search Button */}
             {searchTerm && (
               <button
                 onClick={clearSearch}
-                className="absolute right-2 top-1/2 transform text-gray-500 hover:text-pink-500"
+                className="absolute right-2 top-1/2 text-gray-500 hover:text-pink-500"
                 aria-label="Clear search"
               >
                 &times;
@@ -169,13 +179,22 @@ const AddProductVariationsTable = ({
                     onChange={(e) =>
                       handleVariationChange(index, "type", e.target.value)
                     }
-                    className="w-full border border-gray-200 rounded px-2 py-1 text-center appearance-none"
+                    className={`w-full border rounded px-2 py-1 text-center appearance-none ${
+                      variationErrors[index] && variationErrors[index].type
+                        ? "border-red-500"
+                        : "border-gray-200"
+                    }`}
                   >
                     <option value="">Select Type</option>
                     <option value="Size">Size</option>
                     <option value="Color">Color</option>
                     <option value="Default">Default</option>
                   </select>
+                  {variationErrors[index] && variationErrors[index].type && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {variationErrors[index].type}
+                    </p>
+                  )}
                 </td>
 
                 {/* Variation Value */}
@@ -198,8 +217,17 @@ const AddProductVariationsTable = ({
                     onChange={(e) =>
                       handleVariationChange(index, "value", e.target.value)
                     }
-                    className="w-full border border-gray-200 rounded px-2 py-1 text-center"
+                    className={`w-full border rounded px-2 py-1 text-center ${
+                      variationErrors[index] && variationErrors[index].value
+                        ? "border-red-500"
+                        : "border-gray-200"
+                    }`}
                   />
+                  {variationErrors[index] && variationErrors[index].value && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {variationErrors[index].value}
+                    </p>
+                  )}
                 </td>
 
                 {/* Unit Price */}
@@ -211,8 +239,19 @@ const AddProductVariationsTable = ({
                     onChange={(e) =>
                       handleVariationChange(index, "unit_price", e.target.value)
                     }
-                    className="w-full border border-gray-200 rounded px-2 py-1 text-center"
+                    className={`w-full border rounded px-2 py-1 text-center ${
+                      variationErrors[index] &&
+                      variationErrors[index].unit_price
+                        ? "border-red-500"
+                        : "border-gray-200"
+                    }`}
                   />
+                  {variationErrors[index] &&
+                    variationErrors[index].unit_price && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {variationErrors[index].unit_price}
+                      </p>
+                    )}
                 </td>
 
                 {/* SKU */}
