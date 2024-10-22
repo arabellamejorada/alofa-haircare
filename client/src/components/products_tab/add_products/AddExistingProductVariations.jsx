@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import AddProductVariationsTable from "./product_variations/AddProductVariationsTable";
-import { validateAddProductVariationForm } from "../../lib/consts/utils/validationUtils";
+import AddProductVariationsTable from "./AddProductVariationsTable";
+import { validateAddProductVariationForm } from "../../../lib/consts/utils/validationUtils";
 import {
   createProductWithVariationAndInventory,
   getAllProducts,
-} from "../../api/products";
+} from "../../../api/products";
 
 const AddExistingProductVariations = () => {
   const [existingProductVariations, setExistingProductVariations] = useState([
@@ -21,6 +21,7 @@ const AddExistingProductVariations = () => {
   });
   const [products, setProducts] = useState([]);
   const [productId, setProductId] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,6 +40,39 @@ const AddExistingProductVariations = () => {
     const updatedVariations = [...existingProductVariations];
     updatedVariations[index][field] = value;
     setExistingProductVariations(updatedVariations);
+
+    // Perform live validation for variations and update variationErrors
+    setExistingProductFormErrors((prevErrors) => {
+      const updatedVariationErrors = [...(prevErrors.variations || [])];
+      if (!updatedVariationErrors[index]) {
+        updatedVariationErrors[index] = {};
+      }
+
+      // Add or clear errors based on the new value
+      if (field === "type" && !value.trim()) {
+        updatedVariationErrors[index].type = "Variation type is required";
+      } else if (
+        field === "value" &&
+        updatedVariations[index].type !== "Default" &&
+        !value.trim()
+      ) {
+        updatedVariationErrors[index].value = "Variation value is required";
+      } else if (
+        field === "unit_price" &&
+        (!value.trim() || parseFloat(value) <= 0)
+      ) {
+        updatedVariationErrors[index].unit_price = "Price is required";
+      } else {
+        // If the current field has no issue, remove the error for that field
+        delete updatedVariationErrors[index][field];
+      }
+
+      // Set the updated error messages
+      return {
+        ...prevErrors,
+        variations: updatedVariationErrors,
+      };
+    });
   };
 
   // Function to handle image change for a variation
@@ -85,26 +119,25 @@ const AddExistingProductVariations = () => {
       };
     });
   };
-
   const handleSubmitExistingProduct = async (e) => {
     e.preventDefault();
 
-    let productSearchError = "";
-    if (!productId) {
-      console.log(productId);
-      productSearchError = "Product selection is required";
-    }
-
+    // Validate variations and selected product
     const variationErrors = validateAddProductVariationForm(
       existingProductVariations,
     );
+    let productSearchError = "";
+    if (!productId) {
+      productSearchError = "Please select a product";
+    }
 
-    // Include the product search error in the errors state
+    // Set errors to state
     setExistingProductFormErrors({
       product_search: productSearchError,
       variations: variationErrors,
     });
-    console.log("errors", existingProductFormErrors);
+
+    console.log("Submission errors:", productSearchError, variationErrors);
 
     // If there are no errors, proceed with form submission
     if (
@@ -112,18 +145,37 @@ const AddExistingProductVariations = () => {
       variationErrors.every((error) => Object.keys(error).length === 0)
     ) {
       try {
-        await createProductWithVariationAndInventory(
-          { product_id: productId },
-          existingProductVariations,
-        );
+        const formData = new FormData();
+
+        // Append product ID
+        formData.append("product_id", productId.product_id);
+
+        // Append variations if they exist and are in an array
+        if (Array.isArray(existingProductVariations)) {
+          existingProductVariations.forEach((variation, index) => {
+            formData.append(`variations[${index}][type]`, variation.type);
+            formData.append(`variations[${index}][value]`, variation.value);
+            formData.append(
+              `variations[${index}][unit_price]`,
+              variation.unit_price,
+            );
+            formData.append(`variations[${index}][sku]`, variation.sku);
+            if (variation.image) {
+              formData.append("images", variation.image); // Append images as files
+            }
+          });
+        }
+
+        await createProductWithVariationAndInventory(formData);
         console.log("Variations added successfully!");
 
-        // Reset the form on successful submission
         setExistingProductVariations([
           { type: "", value: "", unit_price: "", sku: "", image: null },
         ]);
         setExistingProductFormErrors({ variations: [{}] });
-        setProductId(""); // Clear selected product
+        setProductId(""); // Clear selected product ID
+        setSearchTerm(""); // Clear search term
+        setExistingProductFormErrors({});
       } catch (error) {
         console.error("Error adding variations:", error);
       }
@@ -147,6 +199,9 @@ const AddExistingProductVariations = () => {
         existingProduct={true}
         variationErrors={existingProductFormErrors.variations || []}
         existingProductFormErrors={existingProductFormErrors}
+        setExistingProductFormErrors={setExistingProductFormErrors}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
       />
 
       <button

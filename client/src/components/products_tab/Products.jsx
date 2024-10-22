@@ -1,7 +1,7 @@
 import React, { Fragment, useState } from "react";
-import AddProductsTab from "./AddProductsTab";
-import VariationsTab from "./ViewVariationsTab";
-import ProductsTab from "./ViewProductsTab";
+import AddProductsTab from "./add_products/AddProductsTab";
+import VariationsTab from "./view_variations/ViewVariationsTab";
+import ProductsTab from "./view_products/ViewProductsTab";
 
 const Products = () => {
   const [activeTab, setActiveTab] = useState("view-products");

@@ -11,11 +11,13 @@ const AddProductVariationsTable = ({
   existingProduct,
   variationErrors = [],
   existingProductFormErrors,
+  setExistingProductFormErrors,
   products,
-  productId,
   setProductId,
+  showAddDeleteButtons = true,
+  searchTerm,
+  setSearchTerm,
 }) => {
-  const [searchTerm, setSearchTerm] = useState("");
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
 
@@ -52,9 +54,16 @@ const AddProductVariationsTable = ({
   }, []);
 
   const handleProductSelect = (product) => {
-    setProductId(product);
-    setSearchTerm(product.name);
-    setIsDropdownVisible(false);
+    setProductId(product); // Set the selected product ID in state
+    setSearchTerm(product.name); // Set the search term to the selected product name
+    setIsDropdownVisible(false); // Hide the dropdown after selection
+
+    // Clear the error message for product_search when a product is selected
+    setExistingProductFormErrors((prevErrors) => {
+      const updatedErrors = { ...prevErrors };
+      delete updatedErrors.product_search; // Remove the product_search error
+      return updatedErrors;
+    });
   };
 
   const clearSearch = () => {
@@ -62,6 +71,10 @@ const AddProductVariationsTable = ({
     setProductId(null);
     setFilteredProducts(products);
     setIsDropdownVisible(false);
+    setExistingProductFormErrors((prevErrors) => ({
+      ...prevErrors,
+      product_search: "Please select a product",
+    }));
   };
 
   return (
@@ -77,9 +90,26 @@ const AddProductVariationsTable = ({
               type="text"
               placeholder="Search Product"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setIsDropdownVisible(true);
+
+                // Live Validation for Product Search
+                if (e.target.value.trim() === "") {
+                  setExistingProductFormErrors((prevErrors) => ({
+                    ...prevErrors,
+                    product_search: "Please select a product",
+                  }));
+                } else {
+                  setExistingProductFormErrors((prevErrors) => {
+                    const updatedErrors = { ...prevErrors };
+                    delete updatedErrors.product_search;
+                    return updatedErrors;
+                  });
+                }
+              }}
               onFocus={() => setIsDropdownVisible(true)}
-              className={`w-full rounded-2xl border border-gray-300 h-10 px-4 pr-8 mt-2 bg-gray-100 text-gray-500 focus:outline-none focus:border-pink-500 focus:bg-white ${
+              className={`w-full rounded-2xl border border-gray-300 h-10 px-4 pr-8 mt-2 bg-white text-gray-500 focus:outline-none focus:border-pink-500 focus:bg-white ${
                 existingProductFormErrors.product_search ? "border-red-500" : ""
               }`}
               ref={inputRef}
@@ -159,9 +189,11 @@ const AddProductVariationsTable = ({
               <th className="px-2 py-1 border-b-2 border-gray-200 bg-gray-100 text-center text-md font-semibold text-gray-600 uppercase">
                 Image
               </th>
-              <th className="px-2 py-1 border-b-2 border-gray-200 bg-gray-100 text-center text-md font-semibold text-gray-600 uppercase">
-                Delete
-              </th>
+              {showAddDeleteButtons && (
+                <th className="px-2 py-1 border-b-2 border-gray-200 bg-gray-100 text-center text-md font-semibold text-gray-600 uppercase">
+                  Delete
+                </th>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -190,7 +222,7 @@ const AddProductVariationsTable = ({
                     <option value="Color">Color</option>
                     <option value="Default">Default</option>
                   </select>
-                  {variationErrors[index] && variationErrors[index].type && (
+                  {variationErrors[index]?.type && (
                     <p className="text-red-500 text-xs mt-1">
                       {variationErrors[index].type}
                     </p>
@@ -301,15 +333,17 @@ const AddProductVariationsTable = ({
                 </td>
 
                 {/* Delete */}
-                <td className="px-2 py-1 border-b border-gray-200 text-sm text-center">
-                  <button
-                    type="button"
-                    className="text-red-500 hover:text-red-700"
-                    onClick={() => deleteVariationRow(index)}
-                  >
-                    <MdDelete fontSize={24} />
-                  </button>
-                </td>
+                {showAddDeleteButtons && (
+                  <td className="px-2 py-1 border-b border-gray-200 text-sm text-center">
+                    <button
+                      type="button"
+                      className="text-red-500 hover:text-red-700"
+                      onClick={() => deleteVariationRow(index)}
+                    >
+                      <MdDelete fontSize={24} />
+                    </button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
@@ -317,15 +351,17 @@ const AddProductVariationsTable = ({
       </div>
 
       {/* Add More Variation Button */}
-      <div className="flex justify-end mt-4">
-        <button
-          type="button"
-          onClick={addVariationRow}
-          className="flex items-center gap-2 px-6 py-2 text-white bg-pink-500 hover:bg-pink-600 rounded-lg font-semibold shadow-md transition-transform transform hover:scale-105"
-        >
-          <span>+</span> Add Row
-        </button>
-      </div>
+      {showAddDeleteButtons && (
+        <div className="flex justify-end mt-4">
+          <button
+            type="button"
+            onClick={addVariationRow}
+            className="flex items-center gap-2 px-6 py-2 text-white bg-pink-500 hover:bg-pink-600 rounded-lg font-semibold shadow-md transition-transform transform hover:scale-105"
+          >
+            <span>+</span> Add Row
+          </button>
+        </div>
+      )}
     </div>
   );
 };

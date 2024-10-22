@@ -1,7 +1,7 @@
 import React, { Fragment, useState, useEffect } from "react";
-import EditProductVariationModal from "./product_variations/EditProductVariationModal";
-import ProductVariationTable from "./product_variations/ProductVariationTable";
-import FilterProductsAndVariationsTable from "./FilterProductsAndVariationsTable";
+import EditProductVariationModal from "./EditProductVariationModal";
+import ProductVariationTable from "./ProductVariationTable";
+import FilterProductsAndVariationsTable from "../FilterProductsAndVariationsTable";
 import { toast } from "sonner";
 import {
   getAllProductVariations,
@@ -9,13 +9,13 @@ import {
   updateProductVariation,
   getStatus,
   archiveProductVariation,
-} from "../../api/products";
+} from "../../../api/products";
 import {
   validateEditProductVariationForm,
   validateUnitPrice,
   validateProductStatusId,
   validateImage,
-} from "../../lib/consts/utils/validationUtils";
+} from "../../../lib/consts/utils/validationUtils";
 
 const VariationsTab = () => {
   const [product_variations, setProductVariations] = useState([]);

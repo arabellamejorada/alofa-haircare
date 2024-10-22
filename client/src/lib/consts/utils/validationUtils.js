@@ -53,25 +53,63 @@ export const validateQuantity = (quantity, stock) => {
 
 // Function to validate product form data
 export const validateProductForm = (productFormData) => {
-  return {
-    product_name: validateName(productFormData.product_name) ? "" : "Product name is required",
-    product_description: validateDescription(productFormData.product_description) ? "" : "Product description is required",
-    product_status: validateStatus(productFormData.product_status) ? "" : "Product Status is required",
-    product_category: validateCategory(productFormData.product_category) ? "" : "Product Category is required",
-  };
+  const errors = {};
+
+  // Validate product name
+  if (!validateName(productFormData.product_name)) {
+    errors.product_name = "Product name is required";
+  }
+
+  // Validate product description
+  if (!validateDescription(productFormData.product_description)) {
+    errors.product_description = "Product description is required";
+  }
+
+  // Validate product status
+  if (!validateStatus(productFormData.product_status)) {
+    errors.product_status = "Please select a status";
+  }
+
+  // Validate product category
+  if (!validateCategory(productFormData.product_category)) {
+    errors.product_category = "Please select a category";
+  }
+
+  return errors;
 };
 
-  export const validateAddProductVariationForm = (variations) => {
-    const errors = [];
-    variations.forEach((variation, index) => {
-      const error = {};
-      if (!variation.type.trim()) error.type = "Variation type is required";
-      if (variation.type !== "Default" && !variation.value.trim()) error.value = "Variation value is required";
-      if (!variation.unit_price) error.unit_price = "Unit price is required";
+
+export const validateAddProductVariationForm = (variations) => {
+  const errors = [];
+  variations.forEach((variation, index) => {
+    const error = {};
+
+    // Validate type
+    if (!variation.type.trim()) {
+      error.type = "Select a type";
+    }
+
+    // Validate value only if type is not "Default"
+    if (variation.type !== "Default" && !variation.value.trim()) {
+      error.value = "Variation value is required";
+    }
+
+    // Validate unit price (ensure it isn't undefined or null, but allow 0)
+    if (variation.unit_price === undefined || variation.unit_price === null || variation.unit_price === '') {
+      error.unit_price = "Price is required";
+    }
+
+    // Only add to errors array if there's actually an error
+    if (Object.keys(error).length > 0) {
       errors[index] = error;
-    });
-    return errors;
-  };
+    } else {
+      errors[index] = {}; // To maintain the structure but indicate no errors
+    }
+  });
+
+  return errors;
+};
+
 
 export const validateEditProductVariationForm = ({
   unit_price,

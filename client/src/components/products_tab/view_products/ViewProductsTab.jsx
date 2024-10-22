@@ -1,7 +1,7 @@
 import React, { Fragment, useState, useEffect } from "react";
-import ProductTable from "./products/ProductTable";
-import EditProductModal from "./products/EditProductModal";
-import FilterProductsAndVariationsTable from "./FilterProductsAndVariationsTable";
+import ProductTable from "./ProductTable";
+import EditProductModal from "./EditProductModal";
+import FilterProductsAndVariationsTable from "../FilterProductsAndVariationsTable";
 import { toast } from "sonner";
 import {
   createProductWithVariationAndInventory,
@@ -10,14 +10,14 @@ import {
   getStatus,
   archiveProduct,
   updateProduct,
-} from "../../api/products";
+} from "../../../api/products";
 import {
   validateProductForm,
   validateName,
   validateDescription,
   validateStatus,
   validateCategory,
-} from "../../lib/consts/utils/validationUtils";
+} from "../../../lib/consts/utils/validationUtils";
 
 const ProductsTab = () => {
   const [products, setProducts] = useState([]);

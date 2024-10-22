@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from "react";
-import AddProductVariationsTable from "./product_variations/AddProductVariationsTable";
+import AddProductVariationsTable from "./AddProductVariationsTable";
 import { IoMdArrowDropdown } from "react-icons/io";
+
 import {
   validateProductForm,
   validateAddProductVariationForm,
-} from "../../lib/consts/utils/validationUtils";
+} from "../../../lib/consts/utils/validationUtils";
 import {
   createProductWithVariationAndInventory,
   getCategories,
   getStatus,
-} from "../../api/products";
+} from "../../../api/products";
 
 const AddNewProduct = () => {
+  const [hasVariations, setHasVariations] = useState(false); // Track if the product has variations
   const [categories, setCategories] = useState([]);
   const [statuses, setStatuses] = useState([]);
   const [newProductFormData, setNewProductFormData] = useState({
@@ -48,6 +50,42 @@ const AddNewProduct = () => {
     };
     fetchData();
   }, []);
+
+  // Handle change for variations checkbox
+  const handleVariationsToggle = () => {
+    setHasVariations(!hasVariations);
+    if (!hasVariations) {
+      // If switching to "has variations", clear default values
+      setNewProductVariations([
+        {
+          type: "",
+          value: "",
+          unit_price: "",
+          sku: "",
+          image: null,
+        },
+      ]);
+      setNewProductFormErrors((prevErrors) => ({
+        ...prevErrors,
+        variations: [{}],
+      }));
+    } else {
+      // If switching off variations, reset to a default structure
+      setNewProductVariations([
+        {
+          type: "Default",
+          value: "N/A",
+          unit_price: "",
+          sku: "",
+          image: null,
+        },
+      ]);
+      setNewProductFormErrors((prevErrors) => ({
+        ...prevErrors,
+        variations: [{}],
+      }));
+    }
+  };
 
   // Handle Input Changes for Product Form
   const handleInputChange = (e) => {
@@ -94,14 +132,18 @@ const AddNewProduct = () => {
   // Function to handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const productErrors = validateProductForm(newProductFormData);
     const variationErrors =
       validateAddProductVariationForm(newProductVariations);
+
     // Set errors to state
     setNewProductFormErrors({
       ...productErrors,
       variations: variationErrors,
     });
+
+    console.log("Submission errors", productErrors, variationErrors);
 
     // If there are no errors, proceed with form submission
     if (
@@ -109,11 +151,40 @@ const AddNewProduct = () => {
       variationErrors.every((error) => Object.keys(error).length === 0)
     ) {
       try {
-        await createProductWithVariationAndInventory(
-          newProductFormData,
-          newProductVariations,
+        const variationsData = {
+          newProductVariations: newProductVariations || [],
+        };
+        const formData = new FormData();
+
+        // Append all product data fields to formData
+        formData.append("name", newProductFormData.product_name);
+        formData.append("description", newProductFormData.product_description);
+        formData.append("product_status_id", newProductFormData.product_status);
+        formData.append(
+          "product_category_id",
+          newProductFormData.product_category,
         );
+
+        // Check if productData.newProductVariations is defined and is an array
+        if (Array.isArray(variationsData.newProductVariations)) {
+          variationsData.newProductVariations.forEach((variation, index) => {
+            formData.append(`variations[${index}][type]`, variation.type);
+            formData.append(`variations[${index}][value]`, variation.value);
+            formData.append(
+              `variations[${index}][unit_price]`,
+              variation.unit_price,
+            );
+            formData.append(`variations[${index}][sku]`, variation.sku);
+            if (variation.image) {
+              formData.append("images", variation.image); // Append images as files
+            }
+          });
+        }
+
+        console.log("Form Data:", formData);
+        await createProductWithVariationAndInventory(formData);
         console.log("Product with variations created successfully!");
+
         // Reset form on successful submission
         setNewProductFormData({
           product_name: "",
@@ -156,7 +227,7 @@ const AddNewProduct = () => {
               placeholder="Product Name"
               value={newProductFormData.product_name}
               onChange={handleInputChange}
-              className={`rounded-2xl border h-10 pl-4 bg-gray-100 text-gray-500 focus:outline-none focus:border-pink-500 focus:bg-white w-full ${
+              className={`rounded-2xl border h-10 pl-4 bg-white text-gray-500 focus:outline-none focus:border-pink-500 focus:bg-white w-full ${
                 newProductFormErrors.product_name
                   ? "border-red-500"
                   : "border-gray-300"
@@ -180,7 +251,7 @@ const AddNewProduct = () => {
                 name="product_category"
                 value={newProductFormData.product_category}
                 onChange={handleInputChange}
-                className={`rounded-2xl border h-10 px-4 bg-gray-100 text-gray-500 focus:outline-none focus:border-pink-500 focus:bg-white w-full appearance-none ${
+                className={`rounded-2xl border h-10 px-4 bg-white text-gray-500 focus:outline-none focus:border-pink-500 focus:bg-white w-full appearance-none ${
                   newProductFormErrors.product_category
                     ? "border-red-500"
                     : "border-gray-300"
@@ -216,7 +287,7 @@ const AddNewProduct = () => {
               placeholder="Product Description"
               value={newProductFormData.product_description}
               onChange={handleInputChange}
-              className={`rounded-2xl border p-4 bg-gray-100 text-gray-500 focus:outline-none focus:border-pink-500 focus:bg-white resize-y w-full h-24 ${
+              className={`rounded-2xl border p-4 bg-white text-gray-500 focus:outline-none focus:border-pink-500 focus:bg-white resize-y w-full h-24 ${
                 newProductFormErrors.product_description
                   ? "border-red-500"
                   : "border-gray-300"
@@ -240,7 +311,7 @@ const AddNewProduct = () => {
                 name="product_status"
                 value={newProductFormData.product_status}
                 onChange={handleInputChange}
-                className={`rounded-2xl border h-10 px-4 bg-gray-100 text-gray-500 focus:outline-none focus:border-pink-500 focus:bg-white w-full appearance-none ${
+                className={`rounded-2xl border h-10 px-4 bg-white text-gray-500 focus:outline-none focus:border-pink-500 focus:bg-white w-full appearance-none ${
                   newProductFormErrors.product_status
                     ? "border-red-500"
                     : "border-gray-300"
@@ -273,6 +344,31 @@ const AddNewProduct = () => {
 
         {/* Variations Table */}
         <div className="col-span-3">
+          {/* Toggle Button for Product Variations */}
+          <div className="flex items-center gap-4 mt-4">
+            <label htmlFor="has_variations" className="font-bold">
+              Does this product have variations?
+            </label>
+            <div
+              className={`relative w-20 h-8 flex items-center rounded-full p-1 cursor-pointer ${
+                hasVariations ? "bg-pink-500" : "bg-gray-500"
+              }`}
+              onClick={handleVariationsToggle}
+            >
+              <div
+                className={`w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-300 ${
+                  hasVariations ? "translate-x-12" : "translate-x-0"
+                }`}
+              ></div>
+              <span
+                className={`absolute font-bold text-white ${
+                  hasVariations ? "left-2" : "right-2"
+                }`}
+              >
+                {hasVariations ? "YES" : "NO"}
+              </span>
+            </div>
+          </div>
           <AddProductVariationsTable
             variations={newProductVariations}
             handleVariationChange={handleVariationChange}
@@ -283,6 +379,7 @@ const AddNewProduct = () => {
             deleteVariationRow={deleteVariationRow}
             existingProduct={false}
             variationErrors={newProductFormErrors.variations || []}
+            showAddDeleteButtons={hasVariations}
           />
         </div>
       </div>
