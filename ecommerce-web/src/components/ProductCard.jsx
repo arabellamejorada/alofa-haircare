@@ -24,19 +24,20 @@ const ProductCard = ({ id, image, name, value, price, sku }) => {
 
   return (
     <div className="relative p-2 rounded-lg">
-      {/* Inner card with white background */}
+      {/* inner card with white background */}
       <div className="bg-white border-4 border-alofa-light-pink rounded-lg shadow-md overflow-hidden flex flex-col justify-between w-56 text-center">
         {/* Square image occupying the whole top */}
         <div className="w-full aspect-square">
           <img
             src={image}
             alt={name}
-            className="object-cover w-full h-full"
+            className="object-cover w-full h-full shadow-sm shadow-gray-400/50"
             style={{ maxWidth: "1024px", maxHeight: "1024px" }}
           />
         </div>
+        {/* Product details */}
         <div className="mt-4 flex flex-col items-start px-4">
-          <h3 className="text-lg font-medium text-gray-700 h-10 overflow-hidden text-ellipsis whitespace-nowrap">
+          <h3 className="text-lg font-medium text-gray-700 h-10 overflow-hidden text-ellipsis whitespace-nowrap" style={{ maxWidth: '200px' }}>
             {name}
           </h3>
           <p className="text-md font-medium text-gray-700 h-10 overflow-hidden text-ellipsis whitespace-nowrap">
@@ -70,6 +71,7 @@ ProductCard.propTypes = {
   name: PropTypes.string.isRequired,
   value: PropTypes.string,
   price: PropTypes.number.isRequired,
+  sku: PropTypes.string,
 };
 
 export default ProductCard;
