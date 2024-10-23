@@ -6,6 +6,7 @@ import {
   getAllProducts,
 } from "../../../api/products";
 import { toast } from "sonner";
+import { ClipLoader } from "react-spinners";
 
 const AddExistingProductVariations = () => {
   const [existingProductVariations, setExistingProductVariations] = useState([
@@ -23,14 +24,18 @@ const AddExistingProductVariations = () => {
   const [products, setProducts] = useState([]);
   const [productId, setProductId] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
         const productsData = await getAllProducts();
         setProducts(productsData);
       } catch (err) {
         console.error("Failed to fetch products.");
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
@@ -76,14 +81,12 @@ const AddExistingProductVariations = () => {
     });
   };
 
-  // Function to handle image change for a variation
   const handleImageChange = (index, file) => {
     const updatedVariations = [...existingProductVariations];
     updatedVariations[index].image = file;
     setExistingProductVariations(updatedVariations);
   };
 
-  // Function to add a new variation row
   const addVariationRow = () => {
     setExistingProductVariations((prevVariations) => [
       ...prevVariations,
@@ -101,7 +104,6 @@ const AddExistingProductVariations = () => {
     }));
   };
 
-  // Function to delete a variation row
   const deleteVariationRow = (index) => {
     setExistingProductVariations((prevVariations) => {
       const updatedVariations = prevVariations.filter((_, i) => i !== index);
@@ -122,8 +124,8 @@ const AddExistingProductVariations = () => {
   };
   const handleSubmitExistingProduct = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
-    // Validate variations and selected product
     const variationErrors = validateAddProductVariationForm(
       existingProductVariations,
     );
@@ -132,14 +134,12 @@ const AddExistingProductVariations = () => {
       productSearchError = "Please select a product";
     }
 
-    // Set errors to state
     setExistingProductFormErrors({
       product_search: productSearchError,
       variations: variationErrors,
     });
 
     console.log("Submission errors:", productSearchError, variationErrors);
-    toast.error("Please fill in all required fields");
 
     // If there are no errors, proceed with form submission
     if (
@@ -183,37 +183,50 @@ const AddExistingProductVariations = () => {
         console.error("Error adding variations:", error);
       }
     }
+
+    setLoading(false);
   };
 
   return (
-    <form
-      onSubmit={handleSubmitExistingProduct}
-      className="bg-white p-6 rounded-lg shadow-md w-full"
-    >
-      <AddProductVariationsTable
-        variations={existingProductVariations || []} // Ensure variations is an array
-        handleVariationChange={handleVariationChange}
-        handleImageChange={handleImageChange}
-        addVariationRow={addVariationRow}
-        deleteVariationRow={deleteVariationRow}
-        products={products}
-        productId={productId}
-        setProductId={setProductId}
-        existingProduct={true}
-        variationErrors={existingProductFormErrors.variations || []}
-        existingProductFormErrors={existingProductFormErrors}
-        setExistingProductFormErrors={setExistingProductFormErrors}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-      />
+    <div className="relative">
+      {loading && (
+        <div className="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center z-50">
+          <ClipLoader size={50} color="#E53E3E" loading={loading} />
+        </div>
+      )}
 
-      <button
-        type="submit"
-        className="bg-pink-500 text-white rounded py-2 px-4 mt-4 shadow-md hover:bg-pink-600"
+      <form
+        onSubmit={handleSubmitExistingProduct}
+        className="bg-white p-6 rounded-lg shadow-md w-full"
       >
-        Submit
-      </button>
-    </form>
+        <AddProductVariationsTable
+          variations={existingProductVariations || []} // Ensure variations is an array
+          handleVariationChange={handleVariationChange}
+          handleImageChange={handleImageChange}
+          addVariationRow={addVariationRow}
+          deleteVariationRow={deleteVariationRow}
+          products={products}
+          productId={productId}
+          setProductId={setProductId}
+          existingProduct={true}
+          variationErrors={existingProductFormErrors.variations || []}
+          existingProductFormErrors={existingProductFormErrors}
+          setExistingProductFormErrors={setExistingProductFormErrors}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+        />
+
+        <button
+          type="submit"
+          className={`bg-pink-500 text-white rounded py-2 px-4 mt-4 shadow-md hover:bg-pink-600 ${
+            loading ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+          disabled={loading} // Disable button while loading
+        >
+          {loading ? "Submitting..." : "Submit"}
+        </button>
+      </form>
+    </div>
   );
 };
 

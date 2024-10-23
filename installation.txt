@@ -8,6 +8,7 @@ npm install dotenv
 npm install --save-dev nodemon
 npm install express redis express-session
 npm install connect-redis redis
+npm install react-spinners
 
 Frontend setup:
 

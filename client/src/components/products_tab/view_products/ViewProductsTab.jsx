@@ -3,6 +3,7 @@ import ProductTable from "./ProductTable";
 import EditProductModal from "./EditProductModal";
 import FilterProductsAndVariationsTable from "../FilterProductsAndVariationsTable";
 import { toast } from "sonner";
+import { ClipLoader } from "react-spinners";
 import {
   createProductWithVariationAndInventory,
   getAllProducts,
@@ -36,6 +37,7 @@ const ProductsTab = () => {
 
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const [productFormData, setProductFormData] = useState({
     product_name: "",
@@ -47,6 +49,7 @@ const ProductsTab = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
         const productsData = await getAllProducts();
         const categoriesData = await getCategories();
         const statusData = await getStatus();
@@ -55,6 +58,8 @@ const ProductsTab = () => {
         setStatuses(statusData);
       } catch (err) {
         setError("Failed to fetch data");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -110,6 +115,7 @@ const ProductsTab = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     if (!validateForm()) {
       toast.error("Please fill out all required fields correctly.");
@@ -147,11 +153,14 @@ const ProductsTab = () => {
     } catch (error) {
       console.error("Error creating/updating product: ", error);
       toast.error("Failed to create/update product");
+    } finally {
+      setLoading(false);
     }
   };
 
   const openModal = (product = null) => {
     if (product) {
+      setLoading(true);
       setSelectedProduct(product);
       setOriginalProductData(product);
       setProductFormData({
@@ -171,6 +180,7 @@ const ProductsTab = () => {
       });
     }
     setShowModal(true);
+    setLoading(false);
   };
 
   const handleArchiveProduct = async (selectedProduct) => {
@@ -178,6 +188,7 @@ const ProductsTab = () => {
 
     if (window.confirm("Are you sure you want to archive this product?")) {
       try {
+        setLoading(true);
         const response = await archiveProduct(selectedProduct.product_id);
         const productsData = await getAllProducts();
         console.log("Product archived successfully:", response);
@@ -187,6 +198,8 @@ const ProductsTab = () => {
         console.error("Error archiving product: ", error);
         setError("Failed to update product status to Archived");
         toast.error("Failed to archive product");
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -246,52 +259,60 @@ const ProductsTab = () => {
 
   return (
     <Fragment>
-      <div className="flex flex-col gap-2">
-        <strong className="text-3xl font-bold text-gray-500">Products</strong>
+      <div className="relative">
+        {loading && (
+          <div className="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center z-50">
+            <ClipLoader size={50} color="#E53E3E" loading={loading} />
+          </div>
+        )}
 
-        {/* Filters Section */}
-        <FilterProductsAndVariationsTable
-          search={search}
-          setSearch={setSearch}
-          selectedCategory={selectedCategory}
-          setSelectedCategory={setSelectedCategory}
-          handleCategoryChange={handleCategoryChange}
-          categories={categories}
-          selectedStatus={selectedStatus}
-          setSelectedStatus={setSelectedStatus}
-          handleStatusChange={handleStatusChange}
-          statuses={statuses}
-          showArchived={showArchived}
-          setShowArchived={setShowArchived}
-          handleSearchChange={handleSearchChange}
-          isProducts={true}
-        />
+        <div className="flex flex-col gap-2">
+          <strong className="text-3xl font-bold text-gray-500">Products</strong>
 
-        <ProductTable
-          products={filteredProducts}
-          onEdit={openModal}
-          onArchive={handleArchiveProduct}
-          handleColumnSort={handleColumnSort}
-          sortField={sortField}
-          sortOrder={sortOrder}
-        />
+          {/* Filters Section */}
+          <FilterProductsAndVariationsTable
+            search={search}
+            setSearch={setSearch}
+            selectedCategory={selectedCategory}
+            setSelectedCategory={setSelectedCategory}
+            handleCategoryChange={handleCategoryChange}
+            categories={categories}
+            selectedStatus={selectedStatus}
+            setSelectedStatus={setSelectedStatus}
+            handleStatusChange={handleStatusChange}
+            statuses={statuses}
+            showArchived={showArchived}
+            setShowArchived={setShowArchived}
+            handleSearchChange={handleSearchChange}
+            isProducts={true}
+          />
+
+          <ProductTable
+            products={filteredProducts}
+            onEdit={openModal}
+            onArchive={handleArchiveProduct}
+            handleColumnSort={handleColumnSort}
+            sortField={sortField}
+            sortOrder={sortOrder}
+          />
+        </div>
+
+        {/* Modal for Adding/Editing Product */}
+        {showModal && (
+          <EditProductModal
+            isVisible={showModal}
+            onClose={handleCloseModal}
+            selectedProduct={selectedProduct}
+            handleSubmit={handleSubmit}
+            productFormData={productFormData}
+            handleInputChange={handleInputChange}
+            categories={categories}
+            statuses={statuses}
+            errors={errors}
+            isFormModified={isFormModified}
+          />
+        )}
       </div>
-
-      {/* Modal for Adding/Editing Product */}
-      {showModal && (
-        <EditProductModal
-          isVisible={showModal}
-          onClose={handleCloseModal}
-          selectedProduct={selectedProduct}
-          handleSubmit={handleSubmit}
-          productFormData={productFormData}
-          handleInputChange={handleInputChange}
-          categories={categories}
-          statuses={statuses}
-          errors={errors}
-          isFormModified={isFormModified}
-        />
-      )}
     </Fragment>
   );
 };
