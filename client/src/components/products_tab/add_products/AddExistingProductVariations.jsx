@@ -5,6 +5,7 @@ import {
   createProductWithVariationAndInventory,
   getAllProducts,
 } from "../../../api/products";
+import { toast } from "sonner";
 
 const AddExistingProductVariations = () => {
   const [existingProductVariations, setExistingProductVariations] = useState([
@@ -138,6 +139,7 @@ const AddExistingProductVariations = () => {
     });
 
     console.log("Submission errors:", productSearchError, variationErrors);
+    toast.error("Please fill in all required fields");
 
     // If there are no errors, proceed with form submission
     if (
@@ -168,6 +170,7 @@ const AddExistingProductVariations = () => {
 
         await createProductWithVariationAndInventory(formData);
         console.log("Variations added successfully!");
+        toast.success("Variations added successfully!");
 
         setExistingProductVariations([
           { type: "", value: "", unit_price: "", sku: "", image: null },

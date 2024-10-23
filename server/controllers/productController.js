@@ -1,21 +1,36 @@
 const pool = require('../db.js');
-
 const createProductWithVariationAndInventory = async (req, res) => {
   const client = await pool.connect();
-  const { name, description, product_category_id, product_status_id, variations, product_id } = req.body;
-  const uploadedFiles = req.files;  // Array of uploaded images
+  const { name, description, product_category_id, product_status_id, product_id } = req.body;
+  
+  // Handle variations parsing
+  let { variations } = req.body;
 
-  console.log('Request Body:', req.body);
-  if(!product_id){
-    if (!name || !description || !product_category_id || !product_status_id || !variations) {
-        return res.status(400).json({ message: 'Missing required fields' });
+  if (typeof variations === 'string') {
+    try {
+      variations = JSON.parse(variations); // Parse if it's a string
+    } catch (error) {
+      return res.status(400).json({ message: 'Invalid format for variations' });
     }
   }
-  
+
+  if (!Array.isArray(variations)) {
+    return res.status(400).json({ message: 'Variations must be an array' });
+  }
+
+  const uploadedFiles = req.files;  // Array of uploaded images
+
+  console.log('Uploaded Files:', uploadedFiles);
+  console.log('Request Body:', req.body);
+  if (!product_id) {
+    if (!name || !description || !product_category_id || !product_status_id || !variations) {
+      return res.status(400).json({ message: 'Missing required fields' });
+    }
+  }
 
   try {
     await client.query('BEGIN');
-
+    console.log('Transaction started');
     // Insert or find product
     let productId;
     let productResult;
@@ -28,7 +43,7 @@ const createProductWithVariationAndInventory = async (req, res) => {
         RETURNING product_id`,
         [name, description, product_category_id, product_status_id]
       );
-      
+
       if (productResult.rows.length === 0) {
         throw new Error('Product insertion failed');
       }

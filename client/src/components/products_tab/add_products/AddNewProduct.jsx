@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import AddProductVariationsTable from "./AddProductVariationsTable";
 import { IoMdArrowDropdown } from "react-icons/io";
-
+import { toast } from "sonner";
 import {
   validateProductForm,
   validateAddProductVariationForm,
@@ -144,7 +144,7 @@ const AddNewProduct = () => {
     });
 
     console.log("Submission errors", productErrors, variationErrors);
-
+    toast.error("Please fill in all required fields.");
     // If there are no errors, proceed with form submission
     if (
       Object.keys(productErrors).length === 0 &&
@@ -184,7 +184,7 @@ const AddNewProduct = () => {
         console.log("Form Data:", formData);
         await createProductWithVariationAndInventory(formData);
         console.log("Product with variations created successfully!");
-
+        toast.success("Product with variations created successfully!");
         // Reset form on successful submission
         setNewProductFormData({
           product_name: "",
