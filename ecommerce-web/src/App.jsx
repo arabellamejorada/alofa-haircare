@@ -4,6 +4,7 @@ import {
   Route,
   useLocation,
 } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { CartProvider } from "./components/CartContext.jsx";
 import Navbar from "./shared/Navbar.jsx";
 import Home from "./pages/Home.jsx";
@@ -17,11 +18,22 @@ import SignUp from "./pages/SignUp.jsx";
 import "./App.css";
 import { Toaster } from "sonner";
 
-// // Supabase
-// import { supabase } from "../../supabase/supabaseClient.jsx";
-
 const AppContent = () => {
   const location = useLocation();
+
+  // store session token
+  const [token, setToken] = useState(false);
+
+  if (token) {
+    sessionStorage.setItem("token", JSON.stringify(token));
+  }
+
+  useEffect(() => {
+    if (sessionStorage.getItem("token")) {
+      let data = JSON.parse(sessionStorage.getItem("token"));
+      setToken(data);
+    }
+  }, []);
 
   return (
     <>
@@ -35,7 +47,7 @@ const AppContent = () => {
         <Route path="/shoppingcart" element={<ShoppingCart />} />
         <Route path="/cartitem" element={<CartItem />} />
         <Route path="/checkout" element={<Checkout />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<Login setToken={setToken} />} />
         <Route path="/signup" element={<SignUp />} />
       </Routes>
     </>
