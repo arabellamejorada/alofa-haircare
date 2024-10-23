@@ -53,8 +53,13 @@ const StockIn = () => {
     setLoading(true);
     const loadData = async () => {
       const employeeData = await getEmployees();
-      const supplierData = await getAllSuppliers();
+      let supplierData = await getAllSuppliers();
       const productVariationsData = await getAllProductVariations();
+
+      // Only show active suppliers
+      supplierData = supplierData.filter(
+        (supplier) => supplier.status.toLowerCase() === "active",
+      );
       setEmployees(employeeData);
       setSuppliers(supplierData);
       setProductVariations(productVariationsData);
