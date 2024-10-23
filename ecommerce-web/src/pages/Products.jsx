@@ -3,6 +3,7 @@ import ProductCard from "../components/ProductCard";
 import Filter from "../components/Filter/Filter.jsx";
 import FilterButton from "../components/Filter/FilterButton.jsx";
 import Search from "../components/Filter/Search.jsx";
+import { ClipLoader } from "react-spinners";
 import {
   getAllProducts,
   getAllProductVariations,
@@ -17,10 +18,11 @@ const Products = () => {
   const [selectedSort, setSelectedSort] = useState("none");
   const [searchQuery, setSearchQuery] = useState(""); // State for search query
   const [filteredProducts, setFilteredProducts] = useState([]); // State for filtered products
-
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        setLoading(true);
         const productsData = await getAllProducts();
         const productVariantsData = await getAllProductVariations();
         const categoriesData = await getAllCategories();
@@ -30,6 +32,8 @@ const Products = () => {
         setCategories(categoriesData);
       } catch (error) {
         console.error("Error fetching products:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -37,83 +41,82 @@ const Products = () => {
   }, []);
 
   useEffect(() => {
-    // Process product data and filter based on category, search, and sort
-    const processedProductData = productVariants
-      .filter(
-        (variation) =>
-          variation.status_description.toLowerCase() !== "archived",
-      )
-      .map((variation) => {
-        const product = products.find(
-          (p) => p.product_id === variation.product_id,
-        );
-        const imageName = variation.image?.split("/").pop();
-        // console.log("variation:", variation);
-        return {
-          id: variation.variation_id,
-          image: imageName
-            ? `http://localhost:3001/uploads/${imageName}`
-            : "/default-image.jpg",
-          name: `${product?.name || "Unnamed Product"}`,
-          value: variation.value,
-          price: parseFloat(variation.unit_price) || 0,
-          category: variation.product_category || "Uncategorized",
-          sku: variation.sku,
-        };
-      });
-
-    // Filter products by category
-    let updatedProducts =
-      selectedCategory === "All"
-        ? processedProductData
-        : processedProductData.filter(
-            (product) => product.category === selectedCategory,
+    setLoading(true);
+    setTimeout(() => {
+      // Process product data and filter based on category, search, and sort
+      const processedProductData = productVariants
+        .filter(
+          (variation) =>
+            variation.status_description.toLowerCase() !== "archived",
+        )
+        .map((variation) => {
+          const product = products.find(
+            (p) => p.product_id === variation.product_id,
           );
+          const imageName = variation.image
+            ? variation.image.split("/").pop()
+            : null;
+          return {
+            id: variation.variation_id,
+            image: imageName
+              ? `http://localhost:3001/uploads/${imageName}`
+              : `https://via.placeholder.com/150?text=No+Image+Available`,
+            name: `${product?.name || "Unnamed Product"}`,
+            value: variation.value,
+            price: parseFloat(variation.unit_price) || 0,
+            category: variation.product_category || "Uncategorized",
+            sku: variation.sku,
+          };
+        });
 
-    // Filter by search query
-    if (searchQuery) {
-      updatedProducts = updatedProducts.filter(
-        (product) =>
-          product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.value.toLowerCase().includes(searchQuery.toLowerCase()),
-      );
-    }
+      // Filter products by category
+      let updatedProducts =
+        selectedCategory === "All"
+          ? processedProductData
+          : processedProductData.filter(
+              (product) => product.category === selectedCategory,
+            );
 
-    // Sort the products by price
-    if (selectedSort === "low-to-high") {
-      updatedProducts = updatedProducts.sort((a, b) => a.price - b.price);
-    } else if (selectedSort === "high-to-low") {
-      updatedProducts = updatedProducts.sort((a, b) => b.price - a.price);
-    }
+      // Filter by search query
+      if (searchQuery) {
+        updatedProducts = updatedProducts.filter(
+          (product) =>
+            product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            product.value.toLowerCase().includes(searchQuery.toLowerCase()),
+        );
+      }
 
-    setFilteredProducts(updatedProducts);
+      // Sort the products by price
+      if (selectedSort === "low-to-high") {
+        updatedProducts = updatedProducts.sort((a, b) => a.price - b.price);
+      } else if (selectedSort === "high-to-low") {
+        updatedProducts = updatedProducts.sort((a, b) => b.price - a.price);
+      }
+
+      setFilteredProducts(updatedProducts);
+      setLoading(false);
+    }, 500); // Add a delay to simulate loading time, if needed
   }, [searchQuery, selectedCategory, selectedSort, productVariants, products]);
 
   return (
-    <div className="pt-32 bg-[url('../../public/images/body-bg.png')] bg-cover bg-center min-h-screen p-8 flex flex-col items-center w-full overflow-x-hidden">
-      {/* Search and FilterButton in smaller viewports */}
-      <div className="block lg:hidden mb-4 w-full gap-4 items-center">
-        <div className="flex items-center w-full gap-2">
-          <Search searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+    <div className="relative">
+      {/* Loading Spinner */}
+      {loading && (
+        <div className="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center z-50 pointer-events-none">
+          <ClipLoader size={50} color="#E53E3E" loading={loading} />
         </div>
+      )}
 
-        <FilterButton
-          categories={categories}
-          selectedCategory={selectedCategory}
-          setSelectedCategory={setSelectedCategory}
-          selectedSort={selectedSort}
-          setSelectedSort={setSelectedSort}
-        />
-      </div>
-
-      <div className="flex w-full max-w-screen-xl gap-8">
-        {/* Search and Filter Component on the left for larger viewports */}
-        <div className="hidden lg:block w-1/4 mt-2">
-          <div className="flex items-center w-full gap-2 mb-4">
+      <div
+        className={`pt-32 bg-[url('../../public/images/body-bg.png')] bg-cover bg-center min-h-screen p-8 flex flex-col items-center w-full overflow-x-hidden ${loading ? "opacity-50" : ""}`}
+      >
+        {/* Search and FilterButton in smaller viewports */}
+        <div className="block lg:hidden mb-4 w-full gap-4 items-center">
+          <div className="flex items-center w-full gap-2">
             <Search searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
           </div>
 
-          <Filter
+          <FilterButton
             categories={categories}
             selectedCategory={selectedCategory}
             setSelectedCategory={setSelectedCategory}
@@ -122,27 +125,49 @@ const Products = () => {
           />
         </div>
 
-        {/* Products Grid */}
-        <div className="w-full lg:w-full h-[730px] overflow-y-auto overflow-x-hidden">
-          {filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-0.5 gap-y-0.5">
-              {filteredProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  id={product.id}
-                  image={product.image}
-                  name={product.name}
-                  value={product.value}
-                  price={product.price}
-                  sku={product.sku}
-                />
-              ))}
+        <div className="flex w-full max-w-screen-xl gap-8">
+          {/* Search and Filter Component on the left for larger viewports */}
+          <div className="hidden lg:block w-1/4 mt-2">
+            <div className="flex items-center w-full gap-2 mb-4">
+              <Search
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+              />
             </div>
-          ) : (
-            <div className="flex items-center justify-center h-full text-gray-500">
-              Sorry, we couldn’t find any products for this filter.
-            </div>
-          )}
+
+            <Filter
+              categories={categories}
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
+              selectedSort={selectedSort}
+              setSelectedSort={setSelectedSort}
+            />
+          </div>
+
+          {/* Products Grid */}
+          <div className="w-full lg:w-full h-[730px] overflow-y-auto overflow-x-hidden">
+            {filteredProducts.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-0.5 gap-y-0.5">
+                {filteredProducts.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    id={product.id}
+                    image={product.image}
+                    name={product.name}
+                    value={product.value}
+                    price={product.price}
+                    sku={product.sku}
+                  />
+                ))}
+              </div>
+            ) : (
+              !loading && ( // Show this message only if loading is false
+                <div className="flex items-center justify-center h-full text-gray-500">
+                  Sorry, we couldn’t find any products for this filter.
+                </div>
+              )
+            )}
+          </div>
         </div>
       </div>
     </div>
