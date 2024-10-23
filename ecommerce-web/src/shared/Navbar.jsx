@@ -111,7 +111,7 @@ const Navbar = () => {
               Cart Overview
             </h1>
 
-            {/* Cart Items: Make this part scrollable */}
+            
             <div className="flex-1 overflow-y-auto mb-4">
               {cartItems && cartItems.length > 0 ? (
                 cartItems.map((item) => (
@@ -122,7 +122,7 @@ const Navbar = () => {
                     <img
                       src={item.image}
                       alt={item.name}
-                      className="w-16 h-16 object-cover rounded-md"
+                      className="w-16 h-16 object-cover rounded-md shadow-sm"
                     />
                     <div className="flex-1">
                       <h2 className="font-semibold text-gray-700">

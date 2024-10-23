@@ -1,20 +1,29 @@
-import { useContext, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { IoChevronBack } from 'react-icons/io5';
 import GCashLogo from '../../../public/static/gcash-logo.svg';
 import BPILogo from '../../../public/static/bpi-logo.svg';
 import GCashQR from '../../../public/static/gcash-qr.jpg';
 import { CartContext } from '../components/CartContext.jsx';
+import axios from 'axios';
 
 const Checkout = () => {
   const { cartItems, subtotal } = useContext(CartContext);
+
+  // State for Regions, Provinces, Cities, and Barangays
+  const [regions, setRegions] = useState([]);
+  const [provinces, setProvinces] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [barangays, setBarangays] = useState([]);
+
   const [formData, setFormData] = useState({
     email: '',
     firstName: '',
     lastName: '',
     address: '',
-    barangay: '',
-    city: '',
-    province: '',
+    barangayCode: '',
+    cityCode: '',
+    provinceCode: '',
+    regionCode: '',
     postalCode: '',
     phone: '',
     paymentMethod: '',
@@ -22,9 +31,97 @@ const Checkout = () => {
 
   const total = subtotal + 150;
 
-  const handleInputChange = (e) => {
+  // Fetch regions when the component mounts
+  useEffect(() => {
+    fetchRegions();
+  }, []);
+
+  // Fetch regions from PSGC API
+  const fetchRegions = async () => {
+    try {
+      const response = await axios.get('https://psgc.gitlab.io/api/regions/');
+      setRegions(response.data);
+    } catch (error) {
+      console.error('Error fetching regions:', error);
+    }
+  };
+
+  // Fetch provinces based on the selected region
+  const fetchProvinces = async (regionCode) => {
+    if (!regionCode) return;
+    try {
+      const response = await axios.get(`https://psgc.gitlab.io/api/provinces/?regionCode=${regionCode}`);
+      setProvinces(response.data);
+      setCities([]); // Clear cities when changing provinces
+      setBarangays([]); // Clear barangays when changing provinces
+    } catch (error) {
+      console.error('Error fetching provinces:', error);
+    }
+  };
+
+  // Fetch cities/municipalities based on the selected province
+  const fetchCities = async (provinceCode) => {
+    if (!provinceCode) return;
+    try {
+      const response = await axios.get(`https://psgc.gitlab.io/api/cities-municipalities/?provinceCode=${provinceCode}`);
+      setCities(response.data);
+      setBarangays([]); // Clear barangays when changing cities
+    } catch (error) {
+      console.error('Error fetching cities:', error);
+    }
+  };
+
+  // Fetch barangays based on the selected city/municipality
+  const fetchBarangays = async (cityCode) => {
+    if (!cityCode) return;
+    try {
+      const response = await axios.get(`https://psgc.gitlab.io/api/barangays/?cityCode=${cityCode}`);
+      setBarangays(response.data);
+    } catch (error) {
+      console.error('Error fetching barangays:', error);
+    }
+  };
+
+  // Handle input changes
+  const handleInputChange = async (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+
+    // Update formData state correctly, maintaining all values and clearing dependent fields
+    setFormData((prevFormData) => {
+      let updatedData = { ...prevFormData, [name]: value };
+      
+      
+      if (name === 'regionCode') {
+        updatedData = {
+          ...updatedData,
+          provinceCode: '',
+          cityCode: '',
+          barangayCode: '',
+        };
+      } else if (name === 'provinceCode') {
+        updatedData = {
+          ...updatedData,
+          cityCode: '',
+          barangayCode: '',
+        };
+      } else if (name === 'cityCode') {
+        updatedData = {
+          ...updatedData,
+          barangayCode: '',
+        };
+      }
+
+      return updatedData;
+    });
+
+    // Fetch options based on user input
+    if (name === 'regionCode') {
+      await fetchProvinces(value);
+    } else if (name === 'provinceCode') {
+      await fetchCities(value);
+    } else if (name === 'cityCode') {
+      await fetchBarangays(value);
+    }
   };
 
   const handleSubmit = () => {
@@ -85,77 +182,133 @@ const Checkout = () => {
               placeholder="Address"
               className="w-full p-3 mb-4 border rounded-md"
             />
-            <div className="flex gap-4 mb-4">
-              <input
-                type="text"
-                name="barangay"
-                value={formData.barangay}
+
+            {/* Region Dropdown */}
+            <div className="mb-4">
+            
+              <select
+                id="region"
+                name="regionCode"
+                value={formData.regionCode}
                 onChange={handleInputChange}
-                placeholder="Barangay"
-                className="w-1/2 p-3 border rounded-md"
-              />
-              <input
-                type="text"
-                name="city"
-                value={formData.city}
-                onChange={handleInputChange}
-                placeholder="City"
-                className="w-1/2 p-3 border rounded-md"
-              />
+                className="w-full p-3 border rounded-md text-gray-400"
+              >
+                <option value="">Select Region</option>
+                {regions.map((region) => (
+                  <option key={region.code} value={region.code}>
+                    {region.name}
+                  </option>
+                ))}
+              </select>
             </div>
-            <div className="flex gap-4 mb-4">
-              <input
-                type="text"
-                name="province"
-                value={formData.province}
+
+            {/* Province Dropdown */}
+            <div className="mb-4">
+              <select
+                id="province"
+                name="provinceCode"
+                value={formData.provinceCode}
                 onChange={handleInputChange}
-                placeholder="Province"
-                className="w-1/2 p-3 border rounded-md"
-              />
-              <input
-                type="text"
-                name="postalCode"
-                value={formData.postalCode}
-                onChange={handleInputChange}
-                placeholder="Postal Code"
-                className="w-1/2 p-3 border rounded-md"
-              />
+                className="w-full p-3 border rounded-md text-gray-400"
+                disabled={!formData.regionCode}
+              >
+                <option value="">Select Province</option>
+                {provinces.map((province) => (
+                  <option key={province.code} value={province.code}>
+                    {province.name}
+                  </option>
+                ))}
+              </select>
             </div>
+
+            {/* City Dropdown */}
+            <div className="mb-4">
+              
+              <select
+                id="city"
+                name="cityCode"
+                value={formData.cityCode}
+                onChange={handleInputChange}
+                className="w-full p-3 border rounded-md text-gray-400"
+                disabled={!formData.provinceCode}
+              >
+                <option value="">Select City/Municipality</option>
+                {cities.map((city) => (
+                  <option key={city.code} value={city.code}>
+                    {city.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Barangay Dropdown */}
+            <div className="mb-4">
+              <select
+                id="barangay"
+                name="barangayCode"
+                value={formData.barangayCode}
+                onChange={handleInputChange}
+                className="w-full p-3 border rounded-md text-gray-400"
+                disabled={!formData.cityCode}
+              >
+                <option value="">Select Barangay</option>
+                {barangays.map((barangay) => (
+                  <option key={barangay.code} value={barangay.code}>
+                    {barangay.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <input
               type="text"
               name="phone"
               value={formData.phone}
               onChange={handleInputChange}
-              placeholder="Phone"
+              placeholder="Mobile Number (+63)"
               className="w-full p-3 mb-4 border rounded-md"
             />
           </div>
+
+          {/* Payment and Submit Button */}
           <div className="mb-6">
             <h2 className="text-xl font-bold mb-4 text-gray-500">Payment</h2>
             <div className="accordion overflow-hidden">
-              {/* gcash */}
-              <div className="border p-4 mb-4 cursor-pointer transition-all duration-700 ease-in-out" 
-                onClick={() => { setFormData({ ...formData, paymentMethod: formData.paymentMethod === 'gcash' ? '' : 'gcash' });
-                document.querySelector('.accordion').scrollIntoView({ behavior: 'smooth', block: 'center' }); }}
+              {/* Gcash Payment */}
+              <div
+                className="border p-4 mb-4 cursor-pointer transition-all duration-700 ease-in-out"
+                onClick={() => {
+                  setFormData({
+                    ...formData,
+                    paymentMethod: formData.paymentMethod === 'gcash' ? '' : 'gcash',
+                  });
+                }}
               >
                 <div className="flex justify-between items-center">
                   <span className="font-bold">Gcash</span>
                   <img src={GCashLogo} alt="GCash Logo" className="w-10" />
                 </div>
                 {formData.paymentMethod === 'gcash' && (
-                <div className="mt-4 transition-max-height duration-700 ease-in-out overflow-hidden max-h-[500px]">
-                  <p className="text-sm mb-2">Please scan the QR code below to complete the payment:</p>
-                  <img src={GCashQR} alt="GCash QR Code" className="w-32 h-32 mb-4" />
-                  <button className="bg-gray-600 hover:bg-gray-800 text-white py-2 px-4 rounded flex items-center gap-2">
-                    Upload receipt
-                  </button>
-                </div>
+                  <div className="mt-4">
+                    <p className="text-sm mb-2">Please scan the QR code below to complete the payment:</p>
+                    <img src={GCashQR} alt="GCash QR Code" className="w-32 h-32 mb-4" />
+                    <button className="bg-gray-600 hover:bg-gray-800 text-white py-2 px-4 rounded flex items-center gap-2">
+                      Upload receipt
+                    </button>
+                  </div>
                 )}
               </div>
-              {/* bank transfer */}
-              <div className="border p-4 mb-4 cursor-pointer transition-all duration-700 ease-in-out"
-                onClick={() => { setFormData({ ...formData, paymentMethod: formData.paymentMethod === 'bank' ? '' : 'bank' });
-                document.querySelector('.accordion').scrollIntoView({ behavior: 'smooth', block: 'center' }); }}>
+
+              {/* Bank Transfer */}
+              <div
+                className="border p-4 mb-4 cursor-pointer transition-all duration-700 ease-in-out"
+                onClick={() => {
+                  setFormData({
+                    ...formData,
+                    paymentMethod: formData.paymentMethod === 'bank' ? '' : 'bank',
+                  });
+                }}
+              >
                 <div className="flex justify-between items-center">
                   <span className="font-bold">Bank Transfer</span>
                   <img src={BPILogo} alt="Bank Transfer Logo" className="w-10" />
@@ -173,6 +326,7 @@ const Checkout = () => {
                 )}
               </div>
             </div>
+
             <button
               onClick={handleSubmit}
               className="w-full h-15 font-extrabold text-white py-2 px-4 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]"
@@ -184,16 +338,15 @@ const Checkout = () => {
 
         {/* Orders Section */}
         <div className="w-full lg:w-1/3 p-8 bg-alofa-pink flex flex-col justify-between h-full mx-auto shadow-sm shadow-slate-400">
-        {/* bg-gradient-to-b from-[#FF82AF] via-[#FF82AF] to-[#FFCED9] */}
           <h2 className="text-3xl font-extrabold font-body mb-6 text-white">Orders</h2>
           <div className="overflow-y-auto max-h-96 mb-4">
             {cartItems.map((item, index) => (
               <div key={index} className="flex items-center mb-4">
                 <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded mr-4 shadow-sm" />
                 <div className="flex justify-between w-full text-white">
-                <span>
-                  <span className="font-bold">{`${item.quantity}x`}</span>
-                  {` ${item.name}`}
+                  <span>
+                    <span className="font-bold">{`${item.quantity}x`}</span>
+                    {` ${item.name}`}
                   </span>
                   <span className="font-bold">{`₱${item.price.toFixed(2)}`}</span>
                 </div>
@@ -207,7 +360,6 @@ const Checkout = () => {
             </div>
             <div className="flex justify-between mb-2">
               <span>Shipping Fee</span>
-              {/* to edit; for placeholder only */}
               <span>₱150.00</span>
             </div>
             <div className="flex justify-between text-3xl font-bold">
