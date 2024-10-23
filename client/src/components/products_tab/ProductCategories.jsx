@@ -3,6 +3,7 @@ import DataTable from "../shared/DataTable";
 import { MdAddBox } from "react-icons/md";
 import Modal from "../modal/Modal";
 import { toast } from "sonner";
+import { ClipLoader } from "react-spinners";
 import {
   createCategory,
   getCategories,
@@ -17,6 +18,7 @@ const ProductCategories = () => {
   const [search, setSearch] = useState("");
   const [sortField, setSortField] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
+  const [loading, setLoading] = useState(false);
 
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -26,10 +28,13 @@ const ProductCategories = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
         const categoriesData = await getCategories();
         setCategories(categoriesData);
       } catch (error) {
         toast.error("Failed to fetch categories");
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
@@ -67,6 +72,7 @@ const ProductCategories = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!validateForm()) {
       toast.error("Please fill in the required fields.");
       return;
@@ -77,6 +83,8 @@ const ProductCategories = () => {
     };
 
     try {
+      setLoading(true);
+
       let response;
       if (selectedCategory) {
         response = await updateCategory(
@@ -94,6 +102,8 @@ const ProductCategories = () => {
       setCategories(categoriesData);
     } catch (error) {
       toast.error("Error saving category. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -108,6 +118,7 @@ const ProductCategories = () => {
     }
 
     try {
+      setLoading(true);
       await deleteCategory(category.product_category_id);
       toast.success("Category deleted successfully.");
       const categoriesData = await getCategories();
@@ -117,6 +128,8 @@ const ProductCategories = () => {
         error.response?.data?.message ||
           "Error deleting category. Cannot delete categories with associated products.",
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -203,103 +216,110 @@ const ProductCategories = () => {
 
   return (
     <Fragment>
-      <div className="flex flex-col gap-2">
-        <strong className="text-3xl font-bold text-gray-500">
-          Product Categories
-        </strong>
+      <div className="relative">
+        {loading && (
+          <div className="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center z-50">
+            <ClipLoader size={50} color="#E53E3E" loading={loading} />
+          </div>
+        )}
+        <div className="flex flex-col gap-2">
+          <strong className="text-3xl font-bold text-gray-500">
+            Product Categories
+          </strong>
 
-        {/* Filters Section */}
-        <div className="flex flex-row flex-wrap items-center justify-between mt-4 gap-4">
-          <div className="flex items-center gap-4">
-            {/* Search Input with Clear Button */}
-            <div className="relative flex items-center w-[300px]">
-              <input
-                type="text"
-                className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
-                placeholder="Search categories..."
-                value={search}
-                onChange={handleSearchChange}
-              />
-              {search && (
-                <button
-                  onClick={() => setSearch("")}
-                  className="ml-2 text-pink-500 hover:text-pink-700"
-                >
-                  Clear
-                </button>
-              )}
+          {/* Filters Section */}
+          <div className="flex flex-row flex-wrap items-center justify-between mt-4 gap-4">
+            <div className="flex items-center gap-4">
+              {/* Search Input with Clear Button */}
+              <div className="relative flex items-center w-[300px]">
+                <input
+                  type="text"
+                  className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+                  placeholder="Search categories..."
+                  value={search}
+                  onChange={handleSearchChange}
+                />
+                {search && (
+                  <button
+                    onClick={() => setSearch("")}
+                    className="ml-2 text-pink-500 hover:text-pink-700"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
             </div>
+
+            {/* Add Button */}
+            <MdAddBox
+              fontSize={40}
+              className="text-gray-400 mx-2 hover:text-pink-400 active:text-pink-500"
+              onClick={() => openModal()}
+            />
           </div>
 
-          {/* Add Button */}
-          <MdAddBox
-            fontSize={40}
-            className="text-gray-400 mx-2 hover:text-pink-400 active:text-pink-500"
-            onClick={() => openModal()}
+          <DataTable
+            data={filteredCategories}
+            columns={columns}
+            onEdit={openModal}
+            onDelete={handleDeleteCategory}
+            isProductCategory={true}
           />
         </div>
 
-        <DataTable
-          data={filteredCategories}
-          columns={columns}
-          onEdit={openModal}
-          onDelete={handleDeleteCategory}
-          isProductCategory={true}
-        />
+        <Modal isVisible={showModal} onClose={handleCloseModal}>
+          <form className="p-6" onSubmit={handleSubmit}>
+            <div className="flex flex-col gap-4">
+              <div className="font-extrabold text-3xl text-pink-400">
+                {selectedCategory ? "Edit Category" : "Add New Category"}
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="font-bold" htmlFor="category_name">
+                  Category Name:
+                </label>
+                <input
+                  type="text"
+                  name="category_name"
+                  id="category_name"
+                  placeholder="Category Name"
+                  value={category_name}
+                  onChange={handleInputChange}
+                  className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 ${
+                    errors.category_name ? "border-red-500" : ""
+                  }`}
+                />
+                {errors.category_name && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.category_name}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex flex-row justify-end gap-4">
+                <button
+                  type="submit"
+                  disabled={selectedCategory && !isFormModified()} // Disable if no changes
+                  className={`px-4 py-2 text-white bg-pink-400 rounded-lg hover:bg-pink-500 ${
+                    selectedCategory && !isFormModified()
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  }`}
+                >
+                  {selectedCategory ? "Update Category" : "Add Category"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCloseModal}
+                  className="px-4 py-2 text-white bg-gray-400 rounded-lg hover:bg-gray-500"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </form>
+        </Modal>
       </div>
-
-      <Modal isVisible={showModal} onClose={handleCloseModal}>
-        <form className="p-6" onSubmit={handleSubmit}>
-          <div className="flex flex-col gap-4">
-            <div className="font-extrabold text-3xl text-pink-400">
-              {selectedCategory ? "Edit Category" : "Add New Category"}
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label className="font-bold" htmlFor="category_name">
-                Category Name:
-              </label>
-              <input
-                type="text"
-                name="category_name"
-                id="category_name"
-                placeholder="Category Name"
-                value={category_name}
-                onChange={handleInputChange}
-                className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 ${
-                  errors.category_name ? "border-red-500" : ""
-                }`}
-              />
-              {errors.category_name && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.category_name}
-                </p>
-              )}
-            </div>
-
-            <div className="flex flex-row justify-end gap-4">
-              <button
-                type="submit"
-                disabled={selectedCategory && !isFormModified()} // Disable if no changes
-                className={`px-4 py-2 text-white bg-pink-400 rounded-lg hover:bg-pink-500 ${
-                  selectedCategory && !isFormModified()
-                    ? "opacity-50 cursor-not-allowed"
-                    : ""
-                }`}
-              >
-                {selectedCategory ? "Update Category" : "Add Category"}
-              </button>
-              <button
-                type="button"
-                onClick={handleCloseModal}
-                className="px-4 py-2 text-white bg-gray-400 rounded-lg hover:bg-gray-500"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </form>
-      </Modal>
     </Fragment>
   );
 };

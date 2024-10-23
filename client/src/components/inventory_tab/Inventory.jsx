@@ -2,12 +2,13 @@ import React, { Fragment, useState, useEffect } from "react";
 import DataTable from "../shared/DataTable";
 import { getInventory, getStatus, getAllProducts } from "../../api/products";
 import { FaArrowUp, FaArrowDown } from "react-icons/fa";
-
+import { ClipLoader } from "react-spinners";
 const Inventory = () => {
   const [inventory, setInventory] = useState([]);
   const [productStatuses, setProductStatuses] = useState([]);
   const [products, setProducts] = useState([]);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const [search, setSearch] = useState("");
   const [selectedProduct, setSelectedProduct] = useState("");
@@ -19,6 +20,7 @@ const Inventory = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
         const [inventoryData, statusesData, productsData] = await Promise.all([
           getInventory(),
           getStatus(),
@@ -29,6 +31,8 @@ const Inventory = () => {
         setProducts(productsData);
       } catch (err) {
         setError("Failed to fetch data");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -122,108 +126,115 @@ const Inventory = () => {
 
   return (
     <Fragment>
-      <div className="flex flex-col gap-2">
+      <div className="relative">
+        {loading && (
+          <div className="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center z-50">
+            <ClipLoader size={50} color="#E53E3E" loading={loading} />
+          </div>
+        )}
         <div className="flex flex-col gap-2">
-          <strong className="text-3xl font-bold text-gray-500">
-            Inventory
-          </strong>
+          <div className="flex flex-col gap-2">
+            <strong className="text-3xl font-bold text-gray-500">
+              Inventory
+            </strong>
 
-          {/* Filters Section */}
-          <div className="flex flex-row flex-wrap items-center gap-4 mt-4">
-            {/* Search Input with Clear Button */}
-            <div className="relative flex items-center w-[220px]">
-              <input
-                type="text"
-                className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
-                placeholder="Search inventory..."
-                value={search}
-                onChange={handleSearchChange}
-              />
-              {search && (
-                <button
-                  onClick={() => setSearch("")}
-                  className="ml-2 text-pink-500 hover:text-pink-700"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
+            {/* Filters Section */}
+            <div className="flex flex-row flex-wrap items-center gap-4 mt-4">
+              {/* Search Input with Clear Button */}
+              <div className="relative flex items-center w-[220px]">
+                <input
+                  type="text"
+                  className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+                  placeholder="Search inventory..."
+                  value={search}
+                  onChange={handleSearchChange}
+                />
+                {search && (
+                  <button
+                    onClick={() => setSearch("")}
+                    className="ml-2 text-pink-500 hover:text-pink-700"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
 
-            {/* Product Dropdown with Clear Button */}
-            <div className="relative flex items-center w-[220px]">
-              <select
-                value={selectedProduct}
-                onChange={handleProductSelect}
-                className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
-              >
-                <option value="">All Products</option>
-                {products.map((product) => (
-                  <option key={product.product_id} value={product.name}>
-                    {product.name}
-                  </option>
-                ))}
-              </select>
-              {selectedProduct && (
-                <button
-                  onClick={() => setSelectedProduct("")}
-                  className="ml-2 text-pink-500 hover:text-pink-700"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-
-            {/* Status Dropdown with Clear Button */}
-            <div className="flex items-center">
-              <div className="relative w-[200px]">
+              {/* Product Dropdown with Clear Button */}
+              <div className="relative flex items-center w-[220px]">
                 <select
-                  value={selectedStatus}
-                  onChange={handleStatusSelect}
+                  value={selectedProduct}
+                  onChange={handleProductSelect}
                   className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
                 >
-                  <option value="">All Statuses</option>
-                  {productStatuses.map((status) => (
-                    <option
-                      key={status.product_status_id}
-                      value={status.product_status_id}
-                    >
-                      {status.description}
+                  <option value="">All Products</option>
+                  {products.map((product) => (
+                    <option key={product.product_id} value={product.name}>
+                      {product.name}
                     </option>
                   ))}
                 </select>
+                {selectedProduct && (
+                  <button
+                    onClick={() => setSelectedProduct("")}
+                    className="ml-2 text-pink-500 hover:text-pink-700"
+                  >
+                    Clear
+                  </button>
+                )}
               </div>
-              {selectedStatus && (
-                <button
-                  onClick={() => setSelectedStatus("")}
-                  className="ml-2 text-pink-500 hover:text-pink-700"
-                >
-                  Clear
-                </button>
+
+              {/* Status Dropdown with Clear Button */}
+              <div className="flex items-center">
+                <div className="relative w-[200px]">
+                  <select
+                    value={selectedStatus}
+                    onChange={handleStatusSelect}
+                    className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+                  >
+                    <option value="">All Statuses</option>
+                    {productStatuses.map((status) => (
+                      <option
+                        key={status.product_status_id}
+                        value={status.product_status_id}
+                      >
+                        {status.description}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {selectedStatus && (
+                  <button
+                    onClick={() => setSelectedStatus("")}
+                    className="ml-2 text-pink-500 hover:text-pink-700"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+
+              {/* Checkbox for Show/Hide Archived */}
+              {selectedStatus === "" && (
+                <div className="flex items-center ml-4">
+                  <input
+                    type="checkbox"
+                    checked={showArchived}
+                    onChange={(e) => setShowArchived(e.target.checked)}
+                    className="h-5 w-5 accent-pink-500"
+                  />
+                  <label className="ml-2 font-semibold text-gray-700">
+                    {showArchived ? "Hide Archived" : "Show Archived"}
+                  </label>
+                </div>
               )}
             </div>
 
-            {/* Checkbox for Show/Hide Archived */}
-            {selectedStatus === "" && (
-              <div className="flex items-center ml-4">
-                <input
-                  type="checkbox"
-                  checked={showArchived}
-                  onChange={(e) => setShowArchived(e.target.checked)}
-                  className="h-5 w-5 accent-pink-500"
-                />
-                <label className="ml-2 font-semibold text-gray-700">
-                  {showArchived ? "Hide Archived" : "Show Archived"}
-                </label>
-              </div>
-            )}
+            {/* DataTable */}
+            <DataTable
+              data={processedInventory}
+              columns={columns}
+              isInventory={true}
+            />
           </div>
-
-          {/* DataTable */}
-          <DataTable
-            data={processedInventory}
-            columns={columns}
-            isInventory={true}
-          />
         </div>
       </div>
     </Fragment>

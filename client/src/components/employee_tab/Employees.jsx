@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { MdAddBox } from "react-icons/md";
 import { toast } from "sonner";
+import { ClipLoader } from "react-spinners";
 import {
   getEmployees,
   getRoles,
   createEmployee,
   updateEmployee,
-  archiveEmployee,
   getEmployeeStatus,
 } from "../../api/employees";
 import { validateEmployeeForm } from "../../lib/consts/utils/validationUtils";
@@ -18,12 +18,12 @@ const Employees = () => {
   const [roles, setRoles] = useState([]);
   const [statuses, setStatuses] = useState([]);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [originalEmployeeData, setOriginalEmployeeData] = useState(null);
 
   const [search, setSearch] = useState("");
   const [selectedRole, setSelectedRole] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
-  const [showArchived, setShowArchived] = useState(false);
 
   const [sortField, setSortField] = useState("employee_id");
   const [sortOrder, setSortOrder] = useState("asc");
@@ -45,6 +45,7 @@ const Employees = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
         const employeesData = await getEmployees();
         const employeeStatusData = await getEmployeeStatus();
         let rolesData = await getRoles();
@@ -58,6 +59,8 @@ const Employees = () => {
         setStatuses(employeeStatusData);
       } catch (err) {
         setError("Failed to fetch data");
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
@@ -178,6 +181,7 @@ const Employees = () => {
     };
 
     try {
+      setLoading(true);
       const response = await createEmployee(newEmployee);
       setIsModalVisible(false);
       const employeesData = await getEmployees();
@@ -185,6 +189,8 @@ const Employees = () => {
       toast.success("Employee added successfully");
     } catch (error) {
       toast.error("Failed to create employee.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -223,6 +229,7 @@ const Employees = () => {
     formData.append("status_id", statusId || selectedEmployee.status_id);
 
     try {
+      setLoading(true);
       await updateEmployee(selectedEmployee.employee_id, formData);
       setIsModalVisible(false);
       const employeesData = await getEmployees();
@@ -230,6 +237,8 @@ const Employees = () => {
       toast.success("Employee updated successfully!");
     } catch (error) {
       toast.error("Failed to update employee.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -264,10 +273,7 @@ const Employees = () => {
         : true;
       const matchesStatus = selectedStatus
         ? employee.status_id === parseInt(selectedStatus)
-        : !showArchived // Hide archived if checkbox is checked
-          ? statuses.find((s) => s.status_id === employee.status_id)
-              ?.description !== "Archived"
-          : true;
+        : true;
 
       return matchesSearch && matchesRole && matchesStatus;
     })
@@ -288,144 +294,135 @@ const Employees = () => {
   });
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex flex-col">
-        {/* Employees Title */}
-        <strong className="text-3xl font-bold text-gray-500 mb-2">
-          Employees
-        </strong>
+    <div className="relative">
+      {loading && (
+        <div className="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center z-50">
+          <ClipLoader size={50} color="#E53E3E" loading={loading} />
+        </div>
+      )}
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-col">
+          {/* Employees Title */}
+          <strong className="text-3xl font-bold text-gray-500 mb-2">
+            Employees
+          </strong>
 
-        {/* Filters Row and Add Button */}
-        <div className="flex flex-wrap items-center gap-4 mb-0 justify-between">
-          <div className="flex items-center gap-4">
-            {/* Search Input with Clear Button */}
-            <div className="flex items-center relative w-[300px]">
-              <input
-                type="text"
-                placeholder="Search by name..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
-              />
-              {search && (
-                <button
-                  onClick={() => setSearch("")}
-                  className="ml-2 text-pink-500 hover:text-pink-700"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-
-            {/* Role Filter with Clear Button */}
-            <div className="flex items-center relative w-[200px]">
-              <select
-                value={selectedRole}
-                onChange={(e) => setSelectedRole(e.target.value)}
-                className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
-              >
-                <option value="">All Roles</option>
-                {roles.map((role) => (
-                  <option key={role.role_id} value={role.role_id}>
-                    {role.name}
-                  </option>
-                ))}
-              </select>
-              {selectedRole && (
-                <button
-                  onClick={() => setSelectedRole("")}
-                  className="ml-2 text-pink-500 hover:text-pink-700"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-
-            {/* Status Filter with Clear Button */}
-            <div className="flex items-center relative w-[200px]">
-              <select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-                className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
-              >
-                <option value="">All Statuses</option>
-                {statuses.map((status) => (
-                  <option key={status.status_id} value={status.status_id}>
-                    {status.description}
-                  </option>
-                ))}
-              </select>
-              {selectedStatus && (
-                <button
-                  onClick={() => setSelectedStatus("")}
-                  className="ml-2 text-pink-500 hover:text-pink-700"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-
-            {/* Checkbox for Show/Hide Archived */}
-            {selectedStatus === "" && (
-              <div className="flex items-center ml-4">
+          {/* Filters Row and Add Button */}
+          <div className="flex flex-wrap items-center gap-4 mb-0 justify-between">
+            <div className="flex items-center gap-4">
+              {/* Search Input with Clear Button */}
+              <div className="flex items-center relative w-[300px]">
                 <input
-                  type="checkbox"
-                  checked={showArchived}
-                  onChange={(e) => setShowArchived(e.target.checked)}
-                  className="h-5 w-5 accent-pink-500"
+                  type="text"
+                  placeholder="Search by name..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
                 />
-                <label className="ml-2 font-semibold text-gray-700">
-                  {showArchived ? "Hide Archived" : "Show Archived"}
-                </label>
+                {search && (
+                  <button
+                    onClick={() => setSearch("")}
+                    className="ml-2 text-pink-500 hover:text-pink-700"
+                  >
+                    Clear
+                  </button>
+                )}
               </div>
-            )}
+
+              {/* Role Filter with Clear Button */}
+              <div className="flex items-center relative w-[200px]">
+                <select
+                  value={selectedRole}
+                  onChange={(e) => setSelectedRole(e.target.value)}
+                  className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+                >
+                  <option value="">All Roles</option>
+                  {roles.map((role) => (
+                    <option key={role.role_id} value={role.role_id}>
+                      {role.name}
+                    </option>
+                  ))}
+                </select>
+                {selectedRole && (
+                  <button
+                    onClick={() => setSelectedRole("")}
+                    className="ml-2 text-pink-500 hover:text-pink-700"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+
+              {/* Status Filter with Clear Button */}
+              <div className="flex items-center relative w-[200px]">
+                <select
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+                >
+                  <option value="">All Statuses</option>
+                  {statuses.map((status) => (
+                    <option key={status.status_id} value={status.status_id}>
+                      {status.description}
+                    </option>
+                  ))}
+                </select>
+                {selectedStatus && (
+                  <button
+                    onClick={() => setSelectedStatus("")}
+                    className="ml-2 text-pink-500 hover:text-pink-700"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Add Employee Button */}
+            <MdAddBox
+              fontSize={40}
+              className="text-gray-400 hover:text-pink-400 active:text-pink-500 cursor-pointer"
+              onClick={() => {
+                setSelectedEmployee(null);
+                resetForm();
+                setIsModalVisible(true);
+              }}
+            />
           </div>
 
-          {/* Add Employee Button */}
-          <MdAddBox
-            fontSize={40}
-            className="text-gray-400 hover:text-pink-400 active:text-pink-500 cursor-pointer"
-            onClick={() => {
-              setSelectedEmployee(null);
-              resetForm();
-              setIsModalVisible(true);
-            }}
+          {/* Employee Table */}
+          <EmployeeTable
+            sortedEmployees={sortedEmployees}
+            onEdit={handleEdit}
+            sortField={sortField}
+            sortOrder={sortOrder}
+            handleColumnSort={handleColumnSort}
+            className="mt-2"
           />
         </div>
 
-        {/* Employee Table */}
-        <EmployeeTable
-          sortedEmployees={sortedEmployees}
-          onEdit={handleEdit}
-          onArchive={archiveEmployee}
-          sortField={sortField}
-          sortOrder={sortOrder}
-          handleColumnSort={handleColumnSort}
-          className="mt-2"
+        <EmployeeForm
+          isVisible={isModalVisible}
+          handleCloseModal={handleCloseModal}
+          handleUpdateEmployee={handleUpdateEmployee}
+          handleAddEmployee={handleAddEmployee}
+          handleInputChange={handleInputChange}
+          isFormModified={isFormModified}
+          selectedEmployee={selectedEmployee}
+          firstName={firstName}
+          lastName={lastName}
+          email={email}
+          contactNumber={contactNumber}
+          roleId={roleId}
+          statusId={statusId}
+          setStatusId={setStatusId}
+          username={username}
+          password={password}
+          roles={roles}
+          statuses={statuses}
+          errors={errors}
         />
       </div>
-
-      <EmployeeForm
-        isVisible={isModalVisible}
-        handleCloseModal={handleCloseModal}
-        handleUpdateEmployee={handleUpdateEmployee}
-        handleAddEmployee={handleAddEmployee}
-        handleInputChange={handleInputChange}
-        isFormModified={isFormModified}
-        selectedEmployee={selectedEmployee}
-        firstName={firstName}
-        lastName={lastName}
-        email={email}
-        contactNumber={contactNumber}
-        roleId={roleId}
-        statusId={statusId}
-        setStatusId={setStatusId}
-        username={username}
-        password={password}
-        roles={roles}
-        statuses={statuses}
-        errors={errors}
-      />
     </div>
   );
 };
