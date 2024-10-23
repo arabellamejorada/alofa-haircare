@@ -163,7 +163,6 @@ const SupplierForm = ({
                   Select Status
                 </option>
                 <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
                 <option value="Pending">Pending</option>
                 <option value="Archived">Archived</option>
               </select>

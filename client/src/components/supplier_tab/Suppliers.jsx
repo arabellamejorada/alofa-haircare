@@ -2,6 +2,7 @@ import React, { Fragment, useEffect, useState } from "react";
 import { MdAddBox } from "react-icons/md";
 import SupplierTable from "./SupplierTable";
 import SupplierForm from "./SupplierForm";
+import ConfirmModal from "../shared/ConfirmModal";
 import { toast } from "sonner";
 import { ClipLoader } from "react-spinners";
 import {
@@ -32,6 +33,11 @@ const Suppliers = () => {
   const [selectedStatus, setSelectedStatus] = useState("");
   const [showArchived, setShowArchived] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [confirmMessage, setConfirmMessage] = useState("");
+  const [confirmAction, setConfirmAction] = useState(null);
+
   // Supplier form fields
   const [supplierFormData, setSupplierFormData] = useState({
     supplier_name: "",
@@ -162,7 +168,11 @@ const Suppliers = () => {
 
   const handleArchiveSupplier = async (supplier) => {
     if (!supplier) return;
-    if (window.confirm("Are you sure you want to archive this supplier?")) {
+
+    setConfirmMessage(
+      `Are you sure you want to archive ${supplier.supplier_name}?`,
+    );
+    setConfirmAction(() => async () => {
       try {
         setLoading(true);
         await archiveSupplier(supplier.supplier_id);
@@ -173,7 +183,19 @@ const Suppliers = () => {
         toast.error("Failed to archive supplier");
       } finally {
         setLoading(false);
+        setIsConfirmModalOpen(false);
       }
+    });
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleConfirmClose = () => {
+    setIsConfirmModalOpen(false);
+  };
+
+  const handleConfirm = () => {
+    if (confirmAction) {
+      confirmAction();
     }
   };
 
@@ -273,7 +295,6 @@ const Suppliers = () => {
                   >
                     <option value="">All Statuses</option>
                     <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
                     <option value="Pending">Pending</option>
                     <option value="Archived">Archived</option>
                   </select>
@@ -333,6 +354,13 @@ const Suppliers = () => {
           errors={errors}
         />
       </div>
+
+      <ConfirmModal
+        isOpen={isConfirmModalOpen}
+        onClose={handleConfirmClose}
+        onConfirm={handleConfirm}
+        message={confirmMessage}
+      />
     </Fragment>
   );
 };
