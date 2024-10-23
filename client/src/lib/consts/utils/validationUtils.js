@@ -51,31 +51,65 @@ export const validateQuantity = (quantity, stock) => {
 };
 
 
-// Function to validate product variation form
-export const validateAddProductVariationForm = ({
-  product_id,
-  variations,
-}) => {
+// Function to validate product form data
+export const validateProductForm = (productFormData) => {
   const errors = {};
 
-  // Validate that a product is selected
-  if (!validateName(product_id)) errors.product_id = "Product must be selected";
+  // Validate product name
+  if (!validateName(productFormData.product_name)) {
+    errors.product_name = "Product name is required";
+  }
 
-  // Iterate through each variation for validation
-  const variationErrors = variations.map((variation, index) => {
-    const error = {};
-    if (!validateType(variation.type)) error.type = `Variation ${index + 1}: Type is required`;
-    if (!validateValue(variation.value)) error.value = `Variation ${index + 1}: Value is required`;
-    if (!validateSku(variation.sku)) error.sku = `Variation ${index + 1}: SKU is invalid`;
-    if (!validateUnitPrice(variation.unit_price)) error.unit_price = `Variation ${index + 1}: Unit price must be positive`;
-    if (variation.image && !validateImage(variation.image)) error.image = `Variation ${index + 1}: Invalid image format`;
-    return error;
-  });
+  // Validate product description
+  if (!validateDescription(productFormData.product_description)) {
+    errors.product_description = "Product description is required";
+  }
 
-  errors.variations = variationErrors;
+  // Validate product status
+  if (!validateStatus(productFormData.product_status)) {
+    errors.product_status = "Please select a status";
+  }
+
+  // Validate product category
+  if (!validateCategory(productFormData.product_category)) {
+    errors.product_category = "Please select a category";
+  }
 
   return errors;
 };
+
+
+export const validateAddProductVariationForm = (variations) => {
+  const errors = [];
+  variations.forEach((variation, index) => {
+    const error = {};
+
+    // Validate type
+    if (!variation.type.trim()) {
+      error.type = "Select a type";
+    }
+
+    // Validate value only if type is not "Default"
+    if (variation.type !== "Default" && !variation.value.trim()) {
+      error.value = "Variation value is required";
+    }
+
+    // Validate unit price (ensure it isn't undefined or null, but allow 0)
+    if (variation.unit_price === undefined || variation.unit_price === null || variation.unit_price === '') {
+      error.unit_price = "Price is required";
+    }
+
+    // Only add to errors array if there's actually an error
+    if (Object.keys(error).length > 0) {
+      errors[index] = error;
+    } else {
+      errors[index] = {}; // To maintain the structure but indicate no errors
+    }
+  });
+
+  return errors;
+};
+
 
 export const validateEditProductVariationForm = ({
   unit_price,
@@ -132,20 +166,6 @@ export const validateSupplierForm = ({
   };
 };
 
-// Function to validate product form data
-export const validateProductForm = ({
-  product_name,
-  product_description,
-  product_status,
-  product_category,
-}) => {
-  return {
-    product_name: validateName(product_name) ? "" : "Product name is required",
-    product_description: validateDescription(product_description) ? "" : "Product description is required",
-    product_status: validateStatus(product_status) ? "" : "Status is required",
-    product_category: validateCategory(product_category) ? "" : "Category is required",
-  };
-};
 
 export const validateStockInForm = ({
   supplier_id,
@@ -187,3 +207,4 @@ export const validateStockOutForm = ({
 
   return errors;
 };
+
