@@ -3,6 +3,7 @@ import EditProductVariationModal from "./EditProductVariationModal";
 import ProductVariationTable from "./ProductVariationTable";
 import FilterProductsAndVariationsTable from "../FilterProductsAndVariationsTable";
 import { toast } from "sonner";
+import { ClipLoader } from "react-spinners";
 import {
   getAllProductVariations,
   getAllProducts,
@@ -21,14 +22,13 @@ const VariationsTab = () => {
   const [product_variations, setProductVariations] = useState([]);
   const [products, setProducts] = useState([]);
   const [statuses, setStatus] = useState([]);
-  const [activeTab, setActiveTab] = useState("view");
   const [originalProductData, setOriginalProductData] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const [search, setSearch] = useState("");
   const [sortField, setSortField] = useState("variation_id");
   const [sortOrder, setSortOrder] = useState("asc");
   const [errors, setErrors] = useState({});
-  const [selectedProduct, setSelectedProduct] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [showArchived, setShowArchived] = useState(false);
 
@@ -42,11 +42,11 @@ const VariationsTab = () => {
   const [unitPrice, setUnitPrice] = useState("");
   const [productStatusId, setProductStatusId] = useState("");
   const [image, setImage] = useState(null);
-  const [variations, setVariations] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
         const productVariationsData = await getAllProductVariations();
         const productsData = await getAllProducts();
         const statusData = await getStatus();
@@ -55,6 +55,8 @@ const VariationsTab = () => {
         setStatus(statusData);
       } catch (err) {
         toast.error("Error fetching product variations.");
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
@@ -170,6 +172,7 @@ const VariationsTab = () => {
     }
 
     try {
+      setLoading(true);
       const response = await updateProductVariation(
         selectedProductVariation.variation_id,
         formData,
@@ -182,6 +185,8 @@ const VariationsTab = () => {
     } catch (error) {
       console.error("Error updating product variation:", error);
       toast.error("Error updating product variation. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -214,6 +219,7 @@ const VariationsTab = () => {
     if (!isConfirmed) return;
 
     try {
+      setLoading(true);
       const response = await archiveProductVariation(
         selectedProductVariation.variation_id,
       );
@@ -223,6 +229,8 @@ const VariationsTab = () => {
       toast.success("Product variation archived successfully.");
     } catch (error) {
       console.error("Error archiving product variation: ", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -249,17 +257,13 @@ const VariationsTab = () => {
             .includes(search.toLowerCase())
         : true;
 
-      const matchesProduct = selectedProduct
-        ? variation.product_id === parseInt(selectedProduct)
-        : true;
-
       const matchesStatus = selectedStatus
         ? variation.product_status_id === parseInt(selectedStatus)
         : !showArchived
           ? variation.status_description.toLowerCase() !== "archived"
           : true;
 
-      return matchesSearch && matchesProduct && matchesStatus;
+      return matchesSearch && matchesStatus;
     })
     .sort((a, b) => {
       const aField = a[sortField] || "";
@@ -282,58 +286,65 @@ const VariationsTab = () => {
 
   return (
     <Fragment>
-      <div className="flex flex-col gap-2">
-        <div className="flex flex-row items-center justify-between">
-          <strong className="text-3xl font-bold text-gray-500">
-            Product Variations
-          </strong>
+      <div className="relative">
+        {loading && (
+          <div className="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center z-50">
+            <ClipLoader size={50} color="#E53E3E" loading={loading} />
+          </div>
+        )}
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-row items-center justify-between">
+            <strong className="text-3xl font-bold text-gray-500">
+              Product Variations
+            </strong>
+          </div>
+          {/* Filters Section */}
+          <FilterProductsAndVariationsTable
+            search={search}
+            setSearch={setSearch}
+            selectedStatus={selectedStatus}
+            setSelectedStatus={setSelectedStatus}
+            handleStatusChange={handleStatusChange}
+            statuses={statuses}
+            showArchived={showArchived}
+            setShowArchived={setShowArchived}
+            handleSearchChange={handleSearchChange}
+          />
+
+          <ProductVariationTable
+            filteredVariations={filteredVariations}
+            onEdit={handleEdit}
+            onArchive={handleArchive}
+            sortField={sortField}
+            sortOrder={sortOrder}
+            handleColumnSort={handleColumnSort}
+          />
+
+          {/* Edit Modal */}
+          <EditProductVariationModal
+            isEditModalVisible={isEditModalVisible}
+            handleUpdate={handleUpdate}
+            handleCloseModal={handleCloseModal}
+            handleInputChange={handleInputChange}
+            isFormModified={isFormModified}
+            setProductId={setProductId}
+            product_id={product_id}
+            products={products}
+            type={type}
+            setType={setType}
+            value={value}
+            setValue={setValue}
+            sku={sku}
+            unitPrice={unitPrice}
+            setUnitPrice={setUnitPrice}
+            image={image}
+            setImage={setImage}
+            productStatusId={productStatusId}
+            setProductStatusId={setProductStatusId}
+            statuses={statuses}
+            errors={errors}
+          />
         </div>
-        {/* Filters Section */}
-        <FilterProductsAndVariationsTable
-          search={search}
-          setSearch={setSearch}
-          selectedStatus={selectedStatus}
-          setSelectedStatus={setSelectedStatus}
-          handleStatusChange={handleStatusChange}
-          statuses={statuses}
-          showArchived={showArchived}
-          setShowArchived={setShowArchived}
-          handleSearchChange={handleSearchChange}
-        />
-
-        <ProductVariationTable
-          filteredVariations={filteredVariations}
-          onEdit={handleEdit}
-          onArchive={handleArchive}
-          sortField={sortField}
-          sortOrder={sortOrder}
-          handleColumnSort={handleColumnSort}
-        />
-
-        {/* Edit Modal */}
-        <EditProductVariationModal
-          isEditModalVisible={isEditModalVisible}
-          handleUpdate={handleUpdate}
-          handleCloseModal={handleCloseModal}
-          handleInputChange={handleInputChange}
-          isFormModified={isFormModified}
-          setProductId={setProductId}
-          product_id={product_id}
-          products={products}
-          type={type}
-          setType={setType}
-          value={value}
-          setValue={setValue}
-          sku={sku}
-          unitPrice={unitPrice}
-          setUnitPrice={setUnitPrice}
-          image={image}
-          setImage={setImage}
-          productStatusId={productStatusId}
-          setProductStatusId={setProductStatusId}
-          statuses={statuses}
-          errors={errors}
-        />
       </div>
     </Fragment>
   );

@@ -19,6 +19,7 @@ const DataTable = ({
   onDelete,
   isInventory,
   isProductCategory,
+  isEmployee,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 10;
@@ -103,37 +104,53 @@ const DataTable = ({
                 {!isInventory && (
                   <td className="text-center px-2 py-3 h-12 w-[8%]">
                     <div className="flex justify-center items-center gap-2 h-full">
-                      <div
-                        className="text-pink-500 hover:text-pink-600"
-                        onClick={() => onEdit(item)}
-                        role="button"
-                        tabIndex={0}
-                        aria-label="Edit"
-                      >
-                        <MdEditDocument fontSize={24} />
-                      </div>
-                      {isProductCategory ? (
-                        // Show delete icon if it's a product category
+                      {isEmployee ? (
+                        // Show only the Edit button if isEmployee is true
                         <div
                           className="text-pink-500 hover:text-pink-600"
-                          onClick={() => onDelete(item)} // Trigger delete action
+                          onClick={() => onEdit(item)}
                           role="button"
                           tabIndex={0}
-                          aria-label="Delete"
+                          aria-label="Edit"
                         >
-                          <MdDelete fontSize={24} />
+                          <MdEditDocument fontSize={24} />
                         </div>
                       ) : (
-                        // Show archive icon otherwise
-                        <div
-                          className="text-pink-500 hover:text-pink-600"
-                          onClick={() => onArchive(item)}
-                          role="button"
-                          tabIndex={0}
-                          aria-label="Archive"
-                        >
-                          <IoMdArchive fontSize={24} />
-                        </div>
+                        <>
+                          {/* Show Edit button */}
+                          <div
+                            className="text-pink-500 hover:text-pink-600"
+                            onClick={() => onEdit(item)}
+                            role="button"
+                            tabIndex={0}
+                            aria-label="Edit"
+                          >
+                            <MdEditDocument fontSize={24} />
+                          </div>
+
+                          {/* Show Delete or Archive button based on isProductCategory */}
+                          {isProductCategory ? (
+                            <div
+                              className="text-pink-500 hover:text-pink-600"
+                              onClick={() => onDelete(item)} // Trigger delete action
+                              role="button"
+                              tabIndex={0}
+                              aria-label="Delete"
+                            >
+                              <MdDelete fontSize={24} />
+                            </div>
+                          ) : (
+                            <div
+                              className="text-pink-500 hover:text-pink-600"
+                              onClick={() => onArchive(item)}
+                              role="button"
+                              tabIndex={0}
+                              aria-label="Archive"
+                            >
+                              <IoMdArchive fontSize={24} />
+                            </div>
+                          )}
+                        </>
                       )}
                     </div>
                   </td>

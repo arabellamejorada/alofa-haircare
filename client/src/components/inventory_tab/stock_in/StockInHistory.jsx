@@ -4,7 +4,7 @@ import StockHistoryTable from "../StockHistoryTable";
 import { IoIosArrowBack } from "react-icons/io";
 import { IoMdArrowDropdown } from "react-icons/io";
 import { getAllStockIn } from "../../../api/stockIn";
-
+import { ClipLoader } from "react-spinners";
 const StockInHistory = () => {
   const navigate = useNavigate();
   const [stockInData, setStockInData] = useState([]);
@@ -28,6 +28,7 @@ const StockInHistory = () => {
   useEffect(() => {
     const fetchStockInData = async () => {
       try {
+        setLoading(true);
         const response = await getAllStockIn();
         const dataWithIndex = response.data.map((item, index) => ({
           ...item,
@@ -121,124 +122,125 @@ const StockInHistory = () => {
   });
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex flex-row items-center gap-2">
-        <button onClick={() => navigate(-1)} aria-label="Go Back">
-          <IoIosArrowBack
-            className="text-pink-500 hover:text-pink-600"
-            fontSize={40}
-          />
-        </button>
-        <strong className="text-3xl font-bold text-gray-500">
-          Stock In History
-        </strong>
-      </div>
+    <div className="relative">
+      {loading && (
+        <div className="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center z-50">
+          <ClipLoader size={50} color="#E53E3E" loading={loading} />
+        </div>
+      )}
 
-      {/* Filters */}
-      <div className="flex flex-wrap items-center mt-4 gap-4">
-        {/* Date Filter */}
-        <div className="flex items-center">
-          <label
-            htmlFor="date-filter"
-            className="mr-2 font-semibold text-gray-700"
-          >
-            Date:
-          </label>
-          <input
-            id="date-filter"
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="border border-gray-300 rounded-md h-8 p-2 bg-white focus:outline-none focus:ring-2 focus:ring-pink-500"
-          />
-          {selectedDate && (
-            <button
-              onClick={() => setSelectedDate("")}
-              className="text-sm ml-2 text-pink-500 hover:text-pink-700"
-            >
-              Clear
-            </button>
-          )}
+      <div className="container mx-auto p-4">
+        <div className="flex flex-row items-center gap-2">
+          <button onClick={() => navigate(-1)} aria-label="Go Back">
+            <IoIosArrowBack
+              className="text-pink-500 hover:text-pink-600"
+              fontSize={40}
+            />
+          </button>
+          <strong className="text-3xl font-bold text-gray-500">
+            Stock In History
+          </strong>
         </div>
 
-        {/* Supplier Filter */}
-        <div className="flex items-center">
-          <label
-            htmlFor="supplier-filter"
-            className="mr-2 font-semibold text-gray-700"
-          >
-            Supplier:
-          </label>
-          <div className="relative">
-            <select
-              id="supplier-filter"
-              value={selectedSupplier}
-              onChange={(e) => setSelectedSupplier(e.target.value)}
-              className="w-[10rem] h-8 px-2 appearance-none border rounded-md bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300"
+        {/* Filters */}
+        <div className="flex flex-wrap items-center mt-4 gap-4">
+          {/* Date Filter */}
+          <div className="flex items-center">
+            <label
+              htmlFor="date-filter"
+              className="mr-2 font-semibold text-gray-700"
             >
-              <option value="">All Suppliers</option>
-              {supplierList.map((supplier, index) => (
-                <option key={index} value={supplier}>
-                  {supplier}
-                </option>
-              ))}
-            </select>
-            <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none" />
+              Date:
+            </label>
+            <input
+              id="date-filter"
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="border border-gray-300 rounded-md h-8 p-2 bg-white focus:outline-none focus:ring-2 focus:ring-pink-500"
+            />
+            {selectedDate && (
+              <button
+                onClick={() => setSelectedDate("")}
+                className="text-sm ml-2 text-pink-500 hover:text-pink-700"
+              >
+                Clear
+              </button>
+            )}
           </div>
-          {selectedSupplier && (
-            <button
-              onClick={() => setSelectedSupplier("")}
-              className="text-sm ml-2 text-pink-500 hover:text-pink-700"
+
+          {/* Supplier Filter */}
+          <div className="flex items-center">
+            <label
+              htmlFor="supplier-filter"
+              className="mr-2 font-semibold text-gray-700"
             >
-              Clear
-            </button>
-          )}
+              Supplier:
+            </label>
+            <div className="relative">
+              <select
+                id="supplier-filter"
+                value={selectedSupplier}
+                onChange={(e) => setSelectedSupplier(e.target.value)}
+                className="w-[10rem] h-8 px-2 appearance-none border rounded-md bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300"
+              >
+                <option value="">All Suppliers</option>
+                {supplierList.map((supplier, index) => (
+                  <option key={index} value={supplier}>
+                    {supplier}
+                  </option>
+                ))}
+              </select>
+              <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none" />
+            </div>
+            {selectedSupplier && (
+              <button
+                onClick={() => setSelectedSupplier("")}
+                className="text-sm ml-2 text-pink-500 hover:text-pink-700"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+
+          {/* Search Filter */}
+          <div className="flex items-center">
+            <label
+              htmlFor="search-filter"
+              className="mr-2 font-semibold text-gray-700"
+            >
+              Search:
+            </label>
+            <input
+              id="search-filter"
+              type="text"
+              placeholder="Search here..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full max-w-md h-10 px-4 border rounded-xl bg-gray-50 border-slate-300 focus:outline-none focus:border-pink-400 focus:bg-white"
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm("")}
+                className="text-sm ml-2 text-pink-500 hover:text-pink-700 focus:outline-none"
+              >
+                Clear
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Search Filter */}
-        <div className="flex items-center">
-          <label
-            htmlFor="search-filter"
-            className="mr-2 font-semibold text-gray-700"
-          >
-            Search:
-          </label>
-          <input
-            id="search-filter"
-            type="text"
-            placeholder="Search here..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full max-w-md h-10 px-4 border rounded-xl bg-gray-50 border-slate-300 focus:outline-none focus:border-pink-400 focus:bg-white"
-          />
-          {searchTerm && (
-            <button
-              onClick={() => setSearchTerm("")}
-              className="text-sm ml-2 text-pink-500 hover:text-pink-700 focus:outline-none"
-            >
-              Clear
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Table */}
-      <div className="mt-4">
-        {loading ? (
-          <p>Loading...</p>
-        ) : (
-          <StockHistoryTable
-            data={filteredData}
-            columns={columns}
-            isInventory={true}
-            onExpand={toggleRow}
-            expandedRows={expandedRows}
-            handleSort={handleSort}
-            sortField={sortField}
-            sortOrder={sortOrder}
-            isStockIn={true}
-          />
-        )}
+        <StockHistoryTable
+          data={filteredData}
+          columns={columns}
+          isInventory={true}
+          onExpand={toggleRow}
+          expandedRows={expandedRows}
+          handleSort={handleSort}
+          sortField={sortField}
+          sortOrder={sortOrder}
+          isStockIn={true}
+        />
       </div>
     </div>
   );

@@ -5,7 +5,6 @@ import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 const EmployeeTable = ({
   sortedEmployees,
   onEdit,
-  onArchive,
   sortField,
   sortOrder,
   handleColumnSort,
@@ -38,7 +37,7 @@ const EmployeeTable = ({
       data={sortedEmployees}
       columns={columns}
       onEdit={onEdit}
-      onArchive={onArchive}
+      isEmployee={true}
     />
   );
 };
