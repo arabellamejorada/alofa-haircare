@@ -53,12 +53,14 @@ const Products = () => {
           const product = products.find(
             (p) => p.product_id === variation.product_id,
           );
-          const imageName = variation.image?.split("/").pop();
+          const imageName = variation.image
+            ? variation.image.split("/").pop()
+            : null;
           return {
             id: variation.variation_id,
             image: imageName
               ? `http://localhost:3001/uploads/${imageName}`
-              : "/default-image.jpg",
+              : `https://via.placeholder.com/150?text=No+Image+Available`,
             name: `${product?.name || "Unnamed Product"}`,
             value: variation.value,
             price: parseFloat(variation.unit_price) || 0,

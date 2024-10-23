@@ -13,7 +13,11 @@ const ProductCard = ({ id, image, name, value, price, sku }) => {
     // Simulate a delay to show loading effect (you can remove this if unnecessary)
     setTimeout(() => {
       addToCart({ id, image, name, value, price });
-      toast.success(`${name} ${value} added to cart!`);
+      {
+        value != "N/A"
+          ? toast.success(`${name} ${value} added to cart!`)
+          : toast.success(`${name} added to cart!`);
+      }
       setIsAddingToCart(false);
     }, 500); // Add a delay to simulate server response, if needed
   };
@@ -36,8 +40,9 @@ const ProductCard = ({ id, image, name, value, price, sku }) => {
             {name}
           </h3>
           <p className="text-md font-medium text-gray-700 h-10 overflow-hidden text-ellipsis whitespace-nowrap">
-            {value}
+            {value !== "N/A" ? value : ""}
           </p>
+
           <p className="text-xl font-bold text-gray-900 mt-2">₱{price}</p>
         </div>
         <div className="flex justify-end mt-4 px-4 pb-3">

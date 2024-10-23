@@ -129,7 +129,9 @@ const Navbar = () => {
                         {item.name}
                       </h2>
                       {item.value && (
-                        <p className="text-sm text-gray-500">{item.value}</p>
+                        <p className="text-sm text-gray-500">
+                          {item.value !== "N/A" ? item.value : ""}
+                        </p>
                       )}
                       <p className="text-sm text-gray-500">₱{item.price}</p>
                     </div>
