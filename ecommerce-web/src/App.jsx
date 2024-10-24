@@ -4,7 +4,9 @@ import {
   Route,
   useLocation,
 } from "react-router-dom";
+import { useEffect, useState, useContext } from "react";
 import { CartProvider } from "./components/CartContext.jsx";
+import { AuthProvider, AuthContext } from "./components/AuthContext.jsx"; // Import AuthProvider
 import Navbar from "./shared/Navbar.jsx";
 import Home from "./pages/Home.jsx";
 import Products from "./pages/Products.jsx";
@@ -19,11 +21,9 @@ import Profile from "./pages/CustomerProfile.jsx";
 import "./App.css";
 import { Toaster } from "sonner";
 
-// // Supabase
-// import { supabase } from "../../supabase/supabaseClient.jsx";
-
 const AppContent = () => {
   const location = useLocation();
+  const { setToken } = useContext(AuthContext); // Use setToken from AuthContext
 
   return (
     <>
@@ -37,7 +37,7 @@ const AppContent = () => {
         <Route path="/shoppingcart" element={<ShoppingCart />} />
         <Route path="/cartitem" element={<CartItem />} />
         <Route path="/checkout" element={<Checkout />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<Login setToken={setToken} />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/profile" element={<Profile />} />
       </Routes>
@@ -47,9 +47,11 @@ const AppContent = () => {
 
 const App = () => (
   <CartProvider>
-    <Router>
-      <AppContent />
-    </Router>
+    <AuthProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </AuthProvider>
   </CartProvider>
 );
 
