@@ -64,4 +64,4 @@ RESTORE DATABASE:
         psql -U postgres -d alofa -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
 
 Supabase Migrate:
-npm install @supabase/supabase-js
+npm install @supabase/supabase-js (install also in client)

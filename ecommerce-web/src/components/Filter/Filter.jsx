@@ -8,15 +8,17 @@ const Filter = ({
   setSelectedSort,
 }) => {
   return (
-    <div className="bg-white p-6 rounded-lg shadow-lg mb-6 w-full max-w-xs bg-opacity-70">
+
+    <div className="bg-white p-6 rounded-lg shadow-lg mb-6 w-full max-w-xs">
+
       <h2 className="text-3xl font-heading font-semibold gradient-heading mb-4">
         Filter
       </h2>
 
       {/* Category Filter */}
-      <div className="mb-4">
+      <div className="flex flex-col">
         <h3 className="text-lg font-medium text-gray-600">Category</h3>
-        <div className="ml-4 mt-2">
+        <div className="flex flex-col ml-6 mt-2">
           {categories.map((category, index) => (
             <label key={index} className="block text-gray-600 mb-2">
               <input
@@ -48,7 +50,7 @@ const Filter = ({
       {/* Price Filter */}
       <div>
         <h3 className="text-lg font-medium text-gray-600">Price</h3>
-        <div className="ml-4 mt-2">
+        <div className="ml-6 mt-2">
           <label className="block text-gray-600 mb-2">
             <input
               type="radio"

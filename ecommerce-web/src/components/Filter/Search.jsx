@@ -9,7 +9,7 @@ const Search = ({ searchQuery, setSearchQuery }) => {
         placeholder="Search products..."
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
-        className="p-2 border border-gray-300 rounded-lg w-full pr-10"
+        className="bg-white p-2 border border-pink-500 rounded-lg w-full pr-10 h-[2rem]"
       />
       {searchQuery && (
         <button

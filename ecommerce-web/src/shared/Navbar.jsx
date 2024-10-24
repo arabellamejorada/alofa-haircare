@@ -1,13 +1,17 @@
 import { useState, useContext } from "react";
 import { FaUserAlt, FaShoppingCart, FaTrashAlt } from "react-icons/fa";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { CartContext } from "../components/CartContext";
+import { AuthContext } from "../components/AuthContext"; // Import AuthContext
 
 const Navbar = () => {
   const [hovered, setHovered] = useState(false);
   const { cartItems, handleQuantityChange, handleDelete } =
     useContext(CartContext);
   const location = useLocation(); // Get the current route
+  const navigate = useNavigate(); // For navigation
+
+  const { token, setToken } = useContext(AuthContext); // Access token and setToken
 
   // Calculate total price
   const totalPrice = cartItems
@@ -17,6 +21,17 @@ const Navbar = () => {
   // Check if the current path is either '/login' or '/signup'
   const isAuthPage =
     location.pathname === "/login" || location.pathname === "/signup";
+
+  // Determine if user is logged in
+  const isLoggedIn = Boolean(token);
+
+  // Handle logout
+  const handleLogout = () => {
+    // Remove session token
+    setToken(null);
+    // Redirect to home page
+    navigate("/");
+  };
 
   return (
     <header className="bg-white shadow-md py-2px fixed top-0 w-full z-50 h-16">
@@ -64,36 +79,62 @@ const Navbar = () => {
             </Link>
           ) : (
             
+            // For non-auth pages
             <>
-              <Link
-                to="/profile"
-                className="hover:text-pink-700 flex items-center gap-2">
-                  <FaUserAlt />
-              </Link>
-              <Link
-                to="/login"
-                className="hover:text-pink-700 flex items-center gap-2"
-              >
-                Login
-              </Link>
-              <p>|</p>
-              <Link
-                to="/signup"
-                className="hover:text-pink-700 flex items-center gap-2"
-              >
-                Sign Up
-              </Link>
-
-              {/* Shopping Cart Icon */}
-              <div
-                className="relative"
-                onMouseEnter={() => setHovered(true)}
-                onMouseLeave={() => setHovered(false)}
-              >
-                <div className="text-[#FE699F] p-3 rounded-full transition-colors duration-300 hover:delay-700 hover:text-gray-500 cursor-pointer">
-                  <FaShoppingCart />
-                </div>
-              </div>
+              {isLoggedIn ? (
+                // When user is logged in
+                <>
+                  <Link
+                    to="/profile"
+                    className="hover:text-pink-700 flex items-center gap-2"
+                  >
+                    <FaUserAlt />
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="hover:text-pink-700 flex items-center gap-2"
+                  >
+                    Logout
+                  </button>
+                  {/* Shopping Cart Icon */}
+                  <div
+                    className="relative"
+                    onMouseEnter={() => setHovered(true)}
+                    onMouseLeave={() => setHovered(false)}
+                  >
+                    <div className="text-[#FE699F] p-3 rounded-full transition-colors duration-300 hover:delay-700 hover:text-gray-500 cursor-pointer">
+                      <FaShoppingCart />
+                    </div>
+                  </div>
+                </>
+              ) : (
+                // When user is not logged in
+                <>
+                  <Link
+                    to="/login"
+                    className="hover:text-pink-700 flex items-center gap-2"
+                  >
+                    Login
+                  </Link>
+                  <p>|</p>
+                  <Link
+                    to="/signup"
+                    className="hover:text-pink-700 flex items-center gap-2"
+                  >
+                    Sign Up
+                  </Link>
+                  {/* Shopping Cart Icon */}
+                  <div
+                    className="relative"
+                    onMouseEnter={() => setHovered(true)}
+                    onMouseLeave={() => setHovered(false)}
+                  >
+                    <div className="text-[#FE699F] p-3 rounded-full transition-colors duration-300 hover:delay-700 hover:text-gray-500 cursor-pointer">
+                      <FaShoppingCart />
+                    </div>
+                  </div>
+                </>
+              )}
             </>
           )}
         </div>
@@ -113,7 +154,6 @@ const Navbar = () => {
               Cart Overview
             </h1>
 
-            
             <div className="flex-1 overflow-y-auto mb-4">
               {cartItems && cartItems.length > 0 ? (
                 cartItems.map((item) => (
