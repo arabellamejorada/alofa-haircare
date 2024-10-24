@@ -2,7 +2,9 @@ import React, { Fragment, useEffect, useState } from "react";
 import { MdAddBox } from "react-icons/md";
 import SupplierTable from "./SupplierTable";
 import SupplierForm from "./SupplierForm";
+import ConfirmModal from "../shared/ConfirmModal";
 import { toast } from "sonner";
+import { ClipLoader } from "react-spinners";
 import {
   getAllSuppliers,
   createSupplier,
@@ -30,6 +32,11 @@ const Suppliers = () => {
   const [sortOrder, setSortOrder] = useState("asc");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [showArchived, setShowArchived] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [confirmMessage, setConfirmMessage] = useState("");
+  const [confirmAction, setConfirmAction] = useState(null);
 
   // Supplier form fields
   const [supplierFormData, setSupplierFormData] = useState({
@@ -46,10 +53,13 @@ const Suppliers = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
         const suppliersData = await getAllSuppliers();
         setSuppliers(suppliersData);
       } catch (error) {
         console.log(error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
@@ -118,6 +128,7 @@ const Suppliers = () => {
     }
 
     try {
+      setLoading(true);
       await createSupplier(supplierFormData);
       const updatedSuppliers = await getAllSuppliers();
       setSuppliers(updatedSuppliers);
@@ -126,6 +137,8 @@ const Suppliers = () => {
       resetForm();
     } catch (error) {
       toast.error("Failed to add supplier");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -139,6 +152,7 @@ const Suppliers = () => {
 
     if (!selectedSupplier) return;
     try {
+      setLoading(true);
       await updateSupplier(selectedSupplier.supplier_id, supplierFormData);
       const updatedSuppliers = await getAllSuppliers();
       setSuppliers(updatedSuppliers);
@@ -147,20 +161,41 @@ const Suppliers = () => {
       resetForm();
     } catch (error) {
       toast.error("Failed to update supplier");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleArchiveSupplier = async (supplier) => {
     if (!supplier) return;
-    if (window.confirm("Are you sure you want to archive this supplier?")) {
+
+    setConfirmMessage(
+      `Are you sure you want to archive ${supplier.supplier_name}?`,
+    );
+    setConfirmAction(() => async () => {
       try {
+        setLoading(true);
         await archiveSupplier(supplier.supplier_id);
         const updatedSuppliers = await getAllSuppliers();
         setSuppliers(updatedSuppliers);
         toast.success("Supplier archived successfully");
       } catch (error) {
         toast.error("Failed to archive supplier");
+      } finally {
+        setLoading(false);
+        setIsConfirmModalOpen(false);
       }
+    });
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleConfirmClose = () => {
+    setIsConfirmModalOpen(false);
+  };
+
+  const handleConfirm = () => {
+    if (confirmAction) {
+      confirmAction();
     }
   };
 
@@ -217,100 +252,114 @@ const Suppliers = () => {
 
   return (
     <Fragment>
-      <div className="flex flex-col gap-2">
+      <div className="relative">
+        {loading && (
+          <div className="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center z-50">
+            <ClipLoader size={50} color="#E53E3E" loading={loading} />
+          </div>
+        )}
+
         <div className="flex flex-col gap-2">
-          <strong className="text-3xl font-bold text-gray-500">
-            Suppliers
-          </strong>
+          <div className="flex flex-col gap-2">
+            <strong className="text-3xl font-bold text-gray-500">
+              Suppliers
+            </strong>
 
-          <div className="flex flex-row items-center justify-between gap-4 mt-4">
-            <div className="flex items-center gap-4">
-              {/* Search Input with Clear Button */}
-              <div className="relative flex items-center w-[300px]">
-                <input
-                  type="text"
-                  placeholder="Search suppliers..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
-                />
-                {search && (
-                  <button
-                    onClick={() => setSearch("")}
-                    className="ml-2 text-pink-500 hover:text-pink-700"
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
-
-              {/* Status Filter with Clear Button */}
-              <div className="relative flex items-center w-[200px]">
-                <select
-                  value={selectedStatus}
-                  onChange={(e) => setSelectedStatus(e.target.value)}
-                  className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
-                >
-                  <option value="">All Statuses</option>
-                  <option value="Active">Active</option>
-                  <option value="Inactive">Inactive</option>
-                  <option value="Pending">Pending</option>
-                  <option value="Archived">Archived</option>
-                </select>
-                {selectedStatus && (
-                  <button
-                    onClick={() => setSelectedStatus("")}
-                    className="ml-2 text-pink-500 hover:text-pink-700"
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
-
-              {/* Checkbox for Show/Hide Archived */}
-              {selectedStatus === "" && (
-                <div className="flex items-center ml-4">
+            <div className="flex flex-row items-center justify-between gap-4 mt-4">
+              <div className="flex items-center gap-4">
+                {/* Search Input with Clear Button */}
+                <div className="relative flex items-center w-[300px]">
                   <input
-                    type="checkbox"
-                    checked={showArchived}
-                    onChange={(e) => setShowArchived(e.target.checked)}
-                    className="h-5 w-5 accent-pink-500"
+                    type="text"
+                    placeholder="Search suppliers..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
                   />
-                  <label className="ml-2 font-semibold text-gray-700">
-                    {showArchived ? "Hide Archived" : "Show Archived"}
-                  </label>
+                  {search && (
+                    <button
+                      onClick={() => setSearch("")}
+                      className="ml-2 text-pink-500 hover:text-pink-700"
+                    >
+                      Clear
+                    </button>
+                  )}
                 </div>
-              )}
+
+                {/* Status Filter with Clear Button */}
+                <div className="relative flex items-center w-[200px]">
+                  <select
+                    value={selectedStatus}
+                    onChange={(e) => setSelectedStatus(e.target.value)}
+                    className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+                  >
+                    <option value="">All Statuses</option>
+                    <option value="Active">Active</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Archived">Archived</option>
+                  </select>
+                  {selectedStatus && (
+                    <button
+                      onClick={() => setSelectedStatus("")}
+                      className="ml-2 text-pink-500 hover:text-pink-700"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+
+                {/* Checkbox for Show/Hide Archived */}
+                {selectedStatus === "" && (
+                  <div className="flex items-center ml-4">
+                    <input
+                      type="checkbox"
+                      checked={showArchived}
+                      onChange={(e) => setShowArchived(e.target.checked)}
+                      className="h-5 w-5 accent-pink-500"
+                    />
+                    <label className="ml-2 font-semibold text-gray-700">
+                      {showArchived ? "Hide Archived" : "Show Archived"}
+                    </label>
+                  </div>
+                )}
+              </div>
+
+              <MdAddBox
+                fontSize={40}
+                className="text-gray-400 hover:text-pink-400 active:text-pink-500 cursor-pointer"
+                onClick={() => setIsModalVisible(true)}
+              />
             </div>
 
-            <MdAddBox
-              fontSize={40}
-              className="text-gray-400 hover:text-pink-400 active:text-pink-500 cursor-pointer"
-              onClick={() => setIsModalVisible(true)}
+            <SupplierTable
+              suppliers={filteredSuppliers}
+              onEdit={handleEdit}
+              onArchive={handleArchiveSupplier}
+              sortField={sortField}
+              sortOrder={sortOrder}
+              handleColumnSort={handleColumnSort}
             />
           </div>
-
-          <SupplierTable
-            suppliers={filteredSuppliers}
-            onEdit={handleEdit}
-            onArchive={handleArchiveSupplier}
-            sortField={sortField}
-            sortOrder={sortOrder}
-            handleColumnSort={handleColumnSort}
-          />
         </div>
+
+        <SupplierForm
+          isVisible={isModalVisible}
+          handleCloseModal={() => setIsModalVisible(false)}
+          selectedSupplier={selectedSupplier}
+          handleUpdateSupplier={handleUpdateSupplier}
+          handleAddSupplier={handleAddSupplier}
+          handleInputChange={handleInputChange}
+          supplierFormData={supplierFormData}
+          isFormModified={isFormModified}
+          errors={errors}
+        />
       </div>
 
-      <SupplierForm
-        isVisible={isModalVisible}
-        handleCloseModal={() => setIsModalVisible(false)}
-        selectedSupplier={selectedSupplier}
-        handleUpdateSupplier={handleUpdateSupplier}
-        handleAddSupplier={handleAddSupplier}
-        handleInputChange={handleInputChange}
-        supplierFormData={supplierFormData}
-        isFormModified={isFormModified}
-        errors={errors}
+      <ConfirmModal
+        isOpen={isConfirmModalOpen}
+        onClose={handleConfirmClose}
+        onConfirm={handleConfirm}
+        message={confirmMessage}
       />
     </Fragment>
   );
