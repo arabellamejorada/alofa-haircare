@@ -352,9 +352,7 @@ const Checkout = () => {
 
         {/* Orders Section */}
         <div className="w-full lg:w-1/3 p-8 bg-alofa-pink flex flex-col justify-between h-full mx-auto shadow-sm shadow-slate-400">
-          <h2 className="text-3xl font-extrabold font-body mb-6 text-white">
-            Orders
-          </h2>
+          <h2 className="text-3xl font-extrabold font-body mb-6 text-white">Orders</h2>
           <div className="overflow-y-auto max-h-auto mb-4">
             {cartItems.map((item, index) => (
               <div key={index} className="flex items-center mb-4">
