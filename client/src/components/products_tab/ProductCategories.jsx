@@ -293,6 +293,7 @@ const ProductCategories = () => {
                 {selectedCategory ? "Edit Category" : "Add New Category"}
               </div>
 
+
               <div className="flex flex-col gap-2">
                 <label className="font-bold" htmlFor="category_name">
                   Category Name:
@@ -339,6 +340,7 @@ const ProductCategories = () => {
           </form>
         </Modal>
       </div>
+
       <ConfirmModal
         isOpen={isConfirmModalOpen}
         onClose={handleConfirmClose}

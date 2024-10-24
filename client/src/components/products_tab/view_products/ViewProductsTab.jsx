@@ -40,6 +40,7 @@ const ProductsTab = () => {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
+
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [confirmMessage, setConfirmMessage] = useState("");
   const [additionalNote, setAdditionalNote] = useState("");
@@ -58,6 +59,7 @@ const ProductsTab = () => {
         setLoading(true);
         const productsData = await getAllProducts();
         const categoriesData = await getCategories();
+
         let statusData = await getStatus();
 
         // Map to only available and archived statuses
@@ -198,6 +200,7 @@ const ProductsTab = () => {
 
   const handleArchiveProduct = async (selectedProduct) => {
     if (!selectedProduct) return;
+
 
     setConfirmMessage(
       `Are you sure you want to archive ${selectedProduct.name}?`,
@@ -343,7 +346,6 @@ const ProductsTab = () => {
             isFormModified={isFormModified}
           />
         )}
-
         <ConfirmModal
           isOpen={isConfirmModalOpen}
           onClose={handleConfirmClose}
