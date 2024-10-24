@@ -12,7 +12,7 @@ const ProductCard = ({ id, image, name, value, price, sku }) => {
     setIsAddingToCart(true);
     // Simulate a delay to show loading effect (you can remove this if unnecessary)
     setTimeout(() => {
-      addToCart({ id, image, name, value, price });
+      addToCart({ id, image, name, value, price, sku });
       {
         value != "N/A"
           ? toast.success(`${name} ${value} added to cart!`)

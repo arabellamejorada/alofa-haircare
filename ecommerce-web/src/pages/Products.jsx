@@ -40,11 +40,70 @@ const Products = () => {
     fetchProducts();
   }, []);
 
+  // Effect for handling category change and clearing the search query
   useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      // Process product data and filter based on category, search, and sort
-      const processedProductData = productVariants
+    // Reset the search query when a new category is selected
+    if (selectedCategory !== "All") {
+      setSearchQuery("");
+    }
+
+    // Trigger loading when switching categories or clearing the search
+    if (selectedCategory !== "All" || searchQuery === "") {
+      setLoading(true);
+
+      setTimeout(() => {
+        // Process product data and filter based on category
+        const processedProductData = productVariants
+          .filter(
+            (variation) =>
+              variation.status_description.toLowerCase() !== "archived",
+          )
+          .map((variation) => {
+            const product = products.find(
+              (p) => p.product_id === variation.product_id,
+            );
+            const imageName = variation.image
+              ? variation.image.split("/").pop()
+              : null;
+            return {
+              id: variation.variation_id,
+              image: imageName
+                ? `http://localhost:3001/uploads/${imageName}`
+                : `https://via.placeholder.com/150?text=No+Image+Available`,
+              name: `${product?.name || "Unnamed Product"}`,
+              value: variation.value,
+              price: parseFloat(variation.unit_price) || 0,
+              category: variation.product_category || "Uncategorized",
+              sku: variation.sku,
+            };
+          });
+
+        // Filter products by selected category
+        let updatedProducts =
+          selectedCategory === "All"
+            ? processedProductData
+            : processedProductData.filter(
+                (product) => product.category === selectedCategory,
+              );
+
+        // Sort the products by price
+        if (selectedSort === "low-to-high") {
+          updatedProducts = updatedProducts.sort((a, b) => a.price - b.price);
+        } else if (selectedSort === "high-to-low") {
+          updatedProducts = updatedProducts.sort((a, b) => b.price - a.price);
+        }
+
+        setFilteredProducts(updatedProducts);
+        setLoading(false);
+      }, 500); // Add a delay to simulate loading time, if needed
+    }
+  }, [selectedCategory, selectedSort, productVariants, products]);
+
+  // Separate effect for handling search without showing loading
+  useEffect(() => {
+    // Only filter by search if there is a search query and no loading
+    if (searchQuery) {
+      const filteredProducts = productVariants
         .filter(
           (variation) =>
             variation.status_description.toLowerCase() !== "archived",
@@ -67,36 +126,16 @@ const Products = () => {
             category: variation.product_category || "Uncategorized",
             sku: variation.sku,
           };
-        });
-
-      // Filter products by category
-      let updatedProducts =
-        selectedCategory === "All"
-          ? processedProductData
-          : processedProductData.filter(
-              (product) => product.category === selectedCategory,
-            );
-
-      // Filter by search query
-      if (searchQuery) {
-        updatedProducts = updatedProducts.filter(
+        })
+        .filter(
           (product) =>
             product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             product.value.toLowerCase().includes(searchQuery.toLowerCase()),
         );
-      }
 
-      // Sort the products by price
-      if (selectedSort === "low-to-high") {
-        updatedProducts = updatedProducts.sort((a, b) => a.price - b.price);
-      } else if (selectedSort === "high-to-low") {
-        updatedProducts = updatedProducts.sort((a, b) => b.price - a.price);
-      }
-
-      setFilteredProducts(updatedProducts);
-      setLoading(false);
-    }, 500); // Add a delay to simulate loading time, if needed
-  }, [searchQuery, selectedCategory, selectedSort, productVariants, products]);
+      setFilteredProducts(filteredProducts);
+    }
+  }, [searchQuery, productVariants, products, loading]);
 
   return (
     <div className="relative">
