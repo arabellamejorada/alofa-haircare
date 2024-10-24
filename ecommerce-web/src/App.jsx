@@ -4,8 +4,9 @@ import {
   Route,
   useLocation,
 } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { CartProvider } from "./components/CartContext.jsx";
+import { AuthProvider, AuthContext } from "./components/AuthContext.jsx"; // Import AuthProvider
 import Navbar from "./shared/Navbar.jsx";
 import Home from "./pages/Home.jsx";
 import Products from "./pages/Products.jsx";
@@ -20,20 +21,7 @@ import { Toaster } from "sonner";
 
 const AppContent = () => {
   const location = useLocation();
-
-  // store session token
-  const [token, setToken] = useState(false);
-
-  if (token) {
-    sessionStorage.setItem("token", JSON.stringify(token));
-  }
-
-  useEffect(() => {
-    if (sessionStorage.getItem("token")) {
-      let data = JSON.parse(sessionStorage.getItem("token"));
-      setToken(data);
-    }
-  }, []);
+  const { setToken } = useContext(AuthContext); // Use setToken from AuthContext
 
   return (
     <>
@@ -56,9 +44,11 @@ const AppContent = () => {
 
 const App = () => (
   <CartProvider>
-    <Router>
-      <AppContent />
-    </Router>
+    <AuthProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </AuthProvider>
   </CartProvider>
 );
 
