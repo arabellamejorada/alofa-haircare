@@ -5,14 +5,22 @@ const createCustomer = async (req, res) => {
     const { first_name, last_name, email, contact_number, role_id } = req.body;
 
     try {
+        await client.query('BEGIN');
+
         const newCustomer = await client.query(
             `INSERT INTO customer (first_name, last_name, email, contact_number, role_id) 
             VALUES ($1, $2, $3, $4, $5) 
             RETURNING *`,
             [first_name, last_name, email, contact_number, role_id]
         );
+
+        //
+
+        await client.query('COMMIT');
+
         res.status(201).json(newCustomer.rows[0]);
     } catch (error) {
+        await client.query('ROLLBACK');
         console.error('Error creating customer:', error);
         res.status(400).json({ message: 'Error creating customer', error: error.message });
     } finally {
