@@ -80,12 +80,15 @@ const Navbar = () => {
           ) : (
             // For non-auth pages
             <>
-              <p>
-                <FaUserAlt />
-              </p>
               {isLoggedIn ? (
                 // When user is logged in
                 <>
+                  <Link
+                    to="/profile"
+                    className="hover:text-pink-700 flex items-center gap-2"
+                  >
+                    <FaUserAlt />
+                  </Link>
                   <button
                     onClick={handleLogout}
                     className="hover:text-pink-700 flex items-center gap-2"
@@ -150,7 +153,6 @@ const Navbar = () => {
               Cart Overview
             </h1>
 
-            
             <div className="flex-1 overflow-y-auto mb-4">
               {cartItems && cartItems.length > 0 ? (
                 cartItems.map((item) => (
