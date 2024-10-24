@@ -47,7 +47,6 @@ const createCustomer = async (req, res) => {
   }
 };
 
-// Get all customers with profile info
 const getAllCustomers = async (req, res) => {
   try {
     const { data, error } = await supabase
