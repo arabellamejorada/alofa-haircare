@@ -17,7 +17,7 @@ const CustomerProfileCard = () => {
         </div>
       </div>
       <div className="text-left">
-        <h3 className="mt-15 text-pink-500 text-lg font-semibold mb-2 gradient-heading">Profile</h3>
+        <h3 className="mt-15 text-alofa-pink-gradient text-lg font-semibold mb-2 gradient-heading">Profile</h3>
         <table className="text-gray-700 w-full">
           <tbody>
             <tr className="mb-1">
