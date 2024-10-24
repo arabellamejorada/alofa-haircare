@@ -1,6 +1,7 @@
 import React, { Fragment, useState, useEffect } from "react";
 import ProductTable from "./ProductTable";
 import EditProductModal from "./EditProductModal";
+import ConfirmModal from "../../shared/ConfirmModal";
 import FilterProductsAndVariationsTable from "../FilterProductsAndVariationsTable";
 import { toast } from "sonner";
 import { ClipLoader } from "react-spinners";
@@ -39,6 +40,12 @@ const ProductsTab = () => {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
+
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [confirmMessage, setConfirmMessage] = useState("");
+  const [additionalNote, setAdditionalNote] = useState("");
+  const [confirmAction, setConfirmAction] = useState(null);
+
   const [productFormData, setProductFormData] = useState({
     product_name: "",
     product_description: "",
@@ -52,7 +59,15 @@ const ProductsTab = () => {
         setLoading(true);
         const productsData = await getAllProducts();
         const categoriesData = await getCategories();
-        const statusData = await getStatus();
+
+        let statusData = await getStatus();
+
+        // Map to only available and archived statuses
+        statusData = statusData.filter(
+          (status) =>
+            status.description.toLowerCase() === "available" ||
+            status.description.toLowerCase() === "archived",
+        );
         setProducts(productsData);
         setCategories(categoriesData);
         setStatuses(statusData);
@@ -186,7 +201,14 @@ const ProductsTab = () => {
   const handleArchiveProduct = async (selectedProduct) => {
     if (!selectedProduct) return;
 
-    if (window.confirm("Are you sure you want to archive this product?")) {
+
+    setConfirmMessage(
+      `Are you sure you want to archive ${selectedProduct.name}?`,
+    );
+    setAdditionalNote(
+      "Note: Archiving product also archives its associated variations. ",
+    );
+    setConfirmAction(() => async () => {
       try {
         setLoading(true);
         const response = await archiveProduct(selectedProduct.product_id);
@@ -200,7 +222,19 @@ const ProductsTab = () => {
         toast.error("Failed to archive product");
       } finally {
         setLoading(false);
+        setIsConfirmModalOpen(false);
       }
+    });
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleConfirmClose = () => {
+    setIsConfirmModalOpen(false);
+  };
+
+  const handleConfirm = () => {
+    if (confirmAction) {
+      confirmAction();
     }
   };
 
@@ -312,6 +346,13 @@ const ProductsTab = () => {
             isFormModified={isFormModified}
           />
         )}
+        <ConfirmModal
+          isOpen={isConfirmModalOpen}
+          onClose={handleConfirmClose}
+          onConfirm={handleConfirm}
+          message={confirmMessage}
+          additionalNote={additionalNote}
+        />
       </div>
     </Fragment>
   );

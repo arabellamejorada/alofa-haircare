@@ -1,6 +1,8 @@
 import React, { Fragment, useState, useEffect } from "react";
 import EditProductVariationModal from "./EditProductVariationModal";
 import ProductVariationTable from "./ProductVariationTable";
+
+import ConfirmModal from "../../shared/ConfirmModal";
 import FilterProductsAndVariationsTable from "../FilterProductsAndVariationsTable";
 import { toast } from "sonner";
 import { ClipLoader } from "react-spinners";
@@ -32,6 +34,10 @@ const VariationsTab = () => {
   const [selectedStatus, setSelectedStatus] = useState("");
   const [showArchived, setShowArchived] = useState(false);
 
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [confirmMessage, setConfirmMessage] = useState("");
+  const [confirmAction, setConfirmAction] = useState(null);
+
   const [selectedProductVariation, setSelectedProductVariation] =
     useState(null);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
@@ -49,7 +55,14 @@ const VariationsTab = () => {
         setLoading(true);
         const productVariationsData = await getAllProductVariations();
         const productsData = await getAllProducts();
-        const statusData = await getStatus();
+
+        let statusData = await getStatus();
+        // Map to only available and archived statuses
+        statusData = statusData.filter(
+          (status) =>
+            status.description.toLowerCase() === "available" ||
+            status.description.toLowerCase() === "archived",
+        );
         setProductVariations(productVariationsData);
         setProducts(productsData);
         setStatus(statusData);
@@ -79,7 +92,7 @@ const VariationsTab = () => {
   };
 
   const validateField = (name, value) => {
-    console.log(`Validating ${name}: ${value}`);
+    // console.log(`Validating ${name}: ${value}`);
 
     let error = "";
     switch (name) {
@@ -107,8 +120,6 @@ const VariationsTab = () => {
 
   const handleInputChange = (e) => {
     const { name, value, files } = e.target;
-
-    console.log(`Field: ${name}, Value: ${value}, Type: ${typeof value}`);
 
     switch (name) {
       case "unit_price":
@@ -159,13 +170,8 @@ const VariationsTab = () => {
 
     const formData = new FormData();
 
-    // Append only modified fields
-    if (unitPrice !== selectedProductVariation.unit_price) {
-      formData.append("unit_price", unitPrice);
-    }
-    if (productStatusId !== selectedProductVariation.product_status_id) {
-      formData.append("product_status_id", productStatusId);
-    }
+    formData.append("unit_price", unitPrice);
+    formData.append("product_status_id", productStatusId);
 
     if (image && typeof image !== "string") {
       formData.append("image", image, image.name);
@@ -213,24 +219,37 @@ const VariationsTab = () => {
   const handleArchive = async (selectedProductVariation) => {
     if (!selectedProductVariation) return;
 
-    const isConfirmed = window.confirm(
-      "Are you sure you want to archive this product variation?",
+    setConfirmMessage(
+      `Are you sure you want to archive ${selectedProductVariation.product_name} - ${selectedProductVariation.value}?`,
     );
-    if (!isConfirmed) return;
+    setConfirmAction(() => async () => {
+      try {
+        setLoading(true);
+        const response = await archiveProductVariation(
+          selectedProductVariation.variation_id,
+        );
+        const productVariationsData = await getAllProductVariations();
+        setProductVariations(productVariationsData);
+        console.log("Product variation archived:", response);
+        toast.success("Product variation archived successfully.");
+      } catch (error) {
+        console.error("Error archiving product variation: ", error);
+        toast.error("Error archiving product variation. Please try again.");
+      } finally {
+        setLoading(false);
+        setIsConfirmModalOpen(false);
+      }
+    });
+    setIsConfirmModalOpen(true);
+  };
 
-    try {
-      setLoading(true);
-      const response = await archiveProductVariation(
-        selectedProductVariation.variation_id,
-      );
-      const productVariationsData = await getAllProductVariations();
-      setProductVariations(productVariationsData);
-      console.log("Product variation archived:", response);
-      toast.success("Product variation archived successfully.");
-    } catch (error) {
-      console.error("Error archiving product variation: ", error);
-    } finally {
-      setLoading(false);
+  const handleConfirmClose = () => {
+    setIsConfirmModalOpen(false);
+  };
+
+  const handleConfirm = () => {
+    if (confirmAction) {
+      confirmAction();
     }
   };
 
@@ -242,7 +261,8 @@ const VariationsTab = () => {
 
   const filteredVariations = product_variations
     .filter((variation) => {
-      console.log("Variation:", variation);
+
+      // console.log("Variation:", variation);
       const matchesSearch = search
         ? (variation.product_name || "")
             .toLowerCase()
@@ -345,6 +365,13 @@ const VariationsTab = () => {
             errors={errors}
           />
         </div>
+
+        <ConfirmModal
+          isOpen={isConfirmModalOpen}
+          onClose={handleConfirmClose}
+          onConfirm={handleConfirm}
+          message={confirmMessage}
+        />
       </div>
     </Fragment>
   );

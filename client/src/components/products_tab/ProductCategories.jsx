@@ -1,5 +1,6 @@
 import React, { Fragment, useEffect, useState } from "react";
 import DataTable from "../shared/DataTable";
+import ConfirmModal from "../shared/ConfirmModal";
 import { MdAddBox } from "react-icons/md";
 import Modal from "../modal/Modal";
 import { toast } from "sonner";
@@ -24,6 +25,11 @@ const ProductCategories = () => {
   const [showModal, setShowModal] = useState(false);
   const [category_name, setCategoryName] = useState("");
   const [originalCategory, setOriginalCategory] = useState("");
+
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [confirmMessage, setConfirmMessage] = useState("");
+  const [additionalNote, setAdditionalNote] = useState("");
+  const [confirmAction, setConfirmAction] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -108,28 +114,41 @@ const ProductCategories = () => {
   };
 
   const handleDeleteCategory = async (category) => {
-    if (
-      !window.confirm(
-        `Are you sure you want to delete the category "${category.name}"?
-        Note: Categories with associated product variations cannot be deleted.`,
-      )
-    ) {
-      return;
-    }
+    if (!category) return;
 
-    try {
-      setLoading(true);
-      await deleteCategory(category.product_category_id);
-      toast.success("Category deleted successfully.");
-      const categoriesData = await getCategories();
-      setCategories(categoriesData); // Refresh the categories list
-    } catch (error) {
-      toast.error(
-        error.response?.data?.message ||
-          "Error deleting category. Cannot delete categories with associated products.",
-      );
-    } finally {
-      setLoading(false);
+    setConfirmMessage(
+      `Are you sure you want to delete the category "${category.name}"?`,
+    );
+    setAdditionalNote(
+      "Note: Deleting a category will also delete all associated products.",
+    );
+    setConfirmAction(() => async () => {
+      try {
+        setLoading(true);
+        await deleteCategory(category.product_category_id);
+        toast.success("Category deleted successfully.");
+        const categoriesData = await getCategories();
+        setCategories(categoriesData);
+      } catch (error) {
+        toast.error(
+          error.response?.data?.message ||
+            "Error deleting category. Cannot delete categories with associated products.",
+        );
+      } finally {
+        setLoading(false);
+        setIsConfirmModalOpen(false);
+      }
+    });
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleConfirmClose = () => {
+    setIsConfirmModalOpen(false);
+  };
+
+  const handleConfirm = () => {
+    if (confirmAction) {
+      confirmAction();
     }
   };
 
@@ -274,6 +293,7 @@ const ProductCategories = () => {
                 {selectedCategory ? "Edit Category" : "Add New Category"}
               </div>
 
+
               <div className="flex flex-col gap-2">
                 <label className="font-bold" htmlFor="category_name">
                   Category Name:
@@ -320,6 +340,14 @@ const ProductCategories = () => {
           </form>
         </Modal>
       </div>
+
+      <ConfirmModal
+        isOpen={isConfirmModalOpen}
+        onClose={handleConfirmClose}
+        onConfirm={handleConfirm}
+        message={confirmMessage}
+        additionalNote={additionalNote}
+      />
     </Fragment>
   );
 };

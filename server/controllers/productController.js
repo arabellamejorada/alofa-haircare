@@ -333,6 +333,13 @@ const updateProduct = async (req, res) => {
 
         console.log('Query Values:', values);
 
+        // update product variations status to the changed product status
+        await client.query(`
+            UPDATE product_variation
+            SET product_status_id = $1
+            WHERE product_id = $2`
+            , [product_status_id, product_id]);
+
         const results = await client.query(query, values);
 
         if (results.rows.length === 0) {
@@ -378,6 +385,13 @@ const archiveProduct = async (req, res) => {
             [archivedStatusId, product_id]
         );
 
+        // update all product variations under product to 'Archived'
+        await client.query(`
+            UPDATE product_variation
+            SET product_status_id = $1
+            WHERE product_id = $2
+            `, [archivedStatusId, product_id]);
+            
         if (results.rows.length === 0) {
             await client.query('ROLLBACK'); // Rollback in case of failure
             return res.status(404).json({ message: 'Product not found' });
