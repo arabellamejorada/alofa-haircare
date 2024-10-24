@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import ProductCard from "../components/ProductCard";
 import Filter from "../components/Filter/Filter.jsx";
 import FilterButton from "../components/Filter/FilterButton.jsx";
@@ -19,6 +19,9 @@ const Products = () => {
   const [searchQuery, setSearchQuery] = useState(""); // State for search query
   const [filteredProducts, setFilteredProducts] = useState([]); // State for filtered products
   const [loading, setLoading] = useState(false);
+
+  const initialFetchDone = useRef(false); // Track whether the initial fetch is complete
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -30,6 +33,7 @@ const Products = () => {
         setProducts(productsData);
         setProductVariants(productVariantsData);
         setCategories(categoriesData);
+        initialFetchDone.current = true; // Set initial fetch as done
       } catch (error) {
         console.error("Error fetching products:", error);
       } finally {
@@ -42,6 +46,8 @@ const Products = () => {
 
   // Effect for handling category change and clearing the search query
   useEffect(() => {
+    if (!initialFetchDone.current) return; // Prevent setting loading if initial fetch isn't complete
+
     // Reset the search query when a new category is selected
     if (selectedCategory !== "All") {
       setSearchQuery("");
