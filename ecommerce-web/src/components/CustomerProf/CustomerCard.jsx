@@ -1,38 +1,39 @@
+import { FaUserCircle } from 'react-icons/fa';
 
-
-const CustomerCard = () => {
+const CustomerProfileCard = () => {
   const customerInfo = {
-    name: 'Cassey Gempesaw',
+    firstname: 'Cassey',
+    lastname: 'Gempesaw',
     email: 'catgempesaw@gmail.com',
     contact: '09295290355'
   };
 
   return (
-    <div className="max-w-sm mx-auto bg-white rounded-lg shadow-md p-6" style={{ borderRadius: '25px' }}>
-      <h2 className="text-pink-500 text-3xl font-bold mb-4">Welcome, <span className="text-pink-600">{customerInfo.name}</span>.</h2>
+    <div className="max-w-sm mx-auto bg-white rounded-3xl shadow-md p-6">
+      <h2 className="text-pink-500 text-3xl font-bold mb-4">Welcome, <span className="text-pink-600">{customerInfo.firstname}</span>.</h2>
       <div className="flex flex-col items-center mb-6">
-        <div className="w-24 h-24 rounded-full bg-pink-200 flex items-center justify-center">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-16 w-16 text-pink-500"
-            fill="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path d="M12 12c2.67 0 8 1.34 8 4v2H4v-2c0-2.66 5.33-4 8-4zm0-2a4 4 0 100-8 4 4 0 000 8z" />
-          </svg>
+        <div className="mt-10 w-24 h-24 rounded-full bg-pink-200 flex items-center justify-center">
+          <FaUserCircle className="h-40 w-40 text-alofa-pink" />
         </div>
       </div>
       <div className="text-left">
-        <h3 className="text-pink-500 text-lg font-semibold mb-2">Profile:</h3>
-        <p className="text-gray-700 mb-1">
-          <strong>Name:</strong> {customerInfo.name}
-        </p>
-        <p className="text-gray-700 mb-1">
-          <strong>Email:</strong> {customerInfo.email}
-        </p>
-        <p className="text-gray-700 mb-4">
-          <strong>Contact:</strong> {customerInfo.contact}
-        </p>
+        <h3 className="mt-15 text-pink-500 text-lg font-semibold mb-2 gradient-heading">Profile</h3>
+        <table className="text-gray-700 w-full">
+          <tbody>
+            <tr className="mb-1">
+              <td className="font-semibold pr-4">Name</td>
+              <td>{customerInfo.firstname} {customerInfo.lastname}</td>
+            </tr>
+            <tr className="mb-1">
+              <td className="font-semibold pr-4">Email</td>
+              <td>{customerInfo.email}</td>
+            </tr>
+            <tr className="mb-4">
+              <td className="font-semibold pr-4">Contact</td>
+              <td>{customerInfo.contact}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
       <div className="flex justify-between text-pink-500 font-semibold">
         <button className="hover:underline">Edit Profile</button>
@@ -42,4 +43,4 @@ const CustomerCard = () => {
   );
 };
 
-export default CustomerCard;
+export default CustomerProfileCard;

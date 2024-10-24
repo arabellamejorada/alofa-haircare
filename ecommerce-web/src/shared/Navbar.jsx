@@ -63,11 +63,13 @@ const Navbar = () => {
               Home
             </Link>
           ) : (
-            // Show user icon, login, signup, and cart icon when not on login or signup pages
+            
             <>
-              <p>
-                <FaUserAlt />
-              </p>
+              <Link
+                to="/profile"
+                className="hover:text-pink-700 flex items-center gap-2">
+                  <FaUserAlt />
+              </Link>
               <Link
                 to="/login"
                 className="hover:text-pink-700 flex items-center gap-2"

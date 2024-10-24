@@ -90,7 +90,6 @@ const Checkout = () => {
     setFormData((prevFormData) => {
       let updatedData = { ...prevFormData, [name]: value };
       
-      
       if (name === 'regionCode') {
         updatedData = {
           ...updatedData,
@@ -144,7 +143,7 @@ const Checkout = () => {
             <h1 className="text-4xl font-bold font-title bg-gradient-to-b from-alofa-pink to-alofa-light-pink bg-clip-text text-transparent">alofa</h1>
           </div>
           <div className="mb-2">
-            <h2 className="text-xl font-bold mb-4 text-gray-500">Account</h2>
+            <h2 className="text-xl font-bold mb-4 text-gray-500">Contact</h2>
             <input
               type="email"
               name="email"
@@ -156,6 +155,22 @@ const Checkout = () => {
           </div>
           <div className="mb-2">
             <h2 className="text-xl font-bold mb-4 text-gray-500">Shipping Information</h2>
+            <div className="mb-4">
+              <select
+                id="region"
+                name="regionCode"
+                value={formData.regionCode}
+                onChange={handleInputChange}
+                className="w-full p-3 border rounded-md text-gray-400"
+              >
+                <option value="">Select Region</option>
+                {regions.map((region) => (
+                  <option key={region.code} value={region.code}>
+                    {region.name}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div className="flex gap-4 mb-4">
               <input
                 type="text"
@@ -179,30 +194,9 @@ const Checkout = () => {
               name="address"
               value={formData.address}
               onChange={handleInputChange}
-              placeholder="Address"
+              placeholder="Street and house number"
               className="w-full p-3 mb-4 border rounded-md"
             />
-
-            {/* Region Dropdown */}
-            <div className="mb-4">
-            
-              <select
-                id="region"
-                name="regionCode"
-                value={formData.regionCode}
-                onChange={handleInputChange}
-                className="w-full p-3 border rounded-md text-gray-400"
-              >
-                <option value="">Select Region</option>
-                {regions.map((region) => (
-                  <option key={region.code} value={region.code}>
-                    {region.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Province Dropdown */}
             <div className="mb-4">
               <select
                 id="province"
@@ -220,16 +214,13 @@ const Checkout = () => {
                 ))}
               </select>
             </div>
-
-            {/* City Dropdown */}
-            <div className="mb-4">
-              
-              <select
+            <div className="flex gap-4 mb-4">
+            <select
                 id="city"
                 name="cityCode"
                 value={formData.cityCode}
                 onChange={handleInputChange}
-                className="w-full p-3 border rounded-md text-gray-400"
+                className="w-1/2 p-3 border rounded-md text-gray-400"
                 disabled={!formData.provinceCode}
               >
                 <option value="">Select City/Municipality</option>
@@ -239,16 +230,12 @@ const Checkout = () => {
                   </option>
                 ))}
               </select>
-            </div>
-
-            {/* Barangay Dropdown */}
-            <div className="mb-4">
               <select
                 id="barangay"
                 name="barangayCode"
                 value={formData.barangayCode}
                 onChange={handleInputChange}
-                className="w-full p-3 border rounded-md text-gray-400"
+                className="w-1/2 p-3 border rounded-md text-gray-400"
                 disabled={!formData.cityCode}
               >
                 <option value="">Select Barangay</option>
@@ -259,13 +246,12 @@ const Checkout = () => {
                 ))}
               </select>
             </div>
-
             <input
               type="text"
               name="phone"
               value={formData.phone}
               onChange={handleInputChange}
-              placeholder="Mobile Number (+63)"
+              placeholder="Mobile Phone (+63)"
               className="w-full p-3 mb-4 border rounded-md"
             />
           </div>
