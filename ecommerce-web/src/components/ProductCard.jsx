@@ -1,14 +1,25 @@
 import PropTypes from "prop-types";
-import { useContext } from "react";
+import { useState, useContext } from "react";
 import { CartContext } from "./CartContext.jsx";
 import { toast } from "sonner";
+import { ClipLoader } from "react-spinners"; // Import the spinner component
 
 const ProductCard = ({ id, image, name, value, price, sku }) => {
   const { addToCart } = useContext(CartContext);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   const handleAddToCart = () => {
-    addToCart({ id, image, name, value, price, sku });
-    toast.success(`${name} ${value} added to cart!`);
+    setIsAddingToCart(true);
+    // Simulate a delay to show loading effect (you can remove this if unnecessary)
+    setTimeout(() => {
+      addToCart({ id, image, name, value, price, sku });
+      {
+        value != "N/A"
+          ? toast.success(`${name} ${value} added to cart!`)
+          : toast.success(`${name} added to cart!`);
+      }
+      setIsAddingToCart(false);
+    }, 500); // Add a delay to simulate server response, if needed
   };
 
   return (
@@ -30,17 +41,23 @@ const ProductCard = ({ id, image, name, value, price, sku }) => {
             {name}
           </h3>
           <p className="text-md font-medium text-gray-700 h-10 overflow-hidden text-ellipsis whitespace-nowrap">
-            {value}
+            {value !== "N/A" ? value : ""}
           </p>
+
           <p className="text-xl font-bold text-gray-900 mt-2">₱{price}</p>
         </div>
         <div className="flex justify-end mt-4 px-4 pb-3">
           <button
-            className="font-extrabold text-white py-2 px-4 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]"
+            className="font-extrabold text-white py-2 px-4 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F] disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleAddToCart}
             aria-label={`Add ${name} ${value} to cart`}
+            disabled={isAddingToCart} // Disable button while adding to cart
           >
-            ADD TO CART
+            {isAddingToCart ? (
+              <ClipLoader size={20} color="#FFFFFF" loading={isAddingToCart} />
+            ) : (
+              "ADD TO CART"
+            )}
           </button>
         </div>
       </div>

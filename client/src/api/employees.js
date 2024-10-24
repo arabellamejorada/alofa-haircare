@@ -33,16 +33,16 @@ export const updateEmployee = async (id, employeeData) => {
     }
 };
 
-export const archiveEmployee = async (id) => {
-    try {
-        const response = await axios.put(`/employees/${id}/archive`);
-        console.log('Employee archived: ', response.data);
-        return response.data;
-    } catch (error) {
-        console.error('Error archiving employee: ', error);
-        throw error;
-    }
-};
+// export const archiveEmployee = async (employeeId) => {
+//     try {
+//         const response = await axios.put(`/employees/${employeeId}/archive`);
+//         console.log('Employee archived: ', response.data);
+//         return response.data;
+//     } catch (error) {
+//         console.error('Error archiving employee: ', error);
+//         throw error;
+//     }
+// };
 
 export const deleteEmployee = async (employeeId) => {
     try {

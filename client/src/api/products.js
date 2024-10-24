@@ -1,30 +1,52 @@
 import axios from './axios';
 
-// PRODUCTS
-
-export const createProductVariationWithInventory = async (productData) => {
-    try {
-        const response = await axios.post('/product-variations', productData, {
-            headers: {
-                "Content-Type": "multipart/form-data",
-            },
-            });
-            // console.log
-        
-            console.log('Product variation with inventory created: ', response.data);
-        return response.data;
-    } catch (error) {
-        console.error('Error creating product variation with inventory: ', error);
-        throw error;
-    }
+export const createProductWithVariationAndInventory = async (formData) => {
+  try {
+    // Send the request
+    const response = await axios.post('/products', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    console.log('Product with variations and inventory created: ', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating product with variations and inventory: ', error);
+    throw error;
+  }
 };
 
+
+// export const createProductVariationWithInventory = async (productData) => {
+//     try {
+//         const response = await axios.post('/product-variations', productData, {
+//             headers: {
+//                 "Content-Type": "multipart/form-data",
+//             },
+//             });        
+//             console.log('Product variation with inventory created: ', response.data);
+//         return response.data;
+//     } catch (error) {
+//         console.error('Error creating product variation with inventory: ', error);
+//         throw error;
+//     }
+// };
+
+// export const createProduct = async (productData) => {
+//     try {
+//         const response = await axios.post('/products', productData);
+//         return response.data;
+//     } catch (error) {
+//         console.error('Error creating product: ', error);
+//         throw error;
+//     }
+// };
 
 export const getAllProducts = async () => {
     try {
         const response = await axios.get('/products');
         const data = response.data; // Directly access the data from the response
-        console.log('Products fetched: ', data);
+        // console.log('Products fetched: ', data);
         return data.map(product => ({
             ...product,
             is_archived: product.is_archived || false, // Default to false if not present
@@ -34,17 +56,6 @@ export const getAllProducts = async () => {
         throw error;
     }
 };
-
-export const createProduct = async (productData) => {
-    try {
-        const response = await axios.post('/products', productData);
-        return response.data;
-    } catch (error) {
-        console.error('Error creating product: ', error);
-        throw error;
-    }
-};
-
 export const updateProduct = async (productId, productData) => {
     try {
         const response = await axios.put(`/products/${productId}`, productData);
@@ -81,7 +92,7 @@ export const deleteProduct = async (productId) => {
 export const getCategories = async () => {
     try {
         const response = await axios.get('/product-category');
-        console.log('Categories fetched: ', response.data);
+        // console.log('Categories fetched: ', response.data);
         return response.data;
     } catch (error) {
         console.error('Error fetching categories: ', error);
@@ -124,7 +135,7 @@ export const deleteCategory = async (categoryId) => {
 export const getStatus = async () => {
     try {
         const response = await axios.get('/product-status');
-        console.log('Product statuses fetched: ', response.data);
+        // console.log('Product statuses fetched: ', response.data);
         return response.data;
     } catch (error) {
         console.error('Error fetching product statuses: ', error);
@@ -136,7 +147,7 @@ export const getStatus = async () => {
 export const getInventory = async () => {
     try {
         const response = await axios.get('/inventory');
-        console.log('Inventory fetched: ', response.data);
+        // console.log('Inventory fetched: ', response.data);
         return response.data;
     } catch (error) {
         console.error('Error fetching inventory: ', error);

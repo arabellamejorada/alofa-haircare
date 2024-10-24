@@ -5,8 +5,8 @@ const productVariationsController = require('../controllers/productVariationsCon
 const upload = require('../middlewares/multerConfig');
 
 // PRODUCT
-// router.post('/products', upload.array('variation_images', 20), productController.createProductWithVariationsInventory);
-router.post('/products', productController.createProduct); // Create
+router.post('/products', upload.array("images", 15), productController.createProductWithVariationAndInventory);
+// router.post('/products', productController.createProduct); // Create
 router.get('/products', productController.getAllProducts);              // Read all
 router.get('/products/:id', productController.getProductById);          // Read by ID
 router.put('/products/:id', productController.updateProduct);           // Update by ID
@@ -21,7 +21,7 @@ router.put('/product-category/:id', productController.updateProductCategory);   
 router.delete('/product-category/:id', productController.deleteProductCategory);// Delete by ID
 
 // PRODUCT VARIATION
-router.post("/product-variations", upload.array("images", 15), productVariationsController.createProductVariationsWithInventory);
+// router.post("/product-variations", upload.array("images", 15), productVariationsController.createProductVariationsWithInventory);
 router.get('/product-variations', productVariationsController.getAllProductVariations);       // Read all
 router.get('/product-variations/:id', productVariationsController.getProductVariationById);     // Read by ID
 router.put('/product-variations/:id', upload.single('image'), productVariationsController.updateProductVariation);
