@@ -1,13 +1,14 @@
 import { FaTrashAlt } from "react-icons/fa";
 import PropTypes from "prop-types";
+import { Link } from "react-router-dom";
 
 const CartTable = ({ cartItems, handleQuantityChange, handleDelete }) => {
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 h-[700px]">
-      <h2 className="text-alofa-pink text-3xl mb-4 font-bold">My Cart</h2>
+      <h2 className="bg-gradient-to-r from-alofa-pink to-alofa-light-pink bg-clip-text text-transparent text-3xl mb-4 font-bold">My Cart</h2>
 
       {cartItems.length === 0 ? (
-        <p className="text-gray-500 text-center">Your cart is empty.</p>
+        <p className="text-gray-500 text-center">Your cart is empty. Go to <Link to="/products" className="underline text-alofa-pink hover:text-alofa-pink-gradient">products page</Link> to shop!</p>
       ) : (
         <table className="w-full text-left">
           <thead>

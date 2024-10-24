@@ -63,11 +63,13 @@ const Navbar = () => {
               Home
             </Link>
           ) : (
-            // Show user icon, login, signup, and cart icon when not on login or signup pages
+            
             <>
-              <p>
-                <FaUserAlt />
-              </p>
+              <Link
+                to="/profile"
+                className="hover:text-pink-700 flex items-center gap-2">
+                  <FaUserAlt />
+              </Link>
               <Link
                 to="/login"
                 className="hover:text-pink-700 flex items-center gap-2"
@@ -107,11 +109,11 @@ const Navbar = () => {
           onMouseLeave={() => setHovered(false)}
         >
           <div className="p-4 h-full flex flex-col">
-            <h1 className="text-2xl bg-gradient-to-r from-alofa-pink to-alofa-light-pink bg-clip-text text-transparent font-bold mb-4">
+            <h1 className="text-2xl gradient-heading font-bold mb-4">
               Cart Overview
             </h1>
 
-            {/* Cart Items: Make this part scrollable */}
+            
             <div className="flex-1 overflow-y-auto mb-4">
               {cartItems && cartItems.length > 0 ? (
                 cartItems.map((item) => (
@@ -122,7 +124,7 @@ const Navbar = () => {
                     <img
                       src={item.image}
                       alt={item.name}
-                      className="w-16 h-16 object-cover rounded-md"
+                      className="w-16 h-16 object-cover rounded-md shadow-sm"
                     />
                     <div className="flex-1">
                       <h2 className="font-semibold text-gray-700">

@@ -1,8 +1,8 @@
-import React from "react";
+
 import Button from "../components/Button";
 import Input from "../components/Input";
-import * as Checkbox from "@radix-ui/react-checkbox";
-import { CheckIcon } from "@radix-ui/react-icons";
+// import * as Checkbox from "@radix-ui/react-checkbox";
+// import { CheckIcon } from "@radix-ui/react-icons";
 import AccountCard from "../components/AccountCard";
 import "../../src/styles.css";
 
