@@ -19,6 +19,9 @@ import Profile from "./pages/CustomerProfile.jsx";
 import "./App.css";
 import { Toaster } from "sonner";
 
+// // Supabase
+// import { supabase } from "../../supabase/supabaseClient.jsx";
+
 const AppContent = () => {
   const location = useLocation();
 

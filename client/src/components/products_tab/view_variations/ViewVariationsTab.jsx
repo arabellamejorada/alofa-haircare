@@ -1,6 +1,7 @@
 import React, { Fragment, useState, useEffect } from "react";
 import EditProductVariationModal from "./EditProductVariationModal";
 import ProductVariationTable from "./ProductVariationTable";
+
 import ConfirmModal from "../../shared/ConfirmModal";
 import FilterProductsAndVariationsTable from "../FilterProductsAndVariationsTable";
 import { toast } from "sonner";
@@ -54,6 +55,7 @@ const VariationsTab = () => {
         setLoading(true);
         const productVariationsData = await getAllProductVariations();
         const productsData = await getAllProducts();
+
         let statusData = await getStatus();
         // Map to only available and archived statuses
         statusData = statusData.filter(
@@ -118,6 +120,7 @@ const VariationsTab = () => {
 
   const handleInputChange = (e) => {
     const { name, value, files } = e.target;
+
     switch (name) {
       case "unit_price":
         setUnitPrice(value);
@@ -215,6 +218,7 @@ const VariationsTab = () => {
   // Handle Archive
   const handleArchive = async (selectedProductVariation) => {
     if (!selectedProductVariation) return;
+
     setConfirmMessage(
       `Are you sure you want to archive ${selectedProductVariation.product_name} - ${selectedProductVariation.value}?`,
     );
@@ -257,6 +261,7 @@ const VariationsTab = () => {
 
   const filteredVariations = product_variations
     .filter((variation) => {
+
       // console.log("Variation:", variation);
       const matchesSearch = search
         ? (variation.product_name || "")

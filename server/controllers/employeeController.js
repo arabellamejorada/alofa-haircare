@@ -113,14 +113,14 @@ const updateEmployee = async (req, res) => {
 const archiveEmployee = async (req, res) => {
     const client = await pool.connect();
     const employee_id = parseInt(req.params.id);
-
+    console.log("req param id:",employee_id);
     try {
         // Get the status_id for 'Archived' dynamically
         const statusResult = await client.query(
             `SELECT status_id FROM employee_status WHERE description = $1`,
             ['Archived']
         );
-
+        console.log("statusResult:",statusResult);
         // Check if 'Archived' status exists
         if (statusResult.rows.length === 0) {
             return res.status(404).json({ message: "Archived status not found" });
