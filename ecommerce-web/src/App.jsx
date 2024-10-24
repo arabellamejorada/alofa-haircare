@@ -4,7 +4,7 @@ import {
   Route,
   useLocation,
 } from "react-router-dom";
-import { useEffect, useState, useContext } from "react";
+import { useContext } from "react";
 import { CartProvider } from "./components/CartContext.jsx";
 import { AuthProvider, AuthContext } from "./components/AuthContext.jsx"; // Import AuthProvider
 import Navbar from "./shared/Navbar.jsx";
