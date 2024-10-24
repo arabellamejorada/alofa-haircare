@@ -16,6 +16,8 @@ import CartItem from "./components/CartItem.jsx";
 import Checkout from "./pages/Checkout.jsx";
 import Login from "./pages/Login.jsx";
 import SignUp from "./pages/SignUp.jsx";
+import Profile from "./pages/CustomerProfile.jsx";
+
 import "./App.css";
 import { Toaster } from "sonner";
 
@@ -37,6 +39,7 @@ const AppContent = () => {
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/login" element={<Login setToken={setToken} />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
     </>
   );
