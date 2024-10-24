@@ -97,8 +97,93 @@ const updateInventoryById = async (req, res) => {
     }
 };
 
+// Get inventory history by variation ID
+const getInventoryHistoryByVariationId = async (req, res) => {
+    const client = await pool.connect();
+    try {
+        const id = parseInt(req.params.id, 10); // Ensure variation_id is an integer
+        const query = `
+            SELECT 
+                si.reference_number AS reference_number,
+                sii.variation_id AS variation_id,
+                sii.quantity AS quantity,
+                NULL AS reason,
+                si.stock_in_date AS date
+            FROM stock_in_items sii
+            JOIN stock_in si ON sii.stock_in_id = si.stock_in_id
+            WHERE sii.variation_id = $1
+
+            UNION ALL
+
+            SELECT 
+                so.reference_number AS reference_number,
+                soi.variation_id AS variation_id,
+                (-1) * soi.quantity AS quantity, 
+                soi.reason AS reason,
+                so.stock_out_date AS date
+            FROM stock_out_items soi
+            JOIN stock_out so ON soi.stock_out_id = so.stock_out_id
+            WHERE soi.variation_id = $1
+
+            ORDER BY date;
+        `;
+        const result = await client.query(query, [id]);
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching inventory history by id:', err.message);
+        res.status(500).json({ message: 'Server error' });
+    } finally {
+        client.release();
+    }
+};
+
+const getAllInventoryHistory = async (req, res) => {
+  const client = await pool.connect();
+  try {
+   const query = `
+    SELECT 
+        si.reference_number AS reference_number,
+        sii.variation_id AS variation_id,
+        sii.quantity AS quantity,
+        NULL AS reason,
+        si.stock_in_date AS date,
+        e.first_name || ' ' || e.last_name AS employee_name
+    FROM stock_in_items sii
+    JOIN stock_in si ON sii.stock_in_id = si.stock_in_id
+    JOIN employee e ON si.employee_id = e.employee_id
+
+    UNION ALL
+
+    SELECT 
+        so.reference_number AS reference_number,
+        soi.variation_id AS variation_id,
+        (-1) * soi.quantity AS quantity, 
+        soi.reason AS reason,
+        so.stock_out_date AS date,
+        e.first_name || ' ' || e.last_name AS employee_name
+    FROM stock_out_items soi
+    JOIN stock_out so ON soi.stock_out_id = so.stock_out_id
+    JOIN employee e ON so.employee_id = e.employee_id
+
+    ORDER BY date DESC;
+    `;
+
+
+    const result = await client.query(query);
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching all inventory history:", err.message);
+    res.status(500).json({ message: "Server error" });
+  } finally {
+    client.release();
+  }
+};
+
+
 module.exports = {
     getAllInventories,
     getInventoryById,
-    updateInventoryById
+    updateInventoryById,
+    getInventoryHistoryByVariationId,
+    getAllInventoryHistory,
 };
