@@ -47,7 +47,7 @@ const SignUp = () => {
       if (error) throw error;
       alert("Check your email for verification link.");
     } catch (error) {
-      alert(error);
+      alert(error.message);
     }
   }
 
@@ -111,7 +111,7 @@ const SignUp = () => {
                   className=" p-3 w-full h-[2rem] border border-gray-300 rounded-md"
                   onChange={handleChange}
                 />
-                <div className="flex justify-start mt-2 mb-4">
+                {/* <div className="flex justify-start mt-2 mb-4">
                   <div className="flex flex-row gap-2 items-center">
                     <div className="">
                       <Checkbox.Root
@@ -130,8 +130,8 @@ const SignUp = () => {
                       </label>
                     </div>
                   </div>
-                </div>
-                <div className="flex flex-col items-center">
+                </div> */}
+                <div className="flex flex-col items-center mt-2">
                   <div className="flex flex-col">
                     <Button
                       type="submit"

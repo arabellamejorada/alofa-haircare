@@ -1,13 +1,15 @@
-import { useEffect, useState, useContext } from 'react';
-import { IoChevronBack } from 'react-icons/io5';
-import GCashLogo from '../../../public/static/gcash-logo.svg';
-import BPILogo from '../../../public/static/bpi-logo.svg';
-import GCashQR from '../../../public/static/gcash-qr.jpg';
-import { CartContext } from '../components/CartContext.jsx';
-import axios from 'axios';
+import { useEffect, useState, useContext } from "react";
+import { IoChevronBack } from "react-icons/io5";
+import GCashLogo from "../../../public/static/gcash-logo.svg";
+import BPILogo from "../../../public/static/bpi-logo.svg";
+import GCashQR from "../../../public/static/gcash-qr.jpg";
+import { CartContext } from "../components/CartContext.jsx";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
+import axios from "axios";
 
 const Checkout = () => {
   const { cartItems, subtotal } = useContext(CartContext);
+  const navigate = useNavigate(); // Use navigate hook for seamless navigation
 
   // State for Regions, Provinces, Cities, and Barangays
   const [regions, setRegions] = useState([]);
@@ -16,17 +18,17 @@ const Checkout = () => {
   const [barangays, setBarangays] = useState([]);
 
   const [formData, setFormData] = useState({
-    email: '',
-    firstName: '',
-    lastName: '',
-    address: '',
-    barangayCode: '',
-    cityCode: '',
-    provinceCode: '',
-    regionCode: '',
-    postalCode: '',
-    phone: '',
-    paymentMethod: '',
+    email: "",
+    firstName: "",
+    lastName: "",
+    address: "",
+    barangayCode: "",
+    cityCode: "",
+    provinceCode: "",
+    regionCode: "",
+    postalCode: "",
+    phone: "",
+    paymentMethod: "",
   });
 
   const total = subtotal + 150;
@@ -39,10 +41,10 @@ const Checkout = () => {
   // Fetch regions from PSGC API
   const fetchRegions = async () => {
     try {
-      const response = await axios.get('https://psgc.gitlab.io/api/regions/');
+      const response = await axios.get("https://psgc.gitlab.io/api/regions/");
       setRegions(response.data);
     } catch (error) {
-      console.error('Error fetching regions:', error);
+      console.error("Error fetching regions:", error);
     }
   };
 
@@ -50,12 +52,14 @@ const Checkout = () => {
   const fetchProvinces = async (regionCode) => {
     if (!regionCode) return;
     try {
-      const response = await axios.get(`https://psgc.gitlab.io/api/provinces/?regionCode=${regionCode}`);
+      const response = await axios.get(
+        `https://psgc.gitlab.io/api/provinces/?regionCode=${regionCode}`,
+      );
       setProvinces(response.data);
       setCities([]); // Clear cities when changing provinces
       setBarangays([]); // Clear barangays when changing provinces
     } catch (error) {
-      console.error('Error fetching provinces:', error);
+      console.error("Error fetching provinces:", error);
     }
   };
 
@@ -63,11 +67,13 @@ const Checkout = () => {
   const fetchCities = async (provinceCode) => {
     if (!provinceCode) return;
     try {
-      const response = await axios.get(`https://psgc.gitlab.io/api/cities-municipalities/?provinceCode=${provinceCode}`);
+      const response = await axios.get(
+        `https://psgc.gitlab.io/api/cities-municipalities/?provinceCode=${provinceCode}`,
+      );
       setCities(response.data);
       setBarangays([]); // Clear barangays when changing cities
     } catch (error) {
-      console.error('Error fetching cities:', error);
+      console.error("Error fetching cities:", error);
     }
   };
 
@@ -75,10 +81,12 @@ const Checkout = () => {
   const fetchBarangays = async (cityCode) => {
     if (!cityCode) return;
     try {
-      const response = await axios.get(`https://psgc.gitlab.io/api/barangays/?cityCode=${cityCode}`);
+      const response = await axios.get(
+        `https://psgc.gitlab.io/api/barangays/?cityCode=${cityCode}`,
+      );
       setBarangays(response.data);
     } catch (error) {
-      console.error('Error fetching barangays:', error);
+      console.error("Error fetching barangays:", error);
     }
   };
 
@@ -89,24 +97,24 @@ const Checkout = () => {
     // Update formData state correctly, maintaining all values and clearing dependent fields
     setFormData((prevFormData) => {
       let updatedData = { ...prevFormData, [name]: value };
-      
-      if (name === 'regionCode') {
+
+      if (name === "regionCode") {
         updatedData = {
           ...updatedData,
-          provinceCode: '',
-          cityCode: '',
-          barangayCode: '',
+          provinceCode: "",
+          cityCode: "",
+          barangayCode: "",
         };
-      } else if (name === 'provinceCode') {
+      } else if (name === "provinceCode") {
         updatedData = {
           ...updatedData,
-          cityCode: '',
-          barangayCode: '',
+          cityCode: "",
+          barangayCode: "",
         };
-      } else if (name === 'cityCode') {
+      } else if (name === "cityCode") {
         updatedData = {
           ...updatedData,
-          barangayCode: '',
+          barangayCode: "",
         };
       }
 
@@ -114,18 +122,18 @@ const Checkout = () => {
     });
 
     // Fetch options based on user input
-    if (name === 'regionCode') {
+    if (name === "regionCode") {
       await fetchProvinces(value);
-    } else if (name === 'provinceCode') {
+    } else if (name === "provinceCode") {
       await fetchCities(value);
-    } else if (name === 'cityCode') {
+    } else if (name === "cityCode") {
       await fetchBarangays(value);
     }
   };
 
   const handleSubmit = () => {
-    console.log('Form Data:', formData);
-    console.log('Cart Items:', cartItems);
+    console.log("Form Data:", formData);
+    console.log("Cart Items:", cartItems);
   };
 
   return (
@@ -135,12 +143,14 @@ const Checkout = () => {
         <div className="w-full lg:w-2/3 p-8 pl-20 pr-20 flex flex-col justify-between h-full mx-auto overflow-y-auto">
           <div className="mb-6 flex items-center gap-4">
             <button
-              onClick={() => window.location.href = '/shoppingcart'}
+              onClick={() => navigate(-1)} // Use navigate(-1) for back navigation
               className="text-gray-500 font-bold hover:underline flex items-center"
             >
               <IoChevronBack className="h-6 w-9" />
             </button>
-            <h1 className="text-4xl font-bold font-title bg-gradient-to-b from-alofa-pink to-alofa-light-pink bg-clip-text text-transparent">alofa</h1>
+            <h1 className="text-4xl font-bold font-title bg-gradient-to-b from-alofa-pink to-alofa-light-pink bg-clip-text text-transparent">
+              alofa
+            </h1>
           </div>
           <div className="mb-2">
             <h2 className="text-xl font-bold mb-4 text-gray-500">Contact</h2>
@@ -154,7 +164,9 @@ const Checkout = () => {
             />
           </div>
           <div className="mb-2">
-            <h2 className="text-xl font-bold mb-4 text-gray-500">Shipping Information</h2>
+            <h2 className="text-xl font-bold mb-4 text-gray-500">
+              Shipping Information
+            </h2>
             <div className="mb-4">
               <select
                 id="region"
@@ -215,7 +227,7 @@ const Checkout = () => {
               </select>
             </div>
             <div className="flex gap-4 mb-4">
-            <select
+              <select
                 id="city"
                 name="cityCode"
                 value={formData.cityCode}
@@ -266,7 +278,8 @@ const Checkout = () => {
                 onClick={() => {
                   setFormData({
                     ...formData,
-                    paymentMethod: formData.paymentMethod === 'gcash' ? '' : 'gcash',
+                    paymentMethod:
+                      formData.paymentMethod === "gcash" ? "" : "gcash",
                   });
                 }}
               >
@@ -274,10 +287,16 @@ const Checkout = () => {
                   <span className="font-bold">Gcash</span>
                   <img src={GCashLogo} alt="GCash Logo" className="w-10" />
                 </div>
-                {formData.paymentMethod === 'gcash' && (
+                {formData.paymentMethod === "gcash" && (
                   <div className="mt-4">
-                    <p className="text-sm mb-2">Please scan the QR code below to complete the payment:</p>
-                    <img src={GCashQR} alt="GCash QR Code" className="w-32 h-32 mb-4" />
+                    <p className="text-sm mb-2">
+                      Please scan the QR code below to complete the payment:
+                    </p>
+                    <img
+                      src={GCashQR}
+                      alt="GCash QR Code"
+                      className="w-32 h-32 mb-4"
+                    />
                     <button className="bg-gray-600 hover:bg-gray-800 text-white py-2 px-4 rounded flex items-center gap-2">
                       Upload receipt
                     </button>
@@ -291,19 +310,28 @@ const Checkout = () => {
                 onClick={() => {
                   setFormData({
                     ...formData,
-                    paymentMethod: formData.paymentMethod === 'bank' ? '' : 'bank',
+                    paymentMethod:
+                      formData.paymentMethod === "bank" ? "" : "bank",
                   });
                 }}
               >
                 <div className="flex justify-between items-center">
                   <span className="font-bold">Bank Transfer</span>
-                  <img src={BPILogo} alt="Bank Transfer Logo" className="w-10" />
+                  <img
+                    src={BPILogo}
+                    alt="Bank Transfer Logo"
+                    className="w-10"
+                  />
                 </div>
-                {formData.paymentMethod === 'bank' && (
+                {formData.paymentMethod === "bank" && (
                   <div className="mt-4">
                     <p className="text-sm mb-2">Bank details for transfer:</p>
-                    <p className="text-sm">Bank Name: <b>Bank of the Philippine Islands</b></p>
-                    <p className="text-sm">Account Number: <b>1234-5678-9012</b></p>
+                    <p className="text-sm">
+                      Bank Name: <b>Bank of the Philippine Islands</b>
+                    </p>
+                    <p className="text-sm">
+                      Account Number: <b>1234-5678-9012</b>
+                    </p>
                     <p className="text-sm">Account Name: Alofa Haircare</p>
                     <button className="bg-gray-600 hover:bg-gray-800 text-white py-2 px-4 rounded flex items-center gap-2 mt-4">
                       Upload receipt
@@ -324,11 +352,17 @@ const Checkout = () => {
 
         {/* Orders Section */}
         <div className="w-full lg:w-1/3 p-8 bg-alofa-pink flex flex-col justify-between h-full mx-auto shadow-sm shadow-slate-400">
-          <h2 className="text-3xl font-extrabold font-body mb-6 text-white">Orders</h2>
+          <h2 className="text-3xl font-extrabold font-body mb-6 text-white">
+            Orders
+          </h2>
           <div className="overflow-y-auto max-h-auto mb-4">
             {cartItems.map((item, index) => (
               <div key={index} className="flex items-center mb-4">
-                <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded mr-4 shadow-sm" />
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="w-16 h-16 object-cover rounded mr-4 shadow-sm"
+                />
                 <div className="flex justify-between w-full text-white">
                   <span>
                     <span className="font-bold">{`${item.quantity}x`}</span>

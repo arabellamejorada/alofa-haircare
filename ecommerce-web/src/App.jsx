@@ -46,13 +46,13 @@ const AppContent = () => {
 };
 
 const App = () => (
-  <CartProvider>
-    <AuthProvider>
+  <AuthProvider>
+    <CartProvider>
       <Router>
         <AppContent />
       </Router>
-    </AuthProvider>
-  </CartProvider>
+    </CartProvider>
+  </AuthProvider>
 );
 
 export default App;
