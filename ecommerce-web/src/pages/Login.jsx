@@ -3,12 +3,11 @@ import Button from "../components/Button";
 import Input from "../components/Input";
 import AccountCard from "../components/AccountCard";
 import { Link, useNavigate } from "react-router-dom";
-import { supabase } from "../supabaseClient.jsx";
-import { AuthContext } from "../../../server/AuthContext.jsx"; // Import AuthContext
+import { AuthContext } from "../AuthContext.jsx"; // Import AuthContext
 import "../../src/styles.css";
 
 const Login = () => {
-  const { setToken } = useContext(AuthContext); // Access setToken from AuthContext
+  const { signIn } = useContext(AuthContext); // Use signIn from AuthContext
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -28,43 +27,13 @@ const Login = () => {
   async function handleSubmit(e) {
     e.preventDefault();
     try {
-      // Step 1: Authenticate the user using Supabase
-      const { data: loginData, error: loginError } =
-        await supabase.auth.signInWithPassword({
-          email: formData.emailAddress,
-          password: formData.password_input,
-        });
+      // Step 1: Use signIn from AuthContext to handle login
+      await signIn(formData.emailAddress, formData.password_input);
 
-      if (loginError) throw loginError;
-
-      console.log("Login successful:", loginData);
-
-      // Step 2: Check if the user has a profile in the 'profiles' table
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("email", formData.emailAddress)
-        .single();
-
-      if (profileError) {
-        throw profileError;
-      }
-
-      // Step 3: If the profile exists, set the session token and navigate to the home page
-      if (profileData) {
-        // Set the token in AuthContext
-        setToken(loginData.session.access_token);
-
-        // Navigate to the home page or the desired route
-        navigate("/");
-      } else {
-        // Step 4: If no profile is found, prompt the user to complete their profile
-        setErrorMessage("No profile data found. Please complete your profile.");
-        console.error("No profile data found.");
-        // You can also redirect to a profile completion page if needed
-        // navigate("/complete-profile");
-      }
+      // Step 2: Navigate to home after successful login
+      navigate("/");
     } catch (error) {
+      // Set error message if login fails
       setErrorMessage(error.message);
       console.error("Login error:", error.message);
     }

@@ -1,44 +1,41 @@
-import { useState, useContext } from "react";
-import { FaUserAlt, FaShoppingCart, FaTrashAlt } from "react-icons/fa";
+import { useState, useContext, useEffect } from "react";
+import { FaUserAlt, FaShoppingCart } from "react-icons/fa";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { CartContext } from "../components/CartContext";
-import { AuthContext } from "../../../server/AuthContext.jsx"; // Import AuthContext
+import { AuthContext } from "../AuthContext.jsx";
 import Button from "../components/Button";
 
 const Navbar = () => {
   const [hovered, setHovered] = useState(false);
-  const { cartItems, handleQuantityChange, handleDelete } =
-    useContext(CartContext);
-  const location = useLocation(); // Get the current route
-  const navigate = useNavigate(); // For navigation
+  const { cartItems } = useContext(CartContext);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { token, role, signOut } = useContext(AuthContext);
 
-  const { token, setToken, role } = useContext(AuthContext); // Access token, setToken, and role
-
-  // Calculate total price
-  const totalPrice = cartItems
-    .reduce((total, item) => total + item.price * item.quantity, 0)
-    .toFixed(2);
-
-  // Check if the current path is either '/login' or '/signup'
+  // Determine if the current route is login or signup
   const isAuthPage =
     location.pathname === "/login" || location.pathname === "/signup";
-
-  // Determine if user is logged in
   const isLoggedIn = Boolean(token);
 
-  // Handle logout
-  const handleLogout = () => {
-    // Remove session token
-    setToken(null);
-    // Redirect to home page
-    navigate("/");
+  // Handle logout process
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate("/");
+    } catch (error) {
+      console.error("Error during logout:", error.message);
+    }
   };
+
+  useEffect(() => {
+    console.log("Current token:", token); // Debugging log to check token value
+    console.log("Current role:", role); // Debugging log to check role value
+  }, [token, role]);
 
   return (
     <header className="bg-white shadow-md py-2px fixed top-0 w-full z-50 h-16">
       <nav className="container mx-auto flex justify-between items-center px-4 md:py-2 pt-3 pb-2">
         <div className="flex items-center gap-8">
-          {/* Logo */}
           <a
             href="/"
             className="bg-gradient-to-b from-alofa-pink to-alofa-light-pink bg-clip-text text-transparent text-4xl font-title mt-2"
@@ -46,7 +43,7 @@ const Navbar = () => {
             alofa
           </a>
 
-          {/* Navigation Pages */}
+          {/* Navigation Links - Hidden on Auth Pages */}
           {!isAuthPage && (
             <div className="text-lg font-body text-alofa-pink sm:flex items-center gap-8 hidden">
               <Link
@@ -74,7 +71,7 @@ const Navbar = () => {
         {/* Right-side Content */}
         <div className="text-lg text-alofa-pink sm:flex items-center gap-4 hidden">
           {isAuthPage ? (
-            // Show Home link on the right only when on login or signup page
+            // Show Home link when on login or signup page
             <Link to="/" className="hover:text-pink-700 items-baseline gap-2">
               Home
             </Link>
@@ -85,7 +82,7 @@ const Navbar = () => {
                 // When user is logged in
                 <>
                   {role === "employee" && (
-                    // Only show Dashboard button if the user is an employee
+                    // Show Dashboard button only for employees
                     <Link to="http://localhost:3000">
                       <Button>Dashboard</Button>
                     </Link>
@@ -104,6 +101,7 @@ const Navbar = () => {
                   >
                     Logout
                   </button>
+
                   {/* Shopping Cart Icon */}
                   <div
                     className="relative"
@@ -112,6 +110,11 @@ const Navbar = () => {
                   >
                     <div className="text-[#FE699F] p-3 rounded-full transition-colors duration-300 hover:delay-700 hover:text-gray-500 cursor-pointer">
                       <FaShoppingCart />
+                      {hovered && cartItems.length > 0 && (
+                        <div className="absolute right-0 mt-2 p-2 bg-white border rounded shadow-lg">
+                          <p>Cart Items: {cartItems.length}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </>
@@ -131,6 +134,7 @@ const Navbar = () => {
                   >
                     Sign Up
                   </Link>
+
                   {/* Shopping Cart Icon */}
                   <div
                     className="relative"

@@ -2,11 +2,12 @@ import {
   BrowserRouter as Router,
   Routes,
   Route,
+  Navigate,
   useLocation,
 } from "react-router-dom";
-import { useEffect, useState, useContext } from "react";
+import { useContext } from "react";
 import { CartProvider } from "./components/CartContext.jsx";
-import { AuthProvider, AuthContext } from "../../server/AuthContext.jsx"; // Import AuthProvider
+import { AuthProvider, AuthContext } from "./AuthContext.jsx"; // Import AuthProvider
 import Navbar from "./shared/Navbar.jsx";
 import Home from "./pages/Home.jsx";
 import Products from "./pages/Products.jsx";
@@ -23,12 +24,17 @@ import { Toaster } from "sonner";
 
 const AppContent = () => {
   const location = useLocation();
-  const { setToken } = useContext(AuthContext); // Use setToken from AuthContext
+  const { token, loading } = useContext(AuthContext);
+
+  // Show loading screen while verifying session
+  if (loading) {
+    return <div className="loading-screen">Loading...</div>;
+  }
 
   return (
     <>
       <Toaster richColors position="top-center" />
-      {/* Navbar to not appear in checkout page */}
+      {/* Show Navbar on all pages except checkout */}
       {location.pathname !== "/checkout" && <Navbar />}
       <Routes>
         <Route path="/" element={<Home />} />
@@ -37,12 +43,24 @@ const AppContent = () => {
         <Route path="/shoppingcart" element={<ShoppingCart />} />
         <Route path="/cartitem" element={<CartItem />} />
         <Route path="/checkout" element={<Checkout />} />
-        <Route path="/login" element={<Login setToken={setToken} />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route
+          path="/profile"
+          element={
+            <PrivateRoute token={token}>
+              <Profile />
+            </PrivateRoute>
+          }
+        />
       </Routes>
     </>
   );
+};
+
+// PrivateRoute Component to restrict access to authenticated users
+const PrivateRoute = ({ token, children }) => {
+  return token ? children : <Navigate to="/login" />;
 };
 
 const App = () => (
