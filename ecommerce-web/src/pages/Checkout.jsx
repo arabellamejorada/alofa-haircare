@@ -1,4 +1,4 @@
-import { useEffect, useState, useContext } from 'react';
+import { useEffect, useState, useContext, useCallback, useMemo } from 'react';
 import { IoChevronBack } from 'react-icons/io5';
 import GCashLogo from '../../../public/static/gcash-logo.svg';
 import BPILogo from '../../../public/static/bpi-logo.svg';
@@ -31,27 +31,55 @@ const Checkout = () => {
 
   const total = subtotal + 150;
 
-  // Fetch regions when the component mounts
-  useEffect(() => {
-    fetchRegions();
-  }, []);
+  // Memoize region mapping to prevent unnecessary re-renders
+  const regionMapping = useMemo(() => ({
+    "Ilocos Region": "Region 1",
+    "Cagayan Valley": "Region 2",
+    "Central Luzon": "Region 3",
+    "CALABARZON": "Region 4-A",
+    "MIMAROPA Region": "Region 4-B",
+    "Bicol Region": "Region 5",
+    "Western Visayas": "Region 6",
+    "Central Visayas": "Region 7",
+    "Eastern Visayas": "Region 8",
+    "Zamboanga Peninsula": "Region 9",
+    "Northern Mindanao": "Region 10",
+    "Davao Region": "Region 11",
+    "SOCCSKSARGEN": "Region 12",
+    "Caraga": "Region 13",
+    "National Capital Region (NCR)": "NCR",
+    "Cordillera Administrative Region (CAR)": "CAR",
+    "Bangsamoro Autonomous Region in Muslim Mindanao (BARMM)": "BARMM"
+  }), []);
 
-  // Fetch regions from PSGC API
-  const fetchRegions = async () => {
+  // Wrap fetchRegions in useCallback
+  const fetchRegions = useCallback(async () => {
     try {
       const response = await axios.get('https://psgc.gitlab.io/api/regions/');
-      setRegions(response.data);
+      const mappedRegions = response.data.map((region) => ({
+        ...region,
+        name: regionMapping[region.name] || region.name,
+      }));
+      setRegions(mappedRegions);
     } catch (error) {
       console.error('Error fetching regions:', error);
     }
-  };
+  }, [regionMapping]);
+
+  // Fetch regions when the component mounts
+  useEffect(() => {
+    fetchRegions();
+  }, [fetchRegions]);
 
   // Fetch provinces based on the selected region
   const fetchProvinces = async (regionCode) => {
     if (!regionCode) return;
     try {
-      const response = await axios.get(`https://psgc.gitlab.io/api/provinces/?regionCode=${regionCode}`);
-      setProvinces(response.data);
+      const response = await axios.get(`https://psgc.gitlab.io/api/provinces/`);
+      const filteredProvinces = response.data.filter(
+        (province) => province.regionCode === regionCode
+      );
+      setProvinces(filteredProvinces);
       setCities([]); // Clear cities when changing provinces
       setBarangays([]); // Clear barangays when changing provinces
     } catch (error) {
@@ -63,8 +91,11 @@ const Checkout = () => {
   const fetchCities = async (provinceCode) => {
     if (!provinceCode) return;
     try {
-      const response = await axios.get(`https://psgc.gitlab.io/api/cities-municipalities/?provinceCode=${provinceCode}`);
-      setCities(response.data);
+      const response = await axios.get(`https://psgc.gitlab.io/api/cities-municipalities/`);
+      const filteredCities = response.data.filter(
+        (city) => city.provinceCode === provinceCode
+      );
+      setCities(filteredCities);
       setBarangays([]); // Clear barangays when changing cities
     } catch (error) {
       console.error('Error fetching cities:', error);
@@ -75,8 +106,11 @@ const Checkout = () => {
   const fetchBarangays = async (cityCode) => {
     if (!cityCode) return;
     try {
-      const response = await axios.get(`https://psgc.gitlab.io/api/barangays/?cityCode=${cityCode}`);
-      setBarangays(response.data);
+      const response = await axios.get(`https://psgc.gitlab.io/api/barangays/`);
+      const filteredBarangays = response.data.filter(
+        (barangay) => barangay.cityCode === cityCode
+      );
+      setBarangays(filteredBarangays);
     } catch (error) {
       console.error('Error fetching barangays:', error);
     }
@@ -89,7 +123,7 @@ const Checkout = () => {
     // Update formData state correctly, maintaining all values and clearing dependent fields
     setFormData((prevFormData) => {
       let updatedData = { ...prevFormData, [name]: value };
-      
+
       if (name === 'regionCode') {
         updatedData = {
           ...updatedData,
@@ -155,13 +189,15 @@ const Checkout = () => {
           </div>
           <div className="mb-2">
             <h2 className="text-xl font-bold mb-4 text-gray-500">Shipping Information</h2>
+            {/* Region Dropdown */}
             <div className="mb-4">
               <select
                 id="region"
                 name="regionCode"
                 value={formData.regionCode}
                 onChange={handleInputChange}
-                className="w-full p-3 border rounded-md text-gray-400"
+                className={`w-full p-3 border rounded-md appearance-auto ${formData.regionCode ? 'text-black' : 'text-gray-400'}`}
+                style={{ backgroundPosition: 'calc(100% - 1rem) center' }}
               >
                 <option value="">Select Region</option>
                 {regions.map((region) => (
@@ -197,13 +233,14 @@ const Checkout = () => {
               placeholder="Street and house number"
               className="w-full p-3 mb-4 border rounded-md"
             />
+            {/* Province Dropdown */}
             <div className="mb-4">
               <select
                 id="province"
                 name="provinceCode"
                 value={formData.provinceCode}
                 onChange={handleInputChange}
-                className="w-full p-3 border rounded-md text-gray-400"
+                className={`w-full p-3 border rounded-md ${formData.provinceCode ? 'text-black' : 'text-gray-400'}`}
                 disabled={!formData.regionCode}
               >
                 <option value="">Select Province</option>
@@ -215,12 +252,13 @@ const Checkout = () => {
               </select>
             </div>
             <div className="flex gap-4 mb-4">
-            <select
+              {/* City Dropdown */}
+              <select
                 id="city"
                 name="cityCode"
                 value={formData.cityCode}
                 onChange={handleInputChange}
-                className="w-1/2 p-3 border rounded-md text-gray-400"
+                className={`w-1/2 p-3 border rounded-md appearance-none ${formData.cityCode ? 'text-black' : 'text-gray-400'}`}
                 disabled={!formData.provinceCode}
               >
                 <option value="">Select City/Municipality</option>
@@ -230,12 +268,13 @@ const Checkout = () => {
                   </option>
                 ))}
               </select>
+              {/* Barangay Dropdown */}
               <select
                 id="barangay"
                 name="barangayCode"
                 value={formData.barangayCode}
                 onChange={handleInputChange}
-                className="w-1/2 p-3 border rounded-md text-gray-400"
+                className={`w-1/2 p-3 border rounded-md ${formData.barangayCode ? 'text-black' : 'text-gray-400'}`}
                 disabled={!formData.cityCode}
               >
                 <option value="">Select Barangay</option>

@@ -2,7 +2,6 @@ import {
   BrowserRouter as Router,
   Routes,
   Route,
-  useLocation,
 } from "react-router-dom";
 import { useContext } from "react";
 import { CartProvider } from "./components/CartContext.jsx";
@@ -17,19 +16,19 @@ import Checkout from "./pages/Checkout.jsx";
 import Login from "./pages/Login.jsx";
 import SignUp from "./pages/SignUp.jsx";
 import Profile from "./pages/CustomerProfile.jsx";
+import Checkout1 from "./pages/Checkout1.jsx";
 
 import "./App.css";
 import { Toaster } from "sonner";
 
 const AppContent = () => {
-  const location = useLocation();
   const { setToken } = useContext(AuthContext); // Use setToken from AuthContext
 
   return (
     <>
       <Toaster richColors position="top-center" />
       {/* Navbar to not appear in checkout page */}
-      {location.pathname !== "/checkout" && <Navbar />}
+      <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/products" element={<Products />} />
@@ -37,6 +36,7 @@ const AppContent = () => {
         <Route path="/shoppingcart" element={<ShoppingCart />} />
         <Route path="/cartitem" element={<CartItem />} />
         <Route path="/checkout" element={<Checkout />} />
+        <Route path="/checkout1" element={<Checkout1 />} />
         <Route path="/login" element={<Login setToken={setToken} />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/profile" element={<Profile />} />
