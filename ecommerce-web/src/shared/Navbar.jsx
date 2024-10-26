@@ -20,8 +20,8 @@ const Navbar = () => {
   // Check if the current path is either '/login' or '/signup'
   const isAuthPage = location.pathname === "/login" || location.pathname === "/signup";
 
-  // Check if the current page is `/checkout1`
-  const isCheckoutPage = location.pathname === "/checkout1";
+  // Check if the current page is `/checkout`
+  const isCheckoutPage = location.pathname === "/checkout";
 
   // Determine if user is logged in
   const isLoggedIn = Boolean(token);
@@ -36,10 +36,10 @@ const Navbar = () => {
 
   return (
     <header
-      className={`fixed top-0 w-full z-50 h-16 ${
+      className={`${
         isCheckoutPage
-          ? "bg-checkout-gradient shadow-white-3"
-          : "bg-white shadow-md"
+          ? "w-full z-50 h-16 bg-checkout-gradient shadow-white-3"
+          : "fixed top-0 w-full z-50 h-16 bg-white shadow-md"
       }`}
     >
       <nav className="container mx-auto flex items-center justify-between px-4 py-2 h-full">
@@ -88,9 +88,11 @@ const Navbar = () => {
 
         {/* Right Section - Cart Icon (if on /checkout1) */}
         {isCheckoutPage && (
+          <Link to="/shoppingcart">
           <div className="text-white p-3 rounded-full cursor-pointer mr-4">
             <FaShoppingCart size={20} />
           </div>
+          </Link>
         )}
 
         {/* Right-side Content for other pages */}

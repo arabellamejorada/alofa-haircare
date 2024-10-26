@@ -9,7 +9,7 @@ const CartItem = ({ item, handleQuantityChange, handleDelete }) => {
         <img
           src={item.imageUrl}
           alt={item.name}
-          className="w-24 h-24 object-cover rounded-lg"
+          className="w-24 h-24 object-cover rounded-lg shadow-md"
         />
         {item.lowStock && (
           <div className="absolute bottom-0 left-0 bg-pink-100 text-black px-2 py-1 text-sm rounded-lg">
