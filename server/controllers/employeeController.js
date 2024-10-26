@@ -17,6 +17,7 @@ const createEmployee = async (req, res) => {
         email: email,
         password: password, // Set the predefined password
         email_confirm: true,
+        
         user_metadata: {
           first_name,
           last_name,
