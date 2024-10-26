@@ -40,7 +40,6 @@ const ProductsTab = () => {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
-
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [confirmMessage, setConfirmMessage] = useState("");
   const [additionalNote, setAdditionalNote] = useState("");
@@ -201,7 +200,6 @@ const ProductsTab = () => {
   const handleArchiveProduct = async (selectedProduct) => {
     if (!selectedProduct) return;
 
-
     setConfirmMessage(
       `Are you sure you want to archive ${selectedProduct.name}?`,
     );
@@ -301,8 +299,6 @@ const ProductsTab = () => {
         )}
 
         <div className="flex flex-col gap-2">
-          <strong className="text-3xl font-bold text-gray-500">Products</strong>
-
           {/* Filters Section */}
           <FilterProductsAndVariationsTable
             search={search}

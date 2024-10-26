@@ -261,7 +261,6 @@ const VariationsTab = () => {
 
   const filteredVariations = product_variations
     .filter((variation) => {
-
       // console.log("Variation:", variation);
       const matchesSearch = search
         ? (variation.product_name || "")
@@ -313,11 +312,7 @@ const VariationsTab = () => {
           </div>
         )}
         <div className="flex flex-col gap-2">
-          <div className="flex flex-row items-center justify-between">
-            <strong className="text-3xl font-bold text-gray-500">
-              Product Variations
-            </strong>
-          </div>
+          <div className="flex flex-row items-center justify-between"></div>
           {/* Filters Section */}
           <FilterProductsAndVariationsTable
             search={search}
