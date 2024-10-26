@@ -18,6 +18,7 @@ import Checkout from "./pages/Checkout.jsx";
 import Login from "./pages/Login.jsx";
 import SignUp from "./pages/SignUp.jsx";
 import Profile from "./pages/CustomerProfile.jsx";
+import Checkout1 from "./pages/Checkout1.jsx";
 
 import "./App.css";
 import { Toaster } from "sonner";
@@ -43,6 +44,7 @@ const AppContent = () => {
         <Route path="/shoppingcart" element={<ShoppingCart />} />
         <Route path="/cartitem" element={<CartItem />} />
         <Route path="/checkout" element={<Checkout />} />
+        <Route path="/checkout1" element={<Checkout1 />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
         <Route
