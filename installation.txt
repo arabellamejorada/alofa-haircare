@@ -65,3 +65,13 @@ RESTORE DATABASE:
 
 Supabase Migrate:
 npm install @supabase/supabase-js (install also in client)
+
+
+NEW CHANGES!!
+- deleted user_accounts table in database because the built-in supabase auth covers handling user accounts, passwords, email confirmations, and session management.
+
+- create profiles table 
+
+- major changes to employee and customer tables
+
+

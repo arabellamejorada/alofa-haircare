@@ -258,3 +258,107 @@ INSERT INTO employee_status (description)
 VALUES ('On Leave');
 INSERT INTO employee_status (description)
 VALUES ('Terminated');
+
+
+-- Begin Transaction
+BEGIN;
+
+-- Step 1: Create 'profiles' table
+CREATE TABLE public.profiles (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  username VARCHAR(50) UNIQUE NOT NULL,
+  first_name VARCHAR(255) NOT NULL,
+  last_name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  contact_number VARCHAR(15) NOT NULL,
+  role_id INT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+  FOREIGN KEY (role_id) REFERENCES role(role_id)
+);
+
+-- Step 2: Alter 'customer' table
+ALTER TABLE customer ADD COLUMN profile_id UUID;
+ALTER TABLE customer ADD CONSTRAINT fk_customer_profile FOREIGN KEY (profile_id) REFERENCES profiles(id);
+CREATE UNIQUE INDEX idx_customer_profile_id ON customer(profile_id);
+
+-- Add temporary 'temp_profile_id' column and generate UUIDs
+ALTER TABLE customer ADD COLUMN temp_profile_id UUID;
+UPDATE customer SET temp_profile_id = gen_random_uuid();
+
+-- Insert data into 'profiles' from 'customer'
+INSERT INTO profiles (id, username, first_name, last_name, email, contact_number, role_id)
+SELECT
+  temp_profile_id,
+  NULL, -- Adjust if you have a 'username' field in 'customer'
+  first_name,
+  last_name,
+  email,
+  contact_number,
+  role_id
+FROM customer;
+
+-- Update 'profile_id' in 'customer'
+UPDATE customer SET profile_id = temp_profile_id;
+
+-- Remove temporary 'temp_profile_id' column
+ALTER TABLE customer DROP COLUMN temp_profile_id;
+
+-- Step 3: Alter 'employee' table
+ALTER TABLE employee ADD COLUMN profile_id UUID;
+ALTER TABLE employee ADD CONSTRAINT fk_employee_profile FOREIGN KEY (profile_id) REFERENCES profiles(id);
+CREATE UNIQUE INDEX idx_employee_profile_id ON employee(profile_id);
+
+-- Add temporary 'temp_profile_id' column and generate UUIDs
+ALTER TABLE employee ADD COLUMN temp_profile_id UUID;
+UPDATE employee SET temp_profile_id = gen_random_uuid();
+
+-- Insert data into 'profiles' from 'employee'
+INSERT INTO profiles (id, username, first_name, last_name, email, contact_number, role_id)
+SELECT
+  temp_profile_id,
+  NULL, -- Adjust if you have a 'username' field in 'employee'
+  first_name,
+  last_name,
+  email,
+  contact_number,
+  role_id
+FROM employee;
+
+-- Update 'profile_id' in 'employee'
+UPDATE employee SET profile_id = temp_profile_id;
+
+-- Remove temporary 'temp_profile_id' column
+ALTER TABLE employee DROP COLUMN temp_profile_id;
+
+-- Step 4: Drop old columns from 'customer' and 'employee'
+ALTER TABLE customer
+DROP COLUMN first_name,
+DROP COLUMN last_name,
+DROP COLUMN email,
+DROP COLUMN contact_number,
+DROP COLUMN role_id;
+
+ALTER TABLE employee
+DROP COLUMN first_name,
+DROP COLUMN last_name,
+DROP COLUMN email,
+DROP COLUMN contact_number,
+DROP COLUMN role_id;
+
+-- Commit Transaction
+COMMIT;
+
+ALTER TABLE public.profiles
+DROP COLUMN username;
+
+ALTER TABLE shipping_address
+    DROP COLUMN first_name,
+    DROP COLUMN last_name,
+    DROP COLUMN contact_number,
+    DROP COLUMN email;
+
+    -- Add a unique constraint to prevent duplicate addresses for the same customer
+ALTER TABLE shipping_address
+    ADD CONSTRAINT unique_customer_address
+    UNIQUE (customer_id, address_line, barangay, city, province, zip_code);

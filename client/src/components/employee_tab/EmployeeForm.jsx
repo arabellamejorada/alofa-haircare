@@ -18,8 +18,6 @@ const EmployeeForm = ({
   roles,
   statusId,
   statuses,
-  username,
-  password,
   errors,
   setStatusId,
 }) => {
@@ -89,7 +87,7 @@ const EmployeeForm = ({
                 Email:
               </label>
               <input
-                type="text"
+                type="email"
                 name="employee_email"
                 id="employee_email"
                 placeholder="Email"
@@ -159,53 +157,6 @@ const EmployeeForm = ({
             )}
           </div>
 
-          {/* Username and Password for Add Modal */}
-          {!selectedEmployee && (
-            <>
-              {/* Username */}
-              <div className="flex flex-col gap-2">
-                <label className="font-bold" htmlFor="username">
-                  Username:
-                </label>
-                <input
-                  type="text"
-                  name="username"
-                  id="username"
-                  placeholder="Username"
-                  value={username}
-                  onChange={(e) => handleInputChange(e, "username")}
-                  className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 ${
-                    errors.username ? "border-red-500" : ""
-                  }`}
-                />
-                {errors.username && (
-                  <p className="text-red-500 text-sm mt-1">{errors.username}</p>
-                )}
-              </div>
-
-              {/* Password */}
-              <div className="flex flex-col gap-2">
-                <label className="font-bold" htmlFor="password">
-                  Password:
-                </label>
-                <input
-                  type="password"
-                  name="password"
-                  id="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => handleInputChange(e, "password")}
-                  className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 ${
-                    errors.password ? "border-red-500" : ""
-                  }`}
-                />
-                {errors.password && (
-                  <p className="text-red-500 text-sm mt-1">{errors.password}</p>
-                )}
-              </div>
-            </>
-          )}
-
           {/* Status Dropdown for Edit Modal */}
           {selectedEmployee && (
             <div className="flex flex-col gap-2">
@@ -234,7 +185,6 @@ const EmployeeForm = ({
             </div>
           )}
 
-          {/* Save/Update Button */}
           {/* Save/Update and Cancel Buttons */}
           <div className="flex justify-between mt-2">
             {/* Save/Update Button */}
