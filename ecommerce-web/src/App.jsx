@@ -6,7 +6,7 @@ import {
 } from "react-router-dom";
 import { useEffect, useState, useContext } from "react";
 import { CartProvider } from "./components/CartContext.jsx";
-import { AuthProvider, AuthContext } from "./components/AuthContext.jsx"; // Import AuthProvider
+import { AuthProvider, AuthContext } from "../../server/AuthContext.jsx"; // Import AuthProvider
 import Navbar from "./shared/Navbar.jsx";
 import Home from "./pages/Home.jsx";
 import Products from "./pages/Products.jsx";

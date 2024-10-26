@@ -2,7 +2,7 @@ import { useState, useContext } from "react";
 import { FaUserAlt, FaShoppingCart, FaTrashAlt } from "react-icons/fa";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { CartContext } from "../components/CartContext";
-import { AuthContext } from "../components/AuthContext"; // Import AuthContext
+import { AuthContext } from "../../../server/AuthContext.jsx"; // Import AuthContext
 import Button from "../components/Button";
 
 const Navbar = () => {

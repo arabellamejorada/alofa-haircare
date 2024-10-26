@@ -3,8 +3,8 @@ import Button from "../components/Button";
 import Input from "../components/Input";
 import AccountCard from "../components/AccountCard";
 import { Link, useNavigate } from "react-router-dom";
-import { supabase } from "../client.jsx";
-import { AuthContext } from "../components/AuthContext.jsx"; // Import AuthContext
+import { supabase } from "../supabaseClient.jsx";
+import { AuthContext } from "../../../server/AuthContext.jsx"; // Import AuthContext
 import "../../src/styles.css";
 
 const Login = () => {

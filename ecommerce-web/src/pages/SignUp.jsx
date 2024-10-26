@@ -3,7 +3,7 @@ import Button from "../components/Button";
 import Input from "../components/Input";
 import { Link } from "react-router-dom";
 import AccountCard from "../components/AccountCard";
-import { supabase } from "../client.jsx";
+import { supabase } from "../supabaseClient.jsx";
 import "../../src/styles.css";
 
 const SignUp = () => {
