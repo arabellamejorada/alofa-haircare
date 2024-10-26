@@ -17,8 +17,6 @@ import CartItem from "./components/CartItem.jsx";
 import Checkout from "./pages/Checkout.jsx";
 import Login from "./pages/Login.jsx";
 import SignUp from "./pages/SignUp.jsx";
-import Profile from "./pages/CustomerProfile.jsx";
-import Checkout1 from "./pages/Checkout1.jsx";
 
 import "./App.css";
 import { Toaster } from "sonner";
