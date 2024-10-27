@@ -64,7 +64,9 @@ const DataTable = ({
             <tr>
               {columns.map((column) => (
                 <th
-                  className="px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-pink-400 to-pink-500 text-gray-100 text-left text-md font-semibold uppercase tracking-wider"
+                  className={`px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-pink-400 to-pink-500 text-gray-100 text-md font-semibold uppercase tracking-wider ${
+                    column.isNumeric ? "text-right" : "text-left"
+                  }`}
                   key={column.key}
                 >
                   {column.header || formatColumnName(column.key)}
@@ -92,7 +94,9 @@ const DataTable = ({
               >
                 {columns.map((column) => (
                   <td
-                    className="px-5 py-3 border-b border-gray-200 text-sm text-left min-h-[3rem]"
+                    className={`px-5 py-3 border-b border-gray-200 text-sm min-h-[3rem] ${
+                      column.isNumeric ? "text-right" : "text-left"
+                    }`}
                     key={column.key}
                   >
                     {column.render
