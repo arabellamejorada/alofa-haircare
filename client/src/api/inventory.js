@@ -24,6 +24,7 @@ export const getInventoryHistoryByVariationId = async (variationId) => {
 export const getAllInventoryHistory= async () => {
   try {
     const response = await axios.get("/inventory-history");
+    console.log("Inventory history fetched: ", response.data);
     return response;
   } catch (error) {
     console.error("Error fetching inventory history:", error);
