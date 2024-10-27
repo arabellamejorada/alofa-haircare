@@ -10,6 +10,7 @@ export default {
         "body-bg" : './public/images/body-bg.png',
         "alofa-icon" : "./public/images/alofa-icon.png",
         "navbar-bg" : "./public/images/alofa-icon.png",
+        "checkout-gradient" : "linear-gradient(180deg, #FF82AF 49%, #FFD1E3 100%)",
       },
       colors: {
         "alofa-pink" : "#FE699F",
