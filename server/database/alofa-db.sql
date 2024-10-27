@@ -253,11 +253,32 @@ VALUES ('Customer', 'Customer of the company');
 INSERT INTO employee_status (description)
 VALUES ('Active');
 INSERT INTO employee_status (description)
-VALUES ('Inactive');
-INSERT INTO employee_status (description)
 VALUES ('On Leave');
 INSERT INTO employee_status (description)
 VALUES ('Terminated');
+CREATE TABLE vouchers (
+    voucher_id SERIAL PRIMARY KEY,
+    code VARCHAR(50) UNIQUE NOT NULL,
+    -- Voucher code, must be unique
+    type VARCHAR(10) CHECK (type IN ('flat', 'percentage')) NOT NULL,
+    discount_value NUMERIC(10, 2) NOT NULL,
+    -- Discount value (e.g., 20 for 20% or 50 for a flat 50)
+    min_spend NUMERIC(10, 2),
+    -- Minimum spend to apply the voucher
+    max_discount NUMERIC(10, 2),
+    -- Maximum discount allowed
+    total_limit INTEGER,
+    -- Maximum number of times the voucher can be used
+    max_use_per_user INTEGER,
+    -- Maximum number of times a user can use the voucher
+    current_uses INTEGER DEFAULT 0,
+    -- Tracks current number of voucher uses
+    is_active BOOLEAN DEFAULT true,
+    -- Whether the voucher is active or not
+    expiration_date TIMESTAMP,
+    -- Expiration date of the voucher
+    created_at TIMESTAMP DEFAULT NOW() -- Date the voucher was created
+);
 
 
 -- Begin Transaction
