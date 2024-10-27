@@ -12,6 +12,7 @@ import StockIn from "./components/inventory_tab/stock_in/StockIn";
 import StockInHistory from "./components/inventory_tab/stock_in/StockInHistory";
 import StockOut from "./components/inventory_tab/stock_out/StockOut";
 import StockOutHistory from "./components/inventory_tab/stock_out/StockOutHistory";
+import Vouchers from "./components/voucher_tab/Vouchers";
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           <Route path="products" element={<Products />} />
           {/* <Route path="productvariations" element={<ProductVariations />} /> */}
           <Route path="productcategories" element={<ProductCategories />} />
+          <Route path="voucher" element={<Vouchers />} />
           <Route path="inventory" element={<Inventory />} />
           <Route path="stockin" element={<StockIn />} />
           <Route path="stockinhistory" element={<StockInHistory />} />
