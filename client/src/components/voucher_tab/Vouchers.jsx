@@ -21,7 +21,7 @@ const Voucher = () => {
   const [errors, setErrors] = useState({});
 
   const [search, setSearch] = useState("");
-  const [sortField, setSortField] = useState("");
+  const [sortField, setSortField] = useState("voucher_id");
   const [sortOrder, setSortOrder] = useState("asc");
 
   // Voucher state
@@ -227,16 +227,28 @@ const Voucher = () => {
     {
       key: "discount_value",
       header: renderHeader("discount_value", "Discount Value"),
+      isNumeric: true,
     },
-    { key: "min_spend", header: renderHeader("min_spend", "Min Spend") },
+    {
+      key: "min_spend",
+      header: renderHeader("min_spend", "Min Spend"),
+      isNumeric: true,
+    },
     {
       key: "max_discount",
       header: renderHeader("max_discount", "Max Discount"),
+      isNumeric: true,
     },
-    { key: "total_limit", header: renderHeader("total_limit", "Usage Limit") },
+    {
+      key: "total_limit",
+      header: renderHeader("total_limit", "Usage Limit"),
+      isNumeric: true,
+    },
+
     {
       key: "max_use_per_user",
       header: renderHeader("max_use_per_user", "Max Use/User"),
+      isNumeric: true,
     },
     {
       key: "is_active",
