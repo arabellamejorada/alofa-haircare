@@ -8,6 +8,9 @@
   font-family: "Poppins";
 }
 
+.no-scroll {
+  overflow: hidden;
+}
 
 /* fill: var(--Soft-White, linear-gradient(180deg, #FFF 0%, #FFF8FC 100%));
 stroke-width: 5px;

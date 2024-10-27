@@ -1,29 +1,38 @@
 import { useState, useEffect } from 'react';
 import { FaUser, FaTags } from 'react-icons/fa';
-import { Routes, Route, Link, useLocation } from 'react-router-dom';
+import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import ProfileContent from './ProfileContent';
 import AddressTab from './AddressTab';
 import PurchasesTab from './PurchasesTab';
 
 const CustomerProfile = () => {
   const [isAccountOpen, setIsAccountOpen] = useState(true);
-  const [isPurchasesOpen, setIsPurchasesOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Set the active tab based on the current URL
   useEffect(() => {
     const path = location.pathname;
     if (path === '/profile' || path.includes('/profile/address')) {
       setIsAccountOpen(true);
-      setIsPurchasesOpen(false);
     } else if (path.includes('/profile/purchases')) {
       setIsAccountOpen(false);
-      setIsPurchasesOpen(true);
     }
   }, [location.pathname]);
 
+  // Handler for opening "My Account" and automatically navigating to "Profile"
+  const handleAccountClick = () => {
+    if (!isAccountOpen) {
+      setIsAccountOpen(true);
+      navigate('/profile');
+    } else if (location.pathname === '/profile') {
+      // Only navigate if not already in a subtab of "My Account"
+      navigate('/profile');
+    }
+  };
+
   return (
-    <div className="flex flex-col lg:flex-row items-start justify-center pt-28 px-4 gap-2 max-w-6xl mx-auto">
+    <div className="flex flex-col lg:flex-row items-start justify-center pt-28 px-4 gap-2 max-w-6xl mx-auto overflow-hidden">
       {/* Sidebar */}
       <aside className="w-full lg:w-1/4 mb-8 lg:mb-0 flex-shrink-0"> 
         {/* User Info */}
@@ -48,8 +57,10 @@ const CustomerProfile = () => {
               {/* My Account Toggle */}
               <li>
                 <button 
-                  onClick={() => setIsAccountOpen(!isAccountOpen)}
-                  className="flex items-center space-x-2 text-pink-500 font-semibold w-full focus:outline-none"
+                  onClick={handleAccountClick}
+                  className={`flex items-center space-x-2 font-semibold w-full focus:outline-none p-3 rounded-md hover:bg-gray-100 transition-colors duration-300 ${
+                    isAccountOpen ? 'bg-gray-100 text-pink-500' : 'text-pink-500'
+                  }`}
                 >
                   <FaUser className="text-pink-500" />
                   <span>My Account</span>
@@ -84,29 +95,15 @@ const CustomerProfile = () => {
 
               {/* My Purchases Toggle */}
               <li>
-                <button 
-                  onClick={() => setIsPurchasesOpen(!isPurchasesOpen)}
-                  className="flex items-center space-x-2 text-pink-500 font-semibold w-full focus:outline-none"
+                <Link 
+                  to="/profile/purchases"
+                  className={`flex items-center space-x-2 font-semibold w-full focus:outline-none p-3 rounded-md hover:bg-gray-100 transition-colors duration-300 ${
+                    location.pathname === '/profile/purchases' ? 'bg-gray-100 text-pink-500' : 'text-pink-500'
+                  }`}
                 >
                   <FaTags className="text-pink-500" />
                   <span>My Purchases</span>
-                </button>
-                <ul 
-                  className={`ml-4 mt-2 space-y-2 overflow-hidden transition-all duration-300 ${
-                    isPurchasesOpen ? 'max-h-20' : 'max-h-0'
-                  }`}
-                >
-                  <li>
-                    <Link 
-                      to="/profile/purchases" 
-                      className={`text-sm ${
-                        location.pathname === '/profile/purchases' ? 'text-pink-500' : 'text-gray-500'
-                      } focus:outline-none`}
-                    >
-                      Purchases
-                    </Link>
-                  </li>
-                </ul>
+                </Link>
               </li>
             </ul>
           </nav>

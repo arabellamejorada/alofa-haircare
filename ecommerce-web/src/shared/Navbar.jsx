@@ -3,6 +3,7 @@ import { FaUserAlt, FaShoppingCart, FaTrashAlt } from "react-icons/fa";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { CartContext } from "../components/CartContext";
 import { AuthContext } from "../components/AuthContext";
+import NavbarBG from "../../../public/static/alofa-navbar-white.png";
 
 const Navbar = () => {
   const [hovered, setHovered] = useState(false);
@@ -26,6 +27,10 @@ const Navbar = () => {
   // Determine if user is logged in
   const isLoggedIn = Boolean(token);
 
+  // Check if the current page is `/profile`
+  const isProfilePage = location.pathname.startsWith("/profile");
+
+
   // Handle logout
   const handleLogout = () => {
     // Remove session token
@@ -39,8 +44,18 @@ const Navbar = () => {
       className={`${
         isCheckoutPage
           ? "w-full z-50 h-16 bg-checkout-gradient shadow-white-3"
-          : "fixed top-0 w-full z-50 h-16 bg-white shadow-md"
-      }`}
+          : "fixed top-0 w-full z-50 h-16 bg-white shadow-md"}
+          
+          `}
+          style={
+            isProfilePage
+              ? {
+                  backgroundImage: `url(${NavbarBG})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }
+              : {}
+          }
     >
       <nav className="container mx-auto flex items-center justify-between px-4 py-2 h-full">
         

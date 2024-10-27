@@ -2,7 +2,7 @@
 
 const PurchasesTab = () => {
   return (
-    <div>PurchasesTab</div>
+    <div>otot</div>
   )
 }
 

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+
 const ProfileContent = () => {
   // State for each input field and edit mode
   const [isEditing, setIsEditing] = useState({
@@ -55,7 +56,7 @@ const ProfileContent = () => {
 
   return (
     <div className="px-8 py-5 lg:px-8">
-      <h2 className="text-3xl font-extrabold gradient-heading mb-2">My Profile</h2>
+      <h2 className="bg-gradient-to-b from-alofa-pink via-alofa-pink to-alofa-light-pink bg-clip-text text-transparent font-extrabold text-4xl mb-2">My Profile</h2>
       <p className="text-sm text-gray-500 mb-8">
         Last updated: {lastUpdated ? lastUpdated : 'Never'}
       </p>
@@ -70,6 +71,7 @@ const ProfileContent = () => {
               id="firstName"
               name="firstName"
               type="text"
+              placeholder="First Name"
               value={profileData.firstName}
               onChange={handleInputChange}
               readOnly={!isEditing.firstName}
@@ -81,6 +83,7 @@ const ProfileContent = () => {
               id="lastName"
               name="lastName"
               type="text"
+              placeholder="Last Name"
               value={profileData.lastName}
               onChange={handleInputChange}
               readOnly={!isEditing.lastName}
@@ -106,6 +109,7 @@ const ProfileContent = () => {
               id="email"
               name="email"
               type="email"
+              placeholder="Email Address"
               value={profileData.email}
               onChange={handleInputChange}
               readOnly={!isEditing.email}
@@ -131,6 +135,7 @@ const ProfileContent = () => {
               id="contactNumber"
               name="contactNumber"
               type="text"
+              placeholder="Contact Number (+63)"
               value={profileData.contactNumber}
               onChange={handleInputChange}
               readOnly={!isEditing.contactNumber}
