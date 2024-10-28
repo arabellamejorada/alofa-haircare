@@ -1,8 +1,4 @@
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useContext } from "react";
 import { CartProvider } from "./components/CartContext.jsx";
 import { AuthProvider, AuthContext } from "./components/AuthContext.jsx"; // Import AuthProvider
@@ -25,7 +21,6 @@ const AppContent = () => {
   return (
     <>
       <Toaster richColors position="top-center" />
-      {/* Navbar to not appear in checkout page */}
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
@@ -42,13 +37,17 @@ const AppContent = () => {
 };
 
 const App = () => (
-  <CartProvider>
-    <AuthProvider>
+  <AuthProvider>
+    {" "}
+    {/* AuthProvider should be outside */}
+    <CartProvider>
+      {" "}
+      {/* CartProvider should be inside */}
       <Router>
         <AppContent />
       </Router>
-    </AuthProvider>
-  </CartProvider>
+    </CartProvider>
+  </AuthProvider>
 );
 
 export default App;
