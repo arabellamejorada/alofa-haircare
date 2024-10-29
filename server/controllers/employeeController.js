@@ -78,29 +78,24 @@ const createEmployee = async (req, res) => {
 const getAllEmployees = async (req, res) => {
   const client = await pool.connect();
 
-  try {
-    const employees = await client.query(
-      `SELECT 
-                e.employee_id,
-                e.status_id,
-                p.first_name,
-                p.last_name,
-                p.email,
-                p.contact_number,
-                p.role_id
-             FROM employee e
-             JOIN profiles p ON e.profile_id = p.id
-             ORDER BY e.employee_id ASC`,
-    );
-    res.status(200).json(employees.rows);
-  } catch (error) {
-    console.error("Error fetching employees:", error);
-    res
-      .status(500)
-      .json({ message: "Error fetching employees", error: error.message });
-  } finally {
-    client.release();
-  }
+    try {
+        const employees = await client.query(`
+            SELECT 
+                employee.*,
+                profiles.*,
+                profiles.first_name || ' ' || profiles.last_name AS employee_name
+            FROM employee
+            JOIN
+               profiles ON employee.profile_id = profiles.id
+
+            ORDER BY employee_id ASC`);
+        res.status(200).json(employees.rows);
+    } catch (error) {
+        console.error('Error fetching employees:', error);
+        res.status(500).json({ message: 'Error fetching employees', error: error.message });
+    } finally {
+        client.release();
+    }
 };
 
 const getEmployeeById = async (req, res) => {
