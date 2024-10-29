@@ -53,7 +53,16 @@ const getAllEmployees = async (req, res) => {
     const client = await pool.connect();
 
     try {
-        const employees = await client.query('SELECT * FROM employee ORDER BY employee_id ASC');
+        const employees = await client.query(`
+            SELECT 
+                employee.*,
+                profiles.*,
+                profiles.first_name || ' ' || profiles.last_name AS employee_name
+            FROM employee
+            JOIN
+               profiles ON employee.profile_id = profiles.id
+
+            ORDER BY employee_id ASC`);
         res.status(200).json(employees.rows);
     } catch (error) {
         console.error('Error fetching employees:', error);
