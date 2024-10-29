@@ -303,6 +303,7 @@ const Voucher = () => {
             columns={columns}
             onEdit={openModal}
             onDelete={handleDeleteVoucher}
+            isEmployee={true}
           />
         </div>
 

@@ -15,12 +15,12 @@ import { ClipLoader } from "react-spinners";
 export const CartContext = createContext();
 
 const CartProvider = ({ children }) => {
-  const authContext = useContext(AuthContext);
-  const token = authContext?.token;
+  const { token } = useContext(AuthContext);
+  const customerProfileId = token?.user.id;
 
   const [cartItems, setCartItems] = useState([]);
   const [cartId, setCartId] = useState(
-    localStorage.getItem("guest_cart_id") || null,
+    sessionStorage.getItem("guest_cart_id") || null,
   );
   const [subtotal, setSubtotal] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -28,7 +28,7 @@ const CartProvider = ({ children }) => {
   const createGuestCart = async () => {
     try {
       const cart = await createCart(null); // Creates a guest cart
-      localStorage.setItem("guest_cart_id", cart.cart_id); // Store guest cart ID
+      sessionStorage.setItem("guest_cart_id", cart.cart_id); // Store guest cart ID
       setCartId(cart.cart_id);
       setCartItems([]); // Initialize empty cart items
     } catch (error) {
@@ -37,26 +37,50 @@ const CartProvider = ({ children }) => {
   };
 
   const fetchCart = async () => {
-    setLoading(true); // Set loading to true
+    setLoading(true);
     try {
       let fetchedCart;
-      if (token) {
-        console.log("token.customer_id: ", token.customer_id);
-        fetchedCart = await getCartByCustomerId(token.customer_id);
-      } else if (cartId) {
-        fetchedCart = await getCartById(cartId);
+
+      if (customerProfileId) {
+        // If logged in, fetch the cart using the customer ID from token
+        console.log("Fetching cart for customer:", customerProfileId);
+        fetchedCart = await getCartByCustomerId(customerProfileId);
+
+        console.log("fetchedCart: ", fetchedCart);
+        if (!fetchedCart) {
+          throw new Error("No active cart found for customer.");
+        }
       } else {
-        await createGuestCart();
-        setLoading(false);
-        return;
+        if (cartId) {
+          // If not logged in, fetch the guest cart by ID
+          console.log("Fetching guest cart by ID:", cartId);
+          fetchedCart = await getCartById(cartId);
+        }
+        if (!fetchedCart) {
+          console.log("Creating new guest cart...");
+<<<<<<< Updated upstream
+          await createGuestCart();
+=======
+          await createGuestCart(); // Create a new guest cart if not found
+>>>>>>> Stashed changes
+          setLoading(false);
+          return;
+        }
       }
 
-      // Set cart items and subtotal
-      setCartItems(fetchedCart.items);
-      setCartId(fetchedCart.cart.cart_id);
-      calculateSubtotal(fetchedCart.items);
+      // Ensure fetchedCart contains the correct structure
+      if (fetchedCart && fetchedCart.cart && fetchedCart.items) {
+        // Set the cart items and ID
+        setCartItems(fetchedCart.items);
+        setCartId(fetchedCart.cart.cart_id);
+        calculateSubtotal(fetchedCart.items);
+      } else {
+        console.error("Invalid cart structure:", fetchedCart);
+        throw new Error("Failed to fetch valid cart.");
+      }
     } catch (error) {
       console.error("Error fetching cart:", error);
+      toast.error("Failed to fetch cart.");
     } finally {
       setLoading(false);
     }
@@ -64,7 +88,7 @@ const CartProvider = ({ children }) => {
 
   useEffect(() => {
     fetchCart();
-  }, [token]);
+  }, [customerProfileId]);
 
   const addToCart = async (product) => {
     console.log("product: ", product);
@@ -112,9 +136,6 @@ const CartProvider = ({ children }) => {
         return updatedCartItems;
       });
 
-      // Call the backend to update the cart asynchronously
-      await addCartItem(cartId, product.id, 1);
-
       // Show a success toast message
       if (product.value !== "N/A") {
         toast.success(`${product.name} ${product.value} added to cart!`);
@@ -137,14 +158,12 @@ const CartProvider = ({ children }) => {
     }
 
     try {
-      // Call API to update the cart item
       const updatedItem = await updateCartItem(
         cartId,
         variation_id,
         newQuantity,
       );
 
-      // Update cart state with the new item quantity and recalculate the item_total
       setCartItems((prevItems) => {
         const updatedCartItems = prevItems.map((item) =>
           item.variation_id === variation_id
@@ -171,11 +190,9 @@ const CartProvider = ({ children }) => {
       return;
     }
 
-    console.log("Deleting item with variation_id: ", variation_id);
     try {
       await deleteCartItem(cartId, variation_id);
 
-      // Update the cart state by removing the deleted item
       setCartItems((prevItems) =>
         prevItems.filter((item) => item.variation_id !== variation_id),
       );
@@ -186,7 +203,6 @@ const CartProvider = ({ children }) => {
 
       calculateSubtotal(cartItems);
 
-      // Show success toast
       if (removedItem) {
         if (removedItem.value !== "N/A") {
           toast.success(
@@ -205,6 +221,14 @@ const CartProvider = ({ children }) => {
   const calculateSubtotal = (items) => {
     const newSubtotal = items.reduce((sum, item) => sum + item.item_total, 0);
     setSubtotal(newSubtotal);
+  };
+
+  // Reset the cart on logout
+  const resetCart = () => {
+    setCartItems([]);
+    setSubtotal(0);
+    setCartId(null);
+    sessionStorage.removeItem("guest_cart_id");
   };
 
   return (
@@ -226,6 +250,8 @@ const CartProvider = ({ children }) => {
           handleDelete,
           subtotal,
           loading,
+          resetCart,
+          fetchCart,
         }}
       >
         {!loading && children} {/* Render children only after loading */}
