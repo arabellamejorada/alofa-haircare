@@ -10,7 +10,7 @@ import { mergeCarts } from "../api/cart.js"; // Import mergeCarts API
 import "../../src/styles.css";
 
 const Login = () => {
-  const { token, setToken } = useContext(AuthContext);
+  const { token, setToken, signIn } = useContext(AuthContext);
   const { cartId, fetchCart } = useContext(CartContext); // Add fetchCart
   const navigate = useNavigate();
 
@@ -31,10 +31,8 @@ const Login = () => {
   async function handleSubmit(e) {
     e.preventDefault();
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: formData.emailAddress,
-        password: formData.password_input,
-      });
+      // Step 1: Use signIn from AuthContext to handle login
+      await signIn(formData.emailAddress, formData.password_input);
 
       if (error) throw error;
 
@@ -56,6 +54,7 @@ const Login = () => {
       // Navigate to the desired route
       navigate("/");
     } catch (error) {
+      // Set error message if login fails
       setErrorMessage(error.message);
       console.error("Login error:", error.message);
     }
@@ -67,48 +66,49 @@ const Login = () => {
         <AccountCard>
           <form onSubmit={handleSubmit}>
             <div className="flex flex-col p-8">
-              <div className="">
-                <div className="flex text-5xl mb-4 justify-center font-heading text-alofa-pink">
-                  Log In
+              <div className="flex text-5xl mb-4 justify-center font-heading text-alofa-pink">
+                Log In
+              </div>
+
+              {errorMessage && (
+                <div className="mb-4 text-red-600 text-center">
+                  {errorMessage}
                 </div>
-                {errorMessage && (
-                  <div className="mb-4 text-red-600 text-center">
-                    {errorMessage}
-                  </div>
-                )}
-                <p className="text-gray-600">Email:</p>
-                <Input
-                  type="email"
-                  name="emailAddress"
-                  placeholder="Email Address"
-                  className="mb-4 p-3 w-full h-[2rem] border border-gray-300 rounded-md"
-                  onChange={handleChange}
-                  required
-                />
-                <p className="text-gray-600">Password:</p>
-                <Input
-                  type="password"
-                  name="password_input"
-                  placeholder="Password"
-                  className="mb-4 p-3 w-full h-[2rem] border border-gray-300 rounded-md"
-                  onChange={handleChange}
-                  required
-                />
-                <div className="flex flex-col items-center">
-                  <div className="flex">
-                    <Button
-                      type="submit"
-                      className="w-[12rem] font-extrabold font-sans text-white my-1 py-2 px-4 rounded-full focus:outline-none bg-gradient-to-b from-[#FE699F] to-[#F8587A]"
-                    >
-                      CONTINUE
-                    </Button>
-                  </div>
-                  <div className="text-sm gap-1">
-                    Don't have an account?{" "}
-                    <Link to="/signup" className="underline">
-                      Sign Up
-                    </Link>
-                  </div>
+              )}
+
+              <p className="text-gray-600">Email:</p>
+              <Input
+                type="email"
+                name="emailAddress"
+                placeholder="Email Address"
+                className="mb-4 p-3 w-full h-[2rem] border border-gray-300 rounded-md"
+                onChange={handleChange}
+                required
+              />
+
+              <p className="text-gray-600">Password:</p>
+              <Input
+                type="password"
+                name="password_input"
+                placeholder="Password"
+                className="mb-4 p-3 w-full h-[2rem] border border-gray-300 rounded-md"
+                onChange={handleChange}
+                required
+              />
+
+              <div className="flex flex-col items-center">
+                <Button
+                  type="submit"
+                  className="w-[12rem] font-extrabold font-sans text-white my-1 py-2 px-4 rounded-full focus:outline-none bg-gradient-to-b from-[#FE699F] to-[#F8587A]"
+                >
+                  CONTINUE
+                </Button>
+
+                <div className="text-sm gap-1">
+                  Don't have an account?{" "}
+                  <Link to="/signup" className="underline">
+                    Sign Up
+                  </Link>
                 </div>
               </div>
             </div>

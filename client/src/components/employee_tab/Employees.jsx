@@ -37,8 +37,6 @@ const Employees = () => {
   const [contactNumber, setContactNumber] = useState("");
   const [roleId, setRoleId] = useState("");
   const [statusId, setStatusId] = useState("");
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
 
   const [errors, setErrors] = useState({});
 
@@ -83,10 +81,9 @@ const Employees = () => {
     setEmail("");
     setContactNumber("");
     setRoleId("");
-    setUsername("");
-    setPassword("");
     setOriginalEmployeeData(null); // Reset original data
     setSelectedEmployee(null);
+    setErrors({});
   };
 
   const handleInputChange = (e, field) => {
@@ -119,15 +116,6 @@ const Employees = () => {
         setRoleId(value);
         error = value ? "" : "Role is required";
         break;
-      case "username":
-        setUsername(value);
-        error = value.trim() ? "" : "Username is required";
-        break;
-      case "password":
-        setPassword(value);
-        error =
-          value.length >= 6 ? "" : "Password must be at least 6 characters";
-        break;
       default:
         break;
     }
@@ -158,8 +146,6 @@ const Employees = () => {
       email,
       contactNumber,
       roleId,
-      username: selectedEmployee ? "placeholder" : username || "",
-      password: selectedEmployee ? "placeholder" : password || "",
     });
 
     setErrors(formErrors);
@@ -169,25 +155,29 @@ const Employees = () => {
       return;
     }
 
-    const newEmployee = {
-      first_name: firstName,
-      last_name: lastName,
-      email: email,
-      contact_number: contactNumber,
-      role_id: roleId,
-      status_id: 1,
-      username: username,
-      password: password,
-    };
-
     try {
       setLoading(true);
-      const response = await createEmployee(newEmployee);
+
+      // Prepare the employee data
+      const newEmployee = {
+        first_name: firstName,
+        last_name: lastName,
+        email: email,
+        contact_number: contactNumber,
+        role_id: roleId,
+        status_id: 1,
+        password: "12345678",
+      };
+
+      // Send the data to your backend to create the employee and user in Supabase Auth
+      await createEmployee(newEmployee);
+
       setIsModalVisible(false);
       const employeesData = await getEmployees();
       setEmployees(employeesData);
       toast.success("Employee added successfully");
     } catch (error) {
+      console.error("Error adding employee:", error);
       toast.error("Failed to create employee.");
     } finally {
       setLoading(false);
@@ -205,8 +195,6 @@ const Employees = () => {
       email: email || selectedEmployee.email,
       contactNumber: contactNumber || selectedEmployee.contact_number,
       roleId: roleId || selectedEmployee.role_id,
-      username: "", // Skip username validation for edit
-      password: "", // Skip password validation for edit
       isEdit: true, // Indicate that this is an edit operation
     });
 
@@ -217,20 +205,18 @@ const Employees = () => {
       return;
     }
 
-    const formData = new FormData();
-    formData.append("first_name", firstName || selectedEmployee.first_name);
-    formData.append("last_name", lastName || selectedEmployee.last_name);
-    formData.append("email", email || selectedEmployee.email);
-    formData.append(
-      "contact_number",
-      contactNumber || selectedEmployee.contact_number,
-    );
-    formData.append("role_id", roleId || selectedEmployee.role_id);
-    formData.append("status_id", statusId || selectedEmployee.status_id);
+    const updatedEmployee = {
+      first_name: firstName || selectedEmployee.first_name,
+      last_name: lastName || selectedEmployee.last_name,
+      email: email || selectedEmployee.email,
+      contact_number: contactNumber || selectedEmployee.contact_number,
+      role_id: roleId || selectedEmployee.role_id,
+      status_id: statusId || selectedEmployee.status_id,
+    };
 
     try {
       setLoading(true);
-      await updateEmployee(selectedEmployee.employee_id, formData);
+      await updateEmployee(selectedEmployee.employee_id, updatedEmployee);
       setIsModalVisible(false);
       const employeesData = await getEmployees();
       setEmployees(employeesData);
@@ -416,8 +402,6 @@ const Employees = () => {
           roleId={roleId}
           statusId={statusId}
           setStatusId={setStatusId}
-          username={username}
-          password={password}
           roles={roles}
           statuses={statuses}
           errors={errors}
