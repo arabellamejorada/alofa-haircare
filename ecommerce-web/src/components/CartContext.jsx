@@ -58,11 +58,7 @@ const CartProvider = ({ children }) => {
         }
         if (!fetchedCart) {
           console.log("Creating new guest cart...");
-<<<<<<< Updated upstream
           await createGuestCart();
-=======
-          await createGuestCart(); // Create a new guest cart if not found
->>>>>>> Stashed changes
           setLoading(false);
           return;
         }
@@ -87,7 +83,10 @@ const CartProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    fetchCart();
+    // Fetch cart only if the user is not logged in
+    if (!customerProfileId) {
+      fetchCart();
+    }
   }, [customerProfileId]);
 
   const addToCart = async (product) => {
