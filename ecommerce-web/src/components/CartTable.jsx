@@ -5,12 +5,17 @@ import { Link } from "react-router-dom";
 const CartTable = ({ cartItems, handleQuantityChange, handleDelete }) => {
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 h-[700px]">
-      <h2 className="bg-gradient-to-r from-alofa-pink to-alofa-light-pink bg-clip-text text-transparent text-3xl mb-4 font-bold">My Cart</h2>
+      <h2 className="bg-gradient-to-r from-alofa-pink to-alofa-light-pink bg-clip-text text-transparent text-3xl mb-4 font-bold">
+        My Cart
+      </h2>
 
       {cartItems.length === 0 ? (
         <p className="text-gray-500 text-center">
           Your cart is empty. Go to{" "}
-          <Link to="/products" className="underline text-alofa-pink hover:text-alofa-pink-gradient">
+          <Link
+            to="/products"
+            className="underline text-alofa-pink hover:text-alofa-pink-gradient"
+          >
             products page
           </Link>{" "}
           to shop!
@@ -30,7 +35,7 @@ const CartTable = ({ cartItems, handleQuantityChange, handleDelete }) => {
             </thead>
             <tbody>
               {cartItems.map((item) => (
-                <tr key={item.id} className="border-b">
+                <tr key={item.cart_item_id} className="border-b">
                   <td className="p-2 flex items-center">
                     <img
                       src={item.image}
@@ -40,7 +45,12 @@ const CartTable = ({ cartItems, handleQuantityChange, handleDelete }) => {
                     <span>{item.name}</span>
                   </td>
                   <td className="p-2">{item.value || "N/A"}</td>
-                  <td className="p-2">₱{Number(item.price).toFixed(2)}</td>
+                  <td className="p-2">
+                    ₱
+                    {new Intl.NumberFormat("en-PH", {
+                      minimumFractionDigits: 2,
+                    }).format(item.unit_price)}
+                  </td>
                   <td className="p-2">
                     <input
                       type="number"
@@ -49,19 +59,22 @@ const CartTable = ({ cartItems, handleQuantityChange, handleDelete }) => {
                       onChange={(e) => {
                         const value = e.target.value;
                         if (/^\d*$/.test(value)) {
-                          handleQuantityChange(item.id, value);
+                          handleQuantityChange(item.variation_id, value);
                         }
                       }}
                       min="1"
                     />
                   </td>
                   <td className="p-2">
-                    ₱{(item.price * item.quantity).toFixed(2)}
+                    ₱
+                    {new Intl.NumberFormat("en-PH", {
+                      minimumFractionDigits: 2,
+                    }).format(item.item_total)}
                   </td>
                   <td className="p-2">
                     <button
                       className="text-red-500 hover:text-red-700"
-                      onClick={() => handleDelete(item.id)}
+                      onClick={() => handleDelete(item.variation_id)}
                     >
                       <FaTrashAlt />
                     </button>
@@ -79,11 +92,13 @@ const CartTable = ({ cartItems, handleQuantityChange, handleDelete }) => {
 CartTable.propTypes = {
   cartItems: PropTypes.arrayOf(
     PropTypes.shape({
-      id: PropTypes.number.isRequired,
+      cart_item_id: PropTypes.number.isRequired,
+      variation_id: PropTypes.number.isRequired,
       name: PropTypes.string.isRequired,
       value: PropTypes.string,
-      price: PropTypes.number.isRequired,
+      unit_price: PropTypes.number.isRequired, // Updated to 'unit_price'
       quantity: PropTypes.number.isRequired,
+      item_total: PropTypes.number.isRequired, // Added 'item_total'
       image: PropTypes.string.isRequired,
     }),
   ).isRequired,

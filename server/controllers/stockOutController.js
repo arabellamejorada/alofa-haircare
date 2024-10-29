@@ -2,11 +2,11 @@ const pool = require('../db.js');
 
 const createStockOut = async (req, res) => {
   const client = await pool.connect();
-  const { stockOutProducts, order_transaction_id, employee_id, stock_out_date } = req.body;
+  const { stockOutProducts, order_id, employee_id, stock_out_date } = req.body;
   let reference_number = null;
 
   console.log("stockOutProducts", stockOutProducts);
-  console.log("order_transaction_id", order_transaction_id);
+  console.log("order_id", order_id);
   console.log("employee_id", employee_id);
   console.log("stock_out_date", stock_out_date);
   if (!stockOutProducts || stockOutProducts.length === 0 || !employee_id || !stock_out_date) {
@@ -16,13 +16,13 @@ const createStockOut = async (req, res) => {
   try {
     await client.query('BEGIN');
 
-    if(order_transaction_id) {
+    if(order_id) {
       // Check if the order transaction exists, if yes the REF NO. is the REF NO. from order transaction table
       reference_number = await client.query(`
         SELECT reference_number 
-        FROM order_transaction 
-        WHERE order_transaction_id = $1;`,
-        [order_transaction_id]);
+        FROM orders
+        WHERE order_id = $1;`,
+        [order_id]);
     } else {
       // Generate a reference number if order transaction id is not provided
       reference_number = await client.query(`
@@ -36,10 +36,10 @@ const createStockOut = async (req, res) => {
     // Insert stock_out record and explicitly set the stock_out_date
     const stockOutResult = await client.query(
       `
-      INSERT INTO stock_out (reference_number, stock_out_date, order_transaction_id, employee_id)
+      INSERT INTO stock_out (reference_number, stock_out_date, order_id, employee_id)
       VALUES ($1, $2, $3, $4) RETURNING stock_out_id;
       `,
-      [reference_number, stock_out_date || new Date(), order_transaction_id || null, employee_id]
+      [reference_number, stock_out_date || new Date(), order_id || null, employee_id]
     );
 
     const stock_out_id = stockOutResult.rows[0].stock_out_id;
@@ -101,7 +101,7 @@ const getAllStockOut = async (req, res) => {
           pv.value, 
           pv.sku,
           p.name,
-          e.first_name || ' ' || e.last_name AS employee_name,
+          pr.first_name || ' ' || pr.last_name AS employee_name,
           soi.quantity
       FROM 
           stock_out so
@@ -111,16 +111,18 @@ const getAllStockOut = async (req, res) => {
           product_variation pv ON soi.variation_id = pv.variation_id
       JOIN
           product p ON pv.product_id = p.product_id
-      JOIN
+      JOIN 
           employee e ON so.employee_id = e.employee_id
+      JOIN
+          profiles pr ON e.profile_id = pr.id
       ORDER BY 
           so.stock_out_date DESC
     `);
 
     res.status(200).json(stockInResult.rows);
   } catch (error) {
-    console.error("Error during get all stock in:", error);
-    res.status(500).json({ message: "Error during get all stock in", error: error.message });
+    console.error("Error during get all stock out:", error);
+    res.status(500).json({ message: "Error during get all stock out", error: error.message });
   } finally {
     client.release();
   }

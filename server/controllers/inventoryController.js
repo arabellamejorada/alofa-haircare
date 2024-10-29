@@ -18,7 +18,9 @@ const getAllInventories = async (req, res) => {
             JOIN 
                 product ON product_variation.product_id = product.product_id
             JOIN 
-                product_status ON product_variation.product_status_id = product_status.status_id;`
+                product_status ON product_variation.product_status_id = product_status.status_id
+                
+            ORDER BY inventory_id ASC;`
         );
 
         const formattedResult = result.rows.map(row => {
@@ -141,31 +143,34 @@ const getAllInventoryHistory = async (req, res) => {
   const client = await pool.connect();
   try {
    const query = `
-    SELECT 
-        si.reference_number AS reference_number,
-        sii.variation_id AS variation_id,
-        sii.quantity AS quantity,
-        NULL AS reason,
-        si.stock_in_date AS date,
-        e.first_name || ' ' || e.last_name AS employee_name
-    FROM stock_in_items sii
-    JOIN stock_in si ON sii.stock_in_id = si.stock_in_id
-    JOIN employee e ON si.employee_id = e.employee_id
+        SELECT 
+            si.reference_number AS reference_number,
+            sii.variation_id AS variation_id,
+            sii.quantity AS quantity,
+            NULL AS reason,
+            si.stock_in_date AS date,
+            p.first_name || ' ' || p.last_name AS employee_name
+        FROM stock_in_items sii
+        JOIN stock_in si ON sii.stock_in_id = si.stock_in_id
+        JOIN employee e ON si.employee_id = e.employee_id
+        JOIN profiles p ON e.profile_id = p.id
 
-    UNION ALL
+        UNION ALL
 
-    SELECT 
-        so.reference_number AS reference_number,
-        soi.variation_id AS variation_id,
-        (-1) * soi.quantity AS quantity, 
-        soi.reason AS reason,
-        so.stock_out_date AS date,
-        e.first_name || ' ' || e.last_name AS employee_name
-    FROM stock_out_items soi
-    JOIN stock_out so ON soi.stock_out_id = so.stock_out_id
-    JOIN employee e ON so.employee_id = e.employee_id
+        SELECT 
+            so.reference_number AS reference_number,
+            soi.variation_id AS variation_id,
+            (-1) * soi.quantity AS quantity, 
+            soi.reason AS reason,
+            so.stock_out_date AS date,
+            p.first_name || ' ' || p.last_name AS employee_name  -- Added employee name
+        FROM stock_out_items soi
+        JOIN stock_out so ON soi.stock_out_id = so.stock_out_id
+        JOIN employee e ON so.employee_id = e.employee_id  -- Join with employee table
+        JOIN profiles p ON e.profile_id = p.id  -- Join with profiles to get employee name
 
-    ORDER BY date DESC;
+        ORDER BY date DESC;
+
     `;
 
 

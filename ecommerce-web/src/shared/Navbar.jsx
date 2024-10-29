@@ -3,30 +3,28 @@ import { FaUserAlt, FaShoppingCart, FaTrashAlt } from "react-icons/fa";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { CartContext } from "../components/CartContext";
 import { AuthContext } from "../components/AuthContext";
+import { ClipLoader } from "react-spinners";
 
 const Navbar = () => {
   const [hovered, setHovered] = useState(false);
-  const { cartItems, handleQuantityChange, handleDelete } = useContext(CartContext);
+  const { cartItems, handleQuantityChange, handleDelete, subtotal, loading } =
+    useContext(CartContext);
   const location = useLocation(); // Get the current route
   const navigate = useNavigate(); // For navigation
 
   const { token, setToken } = useContext(AuthContext); // Access token and setToken
 
-  // Calculate total price
-  const totalPrice = cartItems
-    .reduce((total, item) => total + item.price * item.quantity, 0)
-    .toFixed(2);
+  const totalPrice = cartItems.reduce((sum, item) => {
+    const price = parseFloat(item.unit_price) || 0;
+    const quantity = item.quantity || 0;
+    return sum + price * quantity;
+  }, 0);
 
-  // Check if the current path is either '/login' or '/signup'
-  const isAuthPage = location.pathname === "/login" || location.pathname === "/signup";
-
-  // Check if the current page is `/checkout`
+  const isAuthPage =
+    location.pathname === "/login" || location.pathname === "/signup";
   const isCheckoutPage = location.pathname === "/checkout";
-
-  // Determine if user is logged in
   const isLoggedIn = Boolean(token);
 
-  // Handle logout
   const handleLogout = () => {
     // Remove session token
     setToken(null);
@@ -34,6 +32,17 @@ const Navbar = () => {
     navigate("/");
   };
 
+  if (loading) {
+    return (
+      <div className="relative">
+        {loading && (
+          <div className="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center z-50">
+            <ClipLoader size={50} color="#E53E3E" loading={loading} />
+          </div>
+        )}
+      </div>
+    );
+  }
   return (
     <header
       className={`${
@@ -43,7 +52,6 @@ const Navbar = () => {
       }`}
     >
       <nav className="container mx-auto flex items-center justify-between px-4 py-2 h-full">
-        
         <div
           className={`flex ${
             isCheckoutPage ? "justify-center w-full" : "justify-start"
@@ -60,7 +68,7 @@ const Navbar = () => {
           >
             alofa
           </a>
-          
+
           {/* Navigation Pages */}
           {!isAuthPage && !isCheckoutPage && (
             <div className="text-lg font-body text-alofa-pink sm:flex items-center gap-8 hidden">
@@ -89,9 +97,9 @@ const Navbar = () => {
         {/* Right Section - Cart Icon (if on /checkout1) */}
         {isCheckoutPage && (
           <Link to="/shoppingcart">
-          <div className="text-white p-3 rounded-full cursor-pointer mr-4">
-            <FaShoppingCart size={20} />
-          </div>
+            <div className="text-white p-3 rounded-full cursor-pointer mr-4">
+              <FaShoppingCart size={20} />
+            </div>
           </Link>
         )}
 
@@ -121,7 +129,7 @@ const Navbar = () => {
                 >
                   <div className="text-[#FE699F] p-3 rounded-full transition-colors duration-300 hover:delay-700 hover:text-gray-500 cursor-pointer">
                     <Link to="/shoppingcart">
-                    <FaShoppingCart />
+                      <FaShoppingCart />
                     </Link>
                   </div>
                 </div>
@@ -176,7 +184,7 @@ const Navbar = () => {
               {cartItems && cartItems.length > 0 ? (
                 cartItems.map((item) => (
                   <div
-                    key={item.id}
+                    key={item.cart_item_id}
                     className="flex items-center gap-4 mb-4 p-2 bg-white rounded-lg"
                   >
                     <img
@@ -193,19 +201,24 @@ const Navbar = () => {
                           {item.value !== "N/A" ? item.value : ""}
                         </p>
                       )}
-                      <p className="text-sm text-gray-500">₱{item.price}</p>
+                      <p className="text-sm text-gray-500">
+                        ₱{item.unit_price}
+                      </p>
                     </div>
                     <div className="flex items-center gap-2">
                       <input
                         type="number"
                         value={item.quantity}
                         onChange={(e) =>
-                          handleQuantityChange(item.id, e.target.value)
+                          handleQuantityChange(
+                            item.variation_id,
+                            e.target.value,
+                          )
                         }
                         className="w-12 border border-gray-300 rounded-md text-center"
                       />
                       <button
-                        onClick={() => handleDelete(item.id)}
+                        onClick={() => handleDelete(item.variation_id)}
                         className="text-red-500 hover:text-red-700"
                       >
                         <FaTrashAlt />
@@ -222,11 +235,21 @@ const Navbar = () => {
             <div className="border-t pt-4">
               <div className="flex justify-between mb-2 text-gray-500">
                 <span>Subtotal</span>
-                <span>₱{totalPrice}</span>
+                <span>
+                  ₱
+                  {new Intl.NumberFormat("en-PH", {
+                    minimumFractionDigits: 2,
+                  }).format(totalPrice)}
+                </span>
               </div>
               <div className="flex justify-between text-xl font-semibold mb-4">
                 <span>Total</span>
-                <span>₱{totalPrice}</span>
+                <span>
+                  ₱
+                  {new Intl.NumberFormat("en-PH", {
+                    minimumFractionDigits: 2,
+                  }).format(totalPrice)}
+                </span>
               </div>
 
               <div className="flex justify-between">
