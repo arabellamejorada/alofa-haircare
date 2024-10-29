@@ -12,7 +12,7 @@ const Navbar = () => {
   const location = useLocation(); // Get the current route
   const navigate = useNavigate(); // For navigation
 
-  const { token, role, signOut } = useContext(AuthContext); // Access token and setToken
+  const { user, role, signOut } = useContext(AuthContext); // Use 'user' instead of 'token'
   const { resetCart } = useContext(CartContext); // Reset cart items
 
   const totalPrice = cartItems.reduce((sum, item) => {
@@ -24,20 +24,23 @@ const Navbar = () => {
   const isAuthPage =
     location.pathname === "/login" || location.pathname === "/signup";
   const isCheckoutPage = location.pathname === "/checkout";
-  const isLoggedIn = Boolean(token);
+  const isLoggedIn = Boolean(user); // Use 'user' to determine if logged in
 
   // Handle logout
   const handleLogout = () => {
     // Remove session token
+    localStorage.removeItem("auth_token");
     signOut(); // Call signOut function from AuthContext
+    // Reset cart
+    resetCart();
     // Redirect to home page
     navigate("/");
   };
 
   useEffect(() => {
-    console.log("Current token:", token); // Debugging log to check token value
+    console.log("Current user:", user); // Log 'user' instead of 'token'
     console.log("Current role:", role); // Debugging log to check role value
-  }, [token, role]);
+  }, [user, role]);
 
   if (loading) {
     return (
