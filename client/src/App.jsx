@@ -20,7 +20,7 @@ import StockOutHistory from "./components/inventory_tab/stock_out/StockOutHistor
 import Login from "./components/Login";
 import Vouchers from "./components/voucher_tab/Vouchers";
 
-import { AuthProvider, AuthContext } from "./AuthContext"; // Import AuthContext
+import { AuthProvider, AuthContext } from "./components/AuthContext"; // Import AuthContext
 
 // Protected Route component
 const ProtectedRoute = ({ element }) => {

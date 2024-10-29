@@ -3,9 +3,8 @@ import Button from "../components/Button";
 import Input from "../components/Input";
 import AccountCard from "../components/AccountCard";
 import { Link, useNavigate } from "react-router-dom";
-import { supabase } from "../client.jsx";
-import { AuthContext } from "../components/AuthContext.jsx";
-import { CartContext } from "../components/CartContext.jsx"; // Import CartContext for merging
+import { AuthContext } from "../components/AuthContext";
+import { CartContext } from "../components/CartContext"; // Import CartContext for merging
 import { mergeCarts } from "../api/cart.js"; // Import mergeCarts API
 import "../../src/styles.css";
 
@@ -32,12 +31,14 @@ const Login = () => {
     e.preventDefault();
     try {
       // Step 1: Use signIn from AuthContext to handle login
-      await signIn(formData.emailAddress, formData.password_input);
+      const data = await signIn(formData.emailAddress, formData.password_input);
 
-      if (error) throw error;
+      // No need to check for 'error' here; 'signIn' will throw an error if one occurs
 
       const customerProfileId = data.user.id;
-      setToken(data);
+
+      // No need to call 'setToken' here if 'signIn' handles it
+      // Remove 'setToken(data);' unless you need it for a specific reason
 
       // Merge guest cart with logged-in cart
       if (cartId) {

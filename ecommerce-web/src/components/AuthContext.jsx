@@ -1,14 +1,15 @@
+// AuthContext.jsx
+
 import React, { createContext, useState, useEffect, useContext } from "react";
-import { supabase } from "./supabaseClient.jsx";
+import { supabase } from "../supabaseClient";
 
 export const AuthContext = createContext();
-
-export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(
     () => localStorage.getItem("auth_token") || null,
   );
+  const [user, setUser] = useState(null); // Add this line
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -43,17 +44,22 @@ export const AuthProvider = ({ children }) => {
           setToken(sessionData.session.access_token);
           localStorage.setItem("auth_token", sessionData.session.access_token);
 
+          // Set the user object
+          setUser(sessionData.session.user); // Add this line
+
           // Fetch the user's role
           await fetchUserRole(sessionData.session.user.id);
         } else {
           // Clear state if no session is found
           setToken(null);
+          setUser(null); // Add this line
           setRole(null);
           localStorage.removeItem("auth_token");
         }
       } catch (err) {
         console.error("Error fetching session:", err.message);
         setToken(null);
+        setUser(null); // Add this line
         setRole(null);
       } finally {
         setLoading(false);
@@ -74,8 +80,14 @@ export const AuthProvider = ({ children }) => {
       setToken(data.session.access_token);
       localStorage.setItem("auth_token", data.session.access_token);
 
+      // Set the user object
+      setUser(data.user); // Add this line
+
       // Fetch the user's role after successful login
       await fetchUserRole(data.user.id);
+
+      // Return data for further use if needed
+      return data;
     } catch (err) {
       console.error("Error during sign-in:", err.message);
       throw err;
@@ -88,6 +100,7 @@ export const AuthProvider = ({ children }) => {
       if (error) throw error;
 
       setToken(null);
+      setUser(null); // Add this line
       setRole(null);
       localStorage.removeItem("auth_token");
     } catch (err) {
@@ -97,7 +110,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ token, role, signIn, signOut, loading }}>
+    <AuthContext.Provider
+      value={{ token, user, role, signIn, signOut, loading }}
+    >
       {!loading && children}
     </AuthContext.Provider>
   );

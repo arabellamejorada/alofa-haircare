@@ -1,10 +1,9 @@
 import { useState, useContext, useEffect } from "react";
-import { FaUserAlt, FaShoppingCart } from "react-icons/fa";
+import { FaUserAlt, FaShoppingCart, FaTrashAlt } from "react-icons/fa";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { CartContext } from "../components/CartContext";
 import { AuthContext } from "../components/AuthContext"; // Import AuthContext
 import { ClipLoader } from "react-spinners";
-import Button from "../components/Button";
 
 const Navbar = () => {
   const [hovered, setHovered] = useState(false);
@@ -13,7 +12,7 @@ const Navbar = () => {
   const location = useLocation(); // Get the current route
   const navigate = useNavigate(); // For navigation
 
-  const { token, setToken, role, signOut } = useContext(AuthContext); // Access token and setToken
+  const { token, role, signOut } = useContext(AuthContext); // Access token and setToken
   const { resetCart } = useContext(CartContext); // Reset cart items
 
   const totalPrice = cartItems.reduce((sum, item) => {
@@ -30,7 +29,7 @@ const Navbar = () => {
   // Handle logout
   const handleLogout = () => {
     // Remove session token
-    setToken(null);
+    signOut(); // Call signOut function from AuthContext
     // Redirect to home page
     navigate("/");
   };

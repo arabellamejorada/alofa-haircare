@@ -15,8 +15,8 @@ import { ClipLoader } from "react-spinners";
 export const CartContext = createContext();
 
 const CartProvider = ({ children }) => {
-  const { token } = useContext(AuthContext);
-  const customerProfileId = token?.user.id;
+  const { user } = useContext(AuthContext);
+  const customerProfileId = user?.id; // Use 'user' instead of 'token'
 
   const [cartItems, setCartItems] = useState([]);
   const [cartId, setCartId] = useState(
@@ -58,11 +58,7 @@ const CartProvider = ({ children }) => {
         }
         if (!fetchedCart) {
           console.log("Creating new guest cart...");
-<<<<<<< Updated upstream
-          await createGuestCart();
-=======
           await createGuestCart(); // Create a new guest cart if not found
->>>>>>> Stashed changes
           setLoading(false);
           return;
         }
