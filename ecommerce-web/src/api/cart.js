@@ -82,9 +82,10 @@ export const getCartById = async (cart_id) => {
 };
 
 
-export const getCartByCustomerId = async (customer_id) => {
+export const getCartByCustomerId = async (profile_id) => {
+  console.log("Customer ID received: ", profile_id);
   try {
-    const response = await axios.get(`/cart/customer/${customer_id}`);
+    const response = await axios.get(`/cart/customer/${profile_id}`);
 
     // Extract data from response
     const { cart, items } = response.data;
@@ -115,9 +116,9 @@ export const getCartByCustomerId = async (customer_id) => {
 };
 
 
-export const mergeCarts = async (guest_cart_id, customer_id) => {
+export const mergeCarts = async (guest_cart_id, profile_id) => {
     try {
-        const response = await axios.post(`/cart/merge`, { guest_cart_id, customer_id });
+        const response = await axios.post(`/cart/merge`, { guest_cart_id, profile_id });
         console.log('Carts merged: ', response.data);
         return response.data;
     } catch (error) {

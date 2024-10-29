@@ -13,6 +13,7 @@ const Navbar = () => {
   const navigate = useNavigate(); // For navigation
 
   const { token, setToken } = useContext(AuthContext); // Access token and setToken
+  const { resetCart } = useContext(CartContext); // Reset cart items
 
   const totalPrice = cartItems.reduce((sum, item) => {
     const price = parseFloat(item.unit_price) || 0;
@@ -28,6 +29,8 @@ const Navbar = () => {
   const handleLogout = () => {
     // Remove session token
     setToken(null);
+    sessionStorage.removeItem("token");
+    resetCart();
     // Redirect to home page
     navigate("/");
   };

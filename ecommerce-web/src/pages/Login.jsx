@@ -1,15 +1,17 @@
-
 import React, { useState, useContext } from "react";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import AccountCard from "../components/AccountCard";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../client.jsx";
-import { AuthContext } from "../components/AuthContext.jsx"; // Import AuthContext
+import { AuthContext } from "../components/AuthContext.jsx";
+import { CartContext } from "../components/CartContext.jsx"; // Import CartContext for merging
+import { mergeCarts } from "../api/cart.js"; // Import mergeCarts API
 import "../../src/styles.css";
 
 const Login = () => {
-  const { setToken } = useContext(AuthContext); // Access setToken from AuthContext
+  const { token, setToken } = useContext(AuthContext);
+  const { cartId, fetchCart } = useContext(CartContext); // Add fetchCart
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -17,7 +19,7 @@ const Login = () => {
     password_input: "",
   });
 
-  const [errorMessage, setErrorMessage] = useState(""); // For error handling
+  const [errorMessage, setErrorMessage] = useState("");
 
   function handleChange(event) {
     setFormData((prevFormData) => ({
@@ -36,10 +38,22 @@ const Login = () => {
 
       if (error) throw error;
 
+      const customerProfileId = data.user.id;
+      setToken(data);
+
+      // Merge guest cart with logged-in cart
+      if (cartId) {
+        console.log("Attempting to merge carts:", cartId, customerProfileId);
+        await mergeCarts(cartId, customerProfileId);
+        console.log("Carts merged successfully.");
+        sessionStorage.removeItem("guest_cart_id");
+      }
+
+      await fetchCart(); // Fetch the cart for the logged-in user after merging
+
       console.log("Login successful:", data);
-      // Set the token in AuthContext
-      setToken(data.session.access_token);
-      // Navigate to home page or desired route
+
+      // Navigate to the desired route
       navigate("/");
     } catch (error) {
       setErrorMessage(error.message);
