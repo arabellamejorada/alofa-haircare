@@ -9,13 +9,19 @@ const ShoppingCart = () => {
 
   const total = subtotal; // can modify if included ang tax and all
 
+  // Ensure the 'price' prop is mapped to 'unit_price'
+  const processedCartItems = cartItems.map((item) => ({
+    ...item,
+    price: item.unit_price, // Map 'unit_price' to 'price'
+  }));
+
   return (
     <div className="pt-20 bg-[url('../../public/images/body-bg.png')] bg-cover bg-center h-screen p-8 flex justify-center">
       <div className="flex flex-col lg:flex-row items-start justify-between w-full max-w-5xl gap-4 pt-5">
         <div className="w-svw">
           {/* Pass cartItems, handleQuantityChange, and handleDelete to CartTable */}
           <CartTable
-            cartItems={cartItems}
+            cartItems={processedCartItems}
             handleQuantityChange={handleQuantityChange}
             handleDelete={handleDelete}
           />

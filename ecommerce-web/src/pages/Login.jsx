@@ -3,11 +3,15 @@ import Button from "../components/Button";
 import Input from "../components/Input";
 import AccountCard from "../components/AccountCard";
 import { Link, useNavigate } from "react-router-dom";
-import { AuthContext } from "../AuthContext.jsx"; // Import AuthContext
+import { supabase } from "../client.jsx";
+import { AuthContext } from "../components/AuthContext.jsx";
+import { CartContext } from "../components/CartContext.jsx"; // Import CartContext for merging
+import { mergeCarts } from "../api/cart.js"; // Import mergeCarts API
 import "../../src/styles.css";
 
 const Login = () => {
-  const { signIn } = useContext(AuthContext); // Use signIn from AuthContext
+  const { token, setToken, signIn } = useContext(AuthContext);
+  const { cartId, fetchCart } = useContext(CartContext); // Add fetchCart
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -30,7 +34,24 @@ const Login = () => {
       // Step 1: Use signIn from AuthContext to handle login
       await signIn(formData.emailAddress, formData.password_input);
 
-      // Step 2: Navigate to home after successful login
+      if (error) throw error;
+
+      const customerProfileId = data.user.id;
+      setToken(data);
+
+      // Merge guest cart with logged-in cart
+      if (cartId) {
+        console.log("Attempting to merge carts:", cartId, customerProfileId);
+        await mergeCarts(cartId, customerProfileId);
+        console.log("Carts merged successfully.");
+        sessionStorage.removeItem("guest_cart_id");
+      }
+
+      await fetchCart(); // Fetch the cart for the logged-in user after merging
+
+      console.log("Login successful:", data);
+
+      // Navigate to the desired route
       navigate("/");
     } catch (error) {
       // Set error message if login fails

@@ -2,13 +2,14 @@ const express = require('express');
 const router = express.Router();
 const cartController = require('../controllers/cartController');
 
-router.post('/cart', cartController.createOrGetCart);        // Initialize or retrieve Cart
-router.post('/cart/add-item', cartController.addCartItem);     // Add item to Cart
-router.put('/cart/update-item/:cart_item_id', cartController.updateCartItem); // Update item in Cart
-router.delete('/cart/delete-item/:cart_item_id', cartController.deleteCartItem); // Delete item from Cart
-router.get('/carts', cartController.getAllCarts);               // View Cart
-router.get('/cart/items', cartController.viewCartItemsById);       // View Cart
-router.delete('/cart/clear', cartController.clearCart);         // Clear Cart
-router.post('/cart/checkout', cartController.checkoutCart); // Checkout Cart
+router.post('/cart', cartController.createCart);            
+router.post('/cart/:cart_id/add', cartController.addCartItem);
+router.put('/cart/:cart_id/update', cartController.updateCartItem);
+router.get('/cart/all', cartController.getAllCarts);
+router.get('/cart/:cart_id', cartController.getCartById);
+router.get('/cart/customer/:profile_id', cartController.getCartByCustomerId);
+router.delete('/cart/:cart_id/item/:variation_id', cartController.deleteCartItem);
+router.delete('/cart/:cart_id', cartController.deleteCart);
+router.post('/cart/merge', cartController.mergeCarts);
 
 module.exports = router;

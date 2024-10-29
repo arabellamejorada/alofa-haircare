@@ -5,6 +5,7 @@ import {
   DASHBOARD_SIDEBAR_BOTTOM_LINKS,
   DASHBOARD_SIDEBAR_LINKS,
   PRODUCT_SIDEBAR_LINKS,
+  VOUCHER_SIDEBAR_LINKS,
   INVENTORY_SIDEBAR_LINKS,
   EMPLOYEE_SIDEBAR_LINKS,
 } from "../lib/consts/navigation";
@@ -41,6 +42,11 @@ export default function Sidebar() {
         </div>
         <div className="pt-5">
           {PRODUCT_SIDEBAR_LINKS.map((item) => (
+            <SidebarLink key={item.key} item={item} />
+          ))}
+        </div>
+        <div className="pt-5">
+          {VOUCHER_SIDEBAR_LINKS.map((item) => (
             <SidebarLink key={item.key} item={item} />
           ))}
         </div>

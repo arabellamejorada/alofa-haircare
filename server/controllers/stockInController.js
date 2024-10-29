@@ -80,7 +80,7 @@ const getAllStockIn = async (req, res) => {
           pv.sku,
           p.name,
           sii.quantity,
-          e.first_name || ' ' || e.last_name AS employee_name
+          pr.first_name || ' ' || pr.last_name AS employee_name
       FROM 
           stock_in si
       JOIN 
@@ -93,6 +93,8 @@ const getAllStockIn = async (req, res) => {
           product p ON pv.product_id = p.product_id
       JOIN 
           employee e ON si.employee_id = e.employee_id
+      JOIN
+          profiles pr ON e.profile_id = pr.id
       ORDER BY 
           si.stock_in_date DESC
     `);
@@ -118,7 +120,7 @@ const getStockInById = async (req, res) => {
           si.stock_in_date, 
           si.employee_id,
           sii.quantity,
-          e.first_name || ' ' || e.last_name AS employee_name,
+          pr.first_name || ' ' || pr.last_name AS employee_name
           s.supplier_id, 
           s.supplier_name, 
           pv.type, 
@@ -132,7 +134,9 @@ const getStockInById = async (req, res) => {
       JOIN 
           stock_in_items sii ON si.stock_in_id = sii.stock_in_id
       JOIN 
-          employee e ON so.employee_id = e.employee_id
+          employee e ON si.employee_id = e.employee_id
+      JOIN
+          profiles pr ON e.profile_id = pr.id
       JOIN
           product_variation pv ON sii.variation_id = pv.variation_id
       JOIN

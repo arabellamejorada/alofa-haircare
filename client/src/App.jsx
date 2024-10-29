@@ -18,6 +18,8 @@ import StockInHistory from "./components/inventory_tab/stock_in/StockInHistory";
 import StockOut from "./components/inventory_tab/stock_out/StockOut";
 import StockOutHistory from "./components/inventory_tab/stock_out/StockOutHistory";
 import Login from "./components/Login";
+import Vouchers from "./components/voucher_tab/Vouchers";
+
 import { AuthProvider, AuthContext } from "./AuthContext"; // Import AuthContext
 
 // Protected Route component
@@ -55,6 +57,10 @@ function App() {
             <Route
               path="productcategories"
               element={<ProtectedRoute element={<ProductCategories />} />}
+            />
+            <Route
+              path="voucher"
+              element={<ProtectedRoute element={<Vouchers />} />}
             />
             <Route
               path="inventory"

@@ -26,10 +26,9 @@ SET default_table_access_method = heap;
 
 CREATE TABLE public.cart (
     cart_id integer NOT NULL,
-    session_id character varying(255),
     customer_id integer,
-    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    last_activity timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    last_activity timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     status character varying(20) DEFAULT 'active'::character varying
 );
 
@@ -242,31 +241,25 @@ ALTER SEQUENCE public.inventory_inventory_id_seq OWNED BY public.inventory.inven
 
 
 --
--- Name: order_transaction; Type: TABLE; Schema: public; Owner: postgres
+-- Name: order_items; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.order_transaction (
-    order_transaction_id integer NOT NULL,
-    customer_id integer,
-    cart_id integer NOT NULL,
-    total_amount numeric(10,2) NOT NULL,
-    date_ordered timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    order_status character varying(255) NOT NULL,
-    payment_method character varying(255) NOT NULL,
-    payment_status character varying(255) NOT NULL,
-    proof_image text NOT NULL,
-    is_verified boolean NOT NULL,
-    shipping_id integer NOT NULL
+CREATE TABLE public.order_items (
+    order_item_id integer NOT NULL,
+    order_id integer,
+    variation_id integer,
+    quantity integer,
+    price numeric(10,2)
 );
 
 
-ALTER TABLE public.order_transaction OWNER TO postgres;
+ALTER TABLE public.order_items OWNER TO postgres;
 
 --
--- Name: order_transaction_order_transaction_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: order_items_order_item_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
-CREATE SEQUENCE public.order_transaction_order_transaction_id_seq
+CREATE SEQUENCE public.order_items_order_item_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -275,13 +268,57 @@ CREATE SEQUENCE public.order_transaction_order_transaction_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.order_transaction_order_transaction_id_seq OWNER TO postgres;
+ALTER SEQUENCE public.order_items_order_item_id_seq OWNER TO postgres;
 
 --
--- Name: order_transaction_order_transaction_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: order_items_order_item_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
-ALTER SEQUENCE public.order_transaction_order_transaction_id_seq OWNED BY public.order_transaction.order_transaction_id;
+ALTER SEQUENCE public.order_items_order_item_id_seq OWNED BY public.order_items.order_item_id;
+
+
+--
+-- Name: orders; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.orders (
+    order_id integer NOT NULL,
+    customer_id integer,
+    total_amount numeric(10,2),
+    date_ordered timestamp with time zone DEFAULT now(),
+    order_status character varying(255),
+    payment_method character varying(255),
+    payment_status character varying(255),
+    proof_image text,
+    shipping_id integer,
+    subtotal numeric(10,2),
+    discount_amount numeric(10,2),
+    discount_code character varying(50)
+);
+
+
+ALTER TABLE public.orders OWNER TO postgres;
+
+--
+-- Name: orders_order_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.orders_order_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.orders_order_id_seq OWNER TO postgres;
+
+--
+-- Name: orders_order_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.orders_order_id_seq OWNED BY public.orders.order_id;
 
 
 --
@@ -294,7 +331,7 @@ CREATE TABLE public.payment_verification (
     reference_number character varying(255) NOT NULL,
     is_verified boolean NOT NULL,
     employee_id integer NOT NULL,
-    order_transaction_id integer NOT NULL
+    order_id integer NOT NULL
 );
 
 
@@ -699,7 +736,7 @@ CREATE TABLE public.stock_out (
     stock_out_id integer NOT NULL,
     reference_number character varying(255),
     stock_out_date timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    order_transaction_id integer,
+    order_id integer,
     employee_id integer
 );
 
@@ -858,6 +895,51 @@ ALTER SEQUENCE public.user_account_user_account_id_seq OWNED BY public.user_acco
 
 
 --
+-- Name: vouchers; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.vouchers (
+    voucher_id integer NOT NULL,
+    code character varying(50) NOT NULL,
+    type character varying(10) NOT NULL,
+    discount_value numeric(10,2) NOT NULL,
+    min_spend numeric(10,2),
+    max_discount numeric(10,2),
+    total_limit integer,
+    max_use_per_user integer,
+    current_uses integer DEFAULT 0,
+    is_active boolean DEFAULT true,
+    expiration_date timestamp without time zone,
+    created_at timestamp without time zone DEFAULT now(),
+    CONSTRAINT vouchers_type_check CHECK (((type)::text = ANY ((ARRAY['flat'::character varying, 'percentage'::character varying])::text[])))
+);
+
+
+ALTER TABLE public.vouchers OWNER TO postgres;
+
+--
+-- Name: vouchers_voucher_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.vouchers_voucher_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.vouchers_voucher_id_seq OWNER TO postgres;
+
+--
+-- Name: vouchers_voucher_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.vouchers_voucher_id_seq OWNED BY public.vouchers.voucher_id;
+
+
+--
 -- Name: cart cart_id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -900,10 +982,17 @@ ALTER TABLE ONLY public.inventory ALTER COLUMN inventory_id SET DEFAULT nextval(
 
 
 --
--- Name: order_transaction order_transaction_id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: order_items order_item_id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.order_transaction ALTER COLUMN order_transaction_id SET DEFAULT nextval('public.order_transaction_order_transaction_id_seq'::regclass);
+ALTER TABLE ONLY public.order_items ALTER COLUMN order_item_id SET DEFAULT nextval('public.order_items_order_item_id_seq'::regclass);
+
+
+--
+-- Name: orders order_id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.orders ALTER COLUMN order_id SET DEFAULT nextval('public.orders_order_id_seq'::regclass);
 
 
 --
@@ -1012,15 +1101,21 @@ ALTER TABLE ONLY public.user_account ALTER COLUMN user_account_id SET DEFAULT ne
 
 
 --
+-- Name: vouchers voucher_id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.vouchers ALTER COLUMN voucher_id SET DEFAULT nextval('public.vouchers_voucher_id_seq'::regclass);
+
+
+--
 -- Data for Name: cart; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.cart (cart_id, session_id, customer_id, created_at, last_activity, status) FROM stdin;
-1	\N	\N	2024-10-04 10:35:55.326521	2024-10-04 10:35:55.326521	active
-2	\N	\N	2024-10-04 10:37:12.770909	2024-10-04 10:37:12.770909	active
-5	\N	\N	2024-10-04 10:39:54.151495	2024-10-04 10:39:54.151495	active
-6	UPfyygFPVmL2FRVg0GaLRycb2PcOTXqL	\N	2024-10-04 10:54:10.444043	2024-10-04 10:54:10.444043	active
-7	hjBjYT_1ha6MEqV_mnxGy1jurstGswDD	\N	2024-10-04 12:07:13.253484	2024-10-04 12:07:13.253484	active
+COPY public.cart (cart_id, customer_id, created_at, last_activity, status) FROM stdin;
+3	\N	2024-10-27 17:05:00.301552+08	2024-10-27 17:07:10.748206+08	checked_out
+5	2	2024-10-27 17:05:19.013607+08	2024-10-27 17:07:21.966639+08	checked_out
+4	1	2024-10-27 17:05:15.865232+08	2024-10-27 17:07:15.790379+08	checked_out
+9	1	2024-10-27 21:11:13.343671+08	2024-10-27 21:11:13.343671+08	checked_out
 \.
 
 
@@ -1029,9 +1124,6 @@ COPY public.cart (cart_id, session_id, customer_id, created_at, last_activity, s
 --
 
 COPY public.cart_items (cart_item_id, cart_id, variation_id, quantity) FROM stdin;
-1	6	1	2
-2	6	2	4
-3	6	5	1
 \.
 
 
@@ -1040,6 +1132,8 @@ COPY public.cart_items (cart_item_id, cart_id, variation_id, quantity) FROM stdi
 --
 
 COPY public.customer (customer_id, first_name, last_name, email, contact_number, role_id) FROM stdin;
+1	Julio	Deluao	julio@gmail.com	09228883331	3
+2	James	Carter	james@gmail.com	09228883221	3
 \.
 
 
@@ -1048,10 +1142,20 @@ COPY public.customer (customer_id, first_name, last_name, email, contact_number,
 --
 
 COPY public.employee (employee_id, first_name, last_name, email, contact_number, role_id, status_id) FROM stdin;
-1	Arabella	Mejorada	ara@gmail.com	09228446273	1	1
-2	Cassey	Gempesaw	catgempesaw@gmail.com	09882394857	1	1
-3	Anthony	Tabudlong	arjtabudlong@gmail.com	09123137484	1	1
-4	John	Doe	jdoe@gmail.com	09882394857	2	1
+1	Arabella	Mejorada	ara@gmail.com	09228446273	1	4
+3	Anthony	Tabudlong	arjtabudlong@gmail.com	09123137484	2	4
+4	John	Doe	jdoe@gmail.com	09882394857	2	4
+9	Johny	Doe	jdoe@gmail.com	09882394858	2	1
+11	Achilleus	Rodrigo	catgempesaw@gmail.com	09223445680	2	1
+12	Arabella	Tabudlong	arssj@gmail.com	09882394857	1	1
+13	John	Gempesaw	arjdasd@gmail.com	09882394857	2	1
+8	Bella	Hadis	bellahadid@gmail.com	09882394857	1	1
+10	Arabella	B	ab@gmail.com	09882394857	2	3
+14	Cat	Meow	catmeow@gmail.com	09223442323	2	1
+7	Olivia	Rodrigo	oliviarodrigo@gmail.com	09229990000	2	3
+15	Arjed	Tabudlong	ara@gmail.com	09882394857	2	5
+16	Cassey	Gempesaw	ara@gmail.com	09223445333	1	1
+2	Cassey	Gempesaw	catgempesaw@gmail.com	09882394852	1	1
 \.
 
 
@@ -1064,6 +1168,7 @@ COPY public.employee_status (status_id, description) FROM stdin;
 2	Inactive
 3	On Leave
 4	Terminated
+5	Archived
 \.
 
 
@@ -1072,20 +1177,45 @@ COPY public.employee_status (status_id, description) FROM stdin;
 --
 
 COPY public.inventory (inventory_id, stock_quantity, last_updated_date, variation_id) FROM stdin;
-3	0	2024-09-30 23:52:33.649	3
-4	0	2024-09-30 23:52:33.652	4
-1	276	2024-09-30 15:57:40.076	1
-2	270	2024-09-30 23:59:00	2
-5	190	2024-10-01 00:07:00	5
-6	189	2024-10-01 00:07:00	6
+3	100	2024-10-23 18:22:00	3
+5	100	2024-10-23 18:22:00	5
+6	100	2024-10-23 18:22:00	6
+7	100	2024-10-23 18:22:00	7
+8	100	2024-10-23 18:22:00	8
+9	100	2024-10-23 18:22:00	9
+10	100	2024-10-23 18:22:00	10
+1	98	2024-10-23 23:07:13.110084	1
+2	96	2024-10-23 23:10:33.163305	2
+4	97	2024-10-23 23:27:47.262294	4
 \.
 
 
 --
--- Data for Name: order_transaction; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: order_items; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.order_transaction (order_transaction_id, customer_id, cart_id, total_amount, date_ordered, order_status, payment_method, payment_status, proof_image, is_verified, shipping_id) FROM stdin;
+COPY public.order_items (order_item_id, order_id, variation_id, quantity, price) FROM stdin;
+1	2	1	1	380.00
+2	2	2	2	380.00
+3	3	6	3	180.00
+4	3	8	1	180.00
+5	3	2	2	380.00
+6	4	4	2	180.00
+7	7	8	2	180.00
+\.
+
+
+--
+-- Data for Name: orders; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.orders (order_id, customer_id, total_amount, date_ordered, order_status, payment_method, payment_status, proof_image, shipping_id, subtotal, discount_amount, discount_code) FROM stdin;
+2	1	1140.00	2024-10-27 18:07:41.439863+08	pending	GCash	unpaid	\N	2	\N	\N	\N
+3	1	1480.00	2024-10-27 18:07:58.586573+08	pending	GCash	unpaid	\N	2	\N	\N	\N
+4	1	360.00	2024-10-27 18:08:04.545465+08	pending	GCash	unpaid	\N	2	\N	\N	\N
+5	1	\N	2024-10-27 18:08:51.147102+08	pending	GCash	unpaid	\N	2	\N	\N	\N
+6	1	\N	2024-10-27 18:09:08.629846+08	pending	GCash	unpaid	\N	2	\N	\N	\N
+7	1	310.00	2024-10-27 21:29:54.438664+08	pending	Bank Transfer	unpaid	\N	2	360.00	50.00	FLAT50
 \.
 
 
@@ -1093,7 +1223,7 @@ COPY public.order_transaction (order_transaction_id, customer_id, cart_id, total
 -- Data for Name: payment_verification; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.payment_verification (payment_verification_id, verification_date, reference_number, is_verified, employee_id, order_transaction_id) FROM stdin;
+COPY public.payment_verification (payment_verification_id, verification_date, reference_number, is_verified, employee_id, order_id) FROM stdin;
 \.
 
 
@@ -1102,10 +1232,8 @@ COPY public.payment_verification (payment_verification_id, verification_date, re
 --
 
 COPY public.product (product_id, name, description, product_category_id, product_status_id) FROM stdin;
+2	Flower Hair Clip	Summer all year long with Alofa's Flower Hair Claw Clips!	1	1
 1	Hair Oil	Alofa Natural Hair Growth Oil is Enriched with 8 natural oils formulated to repair and rejuvenate hair, leaving it smooth and silky. This blend of vitamins, minerals and antioxidants targets different concerns, making it suitable for all hair types.	3	1
-2	Flower Hair Clip	Summer all year long with Alofa's Flower Hair Claw Clips\n\n	1	1
-3	Orchid Hair Clamp	The summer accessory! Our new and improved Orchid Flower Clamp that comes in a various of shades.	1	1
-4	Scalp Massager & Scalp Brush	Gently massage the scalp to promote blood flow and circulation. Improve scalp health and grow hair faster while enjoying the relaxing feeling!\nCan be used in the shower to further cleanse the scalp	2	1
 \.
 
 
@@ -1114,9 +1242,9 @@ COPY public.product (product_id, name, description, product_category_id, product
 --
 
 COPY public.product_category (product_category_id, name) FROM stdin;
+3	Hair Products
 1	Hair Accessories
 2	Hair Tools
-3	Hair Products
 \.
 
 
@@ -1127,8 +1255,7 @@ COPY public.product_category (product_category_id, name) FROM stdin;
 COPY public.product_status (status_id, description) FROM stdin;
 1	Available
 2	Out of Stock
-3	Discontinued
-4	Archived
+3	Archived
 \.
 
 
@@ -1137,12 +1264,16 @@ COPY public.product_status (status_id, description) FROM stdin;
 --
 
 COPY public.product_variation (variation_id, product_id, product_status_id, type, value, unit_price, sku, image) FROM stdin;
-1	1	1	Size	30mL	380.00	OIL-30ML-0001	public/uploads/untitled-1727711503720-876289673.jpeg
-2	1	1	Size	60mL	622.00	OIL-60ML-0001	public/uploads/untitled-1727711503729-422764022.jpeg
-3	2	1	Color	Sunset	180.00	FHC-SUNS-0002	public/uploads/untitled-1727711553604-271075819.jpeg
-4	2	1	Color	Clementine	180.00	FHC-CLEM-0002	public/uploads/untitled-1727711553605-911986321.jpeg
-5	3	1	Color	Pink	199.00	OHC-PINK-0003	public/uploads/untitled-1727711580887-411640974.jpeg
-6	4	1			280.00	SCA-0000-0004	public/uploads/untitled-1727711601257-54134435.jpeg
+3	2	1	Color	Sunrise	180.00	FHC-SUNR-0002	public/uploads/flower-hair-clip-sunrise-47.jpg
+5	2	1	Color	Sunset	180.00	FHC-SUNS-0002	public/uploads/flower-hair-clip-sunrise-850.jpeg
+6	2	1	Color	Midnight	180.00	FHC-MIDN-0002	public/uploads/flower-hair-clip-sunrise-102.jpeg
+7	2	1	Color	Blossom	180.00	FHC-BLOS-0002	public/uploads/flower-hair-clip-sunrise-102.jpeg
+8	2	1	Color	Meadow	180.00	FHC-MEAD-0002	public/uploads/flower-hair-clip-sunrise-835.jpeg
+9	2	1	Color	Clementine	180.00	FHC-CLEM-0002	public/uploads/flower-hair-clip-sunrise-924.jpeg
+10	2	1	Color	Lilac	180.00	FHC-LILA-0002	public/uploads/flower-hair-clip-sunrise-489.jpeg
+1	1	\N	Size	30mL	380.00	OIL-30ML-0001	public/uploads/hair-oil-30ml-534.jpeg
+2	1	1	Size	60mL	380.00	OIL-60ML-0001	public/uploads/hair-oil-30ml-785.jpeg
+4	2	1	Color	Seaside	180.00	FHC-SEAS-0002	public/uploads/flower-hair-clip-sunrise-745.jpeg
 \.
 
 
@@ -1186,9 +1317,7 @@ COPY public.shipping_method (shipping_method_id, courier, description) FROM stdi
 --
 
 COPY public.stock_in (stock_in_id, reference_number, supplier_id, stock_in_date, employee_id) FROM stdin;
-1	REF-744164	2	2024-09-30 23:57:00	2
-2	REF-621943	2	2024-09-30 23:59:00	4
-3	REF-114826	1	2024-10-01 00:07:00	2
+1	REF-845757	4	2024-10-23 18:22:00	2
 \.
 
 
@@ -1197,10 +1326,16 @@ COPY public.stock_in (stock_in_id, reference_number, supplier_id, stock_in_date,
 --
 
 COPY public.stock_in_items (stock_in_item_id, stock_in_id, variation_id, quantity) FROM stdin;
-1	1	1	1
-2	2	2	190
-3	3	5	200
-4	3	6	150
+1	1	1	100
+2	1	2	100
+3	1	3	100
+4	1	4	100
+5	1	5	100
+6	1	6	100
+7	1	7	100
+8	1	8	100
+9	1	9	100
+10	1	10	100
 \.
 
 
@@ -1208,10 +1343,8 @@ COPY public.stock_in_items (stock_in_item_id, stock_in_id, variation_id, quantit
 -- Data for Name: stock_out; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.stock_out (stock_out_id, reference_number, stock_out_date, order_transaction_id, employee_id) FROM stdin;
-1	ADJ-20240930-21	2024-09-30 23:56:00	\N	2
-2	ADJ-20241001-22	2024-10-01 00:00:00	\N	1
-3	ADJ-20241001-23	2024-10-01 00:07:00	\N	2
+COPY public.stock_out (stock_out_id, reference_number, stock_out_date, order_id, employee_id) FROM stdin;
+1	ADJ-20241023-48	2024-10-23 18:23:00	\N	2
 \.
 
 
@@ -1220,10 +1353,9 @@ COPY public.stock_out (stock_out_id, reference_number, stock_out_date, order_tra
 --
 
 COPY public.stock_out_items (stock_out_item_id, stock_out_id, variation_id, quantity, reason) FROM stdin;
-1	1	1	5	Damaged
-2	2	2	20	Giveaway
-3	3	5	10	Damage
-4	3	6	11	Stock in error
+1	1	1	2	Damaged
+2	1	2	4	Damaged
+3	1	4	3	Damaged
 \.
 
 
@@ -1232,8 +1364,12 @@ COPY public.stock_out_items (stock_out_item_id, stock_out_id, variation_id, quan
 --
 
 COPY public.supplier (supplier_id, supplier_name, contact_person, contact_number, email, address, status) FROM stdin;
-1	ABC Inc.	Ms. Jane Doe	09228446273	abcinc@gmail.com	Toril, Davao City	
-2	XYZ Corp.	Mr. John Smith	09882394857	xyzcorp@gmail.com	Shenzhen Sorting Center, China	
+6	Supplier 3	Doutzen Kroes	09123333332	supplier3@gmail.com	New York, Matina Pangi	Pending
+1	ABC Inc.	Ms. Jane Doe	09228446273	abcinc@gmail.co	Toril, Davao City	Active
+4	Supplier 1	Anna Cole	09223333333	supplier1@gmail.com	Somewhere, Idk City	Active
+2	XYZ Corp.	Mr. John Smith	09882394857	xyzcorp@gmail.com	Shenzhen Sorting Center, China	Pending
+3	jdzvz	dsgfs	09228446273	supploer1@gmail.com	asdasd	Pending
+5	Supplier 2	Mr. John Doesds	09212132323	supplier2@gmail.com	Toril, Davao City	Active
 \.
 
 
@@ -1246,6 +1382,27 @@ COPY public.user_account (user_account_id, username, password, date_created, emp
 2	catgempesaw	$2b$10$vrjMT0zXT9DfchEpwihnQ.UcXmGp78EZB.mAHO.KOLR.kTlyWQ78y	2024-09-30 23:41:42.869801	2	\N
 3	arjtabudlong	$2b$10$EyCctDdINIY9KeY0AW1ZF.a6foL/N.e0Nu5997LHADvT5tnkhuz2W	2024-09-30 23:44:19.521894	3	\N
 4	jdoe	$2b$10$AbHyqmrgJ.hl.P5FNXCtMulXVzJVE2s/2HFeqZoB.UrSTEWozFWI2	2024-09-30 23:44:36.805566	4	\N
+7	oliviarodrigo	$2b$10$Zf.arogMZTSAO251/WRjT.L3UJJ68l4qXu0UD2YLUYwx2iC58rDPu	2024-10-07 18:06:35.110919	7	\N
+8	bellahadid	$2b$10$qUZnW7Zuf5hbHw.JtIgufe8hprcax.Hh7uq8eZ8TrmjY9cKZUT1DW	2024-10-11 18:24:10.880144	8	\N
+9	johnnydoe	$2b$10$yIyVz5aalaPCYZp.DLs4mOaN.n/MIkgNoaprap2V64azMCMZ9mWli	2024-10-11 18:31:29.639239	9	\N
+10	abcdef	$2b$10$qauj4mp3PoSPvmLLqW8zhO1rC/1sY6x.mixs0vG5JRcKAMl2nT17.	2024-10-11 18:37:50.083402	10	\N
+11	acrrods	$2b$10$yVhFHKkXML.qEIoo8LH2XOHKU6j31q0b9IrRud2GJkZL/cN6pRHC2	2024-10-11 20:15:27.85391	11	\N
+12	arjtabudlongsss	$2b$10$i1zGxuj1u6HB/0sQfJt3euUGk3MX9Hj1gMweKHwU9zrMu/Z5LNLle	2024-10-11 20:36:34.851624	12	\N
+13	catgempesaw2	$2b$10$G.JslrzVYI58IQZ04ejiuO9IEgzZkf6bxB/RBdv3Nwuxv2Wh5o1Fu	2024-10-11 20:37:27.408935	13	\N
+14	catmeow	$2b$10$GvwBeiWvnHc4jgrQ6SPzze8oYTfaJIG7LBSoV3RzCOfcFvoHAnVTi	2024-10-12 11:56:42.664793	14	\N
+15	catgempesawss	$2b$10$rZvInuzAoK8XPVp5ImdNcet9jJ2fazt2VhS59fuYGH8ZvxDSgPKU2	2024-10-12 21:24:31.55064	15	\N
+16	catgempesaww	$2b$10$iwVq3jH0OcsUIM.kCUgFtOPla7ffCMzRWtaAghF//VHTyvywkj0Ny	2024-10-16 22:32:50.853897	16	\N
+\.
+
+
+--
+-- Data for Name: vouchers; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.vouchers (voucher_id, code, type, discount_value, min_spend, max_discount, total_limit, max_use_per_user, current_uses, is_active, expiration_date, created_at) FROM stdin;
+1	DISCOUNT20	percentage	20.00	500.00	100.00	100	5	0	t	2024-12-31 00:00:00	2024-10-27 21:26:09.505606
+3	WELCOME10	flat	10.00	\N	\N	\N	\N	0	t	\N	2024-10-27 21:26:09.547195
+2	FLAT50	flat	50.00	\N	\N	50	3	1	t	2024-11-30 00:00:00	2024-10-27 21:26:09.528565
 \.
 
 
@@ -1253,49 +1410,56 @@ COPY public.user_account (user_account_id, username, password, date_created, emp
 -- Name: cart_cart_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.cart_cart_id_seq', 1, false);
+SELECT pg_catalog.setval('public.cart_cart_id_seq', 9, true);
 
 
 --
 -- Name: cart_items_cart_item_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.cart_items_cart_item_id_seq', 1, false);
+SELECT pg_catalog.setval('public.cart_items_cart_item_id_seq', 17, true);
 
 
 --
 -- Name: customer_customer_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.customer_customer_id_seq', 1, false);
+SELECT pg_catalog.setval('public.customer_customer_id_seq', 2, true);
 
 
 --
 -- Name: employee_employee_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.employee_employee_id_seq', 4, true);
+SELECT pg_catalog.setval('public.employee_employee_id_seq', 16, true);
 
 
 --
 -- Name: employee_status_status_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.employee_status_status_id_seq', 4, true);
+SELECT pg_catalog.setval('public.employee_status_status_id_seq', 5, true);
 
 
 --
 -- Name: inventory_inventory_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.inventory_inventory_id_seq', 6, true);
+SELECT pg_catalog.setval('public.inventory_inventory_id_seq', 10, true);
 
 
 --
--- Name: order_transaction_order_transaction_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: order_items_order_item_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.order_transaction_order_transaction_id_seq', 1, false);
+SELECT pg_catalog.setval('public.order_items_order_item_id_seq', 7, true);
+
+
+--
+-- Name: orders_order_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.orders_order_id_seq', 7, true);
 
 
 --
@@ -1309,14 +1473,14 @@ SELECT pg_catalog.setval('public.payment_verification_payment_verification_id_se
 -- Name: product_category_product_category_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.product_category_product_category_id_seq', 3, true);
+SELECT pg_catalog.setval('public.product_category_product_category_id_seq', 11, true);
 
 
 --
 -- Name: product_product_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.product_product_id_seq', 4, true);
+SELECT pg_catalog.setval('public.product_product_id_seq', 2, true);
 
 
 --
@@ -1330,7 +1494,7 @@ SELECT pg_catalog.setval('public.product_status_status_id_seq', 4, true);
 -- Name: product_variation_variation_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.product_variation_variation_id_seq', 6, true);
+SELECT pg_catalog.setval('public.product_variation_variation_id_seq', 10, true);
 
 
 --
@@ -1365,49 +1529,56 @@ SELECT pg_catalog.setval('public.shipping_shipping_id_seq', 1, false);
 -- Name: stock_in_items_stock_in_item_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.stock_in_items_stock_in_item_id_seq', 4, true);
+SELECT pg_catalog.setval('public.stock_in_items_stock_in_item_id_seq', 10, true);
 
 
 --
 -- Name: stock_in_stock_in_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.stock_in_stock_in_id_seq', 3, true);
+SELECT pg_catalog.setval('public.stock_in_stock_in_id_seq', 1, true);
 
 
 --
 -- Name: stock_out_items_stock_out_item_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.stock_out_items_stock_out_item_id_seq', 4, true);
+SELECT pg_catalog.setval('public.stock_out_items_stock_out_item_id_seq', 3, true);
 
 
 --
 -- Name: stock_out_ref_num_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.stock_out_ref_num_seq', 23, true);
+SELECT pg_catalog.setval('public.stock_out_ref_num_seq', 48, true);
 
 
 --
 -- Name: stock_out_stock_out_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.stock_out_stock_out_id_seq', 3, true);
+SELECT pg_catalog.setval('public.stock_out_stock_out_id_seq', 1, true);
 
 
 --
 -- Name: supplier_supplier_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.supplier_supplier_id_seq', 2, true);
+SELECT pg_catalog.setval('public.supplier_supplier_id_seq', 6, true);
 
 
 --
 -- Name: user_account_user_account_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.user_account_user_account_id_seq', 4, true);
+SELECT pg_catalog.setval('public.user_account_user_account_id_seq', 16, true);
+
+
+--
+-- Name: vouchers_voucher_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.vouchers_voucher_id_seq', 3, true);
 
 
 --
@@ -1459,11 +1630,19 @@ ALTER TABLE ONLY public.inventory
 
 
 --
--- Name: order_transaction order_transaction_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: order_items order_items_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.order_transaction
-    ADD CONSTRAINT order_transaction_pkey PRIMARY KEY (order_transaction_id);
+ALTER TABLE ONLY public.order_items
+    ADD CONSTRAINT order_items_pkey PRIMARY KEY (order_item_id);
+
+
+--
+-- Name: orders orders_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.orders
+    ADD CONSTRAINT orders_pkey PRIMARY KEY (order_id);
 
 
 --
@@ -1611,6 +1790,14 @@ ALTER TABLE ONLY public.supplier
 
 
 --
+-- Name: cart_items unique_cart_item; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cart_items
+    ADD CONSTRAINT unique_cart_item UNIQUE (cart_id, variation_id);
+
+
+--
 -- Name: user_account user_account_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1627,6 +1814,22 @@ ALTER TABLE ONLY public.user_account
 
 
 --
+-- Name: vouchers vouchers_code_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.vouchers
+    ADD CONSTRAINT vouchers_code_key UNIQUE (code);
+
+
+--
+-- Name: vouchers vouchers_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.vouchers
+    ADD CONSTRAINT vouchers_pkey PRIMARY KEY (voucher_id);
+
+
+--
 -- Name: cart cart_customer_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1640,6 +1843,14 @@ ALTER TABLE ONLY public.cart
 
 ALTER TABLE ONLY public.cart_items
     ADD CONSTRAINT cart_items_cart_id_fkey FOREIGN KEY (cart_id) REFERENCES public.cart(cart_id) ON DELETE CASCADE;
+
+
+--
+-- Name: cart_items cart_items_variation_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cart_items
+    ADD CONSTRAINT cart_items_variation_id_fkey FOREIGN KEY (variation_id) REFERENCES public.product_variation(variation_id) ON DELETE CASCADE;
 
 
 --
@@ -1675,27 +1886,19 @@ ALTER TABLE ONLY public.inventory
 
 
 --
--- Name: order_transaction order_transaction_cart_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: order_items order_items_order_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.order_transaction
-    ADD CONSTRAINT order_transaction_cart_id_fkey FOREIGN KEY (cart_id) REFERENCES public.cart(cart_id) ON DELETE CASCADE;
-
-
---
--- Name: order_transaction order_transaction_customer_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.order_transaction
-    ADD CONSTRAINT order_transaction_customer_id_fkey FOREIGN KEY (customer_id) REFERENCES public.customer(customer_id) ON DELETE SET NULL;
+ALTER TABLE ONLY public.order_items
+    ADD CONSTRAINT order_items_order_id_fkey FOREIGN KEY (order_id) REFERENCES public.orders(order_id);
 
 
 --
--- Name: order_transaction order_transaction_shipping_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: orders orders_customer_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.order_transaction
-    ADD CONSTRAINT order_transaction_shipping_id_fkey FOREIGN KEY (shipping_id) REFERENCES public.shipping(shipping_id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.orders
+    ADD CONSTRAINT orders_customer_id_fkey FOREIGN KEY (customer_id) REFERENCES public.customer(customer_id);
 
 
 --
@@ -1707,11 +1910,11 @@ ALTER TABLE ONLY public.payment_verification
 
 
 --
--- Name: payment_verification payment_verification_order_transaction_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: payment_verification payment_verification_order_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.payment_verification
-    ADD CONSTRAINT payment_verification_order_transaction_id_fkey FOREIGN KEY (order_transaction_id) REFERENCES public.order_transaction(order_transaction_id) ON DELETE CASCADE;
+    ADD CONSTRAINT payment_verification_order_id_fkey FOREIGN KEY (order_id) REFERENCES public.orders(order_id);
 
 
 --
@@ -1816,6 +2019,14 @@ ALTER TABLE ONLY public.stock_out
 
 ALTER TABLE ONLY public.stock_out_items
     ADD CONSTRAINT stock_out_items_stock_out_id_fkey FOREIGN KEY (stock_out_id) REFERENCES public.stock_out(stock_out_id);
+
+
+--
+-- Name: stock_out stock_out_order_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.stock_out
+    ADD CONSTRAINT stock_out_order_id_fkey FOREIGN KEY (order_id) REFERENCES public.orders(order_id);
 
 
 --
