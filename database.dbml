@@ -1,0 +1,325 @@
+Table "auth"."sessions" {
+  "id" uuid [pk, not null]
+  "user_id" uuid [not null]
+  "created_at" timestamptz
+  "updated_at" timestamptz
+  "factor_id" uuid
+  "aal" auth.aal_level
+  "not_after" timestamptz [note: 'Auth: Not after is a nullable column that contains a timestamp after which the session should be regarded as expired.']
+  "refreshed_at" timestamp
+  "user_agent" text
+  "ip" inet
+  "tag" text
+
+  Indexes {
+    not_after [type: btree, name: "sessions_not_after_idx"]
+    user_id [type: btree, name: "sessions_user_id_idx"]
+    (user_id, created_at) [type: btree, name: "user_id_created_at_idx"]
+  }
+  Note: 'Auth: Stores session data associated to a user.'
+}
+
+Table "auth"."users" {
+  "instance_id" uuid
+  "id" uuid [pk, not null]
+  "aud" varchar(255)
+  "role" varchar(255)
+  "email" varchar(255) [unique]
+  "encrypted_password" varchar(255)
+  "email_confirmed_at" timestamptz
+  "invited_at" timestamptz
+  "confirmation_token" varchar(255) [unique]
+  "confirmation_sent_at" timestamptz
+  "recovery_token" varchar(255) [unique]
+  "recovery_sent_at" timestamptz
+  "email_change_token_new" varchar(255) [unique]
+  "email_change" varchar(255)
+  "email_change_sent_at" timestamptz
+  "last_sign_in_at" timestamptz
+  "raw_app_meta_data" jsonb
+  "raw_user_meta_data" jsonb
+  "is_super_admin" bool
+  "created_at" timestamptz
+  "updated_at" timestamptz
+  "phone" text [unique, default: `NULL::character varying`]
+  "phone_confirmed_at" timestamptz
+  "phone_change" text [default: '']
+  "phone_change_token" varchar(255) [default: '']
+  "phone_change_sent_at" timestamptz
+  "confirmed_at" timestamptz
+  "email_change_token_current" varchar(255) [unique, default: '']
+  "email_change_confirm_status" int2 [default: 0]
+  "banned_until" timestamptz
+  "reauthentication_token" varchar(255) [unique, default: '']
+  "reauthentication_sent_at" timestamptz
+  "is_sso_user" bool [not null, default: false, note: 'Auth: Set this column to true when the account comes from SSO. These accounts can have duplicate emails.']
+  "deleted_at" timestamptz
+  "is_anonymous" bool [not null, default: false]
+
+  Indexes {
+    (instance_id, `lower((email)::text)`) [type: btree, name: "users_instance_id_email_idx"]
+    instance_id [type: btree, name: "users_instance_id_idx"]
+    is_anonymous [type: btree, name: "users_is_anonymous_idx"]
+  }
+  Note: 'Auth: Stores user login data within a secure schema.'
+}
+
+Table "cart" {
+  "cart_id" int4 [pk, not null, increment]
+  "customer_id" int4
+  "created_at" timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  "last_activity" timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  "status" varchar(20) [default: 'active']
+}
+
+Table "cart_items" {
+  "cart_item_id" int4 [pk, not null, increment]
+  "cart_id" int4 [not null]
+  "variation_id" int4 [not null]
+  "quantity" int4 [not null]
+
+  Indexes {
+    (cart_id, variation_id) [type: btree, name: "unique_cart_item"]
+  }
+}
+
+Table "customer" {
+  "customer_id" int4 [pk, not null, increment]
+  "profile_id" uuid [unique]
+}
+
+Table "employee" {
+  "employee_id" int4 [pk, not null, increment]
+  "status_id" int4 [not null]
+  "profile_id" uuid [unique]
+}
+
+Table "employee_status" {
+  "status_id" int4 [pk, not null, increment]
+  "description" varchar(50) [not null]
+}
+
+Table "inventory" {
+  "inventory_id" int4 [pk, not null, increment]
+  "stock_quantity" int4 [not null]
+  "last_updated_date" timestamp [default: `CURRENT_TIMESTAMP`]
+  "variation_id" int4
+}
+
+Table "order_items" {
+  "order_item_id" int4 [pk, not null, increment]
+  "order_id" int4
+  "variation_id" int4
+  "quantity" int4
+  "price" numeric(10,2)
+}
+
+Table "orders" {
+  "order_id" int4 [pk, not null, increment]
+  "customer_id" int4
+  "total_amount" numeric(10,2)
+  "date_ordered" timestamptz [default: `now()`]
+  "order_status" varchar(255)
+  "payment_method" varchar(255)
+  "payment_status" varchar(255)
+  "proof_image" text
+  "shipping_id" int4
+  "subtotal" numeric(10,2)
+  "voucher_id" int4
+}
+
+Table "payment_verification" {
+  "payment_verification_id" int4 [pk, not null, increment]
+  "verification_date" timestamp [default: `CURRENT_TIMESTAMP`]
+  "reference_number" varchar(255) [not null]
+  "is_verified" bool [not null]
+  "employee_id" int4 [not null]
+  "order_id" int4
+}
+
+Table "product" {
+  "product_id" int4 [pk, not null, increment]
+  "name" varchar(255) [unique, not null]
+  "description" text [not null]
+  "product_category_id" int4 [not null]
+  "product_status_id" int4 [not null]
+}
+
+Table "product_category" {
+  "product_category_id" int4 [pk, not null, increment]
+  "name" varchar(255) [not null]
+}
+
+Table "product_status" {
+  "status_id" int4 [pk, not null, increment]
+  "description" varchar(50) [not null]
+}
+
+Table "product_variation" {
+  "variation_id" int4 [pk, not null, increment]
+  "product_id" int4
+  "product_status_id" int4
+  "type" varchar(255)
+  "value" varchar(255)
+  "unit_price" numeric(10,2)
+  "sku" varchar(100) [unique]
+  "image" text
+}
+
+Table "profiles" {
+  "id" uuid [pk, not null]
+  "first_name" varchar(255) [not null]
+  "last_name" varchar(255) [not null]
+  "email" varchar(255) [unique, not null]
+  "contact_number" varchar(15) [not null]
+  "role_id" int4 [not null]
+  "created_at" timestamptz [not null, default: `now()`]
+  "updated_at" timestamptz [not null, default: `now()`]
+}
+
+Table "role" {
+  "role_id" int4 [pk, not null, increment]
+  "name" varchar(255) [unique, not null]
+  "description" text [not null]
+}
+
+Table "shipping" {
+  "shipping_id" int4 [pk, not null, increment]
+  "shipping_date" date [not null]
+  "shipping_fee" numeric(10,2) [not null]
+  "tracking_number" varchar(255) [not null]
+  "shipping_method_id" int4 [not null]
+  "shipping_address_id" int4 [not null]
+}
+
+Table "shipping_address" {
+  "shipping_address_id" int4 [pk, not null, increment]
+  "address_line" varchar(255) [not null]
+  "barangay" varchar(255) [not null]
+  "city" varchar(255) [not null]
+  "province" varchar(255) [not null]
+  "zip_code" varchar(255) [not null]
+  "customer_id" int4 [not null]
+
+  Indexes {
+    (customer_id, address_line, barangay, city, province, zip_code) [type: btree, name: "unique_customer_address"]
+  }
+}
+
+Table "shipping_method" {
+  "shipping_method_id" int4 [pk, not null, increment]
+  "courier" varchar(255) [not null]
+  "description" varchar(255) [not null]
+}
+
+Table "stock_in" {
+  "stock_in_id" int4 [pk, not null, increment]
+  "reference_number" varchar(255) [unique, not null]
+  "supplier_id" int4
+  "stock_in_date" timestamp [default: `CURRENT_TIMESTAMP`]
+  "employee_id" int4
+}
+
+Table "stock_in_items" {
+  "stock_in_item_id" int4 [pk, not null, increment]
+  "stock_in_id" int4
+  "variation_id" int4
+  "quantity" int4 [not null]
+}
+
+Table "stock_out" {
+  "stock_out_id" int4 [pk, not null, increment]
+  "reference_number" varchar(255) [unique]
+  "stock_out_date" timestamp [default: `CURRENT_TIMESTAMP`]
+  "order_id" int4
+  "employee_id" int4
+}
+
+Table "stock_out_items" {
+  "stock_out_item_id" int4 [pk, not null, increment]
+  "stock_out_id" int4 [not null]
+  "variation_id" int4 [not null]
+  "quantity" int4 [not null]
+  "reason" varchar(255) [not null]
+}
+
+Table "supplier" {
+  "supplier_id" int4 [pk, not null, increment]
+  "supplier_name" varchar(255) [not null]
+  "contact_person" varchar(255) [not null]
+  "contact_number" varchar(15) [not null]
+  "email" varchar(255) [not null]
+  "address" varchar(255) [not null]
+  "status" varchar(50) [not null, default: 'Pending']
+}
+
+Table "vouchers" {
+  "voucher_id" int4 [pk, not null, increment]
+  "code" varchar(50) [unique, not null]
+  "type" varchar(10) [not null]
+  "discount_value" numeric(10,2) [not null]
+  "min_spend" numeric(10,2)
+  "max_discount" numeric(10,2)
+  "total_limit" int4
+  "max_use_per_user" int4
+  "current_uses" int4 [default: 0]
+  "is_active" bool [default: true]
+  "expiration_date" timestamp
+  "created_at" timestamp [default: `now()`]
+}
+
+Ref "sessions_user_id_fkey":"auth"."users"."id" < "auth"."sessions"."user_id" [delete: cascade]
+
+Ref "cart_customer_id_fkey":"customer"."customer_id" < "cart"."customer_id" [delete: set null]
+
+Ref "cart_items_cart_id_fkey":"cart"."cart_id" < "cart_items"."cart_id" [delete: cascade]
+
+Ref "cart_items_variation_id_fkey":"product_variation"."variation_id" < "cart_items"."variation_id"
+
+Ref "fk_customer_profile":"profiles"."id" < "customer"."profile_id"
+
+Ref "employee_status_id_fkey":"employee_status"."status_id" < "employee"."status_id"
+
+Ref "fk_employee_profile":"profiles"."id" < "employee"."profile_id"
+
+Ref "inventory_variation_id_fkey":"product_variation"."variation_id" < "inventory"."variation_id"
+
+Ref "order_items_order_id_fkey":"orders"."order_id" < "order_items"."order_id"
+
+Ref "orders_customer_id_fkey":"customer"."customer_id" < "orders"."customer_id"
+
+Ref "orders_voucher_id_fkey":"vouchers"."voucher_id" < "orders"."voucher_id"
+
+Ref "payment_verification_employee_id_fkey":"employee"."employee_id" < "payment_verification"."employee_id" [delete: cascade]
+
+Ref "payment_verification_order_id_fkey":"orders"."order_id" < "payment_verification"."order_id"
+
+Ref "product_product_category_id_fkey":"product_category"."product_category_id" < "product"."product_category_id"
+
+Ref "product_product_status_id_fkey":"product_status"."status_id" < "product"."product_status_id"
+
+Ref "product_variation_product_id_fkey":"product"."product_id" < "product_variation"."product_id"
+
+Ref "product_variation_product_status_id_fkey":"product_status"."status_id" < "product_variation"."product_status_id" [delete: cascade]
+
+Ref "profiles_role_id_fkey":"role"."role_id" < "profiles"."role_id"
+
+Ref "shipping_shipping_address_id_fkey":"shipping_address"."shipping_address_id" < "shipping"."shipping_address_id"
+
+Ref "shipping_shipping_method_id_fkey":"shipping_method"."shipping_method_id" < "shipping"."shipping_method_id"
+
+Ref "shipping_address_customer_id_fkey":"customer"."customer_id" < "shipping_address"."customer_id"
+
+Ref "stock_in_employee_id_fkey":"employee"."employee_id" < "stock_in"."employee_id"
+
+Ref "stock_in_supplier_id_fkey":"supplier"."supplier_id" < "stock_in"."supplier_id"
+
+Ref "stock_in_items_stock_in_id_fkey":"stock_in"."stock_in_id" < "stock_in_items"."stock_in_id"
+
+Ref "stock_in_items_variation_id_fkey":"product_variation"."variation_id" < "stock_in_items"."variation_id"
+
+Ref "stock_out_employee_id_fkey":"employee"."employee_id" < "stock_out"."employee_id"
+
+Ref "stock_out_order_id_fkey":"orders"."order_id" < "stock_out"."order_id"
+
+Ref "stock_out_items_stock_out_id_fkey":"stock_out"."stock_out_id" < "stock_out_items"."stock_out_id"
