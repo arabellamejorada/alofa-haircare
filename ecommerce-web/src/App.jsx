@@ -6,8 +6,8 @@ import {
   useLocation,
 } from "react-router-dom";
 import { useContext } from "react";
-import { CartProvider } from "./components/CartContext.jsx";
-import { AuthProvider, AuthContext } from "./AuthContext.jsx"; // Import AuthProvider
+import { CartProvider } from "./components/CartContext";
+import { AuthProvider, AuthContext } from "./components/AuthContext.jsx"; // Import AuthProvider
 import Navbar from "./shared/Navbar.jsx";
 import Home from "./pages/Home.jsx";
 import Products from "./pages/Products.jsx";
@@ -17,6 +17,7 @@ import CartItem from "./components/CartItem.jsx";
 import Checkout from "./pages/Checkout.jsx";
 import Login from "./pages/Login.jsx";
 import SignUp from "./pages/SignUp.jsx";
+import Profile from "./pages/Profile";
 
 import "./App.css";
 import { Toaster } from "sonner";

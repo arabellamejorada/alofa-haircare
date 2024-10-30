@@ -4,7 +4,7 @@ import CartSummary from "../components/CartSummary.jsx";
 import { CartContext } from "../components/CartContext.jsx";
 
 const ShoppingCart = () => {
-  const { cartItems, handleQuantityChange, handleDelete, subtotal } =
+  const { cartItems, handleQuantityChange, handleDelete, subtotal, loading } =
     useContext(CartContext);
 
   const total = subtotal; // can modify if included ang tax and all
@@ -14,6 +14,15 @@ const ShoppingCart = () => {
     ...item,
     price: item.unit_price, // Map 'unit_price' to 'price'
   }));
+
+  // Check if the cart is still loading
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p>Loading cart...</p> {/* Show a loading indicator */}
+      </div>
+    );
+  }
 
   return (
     <div className="pt-20 bg-[url('../../public/images/body-bg.png')] bg-cover bg-center h-screen p-8 flex justify-center">

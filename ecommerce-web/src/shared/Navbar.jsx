@@ -1,10 +1,9 @@
 import { useState, useContext, useEffect } from "react";
-import { FaUserAlt, FaShoppingCart } from "react-icons/fa";
+import { FaUserAlt, FaShoppingCart, FaTrashAlt } from "react-icons/fa";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { CartContext } from "../components/CartContext";
 import { AuthContext } from "../components/AuthContext"; // Import AuthContext
 import { ClipLoader } from "react-spinners";
-import Button from "../components/Button";
 
 const Navbar = () => {
   const [hovered, setHovered] = useState(false);
@@ -13,7 +12,7 @@ const Navbar = () => {
   const location = useLocation(); // Get the current route
   const navigate = useNavigate(); // For navigation
 
-  const { token, setToken, role, signOut } = useContext(AuthContext); // Access token and setToken
+  const { user, role, signOut } = useContext(AuthContext); // Use 'user' instead of 'token'
   const { resetCart } = useContext(CartContext); // Reset cart items
 
   const totalPrice = cartItems.reduce((sum, item) => {
@@ -25,20 +24,21 @@ const Navbar = () => {
   const isAuthPage =
     location.pathname === "/login" || location.pathname === "/signup";
   const isCheckoutPage = location.pathname === "/checkout";
-  const isLoggedIn = Boolean(token);
+  const isLoggedIn = Boolean(user); // Use 'user' to determine if logged in
 
   // Handle logout
-  const handleLogout = () => {
-    // Remove session token
-    setToken(null);
+  const handleLogout = async () => {
+    localStorage.removeItem("auth_token");
+    signOut();
+    await resetCart();
     // Redirect to home page
     navigate("/");
   };
 
   useEffect(() => {
-    console.log("Current token:", token); // Debugging log to check token value
+    console.log("Current user:", user); // Log 'user' instead of 'token'
     console.log("Current role:", role); // Debugging log to check role value
-  }, [token, role]);
+  }, [user, role]);
 
   if (loading) {
     return (
@@ -255,7 +255,7 @@ const Navbar = () => {
                   ₱
                   {new Intl.NumberFormat("en-PH", {
                     minimumFractionDigits: 2,
-                  }).format(totalPrice)}
+                  }).format(subtotal)}
                 </span>
               </div>
               <div className="flex justify-between text-xl font-semibold mb-4">
