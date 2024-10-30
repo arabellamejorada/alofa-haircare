@@ -24,7 +24,7 @@ export default function Header({ onMenuClick }) {
         <div className="flex-1 flex"></div>
         {/* Right Side Icons */}
         <div className="ml-4 flex items-center gap-2">
-          <FaUserAlt></FaUserAlt>
+          <FaUserAlt className="text-alofa-pink hover:text-alofa-highlight active:text-alofa-dark size-6"></FaUserAlt>
           Hello, Employee!
           <Popover className="relative">{/* ... */}</Popover>
           <Popover className="relative">{/* ... */}</Popover>

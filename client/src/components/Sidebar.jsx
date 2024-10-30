@@ -51,7 +51,7 @@ function SidebarContent({ onClose }) {
         ))}
       </div>
 
-      <div className="flex flex-col px-5 gap-0.5 pt-2 border-t-2 border-alofa-dark">
+      <div className="flex flex-col px-5 gap-0.5 pt-2 border-t-2 border-alofa-dark mb-2">
         <div
           className={classNames("text-white py-5 cursor-pointer", linkClasses)}
           onClick={handleLogout}
