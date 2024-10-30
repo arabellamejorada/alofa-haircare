@@ -201,7 +201,7 @@ const StockOut = () => {
                     name="employee"
                     value={selectedEmployee}
                     onChange={(e) => handleEmployeeChange(e.target.value)}
-                    className="w-full h-8 px-4 appearance-none border rounded-md bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+                    className="w-full h-8 px-4 appearance-none border rounded-md bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700"
                   >
                     <option value="">Select Employee</option>
                     {employees.map((employee) => (
@@ -228,7 +228,7 @@ const StockOut = () => {
                   id="stock_out_date"
                   value={selectedDate || stockOutDate}
                   onChange={(e) => handleDateChange(e.target.value)}
-                  className="rounded-md border w-[85%] h-8 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+                  className="rounded-md border w-[85%] h-8 pl-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700"
                 />
               </div>
             </div>
@@ -250,14 +250,14 @@ const StockOut = () => {
         {/* Submit Button */}
         <div className="flex flex-row mt-4 gap-2">
           <button
-            className="px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600"
+            className="px-4 py-2 bg-alofa-pink text-white rounded hover:bg-alofa-dark"
             onClick={handleSubmitStockOut}
           >
             Save
           </button>
 
           <Link to="/stockouthistory">
-            <button className="px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600">
+            <button className="px-4 py-2 bg-alofa-pink text-white rounded hover:bg-alofa-dark">
               View History
             </button>
           </Link>

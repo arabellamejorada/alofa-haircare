@@ -39,10 +39,10 @@ const FilterButton = ({
     <div className="relative w-auto lg:w-auto z-50">
       {/* Filter Button Styled for Smaller Width */}
       <button
-        className="flex items-center justify-center bg-white text-pink-500 py-2 px-4 rounded-full shadow-lg hover:bg-pink-100 transition-all w-auto"
+        className="flex items-center justify-center bg-white text-alofa-pink py-2 px-4 rounded-full shadow-lg hover:bg-pink-100 transition-all w-auto"
         onClick={toggleDropdown}
       >
-        <FaFilter className="mr-2 text-2xl text-pink-500" />
+        <FaFilter className="mr-2 text-2xl text-alofa-pink" />
         <span className="text-lg font-semibold">Filter</span>
       </button>
 

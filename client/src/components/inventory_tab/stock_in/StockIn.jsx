@@ -235,7 +235,7 @@ const StockIn = () => {
                 id="stock_in_date"
                 value={selectedDate || stockInDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="rounded-md border w-[85%] h-8 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+                className="rounded-md border w-[85%] h-8 pl-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700"
               />
             </div>
             {/* Employee */}
@@ -249,7 +249,7 @@ const StockIn = () => {
                   name="employee"
                   value={selectedEmployee}
                   onChange={(e) => setSelectedEmployee(e.target.value)}
-                  className="w-full h-8 px-4 appearance-none border rounded-md bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+                  className="w-full h-8 px-4 appearance-none border rounded-md bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700"
                 >
                   <option value="">Select Employee</option>
                   {employees.map((employee) => (
@@ -280,7 +280,7 @@ const StockIn = () => {
                     setIsSupplierDropdownVisible(true);
                   }}
                   onFocus={() => setIsSupplierDropdownVisible(true)}
-                  className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white ${
+                  className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-alofa-pink hover:bg-white ${
                     errors.supplier ? "border-red-500" : "border-slate-300"
                   }`}
                   ref={supplierInputRef}
@@ -338,7 +338,7 @@ const StockIn = () => {
                         supplier: true,
                       }));
                     }}
-                    className="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-pink-500"
+                    className="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-alofa-pink"
                     aria-label="Clear supplier search"
                   >
                     &times;
@@ -423,14 +423,14 @@ const StockIn = () => {
 
         <div className="flex flex-row mt-4 gap-2">
           <button
-            className="px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600"
+            className="px-4 py-2 bg-alofa-pink text-white rounded hover:bg-alofa-dark"
             onClick={handleSubmitStockIn}
           >
             Save
           </button>
 
           <Link to="/stockinhistory">
-            <button className="px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600">
+            <button className="px-4 py-2 bg-alofa-pink text-white rounded hover:bg-alofa-dark">
               View History
             </button>
           </Link>

@@ -284,7 +284,7 @@ const Voucher = () => {
               {search && (
                 <button
                   onClick={() => setSearch("")}
-                  className="ml-2 text-pink-500 hover:text-pink-700"
+                  className="ml-2 text-alofa-pink hover:text-alofa-dark"
                 >
                   Clear
                 </button>
@@ -293,7 +293,7 @@ const Voucher = () => {
 
             <MdAddBox
               fontSize={40}
-              className="text-gray-400 mx-2 hover:text-pink-400 active:text-pink-500"
+              className="text-gray-400 mx-2 hover:text-alofa-highlight active:text-alofa-pink"
               onClick={() => openModal()}
             />
           </div>
@@ -309,7 +309,7 @@ const Voucher = () => {
 
         <Modal isVisible={showModal} onClose={handleCloseModal}>
           <form className="p-6" onSubmit={handleSubmit}>
-            <div className="font-extrabold text-3xl text-pink-400 mb-4">
+            <div className="font-extrabold text-3xl text-alofa-highlight mb-4">
               {selectedVoucher ? "Edit Voucher" : "Add New Voucher"}
             </div>
 
@@ -325,7 +325,7 @@ const Voucher = () => {
                 placeholder="Voucher Code"
                 value={voucherData.code}
                 onChange={handleInputChange}
-                className="rounded-xl border h-10 px-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300"
+                className="rounded-xl border h-10 px-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300"
               />
               {errors.code && (
                 <p className="text-red-500 text-sm mt-1">{errors.code}</p>
@@ -344,7 +344,7 @@ const Voucher = () => {
                   id="type"
                   value={voucherData.type}
                   onChange={handleInputChange}
-                  className="rounded-xl border h-10 px-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300"
+                  className="rounded-xl border h-10 px-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300"
                 >
                   <option value="">Select Type</option>
                   <option value="percentage">Percentage</option>
@@ -367,7 +367,7 @@ const Voucher = () => {
                   placeholder="Discount Value"
                   value={voucherData.discount_value}
                   onChange={handleInputChange}
-                  className="rounded-xl border h-10 px-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300"
+                  className="rounded-xl border h-10 px-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300"
                 />
                 {errors.discount_value && (
                   <p className="text-red-500 text-sm mt-1">
@@ -388,7 +388,7 @@ const Voucher = () => {
                   placeholder="Min Spend"
                   value={voucherData.min_spend}
                   onChange={handleInputChange}
-                  className="rounded-xl border h-10 px-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300"
+                  className="rounded-xl border h-10 px-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300"
                 />
                 {errors.min_spend && (
                   <p className="text-red-500 text-sm mt-1">
@@ -409,7 +409,7 @@ const Voucher = () => {
                   placeholder="Max Discount"
                   value={voucherData.max_discount}
                   onChange={handleInputChange}
-                  className="rounded-xl border h-10 px-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300"
+                  className="rounded-xl border h-10 px-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300"
                   disabled={voucherData.type === "flat"} // Disable if type is flat
                 />
                 {errors.max_discount && (
@@ -431,7 +431,7 @@ const Voucher = () => {
                   placeholder="Total Limit"
                   value={voucherData.total_limit}
                   onChange={handleInputChange}
-                  className="rounded-xl border h-10 px-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300"
+                  className="rounded-xl border h-10 px-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300"
                 />
                 {errors.total_limit && (
                   <p className="text-red-500 text-sm mt-1">
@@ -452,7 +452,7 @@ const Voucher = () => {
                   placeholder="Max Use Per User"
                   value={voucherData.max_use_per_user}
                   onChange={handleInputChange}
-                  className="rounded-xl border h-10 px-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300"
+                  className="rounded-xl border h-10 px-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300"
                 />
                 {errors.max_use_per_user && (
                   <p className="text-red-500 text-sm mt-1">
@@ -471,7 +471,7 @@ const Voucher = () => {
                   id="is_active"
                   value={voucherData.is_active}
                   onChange={handleInputChange}
-                  className="rounded-xl border h-10 px-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300"
+                  className="rounded-xl border h-10 px-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300"
                 >
                   <option value={true}>True</option>
                   <option value={false}>False</option>
@@ -489,7 +489,7 @@ const Voucher = () => {
                   id="expiration_date"
                   value={voucherData.expiration_date}
                   onChange={handleInputChange}
-                  className="rounded-xl border h-10 px-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300"
+                  className="rounded-xl border h-10 px-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300"
                 />
                 {errors.expiration_date && (
                   <p className="text-red-500 text-sm mt-1">
@@ -503,7 +503,7 @@ const Voucher = () => {
             <div className="flex flex-row justify-end gap-4 mt-6">
               <button
                 type="submit"
-                className="px-4 py-2 text-white bg-pink-400 rounded-lg hover:bg-pink-500"
+                className="px-4 py-2 text-white bg-alofa-highlight rounded-lg hover:bg-alofa-pink"
               >
                 {selectedVoucher ? "Update Voucher" : "Add Voucher"}
               </button>

@@ -5,7 +5,7 @@ function DashboardStatsGrid() {
   return (
     <div className="flex gap-4 w-full">
       <BoxWrapper>
-        <div className="rounded-full h-12 w-12 flex items-center justify-center bg-pink-500">
+        <div className="rounded-full h-12 w-12 flex items-center justify-center bg-alofa-pink">
           <IoBagHandle className="text-2xl text-white" />
         </div>
         <div className="pl-4">
@@ -19,7 +19,7 @@ function DashboardStatsGrid() {
         </div>
       </BoxWrapper>
       <BoxWrapper>
-        <div className="rounded-full h-12 w-12 flex items-center justify-center bg-pink-500">
+        <div className="rounded-full h-12 w-12 flex items-center justify-center bg-alofa-pink">
           <IoBagHandle className="text-2xl text-white" />
         </div>
         <div className="pl-4">
@@ -31,7 +31,7 @@ function DashboardStatsGrid() {
         </div>
       </BoxWrapper>
       <BoxWrapper>
-        <div className="rounded-full h-12 w-12 flex items-center justify-center bg-pink-500">
+        <div className="rounded-full h-12 w-12 flex items-center justify-center bg-alofa-pink">
           <IoBagHandle className="text-2xl text-white" />
         </div>
         <div className="pl-4">

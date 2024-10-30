@@ -16,7 +16,9 @@ const ConfirmModal = ({
 
       {/* Modal content */}
       <div className="bg-white p-8 rounded-lg shadow-2xl z-10 w-96">
-        <h2 className="text-2xl font-bold text-pink-600 mb-4">Confirmation</h2>
+        <h2 className="text-2xl font-bold text-alofa-dark mb-4">
+          Confirmation
+        </h2>
 
         {/* Main message */}
         <p className="text-gray-800 mb-4">{message}</p>
@@ -29,7 +31,7 @@ const ConfirmModal = ({
         <div className="flex justify-end gap-4">
           {/* Cancel button */}
           <button
-            className="px-4 py-2 text-pink-600 border border-pink-600 rounded-md hover:bg-pink-100 transition-colors"
+            className="px-4 py-2 text-alofa-dark border border-alofa-dark rounded-md hover:bg-pink-100 transition-colors"
             onClick={onClose}
           >
             Cancel
@@ -37,7 +39,7 @@ const ConfirmModal = ({
 
           {/* Confirm button */}
           <button
-            className="px-4 py-2 bg-pink-600 text-white rounded-md hover:bg-pink-700 transition-colors"
+            className="px-4 py-2 bg-alofa-dark text-white rounded-md hover:bg-alofa-dark transition-colors"
             onClick={onConfirm}
           >
             Confirm

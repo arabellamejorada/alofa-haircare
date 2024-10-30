@@ -218,7 +218,7 @@ const AddExistingProductVariations = () => {
 
         <button
           type="submit"
-          className={`bg-pink-500 text-white rounded py-2 px-4 mt-4 shadow-md hover:bg-pink-600 ${
+          className={`bg-alofa-pink text-white rounded py-2 px-4 mt-4 shadow-md hover:bg-alofa-dark ${
             loading ? "opacity-50 cursor-not-allowed" : ""
           }`}
           disabled={loading} // Disable button while loading

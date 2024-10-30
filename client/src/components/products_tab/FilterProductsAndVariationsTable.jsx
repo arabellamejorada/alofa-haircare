@@ -30,7 +30,7 @@ const FilterProductsAndVariationsTable = ({
         {search && (
           <button
             onClick={() => setSearch("")}
-            className="ml-2 text-pink-500 hover:text-pink-700"
+            className="ml-2 text-alofa-pink hover:text-alofa-dark"
           >
             Clear
           </button>
@@ -57,7 +57,7 @@ const FilterProductsAndVariationsTable = ({
           {selectedCategory && (
             <button
               onClick={() => setSelectedCategory("")}
-              className="ml-2 text-pink-500 hover:text-pink-700"
+              className="ml-2 text-alofa-pink hover:text-alofa-dark"
             >
               Clear
             </button>
@@ -82,7 +82,7 @@ const FilterProductsAndVariationsTable = ({
         {selectedStatus && (
           <button
             onClick={() => setSelectedStatus("")}
-            className="ml-2 text-pink-500 hover:text-pink-700"
+            className="ml-2 text-alofa-pink hover:text-alofa-dark"
           >
             Clear
           </button>
@@ -96,7 +96,7 @@ const FilterProductsAndVariationsTable = ({
             type="checkbox"
             checked={showArchived}
             onChange={(e) => setShowArchived(e.target.checked)}
-            className="h-5 w-5 accent-pink-500"
+            className="h-5 w-5 accent-alofa-pink"
           />
           <label className="ml-2 font-semibold text-gray-700">
             {showArchived ? "Hide Archived" : "Show Archived"}

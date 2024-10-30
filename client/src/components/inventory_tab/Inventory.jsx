@@ -143,7 +143,7 @@ const Inventory = () => {
             {search && (
               <button
                 onClick={() => setSearch("")}
-                className="text-sm ml-2 text-pink-500 hover:text-pink-700"
+                className="text-sm ml-2 text-alofa-pink hover:text-alofa-dark"
               >
                 Clear
               </button>
@@ -157,7 +157,7 @@ const Inventory = () => {
                 {columns.map((column) => (
                   <th
                     key={column.key}
-                    className={`px-5 py-3 border-b-2 border-gray-200 bg-pink-500 text-white text-left text-sm font-semibold ${column.align === "right" ? "text-right" : ""}`}
+                    className={`px-5 py-3 border-b-2 border-gray-200 bg-alofa-pink text-white text-left text-sm font-semibold ${column.align === "right" ? "text-right" : ""}`}
                     onClick={() => handleSort(column.key)}
                   >
                     {column.header}
@@ -191,12 +191,12 @@ const Inventory = () => {
                         {expandedRows.includes(item.variation_id) ? (
                           <IoMdArrowDropdownCircle
                             fontSize={24}
-                            className="text-pink-500 hover:text-pink-600"
+                            className="text-alofa-pink hover:text-alofa-dark"
                           />
                         ) : (
                           <IoMdArrowDroprightCircle
                             fontSize={24}
-                            className="text-pink-500 hover:text-pink-600"
+                            className="text-alofa-pink hover:text-alofa-dark"
                           />
                         )}
                       </button>

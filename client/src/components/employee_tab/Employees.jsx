@@ -308,7 +308,7 @@ const Employees = () => {
                 {search && (
                   <button
                     onClick={() => setSearch("")}
-                    className="ml-2 text-pink-500 hover:text-pink-700"
+                    className="ml-2 text-alofa-pink hover:text-alofa-dark"
                   >
                     Clear
                   </button>
@@ -332,7 +332,7 @@ const Employees = () => {
                 {selectedRole && (
                   <button
                     onClick={() => setSelectedRole("")}
-                    className="ml-2 text-pink-500 hover:text-pink-700"
+                    className="ml-2 text-alofa-pink hover:text-alofa-dark"
                   >
                     Clear
                   </button>
@@ -356,7 +356,7 @@ const Employees = () => {
                 {selectedStatus && (
                   <button
                     onClick={() => setSelectedStatus("")}
-                    className="ml-2 text-pink-500 hover:text-pink-700"
+                    className="ml-2 text-alofa-pink hover:text-alofa-dark"
                   >
                     Clear
                   </button>
@@ -367,7 +367,7 @@ const Employees = () => {
             {/* Add Employee Button */}
             <MdAddBox
               fontSize={40}
-              className="text-gray-400 hover:text-pink-400 active:text-pink-500 cursor-pointer"
+              className="text-gray-400 hover:text-alofa-highlight active:text-alofa-pink cursor-pointer"
               onClick={() => {
                 setSelectedEmployee(null);
                 resetForm();
