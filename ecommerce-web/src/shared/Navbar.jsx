@@ -27,12 +27,10 @@ const Navbar = () => {
   const isLoggedIn = Boolean(user); // Use 'user' to determine if logged in
 
   // Handle logout
-  const handleLogout = () => {
-    // Remove session token
+  const handleLogout = async () => {
     localStorage.removeItem("auth_token");
-    signOut(); // Call signOut function from AuthContext
-    // Reset cart
-    resetCart();
+    signOut();
+    await resetCart();
     // Redirect to home page
     navigate("/");
   };
@@ -257,7 +255,7 @@ const Navbar = () => {
                   ₱
                   {new Intl.NumberFormat("en-PH", {
                     minimumFractionDigits: 2,
-                  }).format(totalPrice)}
+                  }).format(subtotal)}
                 </span>
               </div>
               <div className="flex justify-between text-xl font-semibold mb-4">

@@ -12,6 +12,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null); // Add this line
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [justLoggedIn, setJustLoggedIn] = useState(false);
 
   // Function to fetch user role based on user ID
   const fetchUserRole = async (userId) => {
@@ -79,14 +80,9 @@ export const AuthProvider = ({ children }) => {
 
       setToken(data.session.access_token);
       localStorage.setItem("auth_token", data.session.access_token);
-
-      // Set the user object
-      setUser(data.user); // Add this line
-
-      // Fetch the user's role after successful login
+      setUser(data.user);
       await fetchUserRole(data.user.id);
-
-      // Return data for further use if needed
+      setJustLoggedIn(true);
       return data;
     } catch (err) {
       console.error("Error during sign-in:", err.message);
@@ -102,7 +98,9 @@ export const AuthProvider = ({ children }) => {
       setToken(null);
       setUser(null); // Add this line
       setRole(null);
+      setJustLoggedIn(false);
       localStorage.removeItem("auth_token");
+      console.log("User signed out successfully.");
     } catch (err) {
       console.error("Error during sign-out:", err.message);
       throw err;
@@ -111,7 +109,16 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ token, user, role, signIn, signOut, loading }}
+      value={{
+        token,
+        user,
+        role,
+        signIn,
+        signOut,
+        loading,
+        justLoggedIn,
+        setJustLoggedIn,
+      }}
     >
       {!loading && children}
     </AuthContext.Provider>
