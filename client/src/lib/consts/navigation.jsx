@@ -31,7 +31,7 @@ export const DASHBOARD_SIDEBAR_LINKS = [
 	}, */
 ];
 
-export const DASHBOARD_SIDEBAR_BOTTOM_LINKS = [
+/* export const DASHBOARD_SIDEBAR_BOTTOM_LINKS = [
   {
     key: "settings",
     label: "Settings",
@@ -44,7 +44,7 @@ export const DASHBOARD_SIDEBAR_BOTTOM_LINKS = [
     path: "/support",
     icon: <HiOutlineQuestionMarkCircle />,
   },
-];
+]; */
 
 export const PRODUCT_SIDEBAR_LINKS = [
   {

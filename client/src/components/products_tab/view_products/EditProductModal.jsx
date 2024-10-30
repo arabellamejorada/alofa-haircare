@@ -29,7 +29,7 @@ const EditProductModal = ({
         encType="multipart/form-data"
       >
         <div className="flex flex-col gap-4 w-[20rem]">
-          <div className="font-extrabold text-3xl text-pink-400">
+          <div className="font-extrabold text-3xl text-alofa-highlight">
             {selectedProduct ? "Edit Product" : "Add New Product"}
           </div>
 
@@ -44,7 +44,7 @@ const EditProductModal = ({
               placeholder="Product Name"
               value={product_name}
               onChange={handleInputChange}
-              className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+              className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700"
             />
             {errors.product_name && (
               <p className="text-red-500 text-sm mt-1">{errors.product_name}</p>
@@ -61,7 +61,7 @@ const EditProductModal = ({
                 name="product_category"
                 value={product_category}
                 onChange={handleInputChange}
-                className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+                className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700"
               >
                 <option value="">Select Category</option>
                 {categories.map((category) => (
@@ -92,7 +92,7 @@ const EditProductModal = ({
               placeholder="Product Description"
               value={product_description}
               onChange={handleInputChange}
-              className="rounded-xl border w-full h-32 max-h-64 p-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 resize-y overflow-auto"
+              className="rounded-xl border w-full h-32 max-h-64 p-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700 resize-y overflow-auto"
             />
             {errors.product_description && (
               <p className="text-red-500 text-sm mt-1">
@@ -111,7 +111,7 @@ const EditProductModal = ({
                 name="product_status"
                 value={product_status}
                 onChange={handleInputChange}
-                className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+                className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700"
               >
                 <option value="">Select Status</option>
                 {statuses.map((status) => (
@@ -133,7 +133,7 @@ const EditProductModal = ({
             <button
               type="submit"
               disabled={selectedProduct && !isFormModified()} // Disable button if no edits made
-              className={`px-4 py-2 text-white bg-pink-400 rounded-lg hover:bg-pink-500 ${
+              className={`px-4 py-2 text-white bg-alofa-highlight rounded-lg hover:bg-alofa-pink ${
                 selectedProduct && !isFormModified()
                   ? "opacity-50 cursor-not-allowed"
                   : ""

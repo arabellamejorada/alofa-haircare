@@ -15,7 +15,7 @@ const Products = () => {
           <button
             className={`px-4 py-2 ${
               activeTab === "view-products"
-                ? "text-pink-400 border-b-2 border-pink-400"
+                ? "text-alofa-highlight border-b-2 border-alofa-highlight"
                 : "text-gray-500"
             }`}
             onClick={() => setActiveTab("view-products")}
@@ -25,7 +25,7 @@ const Products = () => {
           <button
             className={`px-4 py-2 ${
               activeTab === "view-variations"
-                ? "text-pink-400 border-b-2 border-pink-400"
+                ? "text-alofa-highlight border-b-2 border-alofa-highlight"
                 : "text-gray-500"
             }`}
             onClick={() => setActiveTab("view-variations")}
@@ -35,7 +35,7 @@ const Products = () => {
           <button
             className={`px-4 py-2 ml-4 ${
               activeTab === "add-products"
-                ? "text-pink-400 border-b-2 border-pink-400"
+                ? "text-alofa-highlight border-b-2 border-alofa-highlight"
                 : "text-gray-500"
             }`}
             onClick={() => setActiveTab("add-products")}

@@ -64,7 +64,7 @@ const DataTable = ({
             <tr>
               {columns.map((column) => (
                 <th
-                  className={`px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-pink-400 to-pink-500 text-gray-100 text-md font-semibold uppercase tracking-wider ${
+                  className={`px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-alofa-highlight to-alofa-pink text-gray-100 text-md font-semibold uppercase tracking-wider ${
                     column.isNumeric ? "text-right" : "text-left"
                   }`}
                   key={column.key}
@@ -73,7 +73,7 @@ const DataTable = ({
                 </th>
               ))}
               {!isInventory && (
-                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-pink-400 to-pink-500 text-gray-100 text-center text-md font-semibold uppercase w-[8%]">
+                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-alofa-highlight to-alofa-pink text-gray-100 text-center text-md font-semibold uppercase w-[8%]">
                   Actions
                 </th>
               )}
@@ -111,7 +111,7 @@ const DataTable = ({
                       {isEmployee ? (
                         // Show only the Edit button if isEmployee is true
                         <div
-                          className="text-pink-500 hover:text-pink-600"
+                          className="text-alofa-pink hover:text-alofa-dark"
                           onClick={() => onEdit(item)}
                           role="button"
                           tabIndex={0}
@@ -123,7 +123,7 @@ const DataTable = ({
                         <>
                           {/* Show Edit button */}
                           <div
-                            className="text-pink-500 hover:text-pink-600"
+                            className="text-alofa-pink hover:text-alofa-dark"
                             onClick={() => onEdit(item)}
                             role="button"
                             tabIndex={0}
@@ -135,7 +135,7 @@ const DataTable = ({
                           {/* Show Delete or Archive button based on isProductCategory */}
                           {isProductCategory ? (
                             <div
-                              className="text-pink-500 hover:text-pink-600"
+                              className="text-alofa-pink hover:text-alofa-dark"
                               onClick={() => onDelete(item)} // Trigger delete action
                               role="button"
                               tabIndex={0}
@@ -145,7 +145,7 @@ const DataTable = ({
                             </div>
                           ) : (
                             <div
-                              className="text-pink-500 hover:text-pink-600"
+                              className="text-alofa-pink hover:text-alofa-dark"
                               onClick={() => onArchive(item)}
                               role="button"
                               tabIndex={0}

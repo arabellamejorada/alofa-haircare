@@ -220,7 +220,7 @@ const StockOutTable = ({
       <div className="flex justify-end pr-6">
         <MdAddBox
           fontSize={30}
-          className="text-gray-400 mb-2 hover:text-pink-500 active:text-pink-600 cursor-pointer"
+          className="text-gray-400 mb-2 hover:text-alofa-pink active:text-alofa-dark cursor-pointer"
           onClick={handleAddRow}
         />
       </div>
@@ -228,18 +228,18 @@ const StockOutTable = ({
         <table className="min-w-full leading-normal">
           <thead>
             <tr>
-              <th className="px-5 py-3 border-b-2 border-gray-200 bg-pink-500 text-gray-100 text-left text-md font-semibold uppercase tracking-wider">
+              <th className="px-5 py-3 border-b-2 border-gray-200 bg-alofa-pink text-gray-100 text-left text-md font-semibold uppercase tracking-wider">
                 #
               </th>
               {columns.map((column) => (
                 <th
                   key={column.key}
-                  className="px-5 py-3 border-b-2 border-gray-200 bg-pink-500 text-gray-100 text-left text-md font-semibold uppercase tracking-wider"
+                  className="px-5 py-3 border-b-2 border-gray-200 bg-alofa-pink text-gray-100 text-left text-md font-semibold uppercase tracking-wider"
                 >
                   {column.header}
                 </th>
               ))}
-              <th className="px-5 py-3 border-b-2 border-gray-200 bg-pink-500 text-gray-100 text-center text-md font-semibold uppercase tracking-wider">
+              <th className="px-5 py-3 border-b-2 border-gray-200 bg-alofa-pink text-gray-100 text-center text-md font-semibold uppercase tracking-wider">
                 Delete
               </th>
             </tr>
@@ -273,7 +273,7 @@ const StockOutTable = ({
                     {row.searchTerm && (
                       <button
                         onClick={() => clearSearch(index)}
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-pink-500"
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-alofa-pink"
                         aria-label="Clear search"
                       >
                         &times;

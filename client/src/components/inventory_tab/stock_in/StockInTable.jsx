@@ -220,7 +220,7 @@ const StockInTable = ({
       <div className="flex justify-end pr-6">
         <MdAddBox
           fontSize={40}
-          className="text-gray-400 mb-2 hover:text-pink-400 active:text-pink-500"
+          className="text-gray-400 mb-2 hover:text-alofa-highlight active:text-alofa-pink"
           onClick={handleAddRow}
         />
       </div>
@@ -228,7 +228,7 @@ const StockInTable = ({
         <table className="min-w-full leading-normal">
           <thead>
             <tr>
-              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-pink-400 to-pink-500 text-gray-100 text-left text-md font-semibold uppercase tracking-wider">
+              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-alofa-highlight to-alofa-pink text-gray-100 text-left text-md font-semibold uppercase tracking-wider">
                 #
               </th>
               {columns
@@ -238,13 +238,13 @@ const StockInTable = ({
                 )
                 .map((column) => (
                   <th
-                    className="px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-pink-400 to-pink-500 text-gray-100 text-left text-md font-semibold uppercase tracking-wider"
+                    className="px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-alofa-highlight to-alofa-pink text-gray-100 text-left text-md font-semibold uppercase tracking-wider"
                     key={column.key}
                   >
                     {column.header}
                   </th>
                 ))}
-              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-pink-400 to-pink-500 text-gray-100 text-center text-md font-semibold uppercase tracking-wider">
+              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-alofa-highlight to-alofa-pink text-gray-100 text-center text-md font-semibold uppercase tracking-wider">
                 Delete
               </th>
             </tr>
@@ -283,7 +283,7 @@ const StockInTable = ({
                     {row.searchTerm && (
                       <button
                         onClick={() => clearSearch(index)}
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-pink-500"
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-alofa-pink"
                         aria-label="Clear search"
                       >
                         &times;

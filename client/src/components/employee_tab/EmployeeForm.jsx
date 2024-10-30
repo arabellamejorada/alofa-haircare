@@ -28,7 +28,7 @@ const EmployeeForm = ({
         onSubmit={selectedEmployee ? handleUpdateEmployee : handleAddEmployee}
       >
         <div className="flex flex-col gap-4">
-          <div className="font-extrabold text-3xl text-pink-400">
+          <div className="font-extrabold text-3xl text-alofa-highlight">
             {selectedEmployee ? "Edit Employee" : "Register New Employee"}
           </div>
 
@@ -47,7 +47,7 @@ const EmployeeForm = ({
                     placeholder="First Name"
                     value={firstName}
                     onChange={(e) => handleInputChange(e, "firstName")}
-                    className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 ${
+                    className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700 ${
                       errors.firstName ? "border-red-500" : ""
                     }`}
                   />
@@ -66,7 +66,7 @@ const EmployeeForm = ({
                     placeholder="Last Name"
                     value={lastName}
                     onChange={(e) => handleInputChange(e, "lastName")}
-                    className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 ${
+                    className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700 ${
                       errors.lastName ? "border-red-500" : ""
                     }`}
                   />
@@ -93,7 +93,7 @@ const EmployeeForm = ({
                 placeholder="Email"
                 value={email}
                 onChange={(e) => handleInputChange(e, "email")}
-                className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 ${
+                className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700 ${
                   errors.email ? "border-red-500" : ""
                 }`}
               />
@@ -116,7 +116,7 @@ const EmployeeForm = ({
                 placeholder="Contact Number"
                 value={contactNumber}
                 onChange={(e) => handleInputChange(e, "contactNumber")}
-                className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 ${
+                className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700 ${
                   errors.contactNumber ? "border-red-500" : ""
                 }`}
               />
@@ -137,7 +137,7 @@ const EmployeeForm = ({
                 name="roleId"
                 value={roleId}
                 onChange={(e) => handleInputChange(e, "roleId")}
-                className={`w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 ${
+                className={`w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700 ${
                   errors.roleId ? "border-red-500" : ""
                 }`}
               >
@@ -169,7 +169,7 @@ const EmployeeForm = ({
                   id="statusId"
                   value={statusId}
                   onChange={(e) => setStatusId(e.target.value)}
-                  className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+                  className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700"
                 >
                   <option value="" disabled>
                     Select Status
@@ -191,7 +191,7 @@ const EmployeeForm = ({
             <button
               type="submit"
               disabled={!isFormModified()}
-              className={`w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-semibold text-white ${
+              className={`w-[10rem] text-center py-3 bg-alofa-highlight hover:bg-alofa-pink active:bg-alofa-dark rounded-full font-semibold text-white ${
                 !isFormModified() ? "opacity-50 cursor-not-allowed" : ""
               }`}
             >

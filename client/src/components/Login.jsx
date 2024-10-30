@@ -40,7 +40,7 @@ const Login = () => {
   };
 
   return (
-    <div className="bg-gradient-to-b from-alofa-pink to-alofa-light-pink bg-cover bg-center min-h-screen flex items-center justify-center px-4">
+    <div className="bg-gradient-to-b from-alofa-pink to-alofa-highlight bg-cover bg-center min-h-screen flex items-center justify-center px-4">
       <div className="bg-white ease-in-out delay-150 duration-300 rounded-md drop-shadow-md p-6 w-full max-w-md hover:drop-shadow-xl hover:scale-105">
         <form onSubmit={handleSubmit}>
           <div className="flex flex-col">

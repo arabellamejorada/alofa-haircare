@@ -29,7 +29,7 @@ const SupplierForm = ({
         onSubmit={selectedSupplier ? handleUpdateSupplier : handleAddSupplier}
       >
         <div className="flex flex-col gap-4">
-          <div className="font-extrabold text-3xl text-pink-400 mb-4">
+          <div className="font-extrabold text-3xl text-alofa-highlight mb-4">
             {selectedSupplier ? "Edit Supplier" : "Register New Supplier"}
           </div>
 
@@ -45,7 +45,7 @@ const SupplierForm = ({
               placeholder="Supplier Name"
               value={supplier_name || ""}
               onChange={handleInputChange}
-              className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 ${
+              className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700 ${
                 errors.supplier_name ? "border-red-500" : ""
               }`}
             />
@@ -68,7 +68,7 @@ const SupplierForm = ({
               placeholder="Contact Person"
               value={contact_person || ""}
               onChange={handleInputChange}
-              className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 ${
+              className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700 ${
                 errors.contact_person ? "border-red-500" : ""
               }`}
             />
@@ -91,7 +91,7 @@ const SupplierForm = ({
               placeholder="Contact Number"
               value={contact_number || ""}
               onChange={handleInputChange}
-              className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 ${
+              className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700 ${
                 errors.contact_number ? "border-red-500" : ""
               }`}
             />
@@ -114,7 +114,7 @@ const SupplierForm = ({
               placeholder="Email"
               value={email || ""}
               onChange={handleInputChange}
-              className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 ${
+              className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700 ${
                 errors.email ? "border-red-500" : ""
               }`}
             />
@@ -135,7 +135,7 @@ const SupplierForm = ({
               placeholder="Address"
               value={address || ""}
               onChange={handleInputChange}
-              className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 ${
+              className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700 ${
                 errors.address ? "border-red-500" : ""
               }`}
             />
@@ -155,7 +155,7 @@ const SupplierForm = ({
                 id="status"
                 value={status || ""}
                 onChange={handleInputChange}
-                className={`w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 ${
+                className={`w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700 ${
                   errors.status ? "border-red-500" : ""
                 }`}
               >
@@ -178,7 +178,7 @@ const SupplierForm = ({
             <button
               type="submit"
               disabled={selectedSupplier && !isFormModified()} // Disable if no changes made when editing
-              className={`w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-semibold text-white ${
+              className={`w-[10rem] text-center py-3 bg-alofa-highlight hover:bg-alofa-pink active:bg-alofa-dark rounded-full font-semibold text-white ${
                 selectedSupplier && !isFormModified()
                   ? "opacity-50 cursor-not-allowed"
                   : ""
