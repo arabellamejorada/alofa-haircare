@@ -104,10 +104,10 @@ const Login = () => {
                   required
                 />
 
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center gap-2">
                   <Button
                     type="submit"
-                    className="w-[12rem] font-extrabold font-sans text-white my-1 py-2 px-4 rounded-full focus:outline-none bg-gradient-to-b from-[#FE699F] to-[#F8587A]"
+                    className="w-full font-extrabold font-sans text-white my-1 py-2 px-4 rounded-md focus:outline-none bg-gradient-to-b from-[#FE699F] to-[#F8587A]"
                   >
                     CONTINUE
                   </Button>
