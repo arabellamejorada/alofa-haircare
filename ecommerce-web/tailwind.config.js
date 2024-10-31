@@ -9,7 +9,7 @@ export default {
       backgroundImage: {
         "body-bg" : './public/images/body-bg.png',
         "alofa-icon" : "./public/images/alofa-icon.png",
-        "navbar-bg" : "./public/images/alofa-icon.png",
+        "navbar-bg" : "../public/static/alofa-navbar-white.png",
         "checkout-gradient" : "linear-gradient(180deg, #FF82AF 49%, #FFD1E3 100%)",
       },
       colors: {

@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { CartContext } from "../components/CartContext";
 import { AuthContext } from "../components/AuthContext"; // Import AuthContext
 import { ClipLoader } from "react-spinners";
+import NavbarBG from "../../../public/static/alofa-navbar-white.png";
 
 const Navbar = () => {
   const [hovered, setHovered] = useState(false);
@@ -15,17 +16,19 @@ const Navbar = () => {
   const { user, role, signOut } = useContext(AuthContext); // Use 'user' instead of 'token'
   const { resetCart } = useContext(CartContext); // Reset cart items
 
-  const totalPrice = cartItems.reduce((sum, item) => {
-    const price = parseFloat(item.unit_price) || 0;
-    const quantity = item.quantity || 0;
-    return sum + price * quantity;
-  }, 0);
+  // const totalPrice = cartItems.reduce((sum, item) => {
+  //   const price = parseFloat(item.unit_price) || 0;
+  //   const quantity = item.quantity || 0;
+  //   return sum + price * quantity;
+  // }, 0);
 
   const isAuthPage =
     location.pathname === "/login" || location.pathname === "/signup";
   const isCheckoutPage = location.pathname === "/checkout";
   const isLoggedIn = Boolean(user); // Use 'user' to determine if logged in
 
+  // Check if the current page is `/profile`
+  const isProfilePage = location.pathname.startsWith("/profile");
   // Handle logout
   const handleLogout = async () => {
     localStorage.removeItem("auth_token");
@@ -56,8 +59,17 @@ const Navbar = () => {
       className={`${
         isCheckoutPage
           ? "w-full z-50 h-16 bg-checkout-gradient shadow-white-3"
-          : "fixed top-0 w-full z-50 h-16 bg-white shadow-md"
-      }`}
+          : "fixed top-0 w-full z-50 h-16 bg-white shadow-md"}
+          `}
+      style={
+        isProfilePage
+          ? {
+              backgroundImage: `url(${NavbarBG})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }
+          : {}
+      }
     >
       <nav className="container mx-auto flex items-center justify-between px-4 py-2 h-full">
         <div
@@ -183,20 +195,20 @@ const Navbar = () => {
       </nav>
 
       {/* Cart Sidebar */}
-      {!isAuthPage && !isCheckoutPage && (
+      {!isAuthPage && !isCheckoutPage && (  
         <div
           className={`fixed top-0 right-0 h-full w-80 bg-white shadow-lg z-40 transition-transform duration-300 ${
-            hovered ? "translate-x-0" : "translate-x-full"
+          hovered ? "translate-x-0" : "translate-x-full"
           }`}
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
-        >
-          <div className="p-4 h-full flex flex-col">
-            <h1 className="text-2xl gradient-heading font-bold mb-4">
-              Cart Overview
-            </h1>
+          >
+            <div className="p-4 h-full flex flex-col">
+              <h1 className="text-2xl gradient-heading font-bold mb-4">
+                  Cart Overview
+              </h1>
 
-            <div className="flex-1 overflow-y-auto mb-4">
+              <div className="flex-1 overflow-y-auto mb-4">
               {cartItems && cartItems.length > 0 ? (
                 cartItems.map((item) => (
                   <div
@@ -249,41 +261,35 @@ const Navbar = () => {
 
             {/* Fixed Bottom Section: Subtotal, Total, and Buttons */}
             <div className="border-t pt-4">
-              <div className="flex justify-between mb-2 text-gray-500">
+              <div className="flex justify-between text-xl font-extrabold mb-2  text-gray-500">
                 <span>Subtotal</span>
                 <span>
                   ₱
                   {new Intl.NumberFormat("en-PH", {
-                    minimumFractionDigits: 2,
-                  }).format(subtotal)}
+                      minimumFractionDigits: 2,
+                    }).format(subtotal)}
                 </span>
               </div>
-              <div className="flex justify-between text-xl font-semibold mb-4">
-                <span>Total</span>
-                <span>
-                  ₱
-                  {new Intl.NumberFormat("en-PH", {
-                    minimumFractionDigits: 2,
-                  }).format(totalPrice)}
-                </span>
+              <div className="flex justify-between font-light text-gray-500 italic text-sm mb-4">
+                      <span>Shipping & taxes calculated at checkout</span>
               </div>
+            </div>
 
-              <div className="flex justify-between">
-                <Link to="/shoppingcart">
-                  <button className="font-extrabold text-white py-2 px-4 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]">
-                    View Cart
-                  </button>
-                </Link>
-                <Link to="/checkout">
-                  <button className="font-extrabold text-white py-2 px-4 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]">
-                    Check Out
-                  </button>
-                </Link>
-              </div>
+            <div className="flex justify-between">
+              <Link to="/shoppingcart">
+                <button className="font-extrabold text-white py-2 px-4 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]">
+                  View Cart
+                </button>
+              </Link>
+              <Link to="/checkout">
+                <button className="font-extrabold text-white py-2 px-4 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]">
+                  Check Out
+                </button>
+              </Link>
             </div>
           </div>
         </div>
-      )}
+        )}
     </header>
   );
 };
