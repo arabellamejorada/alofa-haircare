@@ -30,7 +30,6 @@ const Navbar = () => {
   // Check if the current page is `/profile`
   const isProfilePage = location.pathname.startsWith("/profile");
 
-
   // Handle logout
   const handleLogout = () => {
     // Remove session token
@@ -45,20 +44,18 @@ const Navbar = () => {
         isCheckoutPage
           ? "w-full z-50 h-16 bg-checkout-gradient shadow-white-3"
           : "fixed top-0 w-full z-50 h-16 bg-white shadow-md"}
-          
           `}
-          style={
-            isProfilePage
-              ? {
-                  backgroundImage: `url(${NavbarBG})`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                }
-              : {}
-          }
+      style={
+        isProfilePage
+          ? {
+              backgroundImage: `url(${NavbarBG})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }
+          : {}
+      }
     >
       <nav className="container mx-auto flex items-center justify-between px-4 py-2 h-full">
-        
         <div
           className={`flex ${
             isCheckoutPage ? "justify-center w-full" : "justify-start"
@@ -75,7 +72,7 @@ const Navbar = () => {
           >
             alofa
           </a>
-          
+
           {/* Navigation Pages */}
           {!isAuthPage && !isCheckoutPage && (
             <div className="text-lg font-body text-alofa-pink sm:flex items-center gap-8 hidden">
@@ -104,9 +101,9 @@ const Navbar = () => {
         {/* Right Section - Cart Icon (if on /checkout1) */}
         {isCheckoutPage && (
           <Link to="/shoppingcart">
-          <div className="text-white p-3 rounded-full cursor-pointer mr-4">
-            <FaShoppingCart size={20} />
-          </div>
+            <div className="text-white p-3 rounded-full cursor-pointer mr-4">
+              <FaShoppingCart size={20} />
+            </div>
           </Link>
         )}
 
@@ -128,18 +125,6 @@ const Navbar = () => {
                 >
                   Logout
                 </button>
-                {/* Shopping Cart Icon */}
-                <div
-                  className="relative"
-                  onMouseEnter={() => setHovered(true)}
-                  onMouseLeave={() => setHovered(false)}
-                >
-                  <div className="text-[#FE699F] p-3 rounded-full transition-colors duration-300 hover:delay-700 hover:text-gray-500 cursor-pointer">
-                    <Link to="/shoppingcart">
-                    <FaShoppingCart />
-                    </Link>
-                  </div>
-                </div>
               </>
             ) : (
               // When user is not logged in
@@ -157,109 +142,109 @@ const Navbar = () => {
                 >
                   Sign Up
                 </Link>
-                {/* Shopping Cart Icon */}
-                <div
-                  className="relative"
-                  onMouseEnter={() => setHovered(true)}
-                  onMouseLeave={() => setHovered(false)}
-                >
-                  <div className="text-[#FE699F] p-3 rounded-full transition-colors duration-300 hover:delay-700 hover:text-gray-500 cursor-pointer">
-                    <FaShoppingCart />
-                  </div>
-                </div>
               </>
             )}
+
+            {/* Shopping Cart Icon and Sidebar */}
+            <div
+              className="relative"
+              onMouseEnter={() => setHovered(true)}
+              onMouseLeave={() => setHovered(false)}
+            >
+              {/* Shopping Cart Icon */}
+              <div className="text-[#FE699F] p-3 rounded-full transition-colors duration-300 cursor-pointer">
+                <FaShoppingCart />
+              </div>
+
+              {/* Cart Sidebar */}
+              <div
+                className={`fixed top-0 right-0 h-full w-80 bg-white shadow-lg z-40 transition-transform duration-300 ${
+                  hovered ? "translate-x-0" : "translate-x-full"
+                }`}
+                onMouseEnter={() => setHovered(true)}
+                onMouseLeave={() => setHovered(false)}
+              >
+                <div className="p-4 h-full flex flex-col">
+                  <h1 className="text-2xl gradient-heading font-bold mb-4">
+                    Cart Overview
+                  </h1>
+
+                  <div className="flex-1 overflow-y-auto mb-4">
+                    {cartItems && cartItems.length > 0 ? (
+                      cartItems.map((item) => (
+                        <div
+                          key={item.id}
+                          className="flex items-center gap-4 mb-4 p-2 bg-white rounded-lg"
+                        >
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="w-16 h-16 object-cover rounded-md shadow-sm"
+                          />
+                          <div className="flex-1">
+                            <h2 className="font-semibold text-gray-700">
+                              {item.name}
+                            </h2>
+                            {item.value && (
+                              <p className="text-sm text-gray-500">
+                                {item.value !== "N/A" ? item.value : ""}
+                              </p>
+                            )}
+                            <p className="text-sm text-gray-500">₱{item.price}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="number"
+                              value={item.quantity}
+                              onChange={(e) =>
+                                handleQuantityChange(item.id, e.target.value)
+                              }
+                              className="w-12 border border-gray-300 rounded-md text-center"
+                            />
+                            <button
+                              onClick={() => handleDelete(item.id)}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <FaTrashAlt />
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-gray-500 mb-4">Your cart is empty.</p>
+                    )}
+                  </div>
+
+                  {/* Fixed Bottom Section: Subtotal, Total, and Buttons */}
+                  <div className="border-t pt-4">
+                    <div className="flex justify-between text-xl font-extrabold mb-2 text-black">
+                      <span>Subtotal</span>
+                      <span>₱{totalPrice}</span>
+                    </div>
+                    <div className="flex justify-between font-light text-gray-500 italic text-sm mb-4">
+                      <span>Shipping & taxes calculated at checkout</span>
+                      
+                    </div>
+
+                    <div className="flex justify-between">
+                      <Link to="/shoppingcart">
+                        <button className="font-extrabold text-white py-2 px-4 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]">
+                          View Cart
+                        </button>
+                      </Link>
+                      <Link to="/checkout">
+                        <button className="font-extrabold text-white py-2 px-4 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]">
+                          Check Out
+                        </button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </nav>
-
-      {/* Cart Sidebar */}
-      {!isAuthPage && !isCheckoutPage && (
-        <div
-          className={`fixed top-0 right-0 h-full w-80 bg-white shadow-lg z-40 transition-transform duration-300 ${
-            hovered ? "translate-x-0" : "translate-x-full"
-          }`}
-          onMouseEnter={() => setHovered(true)}
-          onMouseLeave={() => setHovered(false)}
-        >
-          <div className="p-4 h-full flex flex-col">
-            <h1 className="text-2xl gradient-heading font-bold mb-4">
-              Cart Overview
-            </h1>
-
-            <div className="flex-1 overflow-y-auto mb-4">
-              {cartItems && cartItems.length > 0 ? (
-                cartItems.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center gap-4 mb-4 p-2 bg-white rounded-lg"
-                  >
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-16 h-16 object-cover rounded-md shadow-sm"
-                    />
-                    <div className="flex-1">
-                      <h2 className="font-semibold text-gray-700">
-                        {item.name}
-                      </h2>
-                      {item.value && (
-                        <p className="text-sm text-gray-500">
-                          {item.value !== "N/A" ? item.value : ""}
-                        </p>
-                      )}
-                      <p className="text-sm text-gray-500">₱{item.price}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="number"
-                        value={item.quantity}
-                        onChange={(e) =>
-                          handleQuantityChange(item.id, e.target.value)
-                        }
-                        className="w-12 border border-gray-300 rounded-md text-center"
-                      />
-                      <button
-                        onClick={() => handleDelete(item.id)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <FaTrashAlt />
-                      </button>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-gray-500 mb-4">Your cart is empty.</p>
-              )}
-            </div>
-
-            {/* Fixed Bottom Section: Subtotal, Total, and Buttons */}
-            <div className="border-t pt-4">
-              <div className="flex justify-between mb-2 text-gray-500">
-                <span>Subtotal</span>
-                <span>₱{totalPrice}</span>
-              </div>
-              <div className="flex justify-between text-xl font-semibold mb-4">
-                <span>Total</span>
-                <span>₱{totalPrice}</span>
-              </div>
-
-              <div className="flex justify-between">
-                <Link to="/shoppingcart">
-                  <button className="font-extrabold text-white py-2 px-4 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]">
-                    View Cart
-                  </button>
-                </Link>
-                <Link to="/checkout">
-                  <button className="font-extrabold text-white py-2 px-4 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]">
-                    Check Out
-                  </button>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </header>
   );
 };
