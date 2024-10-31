@@ -31,8 +31,10 @@ const CartProvider = ({ children }) => {
       sessionStorage.setItem("guest_cart_id", cart.cart_id);
       setCartId(cart.cart_id);
       setCartItems([]);
+      return cart;
     } catch (error) {
       console.error("Error creating guest cart:", error);
+      throw error;
     }
   };
 
@@ -57,26 +59,6 @@ const CartProvider = ({ children }) => {
     }
   };
 
-  const fetchOrCreateGuestCart = async () => {
-    if (!cartId) return; // Avoid fetching if cartId is null
-    setLoading(true);
-    try {
-      const fetchedCart = await getCartById(cartId);
-      if (!fetchedCart) {
-        await createGuestCart(); // Create a new guest cart if not found
-      } else {
-        setCartItems(fetchedCart.items);
-        setCartId(fetchedCart.cart.cart_id);
-        calculateSubtotal(fetchedCart.items);
-      }
-    } catch (error) {
-      console.error("Error fetching cart:", error);
-      toast.error("Failed to fetch cart.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
     if (justLoggedIn && customerProfileId) {
       console.log("Fetching customer cart after login and merge...");
@@ -89,11 +71,15 @@ const CartProvider = ({ children }) => {
     console.log("product: ", product);
     try {
       // Ensure a cart ID exists (either guest or user)
-      if (!cartId) {
-        await createGuestCart();
+      let currentCartId = cartId;
+      if (!currentCartId) {
+        const createdCart = await createGuestCart();
+        currentCartId = createdCart.cart_id; // Use the cart_id from the newly created cart
+        setCartId(currentCartId); // Update the state
       }
 
-      const newItem = await addCartItem(cartId, product.id, 1);
+      // Now, add the item to the cart using the confirmed cart ID
+      const newItem = await addCartItem(currentCartId, product.id, 1);
 
       setCartItems((prevItems) => {
         const existingItem = prevItems.find(
@@ -114,7 +100,7 @@ const CartProvider = ({ children }) => {
           );
         } else {
           // Add the new item to the cart
-          const newItem = {
+          const newCartItem = {
             id: product.id,
             name: product.name,
             value: product.value,
@@ -124,7 +110,7 @@ const CartProvider = ({ children }) => {
             item_total: product.price,
             variation_id: product.id,
           };
-          updatedCartItems = [...prevItems, newItem];
+          updatedCartItems = [...prevItems, newCartItem];
         }
 
         calculateSubtotal(updatedCartItems);
