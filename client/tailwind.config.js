@@ -21,20 +21,9 @@ module.exports = {
         "alofa-black": "#000000", */
       },
       fontFamily: {
-<<<<<<< HEAD
-        'title': ["Yavome", "sans-serif"],
-      },
-      colors: {
-        "alofa-pink": "#FE699F",
-        "alofa-pink-gradient": "#F8587A",
-        "alofa-light-pink": "#EFB3C0",
-        "alofa-white": "#FFF8FC",
-        "alofa-black": "#000000",
-=======
         title: ["Yavome", "sans-serif"],
         heading: ["Yeseva One", "sans-serif"],
         body: ["Montserrat", "sans-serif"],
->>>>>>> 0741f37fba59f0ba78f97984e9391d9da72ddb28
       },
     },
   },
