@@ -129,7 +129,7 @@ const StockOutHistory = () => {
       <div className="flex flex-row items-center gap-2">
         <button onClick={() => navigate(-1)} aria-label="Go Back">
           <IoIosArrowBack
-            className="text-pink-500 hover:text-pink-600"
+            className="text-alofa-pink hover:text-alofa-dark"
             fontSize={40}
           />
         </button>
@@ -153,12 +153,12 @@ const StockOutHistory = () => {
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="w-full max-w-md h-10 px-4 border rounded-xl bg-gray-50 border-slate-300 focus:outline-none focus:border-pink-400 focus:bg-white"
+            className="w-full max-w-md h-10 px-4 border rounded-xl bg-gray-50 border-slate-300 focus:outline-none focus:border-alofa-highlight focus:bg-white"
           />
           {selectedDate && (
             <button
               onClick={() => setSelectedDate("")}
-              className="text-sm ml-2 text-pink-500 hover:text-pink-700 focus:outline-none"
+              className="text-sm ml-2 text-alofa-pink hover:text-alofa-dark focus:outline-none"
             >
               Clear
             </button>
@@ -179,12 +179,12 @@ const StockOutHistory = () => {
             placeholder="Search here..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full max-w-md h-10 px-4 border rounded-xl bg-gray-50 border-slate-300 focus:outline-none focus:border-pink-400 focus:bg-white"
+            className="w-full max-w-md h-10 px-4 border rounded-xl bg-gray-50 border-slate-300 focus:outline-none focus:border-alofa-highlight focus:bg-white"
           />
           {searchTerm && (
             <button
               onClick={() => setSearchTerm("")}
-              className="text-sm ml-2 text-pink-500 hover:text-pink-700 focus:outline-none"
+              className="text-sm ml-2 text-alofa-pink hover:text-alofa-dark focus:outline-none"
             >
               Clear
             </button>

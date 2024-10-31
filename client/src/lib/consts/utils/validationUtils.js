@@ -2,7 +2,8 @@
 export const validateNonEmpty = (input) => input?.toString().trim() !== "";
 
 // Generalized validation for dropdown selections (ensures a valid option is selected)
-export const validateDropdown = (selection) => selection !== null && selection !== "";
+export const validateDropdown = (selection) =>
+  selection !== null && selection !== "";
 
 // Validation utilities
 export const validateName = validateNonEmpty;
@@ -19,37 +20,32 @@ export const validateStatus = validateDropdown;
 export const validateCategory = validateDropdown;
 export const validateProductStatusId = validateDropdown;
 
-
 // Validate email format using regex
-export const validateEmail = (email) => 
+export const validateEmail = (email) =>
   /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(email);
 
 // Validate contact number to be an 11-digit number
-export const validateContactNumber = (number) => 
-  /^\d{11}$/.test(number);
+export const validateContactNumber = (number) => /^\d{11}$/.test(number);
 
 // Validate that a password is at least 6 characters long
-export const validatePassword = (password) => 
-  password.length >= 6;
+export const validatePassword = (password) => password.length >= 6;
 
 // Validate SKU format using regex (assuming alphanumeric and dashes are allowed)
-export const validateSku = (sku) => 
-  /^[a-zA-Z0-9-]+$/.test(sku);
+export const validateSku = (sku) => /^[a-zA-Z0-9-]+$/.test(sku);
 
 // Validate that the unit price is a positive number
-export const validateUnitPrice = (unit_price) => 
+export const validateUnitPrice = (unit_price) =>
   !isNaN(unit_price) && unit_price > 0;
 
 // Validate image to be non-empty and an actual image file (if provided)
-export const validateImage = (image) => 
+export const validateImage = (image) =>
   image ? image.type.startsWith("image/") : true; // If there's no image, it's valid (optional field)
 
 export const validateQuantity = (quantity, stock) => {
-  if (!quantity) return false; 
+  if (!quantity) return false;
   if (isNaN(quantity) || quantity <= 0) return false;
   return quantity <= stock; // Quantity should not exceed the available stock
 };
-
 
 // Function to validate product form data
 export const validateProductForm = (productFormData) => {
@@ -78,7 +74,6 @@ export const validateProductForm = (productFormData) => {
   return errors;
 };
 
-
 export const validateAddProductVariationForm = (variations) => {
   const errors = [];
   variations.forEach((variation, index) => {
@@ -95,7 +90,11 @@ export const validateAddProductVariationForm = (variations) => {
     }
 
     // Validate unit price (ensure it isn't undefined or null, but allow 0)
-    if (variation.unit_price === undefined || variation.unit_price === null || variation.unit_price === '') {
+    if (
+      variation.unit_price === undefined ||
+      variation.unit_price === null ||
+      variation.unit_price === ""
+    ) {
       error.unit_price = "Price is required";
     }
 
@@ -110,16 +109,17 @@ export const validateAddProductVariationForm = (variations) => {
   return errors;
 };
 
-
 export const validateEditProductVariationForm = ({
   unit_price,
   product_status_id,
 }) => {
-    console.log('Validating Form:', { unit_price, product_status_id }); // Log the values
+  console.log("Validating Form:", { unit_price, product_status_id }); // Log the values
 
-  return {    
+  return {
     unit_price: validateUnitPrice(unit_price) ? "" : "HELP",
-    product_status_id: validateStatus(product_status_id) ? "" : "Status is required",
+    product_status_id: validateStatus(product_status_id)
+      ? ""
+      : "Status is required",
   };
 };
 
@@ -130,8 +130,6 @@ export const validateEmployeeForm = ({
   email,
   contactNumber,
   roleId,
-  username = "",
-  password = "",
   isEdit = false, // Flag to differentiate between create and update
 }) => {
   const errors = {};
@@ -139,10 +137,9 @@ export const validateEmployeeForm = ({
   if (!validateName(firstName)) errors.firstName = "First name is required";
   if (!validateName(lastName)) errors.lastName = "Last name is required";
   if (!validateEmail(email)) errors.email = "Enter a valid email address";
-  if (!validateContactNumber(contactNumber)) errors.contactNumber = "Enter a valid 11-digit phone number";
+  if (!validateContactNumber(contactNumber))
+    errors.contactNumber = "Enter a valid 11-digit phone number";
   if (!validateRole(roleId)) errors.roleId = "Role is required";
-  if (!isEdit && !validateUsername(username)) errors.username = "Username is required";
-  if (!isEdit && !validatePassword(password)) errors.password = "Password must be at least 6 characters";
 
   return errors;
 };
@@ -157,28 +154,33 @@ export const validateSupplierForm = ({
   status,
 }) => {
   return {
-    supplier_name: validateName(supplier_name) ? "" : "Supplier name is required",
-    contact_person: validateName(contact_person) ? "" : "Contact person is required",
-    contact_number: validateContactNumber(contact_number) ? "" : "Enter a valid 11-digit phone number",
+    supplier_name: validateName(supplier_name)
+      ? ""
+      : "Supplier name is required",
+    contact_person: validateName(contact_person)
+      ? ""
+      : "Contact person is required",
+    contact_number: validateContactNumber(contact_number)
+      ? ""
+      : "Enter a valid 11-digit phone number",
     email: validateEmail(email) ? "" : "Enter a valid email address",
     address: validateAddress(address) ? "" : "Address is required",
     status: validateStatus(status) ? "" : "Status is required",
   };
 };
 
-
-export const validateStockInForm = ({
-  supplier_id,
-  stockInProducts,
-}) => {
+export const validateStockInForm = ({ supplier_id, stockInProducts }) => {
   const errors = {};
 
-  if (!validateDropdown(supplier_id)) errors.supplier_id = "Supplier is required";
+  if (!validateDropdown(supplier_id))
+    errors.supplier_id = "Supplier is required";
 
   const productErrors = stockInProducts.map((product, index) => {
     const error = {};
-    if (!validateDropdown(product.product_id)) error.product_id = `Product ${index + 1}: Product is required`;
-    if (!validateQuantity(product.quantity)) error.quantity = `Product ${index + 1}: Quantity must be a positive number`;
+    if (!validateDropdown(product.product_id))
+      error.product_id = `Product ${index + 1}: Product is required`;
+    if (!validateQuantity(product.quantity))
+      error.quantity = `Product ${index + 1}: Quantity must be a positive number`;
     return error;
   });
 
@@ -193,13 +195,17 @@ export const validateStockOutForm = ({
 }) => {
   const errors = {};
 
-  if (!validateDropdown(selectedEmployee)) errors.selectedEmployee = "Supplier is required";
+  if (!validateDropdown(selectedEmployee))
+    errors.selectedEmployee = "Supplier is required";
 
   const productErrors = stockOutProducts.map((product, index) => {
     const error = {};
-    if (!validateDropdown(product.variation_id)) error.variation_id = `Product ${index + 1}: Product is required`;
-    if (!validateQuantity(product.quantity)) error.quantity = `Product ${index + 1}: Quantity must be a positive number`;
-    if (!validateReason(product.reason)) error.reason = `Product ${index + 1}: Reason is required`;
+    if (!validateDropdown(product.variation_id))
+      error.variation_id = `Product ${index + 1}: Product is required`;
+    if (!validateQuantity(product.quantity))
+      error.quantity = `Product ${index + 1}: Quantity must be a positive number`;
+    if (!validateReason(product.reason))
+      error.reason = `Product ${index + 1}: Reason is required`;
     return error;
   });
 
@@ -207,4 +213,3 @@ export const validateStockOutForm = ({
 
   return errors;
 };
-

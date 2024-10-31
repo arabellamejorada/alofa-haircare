@@ -1,9 +1,27 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ["./src/**/*.{js,jsx,ts,tsx}"],
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
+      backgroundImage: {
+        "body-bg": "./public/images/body-bg.png",
+        "alofa-icon": "./public/images/alofa-icon.png",
+        "navbar-bg": "./public/images/alofa-icon.png",
+      },
+      colors: {
+        alofa: {
+          pink: "#FE699F",
+          highlight: "#FF93BA",
+          dark: "#ED5D91",
+          white: "#FFFFFF",
+        },
+        /* "alofa-pink": "#FE699F",
+        "alofa-pink-gradient": "#F8587A",
+        "alofa-light-pink": "#EFB3C0",
+        "alofa-black": "#000000", */
+      },
       fontFamily: {
+<<<<<<< HEAD
         'title': ["Yavome", "sans-serif"],
       },
       colors: {
@@ -12,8 +30,23 @@ module.exports = {
         "alofa-light-pink": "#EFB3C0",
         "alofa-white": "#FFF8FC",
         "alofa-black": "#000000",
+=======
+        title: ["Yavome", "sans-serif"],
+        heading: ["Yeseva One", "sans-serif"],
+        body: ["Montserrat", "sans-serif"],
+>>>>>>> 0741f37fba59f0ba78f97984e9391d9da72ddb28
       },
     },
   },
-  plugins: [],
+  plugins: [
+    function ({ addUtilities }) {
+      const newUtilities = {
+        ".gradient-heading": {
+          "@apply bg-gradient-to-r from-alofa-pink to-alofa-light-pink bg-clip-text text-transparent":
+            {},
+        },
+      };
+      addUtilities(newUtilities, ["responsive", "hover"]);
+    },
+  ],
 };

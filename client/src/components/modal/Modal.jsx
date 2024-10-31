@@ -18,7 +18,7 @@ const Modal = ({ isVisible, onClose, children }) => {
       <div className="w-fit flex flex-col gap-1">
         <IoCloseCircle
           fontSize={24}
-          className="text-gray-400 place-self-end hover:text-pink-500 active:text-gray-600"
+          className="text-gray-400 place-self-end hover:text-alofa-pink active:text-gray-600"
           onClick={() => onClose()}
         />
         <div className="bg-white p-2 rounded-xl flex flex-col py-6">

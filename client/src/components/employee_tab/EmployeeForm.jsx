@@ -18,8 +18,6 @@ const EmployeeForm = ({
   roles,
   statusId,
   statuses,
-  username,
-  password,
   errors,
   setStatusId,
 }) => {
@@ -30,7 +28,7 @@ const EmployeeForm = ({
         onSubmit={selectedEmployee ? handleUpdateEmployee : handleAddEmployee}
       >
         <div className="flex flex-col gap-4">
-          <div className="font-extrabold text-3xl text-pink-400">
+          <div className="font-extrabold text-3xl text-alofa-highlight">
             {selectedEmployee ? "Edit Employee" : "Register New Employee"}
           </div>
 
@@ -49,7 +47,7 @@ const EmployeeForm = ({
                     placeholder="First Name"
                     value={firstName}
                     onChange={(e) => handleInputChange(e, "firstName")}
-                    className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 ${
+                    className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700 ${
                       errors.firstName ? "border-red-500" : ""
                     }`}
                   />
@@ -68,7 +66,7 @@ const EmployeeForm = ({
                     placeholder="Last Name"
                     value={lastName}
                     onChange={(e) => handleInputChange(e, "lastName")}
-                    className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 ${
+                    className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700 ${
                       errors.lastName ? "border-red-500" : ""
                     }`}
                   />
@@ -89,13 +87,13 @@ const EmployeeForm = ({
                 Email:
               </label>
               <input
-                type="text"
+                type="email"
                 name="employee_email"
                 id="employee_email"
                 placeholder="Email"
                 value={email}
                 onChange={(e) => handleInputChange(e, "email")}
-                className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 ${
+                className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700 ${
                   errors.email ? "border-red-500" : ""
                 }`}
               />
@@ -118,7 +116,7 @@ const EmployeeForm = ({
                 placeholder="Contact Number"
                 value={contactNumber}
                 onChange={(e) => handleInputChange(e, "contactNumber")}
-                className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 ${
+                className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700 ${
                   errors.contactNumber ? "border-red-500" : ""
                 }`}
               />
@@ -139,7 +137,7 @@ const EmployeeForm = ({
                 name="roleId"
                 value={roleId}
                 onChange={(e) => handleInputChange(e, "roleId")}
-                className={`w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 ${
+                className={`w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700 ${
                   errors.roleId ? "border-red-500" : ""
                 }`}
               >
@@ -159,53 +157,6 @@ const EmployeeForm = ({
             )}
           </div>
 
-          {/* Username and Password for Add Modal */}
-          {!selectedEmployee && (
-            <>
-              {/* Username */}
-              <div className="flex flex-col gap-2">
-                <label className="font-bold" htmlFor="username">
-                  Username:
-                </label>
-                <input
-                  type="text"
-                  name="username"
-                  id="username"
-                  placeholder="Username"
-                  value={username}
-                  onChange={(e) => handleInputChange(e, "username")}
-                  className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 ${
-                    errors.username ? "border-red-500" : ""
-                  }`}
-                />
-                {errors.username && (
-                  <p className="text-red-500 text-sm mt-1">{errors.username}</p>
-                )}
-              </div>
-
-              {/* Password */}
-              <div className="flex flex-col gap-2">
-                <label className="font-bold" htmlFor="password">
-                  Password:
-                </label>
-                <input
-                  type="password"
-                  name="password"
-                  id="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => handleInputChange(e, "password")}
-                  className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 ${
-                    errors.password ? "border-red-500" : ""
-                  }`}
-                />
-                {errors.password && (
-                  <p className="text-red-500 text-sm mt-1">{errors.password}</p>
-                )}
-              </div>
-            </>
-          )}
-
           {/* Status Dropdown for Edit Modal */}
           {selectedEmployee && (
             <div className="flex flex-col gap-2">
@@ -218,7 +169,7 @@ const EmployeeForm = ({
                   id="statusId"
                   value={statusId}
                   onChange={(e) => setStatusId(e.target.value)}
-                  className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700"
+                  className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700"
                 >
                   <option value="" disabled>
                     Select Status
@@ -234,14 +185,13 @@ const EmployeeForm = ({
             </div>
           )}
 
-          {/* Save/Update Button */}
           {/* Save/Update and Cancel Buttons */}
           <div className="flex justify-between mt-2">
             {/* Save/Update Button */}
             <button
               type="submit"
               disabled={!isFormModified()}
-              className={`w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-semibold text-white ${
+              className={`w-[10rem] text-center py-3 bg-alofa-highlight hover:bg-alofa-pink active:bg-alofa-dark rounded-full font-semibold text-white ${
                 !isFormModified() ? "opacity-50 cursor-not-allowed" : ""
               }`}
             >

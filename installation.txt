@@ -6,8 +6,6 @@ npm install pg
 npm install cors
 npm install dotenv
 npm install --save-dev nodemon
-npm install express redis express-session
-npm install connect-redis redis
 npm install react-spinners
 
 Frontend setup:
@@ -65,3 +63,21 @@ RESTORE DATABASE:
 
 Supabase Migrate:
 npm install @supabase/supabase-js (install also in client)
+
+
+NEW CHANGES!!
+- deleted user_accounts table in database because the built-in supabase auth covers handling user accounts, passwords, email confirmations, and session management.
+
+- create profiles table 
+
+- major changes to employee and customer tables
+
+
+
+
+
+remove redis:
+npm uninstall express redis express-session connect-redis
+Clean node modules and package json:
+rm -rf node_modules
+npm install

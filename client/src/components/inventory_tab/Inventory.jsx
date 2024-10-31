@@ -1,5 +1,4 @@
 import React, { useState, useEffect, Fragment } from "react";
-import { getStatus, getAllProducts } from "../../api/products";
 import { getInventory, getAllInventoryHistory } from "../../api/inventory";
 import { ClipLoader } from "react-spinners";
 import {
@@ -10,8 +9,6 @@ import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 
 const Inventory = () => {
   const [inventory, setInventory] = useState([]);
-  const [productStatuses, setProductStatuses] = useState([]);
-  const [products, setProducts] = useState([]);
   const [inventoryHistory, setInventoryHistory] = useState([]);
   const [expandedRows, setExpandedRows] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -19,9 +16,9 @@ const Inventory = () => {
 
   // Filter states
   const [search, setSearch] = useState("");
-  const [selectedProduct, setSelectedProduct] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("");
-  const [showArchived, setShowArchived] = useState(false);
+  const [selectedProduct] = useState("");
+  const [selectedStatus] = useState("");
+  const [showArchived] = useState(false);
 
   // Sorting states
   const [sortField, setSortField] = useState("");
@@ -31,22 +28,12 @@ const Inventory = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [
-          inventoryData,
-          statusesData,
-          productsData,
-          inventoryHistoryResponse,
-        ] = await Promise.all([
+        const [inventoryData, inventoryHistoryResponse] = await Promise.all([
           getInventory(),
-          getStatus(),
-          getAllProducts(),
           getAllInventoryHistory(),
         ]);
 
         setInventory(inventoryData);
-        setProductStatuses(statusesData);
-        setProducts(productsData);
-
         // Ensure inventoryHistory is set correctly
         if (
           inventoryHistoryResponse &&
@@ -54,7 +41,7 @@ const Inventory = () => {
         ) {
           setInventoryHistory(inventoryHistoryResponse.data);
         } else {
-          console.error("No data in inventoryHistoryData.");
+          console.error("No data in inventory history.");
         }
       } catch (err) {
         setError("Failed to fetch data");
@@ -156,7 +143,7 @@ const Inventory = () => {
             {search && (
               <button
                 onClick={() => setSearch("")}
-                className="text-sm ml-2 text-pink-500 hover:text-pink-700"
+                className="text-sm ml-2 text-alofa-pink hover:text-alofa-dark"
               >
                 Clear
               </button>
@@ -170,7 +157,7 @@ const Inventory = () => {
                 {columns.map((column) => (
                   <th
                     key={column.key}
-                    className={`px-5 py-3 border-b-2 border-gray-200 bg-pink-500 text-white text-left text-sm font-semibold ${column.align === "right" ? "text-right" : ""}`}
+                    className={`px-5 py-3 border-b-2 border-gray-200 bg-alofa-pink text-white text-left text-sm font-semibold ${column.align === "right" ? "text-right" : ""}`}
                     onClick={() => handleSort(column.key)}
                   >
                     {column.header}
@@ -204,12 +191,12 @@ const Inventory = () => {
                         {expandedRows.includes(item.variation_id) ? (
                           <IoMdArrowDropdownCircle
                             fontSize={24}
-                            className="text-pink-500 hover:text-pink-600"
+                            className="text-alofa-pink hover:text-alofa-dark"
                           />
                         ) : (
                           <IoMdArrowDroprightCircle
                             fontSize={24}
-                            className="text-pink-500 hover:text-pink-600"
+                            className="text-alofa-pink hover:text-alofa-dark"
                           />
                         )}
                       </button>

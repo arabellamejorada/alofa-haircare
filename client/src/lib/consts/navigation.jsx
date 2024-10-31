@@ -1,18 +1,14 @@
 import {
   HiOutlineViewGrid,
   HiOutlineCube,
-  //HiOutlineShoppingCart,
   HiOutlineUsers,
   HiOutlineDocumentText,
-  // HiOutlineAnnotation
   HiOutlineQuestionMarkCircle,
   HiOutlineCog,
 } from "react-icons/hi";
 import { LiaPeopleCarrySolid } from "react-icons/lia";
-import { TbSitemap } from "react-icons/tb";
-import { MdOutlineCategory } from "react-icons/md";
-import { FiTruck, FiTrendingDown, FiTrendingUp } from "react-icons/fi";
-import { FaTruckLoading } from "react-icons/fa";
+import { MdOutlineCategory, MdOutlineDiscount } from "react-icons/md";
+import { FiTrendingDown, FiTrendingUp } from "react-icons/fi";
 
 export const DASHBOARD_SIDEBAR_LINKS = [
   {
@@ -35,7 +31,7 @@ export const DASHBOARD_SIDEBAR_LINKS = [
 	}, */
 ];
 
-export const DASHBOARD_SIDEBAR_BOTTOM_LINKS = [
+/* export const DASHBOARD_SIDEBAR_BOTTOM_LINKS = [
   {
     key: "settings",
     label: "Settings",
@@ -48,7 +44,7 @@ export const DASHBOARD_SIDEBAR_BOTTOM_LINKS = [
     path: "/support",
     icon: <HiOutlineQuestionMarkCircle />,
   },
-];
+]; */
 
 export const PRODUCT_SIDEBAR_LINKS = [
   {
@@ -57,17 +53,20 @@ export const PRODUCT_SIDEBAR_LINKS = [
     path: "/products",
     icon: <HiOutlineCube />,
   },
-  // {
-  //   key: "product_variations",
-  //   label: "Product Variations",
-  //   path: "/productvariations",
-  //   icon: <TbSitemap />,
-  // },
   {
     key: "product_categories",
     label: "Product Categories",
     path: "/productcategories",
     icon: <MdOutlineCategory />,
+  },
+];
+
+export const VOUCHER_SIDEBAR_LINKS = [
+  {
+    key: "voucher",
+    label: "Voucher",
+    path: "/voucher",
+    icon: <MdOutlineDiscount />,
   },
 ];
 

@@ -56,7 +56,7 @@ const StockHistoryTable = ({
                 <th
                   key={column.key}
                   onClick={() => handleSort(column.key)}
-                  className="px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-pink-400 to-pink-500 text-gray-100 text-left text-md font-semibold uppercase tracking-wider"
+                  className="px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-alofa-highlight to-alofa-pink text-gray-100 text-left text-md font-semibold uppercase tracking-wider"
                 >
                   {column.header || formatColumnName(column.key)}
                   {sortField === column.key &&
@@ -67,7 +67,7 @@ const StockHistoryTable = ({
                     ))}
                 </th>
               ))}
-              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-pink-400 to-pink-500 text-gray-100 text-center text-md font-semibold uppercase">
+              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-alofa-highlight to-alofa-pink text-gray-100 text-center text-md font-semibold uppercase">
                 View Details
               </th>
             </tr>
@@ -98,12 +98,12 @@ const StockHistoryTable = ({
                       {expandedRows.includes(group.reference_number) ? (
                         <IoMdArrowDropdownCircle
                           fontSize={24}
-                          className="text-pink-500 hover:text-pink-600"
+                          className="text-alofa-pink hover:text-alofa-dark"
                         />
                       ) : (
                         <IoMdArrowDroprightCircle
                           fontSize={24}
-                          className="text-pink-500 hover:text-pink-600"
+                          className="text-alofa-pink hover:text-alofa-dark"
                         />
                       )}
                     </button>
