@@ -17,6 +17,7 @@ const AddressTab = () => {
       city: 'Tagum City',
       province: 'Davao del Norte',
       region: 'Region 11',
+      postalCode: '8100',
     },
     {
       id: 2,
@@ -27,6 +28,7 @@ const AddressTab = () => {
       city: 'Tagum City',
       province: 'Davao del Norte',
       region: 'Region 11',
+      postalCode: '8100',
     },
   ]);
 
@@ -99,7 +101,7 @@ const AddressTab = () => {
               <h3 className="text-lg font-semibold text-gray-800">{address.name}</h3>
               <span className="text-gray-500">{address.phone}</span>
               <p className="text-sm text-gray-500">{address.street}</p>
-              <p className="text-sm text-gray-500">{address.barangay}, {address.city}, {address.province}, {address.region}</p>
+              <p className="text-sm text-gray-500">{address.barangay}, {address.city}, {address.province}, {address.region}, {address.postalCode}</p>
             </div>
             <div className="flex space-x-4">
               <button

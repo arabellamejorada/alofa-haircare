@@ -4,13 +4,16 @@ import PropTypes from 'prop-types';
 import "../../../../src/App.css";
 
 const EditAddressModal = ({ address, onClose, onSave }) => {
+  // State to hold form values
   const [formDetails, setFormDetails] = useState({ ...address });
 
+  // State to store fetched data
   const [regions, setRegions] = useState([]);
   const [provinces, setProvinces] = useState([]);
   const [cities, setCities] = useState([]);
   const [barangays, setBarangays] = useState([]);
 
+  // Mapping of region names to codes
   const regionMapping = useMemo(() => ({
     "Ilocos Region": "Region 1",
     "Cagayan Valley": "Region 2",
@@ -31,6 +34,7 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
     "Bangsamoro Autonomous Region in Muslim Mindanao (BARMM)": "BARMM"
   }), []);
 
+  // Fetch regions data
   const fetchRegions = useCallback(async () => {
     try {
       const response = await axios.get('https://psgc.gitlab.io/api/regions/');
@@ -44,13 +48,15 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
     }
   }, [regionMapping]);
 
+  // Fetch regions, provinces, cities, and barangays when modal is open
   useEffect(() => {
     fetchRegions();
-    if (formDetails.region) fetchProvinces(formDetails.region);
-    if (formDetails.province) fetchCities(formDetails.province);
-    if (formDetails.city) fetchBarangays(formDetails.city);
-  }, [fetchRegions, formDetails.region, formDetails.province, formDetails.city]);
+    if (address.region) fetchProvinces(address.region);
+    if (address.province) fetchCities(address.province);
+    if (address.city) fetchBarangays(address.city);
+  }, [address, fetchRegions]);
 
+  // Fetch provinces data based on region code
   const fetchProvinces = async (regionCode) => {
     if (!regionCode) return;
     try {
@@ -66,6 +72,7 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
     }
   };
 
+  // Fetch cities data based on province code
   const fetchCities = async (provinceCode) => {
     if (!provinceCode) return;
     try {
@@ -80,6 +87,7 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
     }
   };
 
+  // Fetch barangays data based on city code
   const fetchBarangays = async (cityCode) => {
     if (!cityCode) return;
     try {
@@ -93,6 +101,7 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
     }
   };
 
+  // Handle input changes
   const handleInputChange = async (e) => {
     const { name, value } = e.target;
 
@@ -119,9 +128,10 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
     }
   };
 
+  // Handle save changes and pass updated address back to parent component
   const handleSaveChanges = () => {
-    // Call the onSave prop passed from AddressTab with form details
     onSave(formDetails);
+    onClose(); // Close the modal after saving changes
   };
 
   return (
@@ -336,6 +346,29 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
             </label>
           </div>
 
+          <div className="relative mb-10">
+            <input
+              type="text"
+              name="postalCode"
+              value={formDetails.postalCode}
+              onChange={handleInputChange}
+              className="block w-full px-3 pb-2 pt-4 text-base 
+                text-gray-900 bg-transparent rounded-lg border 
+                border-gray-300 appearance-none focus:outline-none 
+                focus:ring-0 focus:border-alofa-pink peer"
+              placeholder=" "
+            />
+            <label
+              htmlFor="postalCode"
+              className="absolute text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] 
+              start-2.5 peer-focus:text-alofa-pink peer-placeholder-shown:scale-100 
+              peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4"
+            >
+              Postal Code
+            </label>
+          </div>
+
+          {/* Save Changes Button */}
           <button
             type="button"
             className="block w-full py-3 text-white font-bold bg-gradient-to-b from-[#FE699F] to-[#F8587A] rounded-lg hover:from-[#F8587A] hover:to-[#FE699F]"

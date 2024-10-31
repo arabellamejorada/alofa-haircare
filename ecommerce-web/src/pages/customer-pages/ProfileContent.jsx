@@ -1,6 +1,5 @@
 import { useState } from 'react';
 
-
 const ProfileContent = () => {
   // State for each input field and edit mode
   const [isEditing, setIsEditing] = useState({
@@ -23,6 +22,9 @@ const ProfileContent = () => {
   // State to store the last updated timestamp
   const [lastUpdated, setLastUpdated] = useState(null);
 
+  // State for password visibility
+  const [showPassword, setShowPassword] = useState(false);
+
   // Handler to toggle edit mode
   const handleEditToggle = (fields) => {
     setIsEditing((prev) => ({
@@ -43,6 +45,16 @@ const ProfileContent = () => {
   // Handler to save changes and update the last updated timestamp
   const handleSaveChanges = (e) => {
     e.preventDefault();
+
+    // Reset all edit states to false after saving
+    setIsEditing({
+      firstName: false,
+      lastName: false,
+      email: false,
+      contactNumber: false,
+      password: false,
+    });
+
     // Update the last updated timestamp
     const currentTimestamp = new Date().toLocaleString('en-GB', {
       day: '2-digit',
@@ -52,6 +64,11 @@ const ProfileContent = () => {
       minute: '2-digit',
     });
     setLastUpdated(currentTimestamp);
+  };
+
+  // Handler to toggle password visibility
+  const handlePasswordToggle = () => {
+    setShowPassword((prev) => !prev);
   };
 
   return (
@@ -76,7 +93,9 @@ const ProfileContent = () => {
               onChange={handleInputChange}
               readOnly={!isEditing.firstName}
               className={`p-3 border rounded-md w-1/2 ${
-                isEditing.firstName ? 'border-pink-500' : 'border-gray-300'
+                isEditing.firstName
+                  ? 'border-pink-500 bg-white text-black'
+                  : 'border-gray-300 bg-gray-200 text-gray-600 cursor-not-allowed'
               }`}
             />
             <input
@@ -88,7 +107,9 @@ const ProfileContent = () => {
               onChange={handleInputChange}
               readOnly={!isEditing.lastName}
               className={`p-3 border rounded-md w-1/2 ${
-                isEditing.lastName ? 'border-pink-500' : 'border-gray-300'
+                isEditing.lastName
+                  ? 'border-pink-500 bg-white text-black'
+                  : 'border-gray-300 bg-gray-200 text-gray-600 cursor-not-allowed'
               }`}
             />
           </div>
@@ -114,7 +135,9 @@ const ProfileContent = () => {
               onChange={handleInputChange}
               readOnly={!isEditing.email}
               className={`p-3 border rounded-md w-full ${
-                isEditing.email ? 'border-pink-500' : 'border-gray-300'
+                isEditing.email
+                  ? 'border-pink-500 bg-white text-black'
+                  : 'border-gray-300 bg-gray-200 text-gray-600 cursor-not-allowed'
               }`}
             />
           </div>
@@ -140,7 +163,9 @@ const ProfileContent = () => {
               onChange={handleInputChange}
               readOnly={!isEditing.contactNumber}
               className={`p-3 border rounded-md w-full ${
-                isEditing.contactNumber ? 'border-pink-500' : 'border-gray-300'
+                isEditing.contactNumber
+                  ? 'border-pink-500 bg-white text-black'
+                  : 'border-gray-300 bg-gray-200 text-gray-600 cursor-not-allowed'
               }`}
             />
           </div>
@@ -156,18 +181,29 @@ const ProfileContent = () => {
         {/* Password Field */}
         <div className="flex items-center space-x-4 w-full">
           <label htmlFor="password" className="text-gray-700 w-1/4 text-right">Password</label>
-          <div className="flex flex-col w-full">
+          <div className="flex flex-col w-full relative">
             <input
               id="password"
               name="password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               value={profileData.password}
               onChange={handleInputChange}
               readOnly={!isEditing.password}
-              className={`p-3 border rounded-md w-full ${
-                isEditing.password ? 'border-pink-500' : 'border-gray-300'
+              className={`p-3 border rounded-md w-full pr-12 ${
+                isEditing.password
+                  ? 'border-pink-500 bg-white text-black'
+                  : 'border-gray-300 bg-gray-200 text-gray-600 cursor-not-allowed'
               }`}
             />
+            {isEditing.password && (
+              <button
+                type="button"
+                onClick={handlePasswordToggle}
+                className="absolute inset-y-0 right-0 px-3 text-sm text-gray-500 hover:text-gray-700 focus:outline-none"
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            )}
           </div>
           <button
             type="button"
@@ -176,28 +212,6 @@ const ProfileContent = () => {
           >
             Edit
           </button>
-        </div>
-
-        {/* Profile Picture Field */}
-        <div className="flex items-center space-x-4 w-full">
-          <label htmlFor="profilePicture" className="text-gray-700 w-1/4 text-right">Profile Picture</label>
-          <div className="flex flex-col w-full">
-            <div className="flex items-center space-x-4">
-              <div className="w-24 h-24 rounded-full bg-pink-300 flex items-center justify-center">
-                <span className="text-white text-4xl">👤</span>
-              </div>
-              <div>
-                <input
-                  id="profilePicture"
-                  type="file"
-                  accept="image/jpeg, image/png"
-                  className="text-sm text-gray-500"
-                />
-                <p className="text-xs text-gray-500 mt-2">File size: maximum 1 MB</p>
-                <p className="text-xs text-gray-500">File extension: .JPEG, .PNG</p>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Save Changes Button */}
