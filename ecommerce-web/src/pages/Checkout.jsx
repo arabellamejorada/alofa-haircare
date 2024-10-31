@@ -402,6 +402,31 @@ const Checkout = () => {
             </label>
           </div>
 
+          <div className="relative mb-4">
+            <input
+              type="tel"
+              name="postalCode"
+              id="postalCode"
+              value={formDetails.postalCode}
+              onChange={handleInputChange}
+              className="block w-full px-3 pb-2 pt-4 text-base 
+                      text-gray-900 bg-transparent rounded-lg border 
+                      border-gray-300 appearance-none focus:outline-none 
+                      focus:ring-0 focus:border-alofa-pink peer"
+              placeholder=""
+            />
+            <label
+              htmlFor="postalCode"
+              className="absolute text-sm text-gray-500 dark:text-gray-400
+                    duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] 
+                    start-2.5 peer-focus:text-alofa-pink peer-placeholder-shown:scale-100 
+                    peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4 
+                    rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto"
+            >
+              Postal Code
+            </label>
+          </div>
+
           {/* Payment and Submit Button */}
           <div className="mb-6">
             <h2 className="text-xl font-semibold mb-4 text-gray-500">
