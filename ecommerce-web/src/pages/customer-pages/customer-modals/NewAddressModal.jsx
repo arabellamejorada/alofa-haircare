@@ -126,15 +126,21 @@ const NewAddressModal = ({ onClose, onSave }) => {
   };
 
   const handleSaveChanges = () => {
+    // Find the selected region, province, city, and barangay based on the selected codes
+    const selectedRegion = regions.find(region => region.code === formDetails.region);
+    const selectedProvince = provinces.find(province => province.code === formDetails.province);
+    const selectedCity = cities.find(city => city.code === formDetails.city);
+    const selectedBarangay = barangays.find(barangay => barangay.code === formDetails.barangay);
+  
     // Call the onSave prop passed from AddressTab with form details
     onSave({
       name: `${formDetails.firstName} ${formDetails.lastName}`,
       phone: formDetails.phoneNumber,
       street: formDetails.street,
-      barangay: formDetails.barangay,
-      city: formDetails.city,
-      province: formDetails.province,
-      region: formDetails.region,
+      barangay: selectedBarangay ? selectedBarangay.name : '',
+      city: selectedCity ? selectedCity.name : '',
+      province: selectedProvince ? selectedProvince.name : '',
+      region: selectedRegion ? selectedRegion.name : '',
     });
   };
 
@@ -328,7 +334,7 @@ const NewAddressModal = ({ onClose, onSave }) => {
             </label>
           </div>
 
-          <div className="relative mb-10">
+          <div className="relative mb-4">
             <input
               type="tel"
               name="phoneNumber"
@@ -347,6 +353,28 @@ const NewAddressModal = ({ onClose, onSave }) => {
               peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4"
             >
               Phone Number
+            </label>
+          </div>
+
+          <div className="relative mb-10">
+            <input
+              type="text"
+              name="postalCode"
+              value={formDetails.postalCode}
+              onChange={handleInputChange}
+              className="block w-full px-3 pb-2 pt-4 text-base 
+                text-gray-900 bg-transparent rounded-lg border 
+                border-gray-300 appearance-none focus:outline-none 
+                focus:ring-0 focus:border-alofa-pink peer"
+              placeholder=" "
+            />
+            <label
+              htmlFor="postalCode"
+              className="absolute text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] 
+              start-2.5 peer-focus:text-alofa-pink peer-placeholder-shown:scale-100 
+              peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4"
+            >
+              Postal Code
             </label>
           </div>
 

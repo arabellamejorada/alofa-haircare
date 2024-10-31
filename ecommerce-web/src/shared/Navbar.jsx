@@ -74,7 +74,7 @@ const Navbar = () => {
       <nav className="container mx-auto flex items-center justify-between px-4 py-2 h-full">
         <div
           className={`flex ${
-            isCheckoutPage ? "justify-center w-full" : "justify-start"
+            isCheckoutPage ? "justify-center w-full" : "justify-center"
           } items-center gap-8`}
         >
           {/* Logo */}
@@ -116,11 +116,13 @@ const Navbar = () => {
 
         {/* Right Section - Cart Icon (if on /checkout1) */}
         {isCheckoutPage && (
+          <div className="flex items-center justify-start">
           <Link to="/shoppingcart">
-            <div className="text-white p-3 rounded-full cursor-pointer mr-4">
+            <div className="text-white p-3 rounded-full cursor-pointer">
               <FaShoppingCart size={20} />
             </div>
           </Link>
+          </div>
         )}
 
         {/* Right-side Content */}
@@ -133,7 +135,7 @@ const Navbar = () => {
           ) : (
             // For non-auth pages
             <>
-              {isLoggedIn ? (
+              {isLoggedIn && !isCheckoutPage ? (
                 // When user is logged in
                 <>
                   <Link
@@ -161,7 +163,7 @@ const Navbar = () => {
                     </div>
                   </div>
                 </>
-              ) : (
+              ) : !isCheckoutPage ? (
                 // When user is not logged in
                 <>
                   <Link
@@ -188,7 +190,7 @@ const Navbar = () => {
                     </div>
                   </div>
                 </>
-              )}
+              ) : null}
             </>
           )}
         </div>
@@ -204,9 +206,12 @@ const Navbar = () => {
           onMouseLeave={() => setHovered(false)}
           >
             <div className="p-4 h-full flex flex-col">
-              <h1 className="text-2xl gradient-heading font-bold mb-4">
+              <h1 className="text-2xl gradient-heading font-bold mb-1">
                   Cart Overview
               </h1>
+              <div className="text-md text-gray-500 mb-4">
+                {cartItems.reduce((total, item) => total + item.quantity, 0)} items
+              </div>
 
               <div className="flex-1 overflow-y-auto mb-4">
               {cartItems && cartItems.length > 0 ? (
