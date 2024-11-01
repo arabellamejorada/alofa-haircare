@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import { useState, useContext } from "react";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import AccountCard from "../components/AccountCard";
@@ -113,7 +113,7 @@ const Login = () => {
                   </Button>
 
                   <div className="text-sm gap-1">
-                    Don't have an account?{" "}
+                    Don&apos;t have an account?{" "}
                     <Link to="/signup" className="underline">
                       Sign Up
                     </Link>

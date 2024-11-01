@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import { useState, useContext } from "react";
 import { CartContext } from "./CartContext.jsx";
-import { toast } from "sonner";
+// import { toast } from "sonner";
 import { ClipLoader } from "react-spinners"; // Import the spinner component
 
 const ProductCard = ({ id, image, name, value, price, sku }) => {

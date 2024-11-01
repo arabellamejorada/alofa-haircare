@@ -4,6 +4,7 @@ import GCashLogo from "../../../public/static/gcash-logo.svg";
 import BPILogo from "../../../public/static/bpi-logo.svg";
 import GCashQR from "../../../public/static/gcash-qr.jpg";
 import axios from "axios";
+import { FaRegAddressCard } from "react-icons/fa";
 
 const Checkout = () => {
   const { cartItems, subtotal } = useContext(CartContext);
@@ -190,9 +191,21 @@ const Checkout = () => {
             </label>
           </div>
 
-          <h2 className="text-xl font-semibold mb-4 text-gray-500">
+          <div className="flex items-center justify-between mb-3">
+          <h2 className="text-xl font-semibold mb-4 text-gray-500 flex items-center">
             Shipping Information
           </h2>
+          <button
+              className="ml-4 bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b 
+              hover:from-[#F8587A] hover:to-[#FE699F] text-white font-normal py-1 px-3 rounded-md 
+              focus:outline-none flex items-center"
+              onClick={() => {
+                // Add logic for selecting an address here
+              }}
+            >
+              <FaRegAddressCard className="mr-2" /> Select Address
+            </button>
+          </div>
 
           <div className="flex gap-3 mb-4">
             <div className="relative w-full">

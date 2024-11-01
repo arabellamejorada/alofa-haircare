@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import PropTypes from 'prop-types';
 
-const ProfileContent = () => {
-  // State for each input field and edit mode
+const ProfileContent = ({ profileData, setProfileData }) => {
+  // State for tracking edit mode for each field
   const [isEditing, setIsEditing] = useState({
     firstName: false,
     lastName: false,
@@ -10,19 +11,10 @@ const ProfileContent = () => {
     password: false,
   });
 
-  // State for field values
-  const [profileData, setProfileData] = useState({
-    firstName: 'Cassey',
-    lastName: 'Gempesaw',
-    email: 'catgempesaw@gmail.com',
-    contactNumber: '09123456789',
-    password: '********',
-  });
+  // Local state for handling changes before saving
+  const [localProfileData, setLocalProfileData] = useState(profileData);
 
-  // State to store the last updated timestamp
-  const [lastUpdated, setLastUpdated] = useState(null);
-
-  // State for password visibility
+  // State to toggle password visibility
   const [showPassword, setShowPassword] = useState(false);
 
   // Handler to toggle edit mode
@@ -33,20 +25,18 @@ const ProfileContent = () => {
     }));
   };
 
-  // Handler to change input values
+  // Handler to update local state based on input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setProfileData((prev) => ({
+    setLocalProfileData((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
 
-  // Handler to save changes and update the last updated timestamp
+  // Save the changes made and update the shared state
   const handleSaveChanges = (e) => {
     e.preventDefault();
-
-    // Reset all edit states to false after saving
     setIsEditing({
       firstName: false,
       lastName: false,
@@ -63,22 +53,29 @@ const ProfileContent = () => {
       hour: '2-digit',
       minute: '2-digit',
     });
-    setLastUpdated(currentTimestamp);
+
+    // Update the shared profileData in the parent component with the timestamp
+    setProfileData({
+      ...localProfileData,
+      lastUpdated: currentTimestamp,
+    });
   };
 
-  // Handler to toggle password visibility
+  // Toggle password visibility
   const handlePasswordToggle = () => {
     setShowPassword((prev) => !prev);
   };
 
   return (
     <div className="px-8 py-5 lg:px-8">
-      <h2 className="bg-gradient-to-b from-alofa-pink via-alofa-pink to-alofa-light-pink bg-clip-text text-transparent font-extrabold text-4xl mb-2">My Profile</h2>
+      <h2 className="bg-gradient-to-b from-alofa-pink via-alofa-pink to-alofa-light-pink bg-clip-text text-transparent font-extrabold text-4xl mb-2">
+        My Profile
+      </h2>
       <p className="text-sm text-gray-500 mb-8">
-        Last updated: {lastUpdated ? lastUpdated : 'Never'}
+        Last updated: {profileData.lastUpdated ? profileData.lastUpdated : 'Never'}
       </p>
 
-      {/* Profile Form Component */}
+      {/* Profile Form */}
       <form className="space-y-6 pr-8" onSubmit={handleSaveChanges}>
         {/* Name Fields */}
         <div className="flex items-center space-x-4 w-full">
@@ -89,7 +86,7 @@ const ProfileContent = () => {
               name="firstName"
               type="text"
               placeholder="First Name"
-              value={profileData.firstName}
+              value={localProfileData.firstName}
               onChange={handleInputChange}
               readOnly={!isEditing.firstName}
               className={`p-3 border rounded-md w-1/2 ${
@@ -103,7 +100,7 @@ const ProfileContent = () => {
               name="lastName"
               type="text"
               placeholder="Last Name"
-              value={profileData.lastName}
+              value={localProfileData.lastName}
               onChange={handleInputChange}
               readOnly={!isEditing.lastName}
               className={`p-3 border rounded-md w-1/2 ${
@@ -131,7 +128,7 @@ const ProfileContent = () => {
               name="email"
               type="email"
               placeholder="Email Address"
-              value={profileData.email}
+              value={localProfileData.email}
               onChange={handleInputChange}
               readOnly={!isEditing.email}
               className={`p-3 border rounded-md w-full ${
@@ -159,7 +156,7 @@ const ProfileContent = () => {
               name="contactNumber"
               type="text"
               placeholder="Contact Number (+63)"
-              value={profileData.contactNumber}
+              value={localProfileData.contactNumber}
               onChange={handleInputChange}
               readOnly={!isEditing.contactNumber}
               className={`p-3 border rounded-md w-full ${
@@ -186,7 +183,7 @@ const ProfileContent = () => {
               id="password"
               name="password"
               type={showPassword ? 'text' : 'password'}
-              value={profileData.password}
+              value={localProfileData.password}
               onChange={handleInputChange}
               readOnly={!isEditing.password}
               className={`p-3 border rounded-md w-full pr-12 ${
@@ -226,6 +223,19 @@ const ProfileContent = () => {
       </form>
     </div>
   );
+};
+
+// Define prop types for validation
+ProfileContent.propTypes = {
+  profileData: PropTypes.shape({
+    firstName: PropTypes.string.isRequired,
+    lastName: PropTypes.string,
+    email: PropTypes.string,
+    contactNumber: PropTypes.string,
+    password: PropTypes.string,
+    lastUpdated: PropTypes.string,
+  }).isRequired,
+  setProfileData: PropTypes.func.isRequired,
 };
 
 export default ProfileContent;
