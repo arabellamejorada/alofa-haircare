@@ -1,13 +1,13 @@
 import React, { Fragment, useEffect, useState } from "react";
-import { IoMdArrowDropdown } from "react-icons/io";
 import StockOutTable from "./StockOutTable";
 import { getAllProductVariations } from "../../../api/products";
 import { createStockOut } from "../../../api/stockOut";
 import { getInventory } from "../../../api/products";
-import { getEmployees } from "../../../api/employees";
+import { getEmployeeIdByProfileId } from "../../../api/employees";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { ClipLoader } from "react-spinners";
+import { useAuth } from "../../AuthContext";
 import {
   validateDropdown,
   validateQuantity,
@@ -15,12 +15,12 @@ import {
 } from "../../../lib/consts/utils/validationUtils";
 
 const StockOut = () => {
-  const [employees, setEmployees] = useState([]);
+  const { user } = useAuth();
+  const [employeeId, setEmployeeId] = useState("");
   const [productVariations, setProductVariations] = useState([]);
   const [inventories, setInventories] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const [selectedEmployee, setSelectedEmployee] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [stockOutDate, setStockOutDate] = useState(() => {
     const date = new Date();
@@ -50,10 +50,14 @@ const StockOut = () => {
     try {
       const loadData = async () => {
         setLoading(true);
-        const employeeData = await getEmployees();
         const productVariationsData = await getAllProductVariations();
         const inventoryData = await getInventory();
-        setEmployees(employeeData);
+        const employeeId = parseInt(
+          await getEmployeeIdByProfileId(user.id),
+          10,
+        );
+
+        setEmployeeId(employeeId);
         setProductVariations(productVariationsData);
         setInventories(inventoryData);
       };
@@ -64,11 +68,7 @@ const StockOut = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
-
-  const handleEmployeeChange = (employeeId) => {
-    setSelectedEmployee(employeeId);
-  };
+  }, [user.id]);
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
@@ -138,15 +138,10 @@ const StockOut = () => {
       return;
     }
 
-    if (!selectedEmployee || stockOutProducts.length === 0) {
-      toast.error("Please select an employee and add at least one product.");
-      return;
-    }
-
     const stockOutData = {
       stock_out_date: selectedDate || stockOutDate,
       stockOutProducts,
-      employee_id: selectedEmployee,
+      employee_id: employeeId,
     };
 
     try {
@@ -157,7 +152,7 @@ const StockOut = () => {
       // Reset the rows and other fields
       resetRows();
       setStockOutDate(adjustToLocalTime());
-      setSelectedEmployee("");
+      setEmployeeId("");
     } catch (error) {
       console.error("Error saving stock out:", error);
       toast.error("An error occurred while saving stock out.");
@@ -188,49 +183,42 @@ const StockOut = () => {
           <strong className="text-3xl font-bold text-gray-500">
             Stock Out
           </strong>
-          <div className="flex flex-row justify-between">
-            <div className="flex flex-col px-6 pt-4 w-full gap-2">
-              {/* Employee Dropdown */}
-              <div className="flex flex-row justify-between items-center">
-                <label className="font-bold w-[30%]" htmlFor="employee">
-                  Employee:
-                </label>
-                <div className="relative w-[85%]">
-                  <select
-                    id="employee"
-                    name="employee"
-                    value={selectedEmployee}
-                    onChange={(e) => handleEmployeeChange(e.target.value)}
-                    className="w-full h-8 px-4 appearance-none border rounded-md bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700"
-                  >
-                    <option value="">Select Employee</option>
-                    {employees.map((employee) => (
-                      <option
-                        key={employee.employee_id}
-                        value={employee.employee_id}
-                      >
-                        {employee.first_name} {employee.last_name}
-                      </option>
-                    ))}
-                  </select>
-                  <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2" />
-                </div>
-              </div>
 
-              {/* Stock Out Date */}
-              <div className="flex flex-row justify-between items-center">
-                <label className="font-bold w-[30%]" htmlFor="stock_out_date">
-                  Stock Out Date:
-                </label>
-                <input
-                  type="datetime-local"
-                  name="stock_out_date"
-                  id="stock_out_date"
-                  value={selectedDate || stockOutDate}
-                  onChange={(e) => handleDateChange(e.target.value)}
-                  className="rounded-md border w-[85%] h-8 pl-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700"
-                />
-              </div>
+          <div className="flex flex-col px-6 pt-4 w-full gap-4">
+            {/* Employee */}
+            <div className="flex items-center gap-4">
+              <label className="font-bold w-[15%] text-left" htmlFor="employee">
+                Employee:
+              </label>
+              {/* Hidden Input for the User ID */}
+              <input
+                type="hidden"
+                id="employee"
+                name="employee"
+                value={employeeId}
+              />
+              {/* Displayed Name */}
+              <span className="w-1/3 h-8 pl-4 flex items-center bg-gray-50 rounded-md border border-slate-300 text-slate-700">
+                {user ? `${user.first_name} ${user.last_name}` : ""}
+              </span>
+            </div>
+
+            {/* Stock Out Date */}
+            <div className="flex items-center gap-4">
+              <label
+                className="font-bold w-[15%] text-left"
+                htmlFor="stock_out_date"
+              >
+                Stock Out Date:
+              </label>
+              <input
+                type="datetime-local"
+                name="stock_out_date"
+                id="stock_out_date"
+                value={selectedDate || stockOutDate}
+                onChange={(e) => handleDateChange(e.target.value)}
+                className="w-1/3 h-8 px-4 border rounded-md bg-gray-50 hover:border-alofa-pink hover:bg-white text-slate-700"
+              />
             </div>
           </div>
         </div>

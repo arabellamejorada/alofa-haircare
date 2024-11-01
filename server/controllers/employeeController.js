@@ -103,6 +103,24 @@ const getAllEmployees = async (req, res) => {
   }
 };
 
+const getEmployeeIdByProfileId = async (req, res) => {
+    const { profile_id } = req.params;
+
+      // Fetch the employee ID based on profile ID
+    const result = await pool.query(
+        `SELECT employee_id FROM employee WHERE profile_id = $1`,
+        [profile_id]
+    );
+    const employee_id = result.rows.length > 0 ? result.rows[0].employee_id : null;
+
+    if (!employee_id) {
+        return res.status(404).json({ message: "Employee not found" });
+    }
+
+    res.status(200).json({ employee_id });
+};
+
+
 const getEmployeeById = async (req, res) => {
   const client = await pool.connect();
   const employee_id = parseInt(req.params.id);
@@ -383,6 +401,7 @@ module.exports = {
   createEmployee,
   getAllEmployees,
   getEmployeeById,
+  getEmployeeIdByProfileId,
   updateEmployee,
   archiveEmployee,
   deleteEmployee,
