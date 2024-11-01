@@ -90,16 +90,15 @@ export const INVENTORY_SIDEBAR_LINKS = [
     path: "/stockout",
     icon: <FiTrendingDown />,
   },
+];
 
+export const EMPLOYEE_SIDEBAR_LINKS = [
   {
     key: "suppliers",
     label: "Suppliers",
     path: "/suppliers",
     icon: <LiaPeopleCarrySolid />,
   },
-];
-
-export const EMPLOYEE_SIDEBAR_LINKS = [
   {
     key: "employees",
     label: "Employees",

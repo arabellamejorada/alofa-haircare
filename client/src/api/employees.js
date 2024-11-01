@@ -11,6 +11,17 @@ export const getEmployees = async () => {
   }
 };
 
+export const getEmployeeIdByProfileId = async (profile_id) => {
+  try {
+    const response = await axios.get(`/employees/profile/${profile_id}`);
+    console.log("Employee fetched: ", response.data);
+    return response.data.employee_id;
+  } catch (error) {
+    console.error("Error fetching employee: ", error);
+    throw error;
+  }
+};
+
 export const createEmployee = async (employee) => {
   try {
     const response = await axios.post("/employees", employee);

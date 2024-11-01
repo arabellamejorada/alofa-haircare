@@ -1,22 +1,23 @@
 import React, { useEffect, useState, useRef } from "react";
-import { IoMdArrowDropdown } from "react-icons/io";
 import StockInTable from "./StockInTable";
 import { getAllSuppliers, getSupplier } from "../../../api/suppliers";
 import { getAllProductVariations } from "../../../api/products";
 import { createStockIn } from "../../../api/stockIn";
-import { getEmployees } from "../../../api/employees";
+import { getEmployeeIdByProfileId } from "../../../api/employees";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { ClipLoader } from "react-spinners";
 import { validateDropdown } from "../../../lib/consts/utils/validationUtils";
+import { useAuth } from "../../AuthContext";
 
 const StockIn = () => {
+  const { user } = useAuth();
   const supplierInputRef = useRef(null);
   const supplierDropdownRef = useRef(null);
 
   const [loading, setLoading] = useState(false);
-  const [employees, setEmployees] = useState([]);
   const [productVariations, setProductVariations] = useState([]);
+  const [employeeId, setEmployeeId] = useState("");
   const [suppliers, setSuppliers] = useState([]);
   const [supplierDetails, setSupplierDetails] = useState({
     contact_person: "",
@@ -27,7 +28,6 @@ const StockIn = () => {
 
   const [referenceNumber, setReferenceNumber] = useState("");
   const [selectedSupplier, setSelectedSupplier] = useState("");
-  const [selectedEmployee, setSelectedEmployee] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [stockInDate, setStockInDate] = useState(() => {
     const date = new Date();
@@ -52,26 +52,35 @@ const StockIn = () => {
   useEffect(() => {
     setLoading(true);
     const loadData = async () => {
-      const employeeData = await getEmployees();
-      let supplierData = await getAllSuppliers();
-      const productVariationsData = await getAllProductVariations();
+      try {
+        const supplierData = await getAllSuppliers();
+        const productVariationsData = await getAllProductVariations();
+        const employeeId = parseInt(
+          await getEmployeeIdByProfileId(user.id),
+          10,
+        );
 
-      // Only show active suppliers
-      supplierData = supplierData.filter(
-        (supplier) => supplier.status.toLowerCase() === "active",
-      );
-      setEmployees(employeeData);
-      setSuppliers(supplierData);
-      setProductVariations(productVariationsData);
-      generateReferenceNumber();
-      setLoading(false);
+        // Only show active suppliers
+        setSuppliers(
+          supplierData.filter(
+            (supplier) => supplier.status.toLowerCase() === "active",
+          ),
+        );
+        setProductVariations(productVariationsData);
+        setEmployeeId(employeeId);
+        generateReferenceNumber();
+      } catch (error) {
+        console.error("Error loading data:", error);
+        toast.error("An error occurred while loading data.");
+      } finally {
+        setLoading(false);
+      }
     };
     loadData();
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [user.id]);
 
   const resetRows = () => {
     setStockInProducts([]);
@@ -83,7 +92,7 @@ const StockIn = () => {
         .slice(0, 16);
     });
     setSelectedSupplier("");
-    setSelectedEmployee("");
+    setEmployeeId("");
     setSupplierDetails({
       contact_person: "",
       contact_number: "",
@@ -135,27 +144,29 @@ const StockIn = () => {
   };
 
   const handleSubmitStockIn = async () => {
-    // Validate product variations
     const productErrors = stockInProducts.map((row) => ({
       variation: !validateDropdown(row.variation_id),
       quantity: row.quantity <= 0,
     }));
-
-    // Validate supplier
     const supplierError = !validateDropdown(selectedSupplier);
 
-    // Update the error state
     setErrors({
       ...errors,
       supplier: supplierError,
       products: productErrors,
     });
 
-    // Check if there are any errors
+    if (supplierError) {
+      console.error("Supplier validation error");
+    }
+
+    if (productErrors.some((err) => err.variation || err.quantity)) {
+      console.error("Product variation or quantity validation error");
+    }
+
     const hasErrors =
       supplierError ||
       productErrors.some((err) => err.variation || err.quantity);
-
     if (hasErrors) {
       toast.error("Please fill in all required fields correctly.");
       return;
@@ -163,20 +174,20 @@ const StockIn = () => {
 
     const stockInData = {
       supplier_id: selectedSupplier,
-      employee_id: selectedEmployee,
+      employee_id: employeeId,
       reference_number: referenceNumber,
       stock_in_date: selectedDate || stockInDate,
       stockInProducts,
     };
 
+    console.log("Stock In Data:", stockInData);
     try {
       setLoading(true);
       await createStockIn(stockInData);
       toast.success("Stock In recorded successfully");
-
-      resetRows(); // Reset rows and state after successful submission
+      resetRows();
     } catch (error) {
-      console.error("Error saving stock in:", error);
+      console.error("Error saving stock in:", error.message);
       toast.error("An error occurred while saving stock in.");
     } finally {
       setLoading(false);
@@ -238,31 +249,25 @@ const StockIn = () => {
                 className="rounded-md border w-[85%] h-8 pl-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700"
               />
             </div>
-            {/* Employee */}
+
+            {/* Employee: Display logged-in employee info */}
             <div className="flex flex-row justify-between items-center">
               <label className="font-bold w-[30%]" htmlFor="employee">
                 Employee:
               </label>
-              <div className="relative w-[85%]">
-                <select
-                  id="employee"
-                  name="employee"
-                  value={selectedEmployee}
-                  onChange={(e) => setSelectedEmployee(e.target.value)}
-                  className="w-full h-8 px-4 appearance-none border rounded-md bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700"
-                >
-                  <option value="">Select Employee</option>
-                  {employees.map((employee) => (
-                    <option
-                      key={employee.employee_id}
-                      value={employee.employee_id}
-                    >
-                      {employee.first_name} {employee.last_name}
-                    </option>
-                  ))}
-                </select>
-                <IoMdArrowDropdown className="absolute right-2 top-1/2 transform -translate-y-1/2" />
-              </div>
+
+              {/* Hidden Input for the User ID */}
+              <input
+                type="hidden"
+                id="employee"
+                name="employee"
+                value={employeeId}
+              />
+
+              {/* Displayed Name */}
+              <span className="w-[85%] h-8 pl-4 flex items-center bg-gray-50 rounded-md border border-slate-300 text-slate-700">
+                {user ? `${user.first_name} ${user.last_name}` : ""}
+              </span>
             </div>
 
             {/* Supplier */}
