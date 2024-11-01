@@ -1,5 +1,5 @@
 // Sidebar.jsx
-import React, { useContext } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import classNames from "classnames";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -10,6 +10,7 @@ import {
   EMPLOYEE_SIDEBAR_LINKS,
 } from "../lib/consts/navigation";
 import { HiOutlineLogout } from "react-icons/hi";
+import { supabase } from "../supabaseClient.jsx";
 import { AuthContext } from "./AuthContext.jsx"; // Import AuthContext
 
 const linkClasses =
@@ -18,6 +19,56 @@ const linkClasses =
 function SidebarContent({ onClose }) {
   const { signOut } = useContext(AuthContext); // Access signOut from AuthContext
   const navigate = useNavigate();
+
+  const [loading, setLoading] = useState(true);
+  const [isModalVisible, setModalVisible] = useState(false);
+
+  const [userName, setUserName] = useState("");
+  const [userMetadata, setUserMetadata] = useState(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      setLoading(true);
+
+      // Get the current session
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError) {
+        console.error("Error getting session:", sessionError);
+        setLoading(false);
+        navigate("/login");
+        return;
+      }
+
+      if (session && session.user) {
+        const user = session.user;
+
+        // Fetch additional profile data
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles") // Replace "profiles" with your table name
+          .select("first_name, last_name, email, role_id") // Add any additional fields you want
+          .eq("id", user.id)
+          .single();
+
+        if (profileError) {
+          console.error("Error fetching user profile:", profileError);
+        } else {
+          setUserName(profile.first_name);
+          setUserMetadata(profile);
+        }
+      } else {
+        // If no user is logged in, navigate to the login page or handle accordingly
+        navigate("/login");
+      }
+
+      setLoading(false);
+    };
+
+    fetchUserData();
+  }, [navigate]);
 
   // Handle logout
   const handleLogout = async () => {
@@ -33,8 +84,10 @@ function SidebarContent({ onClose }) {
     <>
       <div className="flex flex-col px-1 py-5 mt-5 items-center justify-center">
         <span className="text-white text-7xl font-title">Alofa</span>
+        <div className="text-alofa-white font-heading">{loading ? "Hello!" : userName ? `Hello, ${userName}!` : "Hello!"}</div>
       </div>
       <div className="flex-1 px-5 py-8 flex flex-col gap-0.5">
+        
         {/* Render navigation links */}
         {[
           DASHBOARD_SIDEBAR_LINKS,
