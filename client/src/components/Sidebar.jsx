@@ -1,5 +1,5 @@
 // Sidebar.jsx
-import React, { useContext } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import classNames from "classnames";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -10,14 +10,67 @@ import {
   EMPLOYEE_SIDEBAR_LINKS,
 } from "../lib/consts/navigation";
 import { HiOutlineLogout } from "react-icons/hi";
-import { AuthContext } from "./AuthContext.jsx"; // Import AuthContext
+import { supabase } from "../supabaseClient.jsx";
+import { AuthContext } from "./AuthContext.jsx";
+
+// Define role IDs (adjust these values to match your actual role IDs)
+const ROLE_ADMIN = 2;
+const ROLE_EMPLOYEE = 3;
 
 const linkClasses =
   "flex items-center gap-2 font-light px-3 py-2 hover:bg-alofa-highlight hover:no-underline active:bg-alofa-dark rounded-md text-base";
 
 function SidebarContent({ onClose }) {
-  const { signOut } = useContext(AuthContext); // Access signOut from AuthContext
+  const { signOut } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  const [loading, setLoading] = useState(true);
+  const [userName, setUserName] = useState("");
+  const [userMetadata, setUserMetadata] = useState(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      setLoading(true);
+
+      // Get the current session
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError) {
+        console.error("Error getting session:", sessionError);
+        setLoading(false);
+        navigate("/login");
+        return;
+      }
+
+      if (session && session.user) {
+        const user = session.user;
+
+        // Fetch additional profile data
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles") // Replace "profiles" with your table name
+          .select("first_name, last_name, email, role_id") // Add any additional fields you want
+          .eq("id", user.id)
+          .single();
+
+        if (profileError) {
+          console.error("Error fetching user profile:", profileError);
+        } else {
+          setUserName(profile.first_name);
+          setUserMetadata(profile);
+        }
+      } else {
+        // If no user is logged in, navigate to the login page or handle accordingly
+        navigate("/login");
+      }
+
+      setLoading(false);
+    };
+
+    fetchUserData();
+  }, [navigate]);
 
   // Handle logout
   const handleLogout = async () => {
@@ -29,26 +82,35 @@ function SidebarContent({ onClose }) {
     }
   };
 
+  // Determine user role
+  const isAdmin = userMetadata && userMetadata.role_id === ROLE_ADMIN;
+
   return (
     <>
       <div className="flex flex-col px-1 py-5 mt-5 items-center justify-center">
         <span className="text-white text-7xl font-title">Alofa</span>
+        <div className="text-alofa-white font-heading">
+          {loading ? "Hello!" : userName ? `Hello, ${userName}!` : "Hello!"}
+        </div>
       </div>
       <div className="flex-1 px-5 py-8 flex flex-col gap-0.5">
         {/* Render navigation links */}
+        {/* Only show certain sections if the user is an admin */}
         {[
           DASHBOARD_SIDEBAR_LINKS,
-          PRODUCT_SIDEBAR_LINKS,
-          VOUCHER_SIDEBAR_LINKS,
+          isAdmin ? PRODUCT_SIDEBAR_LINKS : [],
+          isAdmin ? VOUCHER_SIDEBAR_LINKS : [],
           INVENTORY_SIDEBAR_LINKS,
-          EMPLOYEE_SIDEBAR_LINKS,
-        ].map((section, index) => (
-          <div key={index} className={index !== 0 ? "pt-5" : ""}>
-            {section.map((item) => (
-              <SidebarLink key={item.key} item={item} onClick={onClose} />
-            ))}
-          </div>
-        ))}
+          isAdmin ? EMPLOYEE_SIDEBAR_LINKS : [],
+        ].map((section, index) =>
+          section.length > 0 ? (
+            <div key={index} className={index !== 0 ? "pt-5" : ""}>
+              {section.map((item) => (
+                <SidebarLink key={item.key} item={item} onClick={onClose} />
+              ))}
+            </div>
+          ) : null,
+        )}
       </div>
 
       <div className="flex flex-col px-5 gap-0.5 pt-2 border-t-2 border-alofa-dark mb-2">

@@ -1,3 +1,5 @@
+/* Purpose: To manage user authentication, roles, and session persistence in your React application.*/
+
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { supabase } from "../supabaseClient.jsx";
 

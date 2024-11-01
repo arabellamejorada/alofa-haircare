@@ -4,6 +4,8 @@ import {
   Routes,
   Route,
   Navigate,
+  useLocation, // Added code
+  Link, // Added code
 } from "react-router-dom";
 import { Toaster } from "sonner";
 import Layout from "./components/shared/Layout";
@@ -20,11 +22,21 @@ import StockOutHistory from "./components/inventory_tab/stock_out/StockOutHistor
 import Login from "./components/Login";
 import Vouchers from "./components/voucher_tab/Vouchers";
 
-import { AuthProvider, AuthContext } from "./components/AuthContext"; // Import AuthContext
+import { AuthProvider, AuthContext } from "./components/AuthContext";
+
+// Define admin-only paths (Added code)
+const adminOnlyPaths = [
+  "/products",
+  "/productcategories",
+  "/voucher",
+  "/suppliers",
+  "/employees",
+];
 
 // Protected Route component
 const ProtectedRoute = ({ element }) => {
   const { token, role } = useContext(AuthContext); // Access token and role from AuthContext
+  const location = useLocation(); // Added code
 
   // If user is not logged in, redirect to login
   if (!token) {
@@ -36,9 +48,27 @@ const ProtectedRoute = ({ element }) => {
     return <Navigate to="/login" replace />;
   }
 
+  // Check if the path is admin-only and if the user is not an admin (Added code)
+  if (adminOnlyPaths.includes(location.pathname) && role !== "admin") {
+    return <Navigate to="/not-authorized" replace />;
+  }
+
   // Render the protected component
   return element;
 };
+
+// Not Authorized component (Added code)
+function NotAuthorized() {
+  return (
+    <div style={{ padding: "2rem", textAlign: "center" }}>
+      <h1>Not Authorized</h1>
+      <p>You do not have permission to view this page.</p>
+      <Link to="/" className="text-alofa-dark">
+        Go back to Dashboard
+      </Link>
+    </div>
+  );
+}
 
 function App() {
   return (
@@ -92,6 +122,8 @@ function App() {
             />
           </Route>
           <Route path="login" element={<Login />} />
+          {/* Not Authorized Route (Added code) */}
+          <Route path="not-authorized" element={<NotAuthorized />} />
         </Routes>
       </Router>
     </AuthProvider>
