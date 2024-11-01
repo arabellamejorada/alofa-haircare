@@ -109,7 +109,7 @@ const AddProductVariationsTable = ({
                 }
               }}
               onFocus={() => setIsDropdownVisible(true)}
-              className={`w-full rounded-2xl border border-gray-300 h-10 px-4 pr-8 mt-2 bg-white text-gray-500 focus:outline-none focus:border-pink-500 focus:bg-white ${
+              className={`w-full rounded-2xl border border-gray-300 h-10 px-4 pr-8 mt-2 bg-white text-gray-500 focus:outline-none focus:border-alofa-pink focus:bg-white ${
                 existingProductFormErrors.product_search ? "border-red-500" : ""
               }`}
               ref={inputRef}
@@ -124,7 +124,7 @@ const AddProductVariationsTable = ({
             {searchTerm && (
               <button
                 onClick={clearSearch}
-                className="absolute right-2 top-1/2 text-gray-500 hover:text-pink-500"
+                className="absolute right-2 top-1/2 text-gray-500 hover:text-alofa-pink"
                 aria-label="Clear search"
               >
                 &times;
@@ -317,7 +317,7 @@ const AddProductVariationsTable = ({
 
                     {/* File input */}
                     <div className="flex items-center gap-2">
-                      <label className="flex items-center px-4 py-2 text-sm font-medium text-white bg-pink-500 rounded-lg cursor-pointer hover:bg-pink-600">
+                      <label className="flex items-center px-4 py-2 text-sm font-medium text-white bg-alofa-pink rounded-lg cursor-pointer hover:bg-alofa-dark">
                         Choose File
                         <input
                           type="file"
@@ -356,7 +356,7 @@ const AddProductVariationsTable = ({
           <button
             type="button"
             onClick={addVariationRow}
-            className="flex items-center gap-2 px-6 py-2 text-white bg-pink-500 hover:bg-pink-600 rounded-lg font-semibold shadow-md transition-transform transform hover:scale-105"
+            className="flex items-center gap-2 px-6 py-2 text-white bg-alofa-pink hover:bg-alofa-dark rounded-lg font-semibold shadow-md transition-transform transform hover:scale-105"
           >
             <span>+</span> Add Row
           </button>

@@ -1,9 +1,10 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { FaUserAlt, FaShoppingCart, FaTrashAlt } from "react-icons/fa";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { CartContext } from "../components/CartContext";
-import { AuthContext } from "../components/AuthContext";
+import { AuthContext } from "../components/AuthContext"; // Import AuthContext
 import { ClipLoader } from "react-spinners";
+import NavbarBG from "../../../public/static/alofa-navbar-white.png";
 
 const Navbar = () => {
   const [hovered, setHovered] = useState(false);
@@ -12,28 +13,35 @@ const Navbar = () => {
   const location = useLocation(); // Get the current route
   const navigate = useNavigate(); // For navigation
 
-  const { token, setToken } = useContext(AuthContext); // Access token and setToken
+  const { user, role, signOut } = useContext(AuthContext); // Use 'user' instead of 'token'
   const { resetCart } = useContext(CartContext); // Reset cart items
 
-  const totalPrice = cartItems.reduce((sum, item) => {
-    const price = parseFloat(item.unit_price) || 0;
-    const quantity = item.quantity || 0;
-    return sum + price * quantity;
-  }, 0);
+  // const totalPrice = cartItems.reduce((sum, item) => {
+  //   const price = parseFloat(item.unit_price) || 0;
+  //   const quantity = item.quantity || 0;
+  //   return sum + price * quantity;
+  // }, 0);
 
   const isAuthPage =
     location.pathname === "/login" || location.pathname === "/signup";
   const isCheckoutPage = location.pathname === "/checkout";
-  const isLoggedIn = Boolean(token);
+  const isLoggedIn = Boolean(user); // Use 'user' to determine if logged in
 
-  const handleLogout = () => {
-    // Remove session token
-    setToken(null);
-    sessionStorage.removeItem("token");
-    resetCart();
+  // Check if the current page is `/profile`
+  const isProfilePage = location.pathname.startsWith("/profile");
+  // Handle logout
+  const handleLogout = async () => {
+    localStorage.removeItem("auth_token");
+    signOut();
+    await resetCart();
     // Redirect to home page
     navigate("/");
   };
+
+  useEffect(() => {
+    console.log("Current user:", user); // Log 'user' instead of 'token'
+    console.log("Current role:", role); // Debugging log to check role value
+  }, [user, role]);
 
   if (loading) {
     return (
@@ -51,13 +59,22 @@ const Navbar = () => {
       className={`${
         isCheckoutPage
           ? "w-full z-50 h-16 bg-checkout-gradient shadow-white-3"
-          : "fixed top-0 w-full z-50 h-16 bg-white shadow-md"
-      }`}
+          : "fixed top-0 w-full z-50 h-16 bg-white shadow-md"}
+          `}
+      style={
+        isProfilePage
+          ? {
+              backgroundImage: `url(${NavbarBG})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }
+          : {}
+      }
     >
       <nav className="container mx-auto flex items-center justify-between px-4 py-2 h-full">
         <div
           className={`flex ${
-            isCheckoutPage ? "justify-center w-full" : "justify-start"
+            isCheckoutPage ? "justify-center w-full" : "justify-center"
           } items-center gap-8`}
         >
           {/* Logo */}
@@ -72,7 +89,7 @@ const Navbar = () => {
             alofa
           </a>
 
-          {/* Navigation Pages */}
+          {/* Navigation Links - Hidden on Auth Pages */}
           {!isAuthPage && !isCheckoutPage && (
             <div className="text-lg font-body text-alofa-pink sm:flex items-center gap-8 hidden">
               <Link
@@ -99,91 +116,104 @@ const Navbar = () => {
 
         {/* Right Section - Cart Icon (if on /checkout1) */}
         {isCheckoutPage && (
+          <div className="flex items-center justify-start">
           <Link to="/shoppingcart">
-            <div className="text-white p-3 rounded-full cursor-pointer mr-4">
+            <div className="text-white p-3 rounded-full cursor-pointer">
               <FaShoppingCart size={20} />
             </div>
           </Link>
-        )}
-
-        {/* Right-side Content for other pages */}
-        {!isAuthPage && !isCheckoutPage && (
-          <div className="text-lg text-alofa-pink sm:flex items-center gap-4 hidden">
-            {isLoggedIn ? (
-              // When user is logged in
-              <>
-                <Link
-                  to="/profile"
-                  className="hover:text-pink-700 flex items-center gap-2"
-                >
-                  <FaUserAlt />
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="hover:text-pink-700 flex items-center gap-2"
-                >
-                  Logout
-                </button>
-                {/* Shopping Cart Icon */}
-                <div
-                  className="relative"
-                  onMouseEnter={() => setHovered(true)}
-                  onMouseLeave={() => setHovered(false)}
-                >
-                  <div className="text-[#FE699F] p-3 rounded-full transition-colors duration-300 hover:delay-700 hover:text-gray-500 cursor-pointer">
-                    <Link to="/shoppingcart">
-                      <FaShoppingCart />
-                    </Link>
-                  </div>
-                </div>
-              </>
-            ) : (
-              // When user is not logged in
-              <>
-                <Link
-                  to="/login"
-                  className="hover:text-pink-700 flex items-center gap-2"
-                >
-                  Login
-                </Link>
-                <p>|</p>
-                <Link
-                  to="/signup"
-                  className="hover:text-pink-700 flex items-center gap-2"
-                >
-                  Sign Up
-                </Link>
-                {/* Shopping Cart Icon */}
-                <div
-                  className="relative"
-                  onMouseEnter={() => setHovered(true)}
-                  onMouseLeave={() => setHovered(false)}
-                >
-                  <div className="text-[#FE699F] p-3 rounded-full transition-colors duration-300 hover:delay-700 hover:text-gray-500 cursor-pointer">
-                    <FaShoppingCart />
-                  </div>
-                </div>
-              </>
-            )}
           </div>
         )}
+
+        {/* Right-side Content */}
+        <div className="text-lg text-alofa-pink sm:flex items-center gap-4 hidden">
+          {isAuthPage ? (
+            // Show Home link on the right only when on login or signup page
+            <Link to="/" className="hover:text-pink-700 items-baseline gap-2">
+              Home
+            </Link>
+          ) : (
+            // For non-auth pages
+            <>
+              {isLoggedIn && !isCheckoutPage ? (
+                // When user is logged in
+                <>
+                  <Link
+                    to="/profile"
+                    className="hover:text-pink-700 flex items-center gap-2"
+                  >
+                    <FaUserAlt />
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="hover:text-pink-700 flex items-center gap-2"
+                  >
+                    Logout
+                  </button>
+                  {/* Shopping Cart Icon */}
+                  <div
+                    className="relative"
+                    onMouseEnter={() => setHovered(true)}
+                    onMouseLeave={() => setHovered(false)}
+                  >
+                    <div className="text-[#FE699F] p-3 rounded-full transition-colors duration-300 hover:delay-700 hover:text-gray-500 cursor-pointer">
+                      <Link to="/shoppingcart">
+                        <FaShoppingCart />
+                      </Link>
+                    </div>
+                  </div>
+                </>
+              ) : !isCheckoutPage ? (
+                // When user is not logged in
+                <>
+                  <Link
+                    to="/login"
+                    className="hover:text-pink-700 flex items-center gap-2"
+                  >
+                    Login
+                  </Link>
+                  <p>|</p>
+                  <Link
+                    to="/signup"
+                    className="hover:text-pink-700 flex items-center gap-2"
+                  >
+                    Sign Up
+                  </Link>
+                  {/* Shopping Cart Icon */}
+                  <div
+                    className="relative"
+                    onMouseEnter={() => setHovered(true)}
+                    onMouseLeave={() => setHovered(false)}
+                  >
+                    <div className="text-[#FE699F] p-3 rounded-full transition-colors duration-300 hover:delay-700 hover:text-gray-500 cursor-pointer">
+                      <FaShoppingCart />
+                    </div>
+                  </div>
+                </>
+              ) : null}
+            </>
+          )}
+        </div>
       </nav>
 
       {/* Cart Sidebar */}
-      {!isAuthPage && !isCheckoutPage && (
+      {!isAuthPage && !isCheckoutPage && (  
         <div
           className={`fixed top-0 right-0 h-full w-80 bg-white shadow-lg z-40 transition-transform duration-300 ${
-            hovered ? "translate-x-0" : "translate-x-full"
+          hovered ? "translate-x-0" : "translate-x-full"
           }`}
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
-        >
-          <div className="p-4 h-full flex flex-col">
-            <h1 className="text-2xl gradient-heading font-bold mb-4">
-              Cart Overview
-            </h1>
+          >
+            <div className="p-4 h-full flex flex-col">
+              <h1 className="text-2xl gradient-heading font-bold mb-1">
+                  Cart Overview
+              </h1>
+              <div className="text-md text-gray-500 mb-4">
+                {cartItems.reduce((total, item) => total + item.quantity, 0)} items
+              </div>
 
-            <div className="flex-1 overflow-y-auto mb-4">
+              <div className="flex-1 overflow-y-auto mb-4">
               {cartItems && cartItems.length > 0 ? (
                 cartItems.map((item) => (
                   <div
@@ -236,41 +266,35 @@ const Navbar = () => {
 
             {/* Fixed Bottom Section: Subtotal, Total, and Buttons */}
             <div className="border-t pt-4">
-              <div className="flex justify-between mb-2 text-gray-500">
+              <div className="flex justify-between text-xl font-extrabold mb-2  text-gray-500">
                 <span>Subtotal</span>
                 <span>
                   ₱
                   {new Intl.NumberFormat("en-PH", {
-                    minimumFractionDigits: 2,
-                  }).format(totalPrice)}
+                      minimumFractionDigits: 2,
+                    }).format(subtotal)}
                 </span>
               </div>
-              <div className="flex justify-between text-xl font-semibold mb-4">
-                <span>Total</span>
-                <span>
-                  ₱
-                  {new Intl.NumberFormat("en-PH", {
-                    minimumFractionDigits: 2,
-                  }).format(totalPrice)}
-                </span>
+              <div className="flex justify-between font-light text-gray-500 italic text-sm mb-4">
+                      <span>Shipping & taxes calculated at checkout</span>
               </div>
+            </div>
 
-              <div className="flex justify-between">
-                <Link to="/shoppingcart">
-                  <button className="font-extrabold text-white py-2 px-4 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]">
-                    View Cart
-                  </button>
-                </Link>
-                <Link to="/checkout">
-                  <button className="font-extrabold text-white py-2 px-4 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]">
-                    Check Out
-                  </button>
-                </Link>
-              </div>
+            <div className="flex justify-between">
+              <Link to="/shoppingcart">
+                <button className="font-extrabold text-white py-2 px-4 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]">
+                  View Cart
+                </button>
+              </Link>
+              <Link to="/checkout">
+                <button className="font-extrabold text-white py-2 px-4 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]">
+                  Check Out
+                </button>
+              </Link>
             </div>
           </div>
         </div>
-      )}
+        )}
     </header>
   );
 };

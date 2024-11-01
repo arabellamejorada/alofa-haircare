@@ -1,6 +1,13 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  // useLocation,
+} from "react-router-dom";
+import PropTypes from "prop-types";
 import { useContext } from "react";
-import { CartProvider } from "./components/CartContext.jsx";
+import { CartProvider } from "./components/CartContext";
 import { AuthProvider, AuthContext } from "./components/AuthContext.jsx"; // Import AuthProvider
 import Navbar from "./shared/Navbar.jsx";
 import Home from "./pages/Home.jsx";
@@ -11,12 +18,20 @@ import CartItem from "./components/CartItem.jsx";
 import Checkout from "./pages/Checkout.jsx";
 import Login from "./pages/Login.jsx";
 import SignUp from "./pages/SignUp.jsx";
+import Profile from "./pages/customer-pages/CustomerProfile.jsx";
 
-import "./App.css";
-import { Toaster } from "sonner";
+import './App.css';
+import { Toaster } from 'sonner';
 
 const AppContent = () => {
-  const { setToken } = useContext(AuthContext); // Use setToken from AuthContext
+  // const location = useLocation();
+  const { token, loading, setToken } = useContext(AuthContext);
+
+  // Show loading screen while verifying session
+  if (loading) {
+    return <div className="loading-screen">Loading...</div>;
+  }
+
 
   return (
     <>
@@ -31,18 +46,32 @@ const AppContent = () => {
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/login" element={<Login setToken={setToken} />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route
+          path="/profile/*"
+          element={
+            <PrivateRoute token={token}>
+              <Profile />
+            </PrivateRoute>
+          }
+        />
       </Routes>
     </>
   );
 };
 
+// PrivateRoute Component to restrict access to authenticated users
+const PrivateRoute = ({ token, children }) => {
+  return token ? children : <Navigate to="/login" />;
+};
+
+PrivateRoute.propTypes = {
+  token: PropTypes.string.isRequired,
+  children: PropTypes.node.isRequired,
+};
+
 const App = () => (
   <AuthProvider>
-    {" "}
-    {/* AuthProvider should be outside */}
     <CartProvider>
-      {" "}
-      {/* CartProvider should be inside */}
       <Router>
         <AppContent />
       </Router>

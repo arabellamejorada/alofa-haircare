@@ -1,123 +1,225 @@
-const pool = require('../db.js');
+const pool = require("../db.js");
+const supabase = require("../supabaseClient.jsx");
 
+// Create a new customer with profile
 const createCustomer = async (req, res) => {
-    const client = await pool.connect();
-    const { first_name, last_name, email, contact_number, role_id } = req.body;
+  const { first_name, last_name, email, contact_number, role_id } = req.body;
 
-    try {
-        await client.query('BEGIN');
+  try {
+    // Insert into profiles table
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .insert([{ first_name, last_name, email, contact_number, role_id }])
+      .select();
 
-        const newCustomer = await client.query(
-            `INSERT INTO customer (first_name, last_name, email, contact_number, role_id) 
-            VALUES ($1, $2, $3, $4, $5) 
-            RETURNING *`,
-            [first_name, last_name, email, contact_number, role_id]
-        );
-
-        //
-
-        await client.query('COMMIT');
-
-        res.status(201).json(newCustomer.rows[0]);
-    } catch (error) {
-        await client.query('ROLLBACK');
-        console.error('Error creating customer:', error);
-        res.status(400).json({ message: 'Error creating customer', error: error.message });
-    } finally {
-        client.release();
+    if (profileError) {
+      console.error("Error creating profile:", profileError);
+      return res
+        .status(400)
+        .json({
+          message: "Error creating profile",
+          error: profileError.message,
+        });
     }
+
+    // Insert into customer table with the new profile ID
+    const { data: customer, error: customerError } = await supabase
+      .from("customer")
+      .insert([{ profile_id: profile[0].id }])
+      .select();
+
+    if (customerError) {
+      console.error("Error creating customer:", customerError);
+      return res
+        .status(400)
+        .json({
+          message: "Error creating customer",
+          error: customerError.message,
+        });
+    }
+
+    res
+      .status(201)
+      .json({ ...profile[0], customer_id: customer[0].customer_id });
+  } catch (error) {
+    console.error("Error creating customer:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
 };
 
+// Get all customers with profile info
 const getAllCustomers = async (req, res) => {
-    const client = await pool.connect();
+  try {
+    const { data, error } = await supabase
+      .from("customer")
+      .select(
+        `
+                customer_id,
+                profiles (
+                    id,
+                    first_name,
+                    last_name,
+                    email,
+                    contact_number,
+                    role_id,
+                    created_at,
+                    updated_at
+                )
+            `,
+      )
+      .order("customer_id", { ascending: true });
 
-    try {
-        const customers = await client.query('SELECT * FROM customer ORDER by customer_id ASC');
-        res.status(200).json(customers.rows);
-    } catch (error) {
-        console.error('Error fetching customers:', error);
-        res.status(500).json({ message: 'Error fetching customers', error: error.message });
-    } finally {
-        client.release();
+    if (error) {
+      console.error("Error fetching customers:", error);
+      return res
+        .status(500)
+        .json({ message: "Error fetching customers", error: error.message });
     }
+
+    res.status(200).json(data);
+  } catch (error) {
+    console.error("Error fetching customers:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
 };
 
+// Get a single customer by ID
 const getCustomerById = async (req, res) => {
-    const client = await pool.connect();
-    const customer_id = parseInt(req.params.id);
+  const customer_id = parseInt(req.params.id);
 
-    try {
-        const customer = await client.query('SELECT * FROM customer WHERE customer_id = $1', [customer_id]);
+  try {
+    const { data, error } = await supabase
+      .from("customer")
+      .select(
+        `
+                customer_id,
+                profiles (
+                    id,
+                    first_name,
+                    last_name,
+                    email,
+                    contact_number,
+                    role_id,
+                    created_at,
+                    updated_at
+                )
+            `,
+      )
+      .eq("customer_id", customer_id)
+      .single();
 
-        if (customer.rows.length === 0) {
-            return res.status(404).json({ message: 'Customer not found' });
-        }
-
-        res.status(200).json(customer.rows[0]);
-    } catch (error) {
-        console.error('Error fetching customer:', error);
-        res.status(500).json({ message: 'Error fetching customer', error: error.message });
-    } finally {
-        client.release();
+    if (error || !data) {
+      console.error("Error fetching customer:", error);
+      return res.status(404).json({ message: "Customer not found" });
     }
+
+    res.status(200).json(data);
+  } catch (error) {
+    console.error("Error fetching customer:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
 };
 
+// Update customer profile
 const updateCustomer = async (req, res) => {
-    const client = await pool.connect();
-    const customer_id = parseInt(req.params.id);
-    const { first_name, last_name, email, contact_number, role_id } = req.body;
+  const customer_id = parseInt(req.params.id);
+  const { first_name, last_name, email, contact_number, role_id } = req.body;
 
-    try {
-        const updatedCustomer = await client.query(
-            `UPDATE customer 
-            SET first_name = $1, last_name = $2, email = $3, contact_number = $4, role_id = $5 
-            WHERE customer_id = $6 
-            RETURNING *`,
-            [first_name, last_name, email, contact_number, role_id, customer_id]
-        );
+  try {
+    // Get the profile ID linked to the customer
+    const { data: customerData, error: customerError } = await supabase
+      .from("customer")
+      .select("profile_id")
+      .eq("customer_id", customer_id)
+      .single();
 
-        if (updatedCustomer.rows.length === 0) {
-            return res.status(404).json({ message: 'Customer not found' });
-        }
-
-        res.status(200).json(updatedCustomer.rows[0]);
-    } catch (error) {
-        console.error('Error updating customer:', error);
-        res.status(400).json({ message: 'Error updating customer', error: error.message });
-    } finally {
-        client.release();
+    if (customerError || !customerData) {
+      console.error("Customer not found:", customerError);
+      return res.status(404).json({ message: "Customer not found" });
     }
+
+    // Update the linked profile
+    const { data, error } = await supabase
+      .from("profiles")
+      .update({ first_name, last_name, email, contact_number, role_id })
+      .eq("id", customerData.profile_id);
+
+    if (error) {
+      console.error("Error updating profile:", error);
+      return res
+        .status(400)
+        .json({ message: "Error updating profile", error: error.message });
+    }
+
+    res.status(200).json(data[0]);
+  } catch (error) {
+    console.error("Error updating customer:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
 };
 
+// Delete a customer and its associated profile
 const deleteCustomer = async (req, res) => {
-    const client = await pool.connect();
-    const customer_id = parseInt(req.params.id);
+  const customer_id = parseInt(req.params.id);
 
-    try {
-        const result = await client.query(
-            `DELETE FROM customer 
-            WHERE customer_id = $1 
-            RETURNING customer_id`,
-            [customer_id]
-        );
+  try {
+    // Get the profile ID linked to the customer
+    const { data: customerData, error: customerError } = await supabase
+      .from("customer")
+      .select("profile_id")
+      .eq("customer_id", customer_id)
+      .single();
 
-        if (result.rowCount === 0) {
-            return res.status(404).json({ message: 'Customer not found' });
-        }
-
-        res.status(200).json({ message: `Customer deleted with ID: ${customer_id}` });
-    } catch (error) {
-        console.error('Error deleting customer:', error);
-        res.status(500).json({ message: 'Error deleting customer', error: error.message });
-    } finally {
-        client.release();
+    if (customerError || !customerData) {
+      console.error("Customer not found:", customerError);
+      return res.status(404).json({ message: "Customer not found" });
     }
+
+    // Delete the customer
+    const { error: deleteCustomerError } = await supabase
+      .from("customer")
+      .delete()
+      .eq("customer_id", customer_id);
+
+    if (deleteCustomerError) {
+      console.error("Error deleting customer:", deleteCustomerError);
+      return res
+        .status(500)
+        .json({
+          message: "Error deleting customer",
+          error: deleteCustomerError.message,
+        });
+    }
+
+    // Delete the associated profile
+    const { error: deleteProfileError } = await supabase
+      .from("profiles")
+      .delete()
+      .eq("id", customerData.profile_id);
+
+    if (deleteProfileError) {
+      console.error("Error deleting profile:", deleteProfileError);
+      return res
+        .status(500)
+        .json({
+          message: "Error deleting profile",
+          error: deleteProfileError.message,
+        });
+    }
+
+    res
+      .status(200)
+      .json({ message: `Customer deleted with ID: ${customer_id}` });
+  } catch (error) {
+    console.error("Error deleting customer:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
 };
 
 module.exports = {
-    createCustomer,
-    getAllCustomers,
-    getCustomerById,
-    updateCustomer,
-    deleteCustomer
+  createCustomer,
+  getAllCustomers,
+  getCustomerById,
+  updateCustomer,
+  deleteCustomer,
 };

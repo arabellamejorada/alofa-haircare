@@ -30,7 +30,7 @@ const EditProductVariationModal = ({
     <Modal isVisible={isEditModalVisible} onClose={handleCloseModal}>
       <form className="p-6" onSubmit={handleUpdate}>
         <div className="flex flex-col gap-4">
-          <div className="font-extrabold text-3xl text-pink-400">
+          <div className="font-extrabold text-3xl text-alofa-highlight">
             Edit Product Variation
           </div>
 
@@ -173,7 +173,7 @@ const EditProductVariationModal = ({
             <button
               type="submit"
               disabled={!isFormModified()} // Disable if form is not modified
-              className={`w-[10rem] text-center py-3 bg-pink-400 hover:bg-pink-500 active:bg-pink-600 rounded-full font-semibold text-white ${
+              className={`w-[10rem] text-center py-3 bg-alofa-highlight hover:bg-alofa-pink active:bg-alofa-dark rounded-full font-semibold text-white ${
                 !isFormModified() ? "opacity-50 cursor-not-allowed" : ""
               }`}
             >

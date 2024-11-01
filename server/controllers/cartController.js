@@ -166,43 +166,31 @@ const getCartByCustomerId = async (req, res) => {
   }
 };
 
-// Get all carts (for admin or debugging purposes)// Get all carts (for admin or debugging purposes)
 const getAllCarts = async (req, res) => {
     try {
-        // Get all carts
-        const carts = await pool.query(
+        const result = await pool.query(
             `SELECT 
-                cart_id, 
-                customer_id, 
-                to_char(created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Manila', 'MM-DD-YYYY, HH:MI:SS AM') AS created_at,
-                to_char(last_activity AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Manila', 'MM-DD-YYYY, HH:MI:SS AM') AS last_activity,
-                status 
+                c.cart_id, 
+                c.customer_id,
+                to_char(c.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Manila', 'MM-DD-YYYY, HH:MI:SS AM') AS created_at,
+                to_char(c.last_activity AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Manila', 'MM-DD-YYYY, HH:MI:SS AM') AS last_activity,
+                c.status,
+                COALESCE(SUM(ci.quantity * pv.unit_price), 0) AS subtotal
             FROM 
-                cart`
+                cart c
+            LEFT JOIN 
+                cart_items ci ON c.cart_id = ci.cart_id
+            LEFT JOIN 
+                product_variation pv ON ci.variation_id = pv.variation_id
+            GROUP BY 
+                c.cart_id;`
         );
 
-        if (carts.rowCount === 0) {
+        if (result.rowCount === 0) {
             return res.status(404).json({ error: 'No carts found' });
         }
 
-        // Calculate subtotal for each cart
-        const cartWithSubtotals = await Promise.all(
-            carts.rows.map(async (cart) => {
-                const cartTotal = await pool.query(
-                    `SELECT SUM(ci.quantity * pv.unit_price) AS subtotal
-                     FROM cart_items ci
-                     JOIN product_variation pv ON ci.variation_id = pv.variation_id
-                     WHERE ci.cart_id = $1`,
-                    [cart.cart_id]
-                );
-
-                // Add subtotal to cart object
-                cart.subtotal = cartTotal.rows[0].subtotal || 0; // Set to 0 if subtotal is null
-                return cart;
-            })
-        );
-
-        res.status(200).json(cartWithSubtotals);
+        res.status(200).json(result.rows);
     } catch (error) {
         console.error('Error getting all carts:', error);
         res.status(500).json({ error: 'Failed to retrieve carts' });
@@ -358,39 +346,43 @@ const deleteCart = async (req, res) => {
     }
 };
 
-// Merge two carts into one (cart added when user is logged out and logged in)
 const mergeCarts = async (req, res) => {
     const { guest_cart_id, profile_id } = req.body;
 
     console.log('Merging carts:', req.body);
 
-    // Fetch the customer ID based on profile ID
-    const result = await pool.query(
-        `SELECT customer_id FROM customer WHERE profile_id = $1`,
-        [profile_id]
-    );
-    const customer_id = result.rows.length > 0 ? result.rows[0].customer_id : null;
-
-    console.log('customer_id:', customer_id);
-
+    // Start a transaction
+    const client = await pool.connect();
     try {
+        // Fetch the customer ID based on profile ID
+        const result = await client.query(
+            `SELECT customer_id FROM customer WHERE profile_id = $1`,
+            [profile_id]
+        );
+        const customer_id = result.rows.length > 0 ? result.rows[0].customer_id : null;
+
+        console.log('customer_id:', customer_id);
+
         // Validate that both IDs are provided
         if (!guest_cart_id || !customer_id) {
             return res.status(400).json({ error: 'Guest cart ID or customer ID is missing' });
         }
 
+        await client.query('BEGIN'); // Start the transaction
+
         // Fetch the guest cart
-        const guestCart = await pool.query(
+        const guestCart = await client.query(
             `SELECT * FROM cart WHERE cart_id = $1 AND (customer_id IS NULL OR customer_id = $2)`,
             [guest_cart_id, customer_id]
         );
 
         if (guestCart.rowCount === 0) {
+            await client.query('ROLLBACK'); // Rollback the transaction
             return res.status(404).json({ error: 'Guest cart not found or not associated with the customer' });
         }
 
         // Fetch the customer's active cart or create a new one
-        let customerCart = await pool.query(
+        let customerCart = await client.query(
             `SELECT * FROM cart WHERE customer_id = $1 AND status = 'active'`,
             [customer_id]
         );
@@ -402,7 +394,7 @@ const mergeCarts = async (req, res) => {
         const loggedInCartId = customerCart.rows[0].cart_id;
 
         // Merge guest cart items into the customer's (logged-in) cart
-        await pool.query(
+        await client.query(
             `INSERT INTO cart_items (cart_id, variation_id, quantity)
              SELECT $1, variation_id, quantity
              FROM cart_items
@@ -413,11 +405,11 @@ const mergeCarts = async (req, res) => {
         );
 
         // Delete the guest cart and its items after merging
-        await pool.query(`DELETE FROM cart_items WHERE cart_id = $1`, [guest_cart_id]);
-        await pool.query(`DELETE FROM cart WHERE cart_id = $1`, [guest_cart_id]);
+        await client.query(`DELETE FROM cart_items WHERE cart_id = $1`, [guest_cart_id]);
+        await client.query(`DELETE FROM cart WHERE cart_id = $1`, [guest_cart_id]);
 
         // Fetch the updated cart items from the customer's cart
-        const updatedCartItems = await pool.query(
+        const updatedCartItems = await client.query(
             `SELECT ci.cart_item_id, ci.variation_id, ci.quantity, pv.unit_price, 
                     p.name, pv.value, (ci.quantity * pv.unit_price) AS item_total
              FROM cart_items ci
@@ -427,16 +419,25 @@ const mergeCarts = async (req, res) => {
             [loggedInCartId]
         );
 
+        // Commit the transaction
+        await client.query('COMMIT');
+
         console.log('Carts merged successfully. Updated Cart:', updatedCartItems.rows);
         res.status(200).json({ 
             message: 'Carts merged successfully', 
             mergedCart: updatedCartItems.rows 
         });
     } catch (error) {
+        // Rollback transaction if an error occurs
+        await client.query('ROLLBACK');
         console.error('Error merging carts:', error);
         res.status(500).json({ error: 'Failed to merge carts' });
+    } finally {
+        // Release the client back to the pool
+        client.release();
     }
 };
+
 
 
 

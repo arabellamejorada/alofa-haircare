@@ -261,7 +261,7 @@ const ProductCategories = () => {
                 {search && (
                   <button
                     onClick={() => setSearch("")}
-                    className="ml-2 text-pink-500 hover:text-pink-700"
+                    className="ml-2 text-alofa-pink hover:text-alofa-dark"
                   >
                     Clear
                   </button>
@@ -272,7 +272,7 @@ const ProductCategories = () => {
             {/* Add Button */}
             <MdAddBox
               fontSize={40}
-              className="text-gray-400 mx-2 hover:text-pink-400 active:text-pink-500"
+              className="text-gray-400 mx-2 hover:text-alofa-highlight active:text-alofa-pink"
               onClick={() => openModal()}
             />
           </div>
@@ -289,10 +289,9 @@ const ProductCategories = () => {
         <Modal isVisible={showModal} onClose={handleCloseModal}>
           <form className="p-6" onSubmit={handleSubmit}>
             <div className="flex flex-col gap-4">
-              <div className="font-extrabold text-3xl text-pink-400">
+              <div className="font-extrabold text-3xl text-alofa-highlight">
                 {selectedCategory ? "Edit Category" : "Add New Category"}
               </div>
-
 
               <div className="flex flex-col gap-2">
                 <label className="font-bold" htmlFor="category_name">
@@ -305,7 +304,7 @@ const ProductCategories = () => {
                   placeholder="Category Name"
                   value={category_name}
                   onChange={handleInputChange}
-                  className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 ${
+                  className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 ${
                     errors.category_name ? "border-red-500" : ""
                   }`}
                 />
@@ -320,7 +319,7 @@ const ProductCategories = () => {
                 <button
                   type="submit"
                   disabled={selectedCategory && !isFormModified()} // Disable if no changes
-                  className={`px-4 py-2 text-white bg-pink-400 rounded-lg hover:bg-pink-500 ${
+                  className={`px-4 py-2 text-white bg-alofa-highlight rounded-lg hover:bg-alofa-pink ${
                     selectedCategory && !isFormModified()
                       ? "opacity-50 cursor-not-allowed"
                       : ""

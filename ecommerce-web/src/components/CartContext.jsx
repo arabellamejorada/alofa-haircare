@@ -15,8 +15,8 @@ import { ClipLoader } from "react-spinners";
 export const CartContext = createContext();
 
 const CartProvider = ({ children }) => {
-  const { token } = useContext(AuthContext);
-  const customerProfileId = token?.user.id;
+  const { user, justLoggedIn, setJustLoggedIn } = useContext(AuthContext);
+  const customerProfileId = user?.id; // Use 'user' instead of 'token'
 
   const [cartItems, setCartItems] = useState([]);
   const [cartId, setCartId] = useState(
@@ -28,76 +28,58 @@ const CartProvider = ({ children }) => {
   const createGuestCart = async () => {
     try {
       const cart = await createCart(null); // Creates a guest cart
-      sessionStorage.setItem("guest_cart_id", cart.cart_id); // Store guest cart ID
+      sessionStorage.setItem("guest_cart_id", cart.cart_id);
       setCartId(cart.cart_id);
-      setCartItems([]); // Initialize empty cart items
+      setCartItems([]);
+      return cart;
     } catch (error) {
       console.error("Error creating guest cart:", error);
+      throw error;
     }
   };
 
-  const fetchCart = async () => {
+  const fetchCustomerCart = async () => {
+    if (!customerProfileId) return; // Avoid fetching if customerProfileId is null
+
     setLoading(true);
     try {
-      let fetchedCart;
-
-      if (customerProfileId) {
-        // If logged in, fetch the cart using the customer ID from token
-        console.log("Fetching cart for customer:", customerProfileId);
-        fetchedCart = await getCartByCustomerId(customerProfileId);
-
-        console.log("fetchedCart: ", fetchedCart);
-        if (!fetchedCart) {
-          throw new Error("No active cart found for customer.");
-        }
-      } else {
-        if (cartId) {
-          // If not logged in, fetch the guest cart by ID
-          console.log("Fetching guest cart by ID:", cartId);
-          fetchedCart = await getCartById(cartId);
-        }
-        if (!fetchedCart) {
-          console.log("Creating new guest cart...");
-          await createGuestCart();
-          setLoading(false);
-          return;
-        }
+      const fetchedCart = await getCartByCustomerId(customerProfileId);
+      if (!fetchedCart) {
+        throw new Error("No active cart found for customer.");
       }
 
-      // Ensure fetchedCart contains the correct structure
-      if (fetchedCart && fetchedCart.cart && fetchedCart.items) {
-        // Set the cart items and ID
-        setCartItems(fetchedCart.items);
-        setCartId(fetchedCart.cart.cart_id);
-        calculateSubtotal(fetchedCart.items);
-      } else {
-        console.error("Invalid cart structure:", fetchedCart);
-        throw new Error("Failed to fetch valid cart.");
-      }
+      setCartId(fetchedCart.cart.cart_id);
+      setCartItems(fetchedCart.items);
+      calculateSubtotal(fetchedCart.items);
     } catch (error) {
-      console.error("Error fetching cart:", error);
-      toast.error("Failed to fetch cart.");
+      console.error("Error fetching customer cart:", error);
+      toast.error("Failed to fetch customer cart.");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    // Fetch cart only if the user is not logged in
-    if (!customerProfileId) {
-      fetchCart();
+    if (justLoggedIn && customerProfileId) {
+      console.log("Fetching customer cart after login and merge...");
+      fetchCustomerCart();
+      setJustLoggedIn(false); // Reset the flag after fetching
     }
-  }, [customerProfileId]);
+  }, [justLoggedIn, customerProfileId]);
 
   const addToCart = async (product) => {
     console.log("product: ", product);
     try {
       // Ensure a cart ID exists (either guest or user)
-      if (!cartId) {
-        await createGuestCart();
+      let currentCartId = cartId;
+      if (!currentCartId) {
+        const createdCart = await createGuestCart();
+        currentCartId = createdCart.cart_id; // Use the cart_id from the newly created cart
+        setCartId(currentCartId); // Update the state
       }
 
-      const newItem = await addCartItem(cartId, product.id, 1);
+      // Now, add the item to the cart using the confirmed cart ID
+      const newItem = await addCartItem(currentCartId, product.id, 1);
 
       setCartItems((prevItems) => {
         const existingItem = prevItems.find(
@@ -118,7 +100,7 @@ const CartProvider = ({ children }) => {
           );
         } else {
           // Add the new item to the cart
-          const newItem = {
+          const newCartItem = {
             id: product.id,
             name: product.name,
             value: product.value,
@@ -128,7 +110,7 @@ const CartProvider = ({ children }) => {
             item_total: product.price,
             variation_id: product.id,
           };
-          updatedCartItems = [...prevItems, newItem];
+          updatedCartItems = [...prevItems, newCartItem];
         }
 
         calculateSubtotal(updatedCartItems);
@@ -223,11 +205,18 @@ const CartProvider = ({ children }) => {
   };
 
   // Reset the cart on logout
-  const resetCart = () => {
+  const resetCart = async () => {
     setCartItems([]);
     setSubtotal(0);
     setCartId(null);
     sessionStorage.removeItem("guest_cart_id");
+
+    // Create a new guest cart after resetting
+    try {
+      await createGuestCart();
+    } catch (error) {
+      console.error("Error creating a new guest cart after logout:", error);
+    }
   };
 
   return (
@@ -250,7 +239,7 @@ const CartProvider = ({ children }) => {
           subtotal,
           loading,
           resetCart,
-          fetchCart,
+          fetchCustomerCart,
         }}
       >
         {!loading && children} {/* Render children only after loading */}

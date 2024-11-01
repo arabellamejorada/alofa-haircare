@@ -241,7 +241,7 @@ const AddNewProduct = () => {
                 placeholder="Product Name"
                 value={newProductFormData.product_name}
                 onChange={handleInputChange}
-                className={`rounded-2xl border h-10 pl-4 bg-white text-gray-500 focus:outline-none focus:border-pink-500 focus:bg-white w-full ${
+                className={`rounded-2xl border h-10 pl-4 bg-white text-gray-500 focus:outline-none focus:border-alofa-pink focus:bg-white w-full ${
                   newProductFormErrors.product_name
                     ? "border-red-500"
                     : "border-gray-300"
@@ -265,7 +265,7 @@ const AddNewProduct = () => {
                   name="product_category"
                   value={newProductFormData.product_category}
                   onChange={handleInputChange}
-                  className={`rounded-2xl border h-10 px-4 bg-white text-gray-500 focus:outline-none focus:border-pink-500 focus:bg-white w-full appearance-none ${
+                  className={`rounded-2xl border h-10 px-4 bg-white text-gray-500 focus:outline-none focus:border-alofa-pink focus:bg-white w-full appearance-none ${
                     newProductFormErrors.product_category
                       ? "border-red-500"
                       : "border-gray-300"
@@ -301,7 +301,7 @@ const AddNewProduct = () => {
                 placeholder="Product Description"
                 value={newProductFormData.product_description}
                 onChange={handleInputChange}
-                className={`rounded-2xl border p-4 bg-white text-gray-500 focus:outline-none focus:border-pink-500 focus:bg-white resize-y w-full h-24 ${
+                className={`rounded-2xl border p-4 bg-white text-gray-500 focus:outline-none focus:border-alofa-pink focus:bg-white resize-y w-full h-24 ${
                   newProductFormErrors.product_description
                     ? "border-red-500"
                     : "border-gray-300"
@@ -325,7 +325,7 @@ const AddNewProduct = () => {
                   name="product_status"
                   value={newProductFormData.product_status}
                   onChange={handleInputChange}
-                  className={`rounded-2xl border h-10 px-4 bg-white text-gray-500 focus:outline-none focus:border-pink-500 focus:bg-white w-full appearance-none ${
+                  className={`rounded-2xl border h-10 px-4 bg-white text-gray-500 focus:outline-none focus:border-alofa-pink focus:bg-white w-full appearance-none ${
                     newProductFormErrors.product_status
                       ? "border-red-500"
                       : "border-gray-300"
@@ -350,7 +350,7 @@ const AddNewProduct = () => {
             {/* Submit Button */}
             <button
               type="submit"
-              className="bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2 px-4 mt-4 rounded-lg shadow-md"
+              className="bg-alofa-pink hover:bg-alofa-dark text-white font-semibold py-2 px-4 mt-4 rounded-lg shadow-md"
             >
               SUBMIT
             </button>
@@ -365,7 +365,7 @@ const AddNewProduct = () => {
               </label>
               <div
                 className={`relative w-20 h-8 flex items-center rounded-full p-1 cursor-pointer ${
-                  hasVariations ? "bg-pink-500" : "bg-gray-500"
+                  hasVariations ? "bg-alofa-pink" : "bg-gray-500"
                 }`}
                 onClick={handleVariationsToggle}
               >

@@ -14,8 +14,8 @@ const AddProductsTab = () => {
           onClick={() => setFormType("newProduct")}
           className={`flex items-center gap-2 px-6 py-2 text-white rounded-lg font-semibold shadow-md transition-transform transform hover:scale-105 ${
             formType === "newProduct"
-              ? "bg-pink-600"
-              : "bg-pink-500 hover:bg-pink-600"
+              ? "bg-alofa-dark"
+              : "bg-alofa-pink hover:bg-alofa-dark"
           }`}
         >
           Add A New Product & Variations
@@ -26,8 +26,8 @@ const AddProductsTab = () => {
           onClick={() => setFormType("existingProduct")}
           className={`flex items-center gap-2 px-6 py-2 text-white rounded-lg font-semibold shadow-md transition-transform transform hover:scale-105 ${
             formType === "existingProduct"
-              ? "bg-pink-600"
-              : "bg-pink-500 hover:bg-pink-600"
+              ? "bg-alofa-dark"
+              : "bg-alofa-pink hover:bg-alofa-dark"
           }`}
         >
           Add Variations to an Existing Product

@@ -133,7 +133,7 @@ const StockInHistory = () => {
         <div className="flex flex-row items-center gap-2">
           <button onClick={() => navigate(-1)} aria-label="Go Back">
             <IoIosArrowBack
-              className="text-pink-500 hover:text-pink-600"
+              className="text-alofa-pink hover:text-alofa-dark"
               fontSize={40}
             />
           </button>
@@ -157,12 +157,12 @@ const StockInHistory = () => {
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="border border-gray-300 rounded-md h-8 p-2 bg-white focus:outline-none focus:ring-2 focus:ring-pink-500"
+              className="border border-gray-300 rounded-md h-8 p-2 bg-white focus:outline-none focus:ring-2 focus:ring-alofa-pink"
             />
             {selectedDate && (
               <button
                 onClick={() => setSelectedDate("")}
-                className="text-sm ml-2 text-pink-500 hover:text-pink-700"
+                className="text-sm ml-2 text-alofa-pink hover:text-alofa-dark"
               >
                 Clear
               </button>
@@ -182,7 +182,7 @@ const StockInHistory = () => {
                 id="supplier-filter"
                 value={selectedSupplier}
                 onChange={(e) => setSelectedSupplier(e.target.value)}
-                className="w-[10rem] h-8 px-2 appearance-none border rounded-md bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300"
+                className="w-[10rem] h-8 px-2 appearance-none border rounded-md bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300"
               >
                 <option value="">All Suppliers</option>
                 {supplierList.map((supplier, index) => (
@@ -196,7 +196,7 @@ const StockInHistory = () => {
             {selectedSupplier && (
               <button
                 onClick={() => setSelectedSupplier("")}
-                className="text-sm ml-2 text-pink-500 hover:text-pink-700"
+                className="text-sm ml-2 text-alofa-pink hover:text-alofa-dark"
               >
                 Clear
               </button>
@@ -217,12 +217,12 @@ const StockInHistory = () => {
               placeholder="Search here..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full max-w-md h-10 px-4 border rounded-xl bg-gray-50 border-slate-300 focus:outline-none focus:border-pink-400 focus:bg-white"
+              className="w-full max-w-md h-10 px-4 border rounded-xl bg-gray-50 border-slate-300 focus:outline-none focus:border-alofa-highlight focus:bg-white"
             />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm("")}
-                className="text-sm ml-2 text-pink-500 hover:text-pink-700 focus:outline-none"
+                className="text-sm ml-2 text-alofa-pink hover:text-alofa-dark focus:outline-none"
               >
                 Clear
               </button>

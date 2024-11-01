@@ -22,7 +22,7 @@ const StatusFilterDropdown = ({
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-[150px] h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-pink-500 hover:bg-white border-slate-300 text-slate-700 flex justify-between items-center"
+        className="w-[150px] h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700 flex justify-between items-center"
       >
         Statuses
         <IoMdArrowDropdown className="text-gray-500" />

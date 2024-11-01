@@ -279,7 +279,7 @@ const Suppliers = () => {
                   {search && (
                     <button
                       onClick={() => setSearch("")}
-                      className="ml-2 text-pink-500 hover:text-pink-700"
+                      className="ml-2 text-alofa-pink hover:text-alofa-dark"
                     >
                       Clear
                     </button>
@@ -301,7 +301,7 @@ const Suppliers = () => {
                   {selectedStatus && (
                     <button
                       onClick={() => setSelectedStatus("")}
-                      className="ml-2 text-pink-500 hover:text-pink-700"
+                      className="ml-2 text-alofa-pink hover:text-alofa-dark"
                     >
                       Clear
                     </button>
@@ -315,7 +315,7 @@ const Suppliers = () => {
                       type="checkbox"
                       checked={showArchived}
                       onChange={(e) => setShowArchived(e.target.checked)}
-                      className="h-5 w-5 accent-pink-500"
+                      className="h-5 w-5 accent-alofa-pink"
                     />
                     <label className="ml-2 font-semibold text-gray-700">
                       {showArchived ? "Hide Archived" : "Show Archived"}
@@ -326,7 +326,7 @@ const Suppliers = () => {
 
               <MdAddBox
                 fontSize={40}
-                className="text-gray-400 hover:text-pink-400 active:text-pink-500 cursor-pointer"
+                className="text-gray-400 hover:text-alofa-highlight active:text-alofa-pink cursor-pointer"
                 onClick={() => setIsModalVisible(true)}
               />
             </div>

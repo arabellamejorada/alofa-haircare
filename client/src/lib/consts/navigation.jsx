@@ -31,7 +31,7 @@ export const DASHBOARD_SIDEBAR_LINKS = [
 	}, */
 ];
 
-export const DASHBOARD_SIDEBAR_BOTTOM_LINKS = [
+/* export const DASHBOARD_SIDEBAR_BOTTOM_LINKS = [
   {
     key: "settings",
     label: "Settings",
@@ -44,7 +44,7 @@ export const DASHBOARD_SIDEBAR_BOTTOM_LINKS = [
     path: "/support",
     icon: <HiOutlineQuestionMarkCircle />,
   },
-];
+]; */
 
 export const PRODUCT_SIDEBAR_LINKS = [
   {
@@ -90,16 +90,15 @@ export const INVENTORY_SIDEBAR_LINKS = [
     path: "/stockout",
     icon: <FiTrendingDown />,
   },
+];
 
+export const EMPLOYEE_SIDEBAR_LINKS = [
   {
     key: "suppliers",
     label: "Suppliers",
     path: "/suppliers",
     icon: <LiaPeopleCarrySolid />,
   },
-];
-
-export const EMPLOYEE_SIDEBAR_LINKS = [
   {
     key: "employees",
     label: "Employees",
