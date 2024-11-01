@@ -120,13 +120,51 @@ const getCustomerById = async (req, res) => {
   }
 };
 
+
+// Get customer by profile ID
+const getCustomerByProfileId = async (req, res) => {
+  const profile_id = req.params.profile_id;
+console.log("profile_id", profile_id)
+  try {
+    const { data, error } = await supabase
+      .from("customer")
+      .select(
+        `
+        customer_id,
+        profiles (
+            id,
+            first_name,
+            last_name,
+            email,
+            contact_number,
+            role_id,
+            created_at,
+            updated_at
+        )
+      `
+      )
+      .eq("profile_id", profile_id)
+      .single();
+
+    if (error || !data) {
+      console.error("Error fetching customer by profile ID:", error);
+      return res.status(404).json({ message: "Customer not found" });
+    }
+
+    res.status(200).json(data);
+  } catch (error) {
+    console.error("Error fetching customer by profile ID:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
 // Update customer profile
 const updateCustomer = async (req, res) => {
   const customer_id = parseInt(req.params.id);
   const { first_name, last_name, email, contact_number, role_id } = req.body;
 
   try {
-    // Get the profile ID linked to the customer
+    // Step 1: Get the profile ID linked to the customer
     const { data: customerData, error: customerError } = await supabase
       .from("customer")
       .select("profile_id")
@@ -138,11 +176,12 @@ const updateCustomer = async (req, res) => {
       return res.status(404).json({ message: "Customer not found" });
     }
 
-    // Update the linked profile
+    // Step 2: Update the linked profile
     const { data, error } = await supabase
       .from("profiles")
       .update({ first_name, last_name, email, contact_number, role_id })
-      .eq("id", customerData.profile_id);
+      .eq("id", customerData.profile_id)
+      .select();
 
     if (error) {
       console.error("Error updating profile:", error);
@@ -151,12 +190,19 @@ const updateCustomer = async (req, res) => {
         .json({ message: "Error updating profile", error: error.message });
     }
 
+    // Step 3: Check if data is returned from the update query
+    if (!data || data.length === 0) {
+      return res.status(500).json({ message: "Failed to update profile" });
+    }
+
     res.status(200).json(data[0]);
   } catch (error) {
     console.error("Error updating customer:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+
 
 // Delete a customer and its associated profile
 const deleteCustomer = async (req, res) => {
@@ -220,6 +266,7 @@ module.exports = {
   createCustomer,
   getAllCustomers,
   getCustomerById,
+  getCustomerByProfileId,
   updateCustomer,
   deleteCustomer,
 };

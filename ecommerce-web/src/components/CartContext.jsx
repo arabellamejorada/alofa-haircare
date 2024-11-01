@@ -61,14 +61,12 @@ const CartProvider = ({ children }) => {
 
   useEffect(() => {
     if (justLoggedIn && customerProfileId) {
-      console.log("Fetching customer cart after login and merge...");
       fetchCustomerCart();
       setJustLoggedIn(false); // Reset the flag after fetching
     }
   }, [justLoggedIn, customerProfileId]);
 
   const addToCart = async (product) => {
-    console.log("product: ", product);
     try {
       // Ensure a cart ID exists (either guest or user)
       let currentCartId = cartId;
