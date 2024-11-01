@@ -101,6 +101,7 @@ const CartProvider = ({ children }) => {
         } else {
           // Add the new item to the cart
           const newCartItem = {
+            cart_item_id: newItem.cart_item_id, // Use the ID from the database
             id: product.id,
             name: product.name,
             value: product.value,

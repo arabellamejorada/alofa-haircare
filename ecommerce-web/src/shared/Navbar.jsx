@@ -59,7 +59,8 @@ const Navbar = () => {
       className={`${
         isCheckoutPage
           ? "w-full z-50 h-16 bg-checkout-gradient shadow-white-3"
-          : "fixed top-0 w-full z-50 h-16 bg-white shadow-md"}
+          : "fixed top-0 w-full z-50 h-16 bg-white shadow-md"
+      }
           `}
       style={
         isProfilePage
@@ -117,11 +118,11 @@ const Navbar = () => {
         {/* Right Section - Cart Icon (if on /checkout1) */}
         {isCheckoutPage && (
           <div className="flex items-center justify-start">
-          <Link to="/shoppingcart">
-            <div className="text-white p-3 rounded-full cursor-pointer">
-              <FaShoppingCart size={20} />
-            </div>
-          </Link>
+            <Link to="/shoppingcart">
+              <div className="text-white p-3 rounded-full cursor-pointer">
+                <FaShoppingCart size={20} />
+              </div>
+            </Link>
           </div>
         )}
 
@@ -197,23 +198,24 @@ const Navbar = () => {
       </nav>
 
       {/* Cart Sidebar */}
-      {!isAuthPage && !isCheckoutPage && (  
+      {!isAuthPage && !isCheckoutPage && (
         <div
           className={`fixed top-0 right-0 h-full w-80 bg-white shadow-lg z-40 transition-transform duration-300 ${
-          hovered ? "translate-x-0" : "translate-x-full"
+            hovered ? "translate-x-0" : "translate-x-full"
           }`}
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
-          >
-            <div className="p-4 h-full flex flex-col">
-              <h1 className="text-2xl gradient-heading font-bold mb-1">
-                  Cart Overview
-              </h1>
-              <div className="text-md text-gray-500 mb-4">
-                {cartItems.reduce((total, item) => total + item.quantity, 0)} items
-              </div>
+        >
+          <div className="p-4 h-full flex flex-col">
+            <h1 className="text-2xl gradient-heading font-bold mb-1">
+              Cart Overview
+            </h1>
+            <div className="text-md text-gray-500 mb-4">
+              {cartItems.reduce((total, item) => total + item.quantity, 0)}{" "}
+              items
+            </div>
 
-              <div className="flex-1 overflow-y-auto mb-4">
+            <div className="flex-1 overflow-y-auto mb-4">
               {cartItems && cartItems.length > 0 ? (
                 cartItems.map((item) => (
                   <div
@@ -271,12 +273,12 @@ const Navbar = () => {
                 <span>
                   ₱
                   {new Intl.NumberFormat("en-PH", {
-                      minimumFractionDigits: 2,
-                    }).format(subtotal)}
+                    minimumFractionDigits: 2,
+                  }).format(subtotal)}
                 </span>
               </div>
               <div className="flex justify-between font-light text-gray-500 italic text-sm mb-4">
-                      <span>Shipping & taxes calculated at checkout</span>
+                <span>Shipping & taxes calculated at checkout</span>
               </div>
             </div>
 
@@ -294,7 +296,7 @@ const Navbar = () => {
             </div>
           </div>
         </div>
-        )}
+      )}
     </header>
   );
 };
