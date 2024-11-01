@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { FaPlus } from 'react-icons/fa';
-import NewAddressModal from './customer-modals/NewAddressModal.jsx';
-import EditAddressModal from './customer-modals/EditAddressModal.jsx'; // Import the edit modal
+import { useState } from "react";
+import { FaPlus } from "react-icons/fa";
+import NewAddressModal from "./customer-modals/NewAddressModal.jsx";
+import EditAddressModal from "./customer-modals/EditAddressModal.jsx"; // Import the edit modal
 
 const AddressTab = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -10,25 +10,25 @@ const AddressTab = () => {
   const [addresses, setAddresses] = useState([
     {
       id: 1,
-      name: 'Arabella Mejorada',
-      phone: '(+63) 939 178 2108',
-      street: 'Purok Papaya',
-      barangay: 'Mankilam',
-      city: 'Tagum City',
-      province: 'Davao del Norte',
-      region: 'Region 11',
-      postalCode: '8100',
+      name: "Arabella Mejorada",
+      phone: "(+63) 939 178 2108",
+      street: "Purok Papaya",
+      barangay: "Mankilam",
+      city: "Tagum City",
+      province: "Davao del Norte",
+      region: "Region 11",
+      postalCode: "8100",
     },
     {
       id: 2,
-      name: 'Arabella Mejorada',
-      phone: '(+63) 939 178 2108',
-      street: 'Purok Papaya',
-      barangay: 'Mankilam',
-      city: 'Tagum City',
-      province: 'Davao del Norte',
-      region: 'Region 11',
-      postalCode: '8100',
+      name: "Arabella Mejorada",
+      phone: "(+63) 939 178 2108",
+      street: "Purok Papaya",
+      barangay: "Mankilam",
+      city: "Tagum City",
+      province: "Davao del Norte",
+      region: "Region 11",
+      postalCode: "8100",
     },
   ]);
 
@@ -67,8 +67,8 @@ const AddressTab = () => {
   const handleSaveEditedAddress = (updatedAddress) => {
     setAddresses((prevAddresses) =>
       prevAddresses.map((address) =>
-        address.id === updatedAddress.id ? updatedAddress : address
-      )
+        address.id === updatedAddress.id ? updatedAddress : address,
+      ),
     );
     setIsEditModalOpen(false);
   };
@@ -88,7 +88,9 @@ const AddressTab = () => {
           Add New Address
         </button>
       </div>
-      <p className="text-sm text-gray-500 mb-8">Last updated: 16 Oct 2024 22:54</p>
+      <p className="text-sm text-gray-500 mb-8">
+        Last updated: 16 Oct 2024 22:54
+      </p>
 
       {/* Address List */}
       <div className="space-y-4">
@@ -98,10 +100,15 @@ const AddressTab = () => {
             className="p-4 bg-white rounded-lg shadow border border-gray-200 flex justify-between items-start"
           >
             <div>
-              <h3 className="text-lg font-semibold text-gray-800">{address.name}</h3>
+              <h3 className="text-lg font-semibold text-gray-800">
+                {address.name}
+              </h3>
               <span className="text-gray-500">{address.phone}</span>
               <p className="text-sm text-gray-500">{address.street}</p>
-              <p className="text-sm text-gray-500">{address.barangay}, {address.city}, {address.province}, {address.region}, {address.postalCode}</p>
+              <p className="text-sm text-gray-500">
+                {address.barangay}, {address.city}, {address.province},{" "}
+                {address.region}, {address.postalCode}
+              </p>
             </div>
             <div className="flex space-x-4">
               <button
@@ -120,7 +127,12 @@ const AddressTab = () => {
       </div>
 
       {/* New Address Modal */}
-      {isModalOpen && <NewAddressModal onClose={handleCloseModal} onSave={handleSaveNewAddress} />}
+      {isModalOpen && (
+        <NewAddressModal
+          onClose={handleCloseModal}
+          onSave={handleSaveNewAddress}
+        />
+      )}
 
       {/* Edit Address Modal */}
       {isEditModalOpen && (
