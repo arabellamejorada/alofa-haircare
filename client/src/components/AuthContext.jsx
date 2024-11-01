@@ -13,6 +13,7 @@ export const AuthProvider = ({ children }) => {
   );
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
 
   // Function to check if the profile belongs to an employee or admin
   const fetchUserRole = async (userId) => {
@@ -61,40 +62,48 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  useEffect(() => {
-    const checkSession = async () => {
-      try {
-        setLoading(true);
-        const { data: sessionData, error: sessionError } =
-          await supabase.auth.getSession();
-        if (sessionError) throw sessionError;
+  const checkSession = async () => {
+    try {
+      setLoading(true);
+      const { data: sessionData, error: sessionError } =
+        await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
 
-        if (sessionData?.session) {
-          // Fetch user role and set token if valid
-          const userRole = await fetchUserRole(sessionData.session.user.id);
-          if (userRole === "employee" || userRole === "admin") {
-            setToken(sessionData.session.access_token);
-            localStorage.setItem(
-              "auth_token",
-              sessionData.session.access_token,
-            );
-          } else {
-            setToken(null);
-            localStorage.removeItem("auth_token");
-          }
+      if (sessionData?.session) {
+        // Fetch user role and set token if valid
+        const userRole = await fetchUserRole(sessionData.session.user.id);
+        if (userRole === "employee" || userRole === "admin") {
+          setToken(sessionData.session.access_token);
+          localStorage.setItem("auth_token", sessionData.session.access_token);
+
+          // Fetch and set the user details
+          const { data: userDetails } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", sessionData.session.user.id)
+            .single();
+          setUser(userDetails); // Set user data
         } else {
           setToken(null);
           localStorage.removeItem("auth_token");
         }
-      } catch (err) {
-        console.error("Error checking session:", err.message);
+      } else {
         setToken(null);
         localStorage.removeItem("auth_token");
-      } finally {
-        setLoading(false);
       }
-    };
 
+      console.log("Session checked successfully.");
+      console.log("user details:", user);
+    } catch (err) {
+      console.error("Error checking session:", err.message);
+      setToken(null);
+      localStorage.removeItem("auth_token");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     checkSession();
   }, []);
 
@@ -119,12 +128,18 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem("auth_token");
         throw new Error("Access denied. Only employees and admins can log in.");
       }
+
+      await checkSession();
+      console.log("User signed in successfully.");
+      console.log("User role:", userRole);
+      console.log("User data:", data.user);
     } catch (err) {
       console.error("Error during sign-in:", err.message);
 
       // Reset token and role on error
       setToken(null);
       setRole(null);
+      setUser(null);
       localStorage.removeItem("auth_token");
 
       throw err;
@@ -138,7 +153,9 @@ export const AuthProvider = ({ children }) => {
 
       setToken(null);
       setRole(null);
+      setUser(null);
       localStorage.removeItem("auth_token");
+      console.log("User signed out successfully.");
     } catch (err) {
       console.error("Error during sign-out:", err.message);
       throw err;
@@ -146,7 +163,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ token, role, signIn, signOut, loading }}>
+    <AuthContext.Provider
+      value={{ token, role, user, signIn, signOut, loading }}
+    >
       {!loading && children}
     </AuthContext.Provider>
   );
