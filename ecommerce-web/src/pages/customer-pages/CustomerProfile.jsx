@@ -20,6 +20,7 @@ const CustomerProfile = () => {
   const [loading, setLoading] = useState(true);
 
   const [isAccountOpen, setIsAccountOpen] = useState(true);
+
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -51,7 +52,6 @@ const CustomerProfile = () => {
     }
   }, [location.pathname]);
 
-  // Handler for opening "My Account" and automatically navigating to "Profile"
   const handleAccountClick = () => {
     if (!isAccountOpen) {
       setIsAccountOpen(true);

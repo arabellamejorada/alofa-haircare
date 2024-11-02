@@ -102,6 +102,7 @@ const ProfileContent = ({ profileData }) => {
     }
   };
 
+  // Toggle password visibility
   const handlePasswordToggle = () => {
     setShowPassword((prev) => !prev);
   };
@@ -292,12 +293,16 @@ const ProfileContent = ({ profileData }) => {
 
 ProfileContent.propTypes = {
   profileData: PropTypes.shape({
-    firstName: PropTypes.string,
-    lastName: PropTypes.string,
-    email: PropTypes.string,
-    contact_number: PropTypes.string,
-    role_id: PropTypes.number,
-  }),
+    profiles: PropTypes.shape({
+      first_name: PropTypes.string,
+      last_name: PropTypes.string,
+      email: PropTypes.string,
+      contact_number: PropTypes.string,
+      role_id: PropTypes.number,
+    }).isRequired, 
+    updated_at: PropTypes.string, 
+    customer_id: PropTypes.string,
+  }).isRequired,
 };
 
 export default ProfileContent;

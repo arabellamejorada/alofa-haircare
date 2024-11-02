@@ -15,7 +15,7 @@ import Products from "./pages/Products.jsx";
 import FAQs from "./pages/FAQs.jsx";
 import ShoppingCart from "./pages/ShoppingCart.jsx";
 import CartItem from "./components/CartItem.jsx";
-import Checkout from "./pages/Checkout.jsx";
+import Checkout from "./pages/checkout-pages/Checkout.jsx";
 import Login from "./pages/Login.jsx";
 import SignUp from "./pages/SignUp.jsx";
 import Profile from "./pages/customer-pages/CustomerProfile.jsx";
@@ -25,7 +25,7 @@ import { Toaster } from "sonner";
 
 const AppContent = () => {
   // const location = useLocation();
-  const { user, loading, setToken } = useContext(AuthContext);
+  const { loading, setToken } = useContext(AuthContext);
 
   // Show loading screen while verifying session
   if (loading) {
