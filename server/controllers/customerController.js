@@ -262,6 +262,140 @@ const deleteCustomer = async (req, res) => {
   }
 };
 
+
+const createShippingAddress = async (req, res) => {
+  const { customer_id, first_name, last_name, phone_number, address_line, barangay, city, province, region, zip_code } = req.body;
+
+  try {
+    // Insert into addresses table
+    const { data, error } = await supabase
+      .from("shipping_address")
+      .insert([{ customer_id, first_name, last_name, phone_number, address_line, barangay, city, province, region, zip_code }])
+      .select();
+
+    if (error) {
+      console.error("Error creating shipping address:", error);
+      return res
+        .status(400)
+        .json({
+          message: "Error creating address",
+          error: error.message,
+        });
+    }
+
+    res.status(201).json(data[0]);
+  } catch (error) {
+    console.error("Error creating address:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+const getShippingAddressByCustomerId = async (req, res) => {
+  const customer_id = req.params.customer_id;
+
+  console.log("customer_id", customer_id);
+  try {
+    const { data, error } = await supabase
+      .from("shipping_address")
+      .select()
+      .eq("customer_id", customer_id)
+      .order("shipping_address_id", { ascending: true });
+
+    if (error) {
+      console.error("Error fetching addresses:", error);
+      return res
+        .status(500)
+        .json({
+          message: "Error fetching addresses",
+          error: error.message,
+        });
+    }
+
+  
+
+    res.status(200).json(data);
+  } catch (error) {
+    console.error("Error fetching addresses:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+const updateShippingAddress = async (req, res) => {
+  const shipping_address_id = parseInt(req.params.id);
+  const { first_name, last_name, phone_number, address_line, barangay, city, province, region, zip_code } = req.body;
+
+  console.log("shipping_address_id", shipping_address_id);
+  console.log({ first_name
+  }, {
+    last_name
+  }, {
+    phone_number
+  }, {
+    address_line
+  }, {
+    barangay
+  }, {
+    city
+  }, {
+    province
+  }, {
+    region
+  },  {
+    zip_code
+  });
+  try {
+    const { data, error } = await supabase
+      .from("shipping_address")
+      .update({ first_name, last_name, phone_number, address_line, barangay, city, province, region, zip_code })
+      .eq("shipping_address_id", shipping_address_id)
+      .select();
+
+    if (error) {
+      console.error("Error updating address:", error);
+      return res
+        .status(400)
+        .json({ message: "Error updating address", error: error.message });
+    }
+
+    if (!data || data.length === 0) {
+      return res.status(500).json({ message: "Failed to update address" });
+    }
+
+    res.status(200).json(data[0]);
+  } catch (error) {
+    console.error("Error updating address:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+const deleteShippingAddress = async (req, res) => {
+  const shipping_address_id = parseInt(req.params.id);
+
+  try {
+    const { error } = await supabase
+      .from("shipping_address")
+      .delete()
+      .eq("shipping_address_id", shipping_address_id);
+
+    if (error) {
+      console.error("Error deleting address:", error);
+      return res
+        .status(500)
+        .json({
+          message: "Error deleting address",
+          error: error.message,
+        });
+    }
+
+    res
+      .status(200)
+      .json({ message: `Address deleted with ID: ${shipping_address_id}` });
+  } catch (error) {
+    console.error("Error deleting address:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
 module.exports = {
   createCustomer,
   getAllCustomers,
@@ -269,4 +403,8 @@ module.exports = {
   getCustomerByProfileId,
   updateCustomer,
   deleteCustomer,
+  createShippingAddress,
+  getShippingAddressByCustomerId,
+  updateShippingAddress,
+  deleteShippingAddress,
 };
