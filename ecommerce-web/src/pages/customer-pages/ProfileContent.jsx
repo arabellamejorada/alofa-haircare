@@ -299,10 +299,10 @@ ProfileContent.propTypes = {
       email: PropTypes.string,
       contact_number: PropTypes.string,
       role_id: PropTypes.number,
-    }).isRequired, 
+    }), 
     updated_at: PropTypes.string, 
     customer_id: PropTypes.string,
-  }).isRequired,
+  }),
 };
 
 export default ProfileContent;

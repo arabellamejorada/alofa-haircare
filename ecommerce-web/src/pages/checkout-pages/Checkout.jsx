@@ -1,4 +1,5 @@
 import { useContext, useState, useEffect, useCallback, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { CartContext } from "../../components/CartContext.jsx";
 import CheckoutAddressModal from './CheckoutAddressModal.jsx';
 import GCashLogo from "../../../../public/static/gcash-logo.svg";
@@ -21,6 +22,8 @@ const Checkout = () => {
     phoneNumber: "",
     paymentMethod: "",
   });
+
+  const navigate = useNavigate();
 
   // State for Regions, Provinces, Cities, and Barangays
   const [regions, setRegions] = useState([]);
@@ -160,7 +163,19 @@ const Checkout = () => {
   };
 
   const handleCompleteOrder = () => {
-    console.log("Order completed", formDetails, cartItems);
+    if (!formDetails.firstName || !formDetails.lastName || !formDetails.email || !formDetails.phoneNumber || !formDetails.paymentMethod) {
+      alert("Please fill in all the required fields before completing the order.");
+      return;
+    }
+
+    navigate('/order-confirmed', {
+      state: {
+        formDetails,
+        cartItems,
+        subtotal,
+        paymentMethod: formDetails.paymentMethod,
+      }
+    });
   };
 
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
@@ -193,6 +208,8 @@ const Checkout = () => {
             <input
               type="text"
               name="email"
+              value={formDetails.email}
+              onChange={handleInputChange}
               className="block w-full px-3 pb-2 pt-4 text-base 
               text-gray-900 bg-transparent rounded-lg border 
               border-gray-300 appearance-none focus:outline-none 
@@ -267,6 +284,7 @@ const Checkout = () => {
               <input
                 type="text"
                 id="lastName"
+                name="lastName"
                 value={formDetails.lastName}
                 onChange={handleInputChange}
                 className="block w-full px-3 pb-2 pt-4 text-base 
@@ -559,13 +577,14 @@ const Checkout = () => {
               </div>
             </div>
           </div>
-
+          
           <button
             onClick={handleCompleteOrder}
             className="font-extrabold text-white py-2 px-4 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]"
           >
             COMPLETE ORDER
           </button>
+          
         </div>
 
         {/* Order Summary Section */}

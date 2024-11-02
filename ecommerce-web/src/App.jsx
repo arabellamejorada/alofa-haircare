@@ -9,6 +9,7 @@ import PropTypes from "prop-types";
 import { useContext } from "react";
 import { CartProvider } from "./components/CartContext";
 import { AuthProvider, AuthContext } from "./components/AuthContext.jsx"; // Import AuthProvider
+import './App.css';
 import Navbar from "./shared/Navbar.jsx";
 import Home from "./pages/Home.jsx";
 import Products from "./pages/Products.jsx";
@@ -19,6 +20,7 @@ import Checkout from "./pages/checkout-pages/Checkout.jsx";
 import Login from "./pages/Login.jsx";
 import SignUp from "./pages/SignUp.jsx";
 import Profile from "./pages/customer-pages/CustomerProfile.jsx";
+import OrderConfirmation from "./pages/checkout-pages/OrderConfirmation.jsx";
 
 import "./App.css";
 import { Toaster } from "sonner";
@@ -53,6 +55,7 @@ const AppContent = () => {
             </PrivateRoute>
           }
         />
+        <Route path="/order-confirmed" element={<OrderConfirmation />} />
       </Routes>
     </>
   );
