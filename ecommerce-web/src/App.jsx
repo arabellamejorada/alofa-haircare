@@ -20,18 +20,17 @@ import Login from "./pages/Login.jsx";
 import SignUp from "./pages/SignUp.jsx";
 import Profile from "./pages/customer-pages/CustomerProfile.jsx";
 
-import './App.css';
-import { Toaster } from 'sonner';
+import "./App.css";
+import { Toaster } from "sonner";
 
 const AppContent = () => {
   // const location = useLocation();
-  const { token, loading, setToken } = useContext(AuthContext);
+  const { user, loading, setToken } = useContext(AuthContext);
 
   // Show loading screen while verifying session
   if (loading) {
     return <div className="loading-screen">Loading...</div>;
   }
-
 
   return (
     <>
@@ -49,7 +48,7 @@ const AppContent = () => {
         <Route
           path="/profile/*"
           element={
-            <PrivateRoute token={token}>
+            <PrivateRoute>
               <Profile />
             </PrivateRoute>
           }
@@ -60,12 +59,12 @@ const AppContent = () => {
 };
 
 // PrivateRoute Component to restrict access to authenticated users
-const PrivateRoute = ({ token, children }) => {
-  return token ? children : <Navigate to="/login" />;
+const PrivateRoute = ({ children }) => {
+  const { user } = useContext(AuthContext);
+  return user ? children : <Navigate to="/login" />;
 };
 
 PrivateRoute.propTypes = {
-  token: PropTypes.string.isRequired,
   children: PropTypes.node.isRequired,
 };
 

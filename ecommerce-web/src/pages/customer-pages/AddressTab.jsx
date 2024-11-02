@@ -1,36 +1,55 @@
-import { useState } from 'react';
-import { FaPlus } from 'react-icons/fa';
-import NewAddressModal from './customer-modals/NewAddressModal.jsx';
-import EditAddressModal from './customer-modals/EditAddressModal.jsx'; // Import the edit modal
+import { useState, useEffect } from "react";
+import { FaPlus } from "react-icons/fa";
+import NewAddressModal from "./customer-modals/NewAddressModal.jsx";
+import EditAddressModal from "./customer-modals/EditAddressModal.jsx"; // Import the edit modal
+import {
+  createShippingAddress,
+  getShippingAddressesByCustomerId,
+  updateShippingAddress,
+  deleteShippingAddress,
+} from "../../api/customer.js";
 
-const AddressTab = () => {
+const AddressTab = ({ profileData }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [addresses, setAddresses] = useState([
     {
-      id: 1,
-      name: 'Arabella Mejorada',
-      phone: '(+63) 939 178 2108',
-      street: 'Purok Papaya',
-      barangay: 'Mankilam',
-      city: 'Tagum City',
-      province: 'Davao del Norte',
-      region: 'Region 11',
-      postalCode: '8100',
-    },
-    {
-      id: 2,
-      name: 'Arabella Mejorada',
-      phone: '(+63) 939 178 2108',
-      street: 'Purok Papaya',
-      barangay: 'Mankilam',
-      city: 'Tagum City',
-      province: 'Davao del Norte',
-      region: 'Region 11',
-      postalCode: '8100',
+      shipping_address_id: "",
+      first_name: "",
+      last_name: "",
+      address_line: "",
+      region: "",
+      province: "",
+      city: "",
+      barangay: "",
+      phone_number: "",
+      zip_code: "",
     },
   ]);
+
+  useEffect(() => {
+    const fetchAddresses = async () => {
+      try {
+        const addresses = await getShippingAddressesByCustomerId(
+          profileData.customer_id,
+        );
+        if (addresses.message === "No addresses found for this customer.") {
+          setAddresses([]); // Set empty array to show "No addresses found" message
+        } else {
+          setAddresses(addresses);
+        }
+      } catch (error) {
+        if (error.response && error.response.status === 404) {
+          setAddresses([]);
+          console.log("No addresses found for this customer.");
+        } else {
+          console.error("Error fetching addresses:", error);
+        }
+      }
+    };
+    fetchAddresses();
+  }, []);
 
   // Function to open the new address modal
   const handleAddNewAddress = () => {
@@ -43,12 +62,18 @@ const AddressTab = () => {
   };
 
   // Function to add a new address
-  const handleSaveNewAddress = (newAddress) => {
-    setAddresses((prevAddresses) => [
-      ...prevAddresses,
-      { ...newAddress, id: prevAddresses.length + 1 }, // Assign a new ID
-    ]);
-    setIsModalOpen(false);
+  const handleSaveNewAddress = async (newAddress) => {
+    try {
+      console.log("Saving new address:", newAddress);
+      newAddress.customer_id = profileData.customer_id;
+      const savedAddress = await createShippingAddress(newAddress);
+      setAddresses((prevAddresses) => [...prevAddresses, savedAddress]);
+      setIsModalOpen(false);
+      console.log("New address added:", savedAddress);
+    } catch (error) {
+      console.error("Error saving new address:", error);
+      alert("Failed to save address. Please try again.");
+    }
   };
 
   // Function to open the edit address modal
@@ -64,13 +89,41 @@ const AddressTab = () => {
   };
 
   // Function to save the edited address
-  const handleSaveEditedAddress = (updatedAddress) => {
-    setAddresses((prevAddresses) =>
-      prevAddresses.map((address) =>
-        address.id === updatedAddress.id ? updatedAddress : address
-      )
-    );
-    setIsEditModalOpen(false);
+  const handleSaveEditedAddress = async (updatedAddress) => {
+    try {
+      console.log("Saving edited address:", updatedAddress);
+      console.log("Address ID:", updatedAddress.shipping_address_id);
+      const savedAddress = await updateShippingAddress(
+        updatedAddress.shipping_address_id,
+        updatedAddress,
+      );
+
+      setAddresses((prevAddresses) =>
+        prevAddresses.map((address) =>
+          address.shipping_address_id === savedAddress.shipping_address_id
+            ? savedAddress
+            : address,
+        ),
+      );
+      setIsEditModalOpen(false);
+    } catch (error) {
+      console.error("Error updating address:", error);
+    }
+  };
+
+  // Function to delete an address
+  const handleDeleteAddress = async (addressId) => {
+    try {
+      await deleteShippingAddress(addressId);
+      setAddresses((prevAddresses) =>
+        prevAddresses.filter(
+          (address) => address.shipping_address_id !== addressId,
+        ),
+      );
+      console.log(`Address with ID ${addressId} deleted.`);
+    } catch (error) {
+      console.error("Error deleting address:", error);
+    }
   };
 
   return (
@@ -88,39 +141,63 @@ const AddressTab = () => {
           Add New Address
         </button>
       </div>
-      <p className="text-sm text-gray-500 mb-8">Last updated: 16 Oct 2024 22:54</p>
+      <p className="text-sm text-gray-500 mb-8">
+        Last updated: 16 Oct 2024 22:54
+      </p>
 
       {/* Address List */}
       <div className="space-y-4">
-        {addresses.map((address) => (
-          <div
-            key={address.id}
-            className="p-4 bg-white rounded-lg shadow border border-gray-200 flex justify-between items-start"
-          >
-            <div>
-              <h3 className="text-lg font-semibold text-gray-800">{address.name}</h3>
-              <span className="text-gray-500">{address.phone}</span>
-              <p className="text-sm text-gray-500">{address.street}</p>
-              <p className="text-sm text-gray-500">{address.barangay}, {address.city}, {address.province}, {address.region}, {address.postalCode}</p>
+        {addresses.length === 0 ? (
+          <p className="text-gray-500">
+            No addresses found. Click "Add New Address" to add one.
+          </p>
+        ) : (
+          addresses.map((address) => (
+            <div
+              key={address.shipping_address_id}
+              className="p-4 bg-white rounded-lg shadow border border-gray-200 flex justify-between items-start"
+            >
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800">
+                  {address.first_name} {address.last_name}
+                </h3>
+                <span className="text-gray-500">{address.phone_number}</span>
+                <p className="text-sm text-gray-500">{address.address_line}</p>
+                <p className="text-sm text-gray-500">
+                  {address.barangay}, {address.city}, {address.province},{" "}
+                  {address.region}, {address.zip_code}
+                </p>
+              </div>
+              <div className="flex space-x-4">
+                <button
+                  type="button"
+                  onClick={() => handleOpenEditModal(address)}
+                  className="text-sm text-pink-500 hover:underline focus:outline-none"
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleDeleteAddress(address.shipping_address_id)
+                  }
+                  className="text-sm text-pink-500 hover:underline focus:outline-none"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
-            <div className="flex space-x-4">
-              <button
-                type="button"
-                onClick={() => handleOpenEditModal(address)}
-                className="text-sm text-pink-500 hover:underline focus:outline-none"
-              >
-                Edit
-              </button>
-              <button className="text-sm text-pink-500 hover:underline focus:outline-none">
-                Delete
-              </button>
-            </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
 
       {/* New Address Modal */}
-      {isModalOpen && <NewAddressModal onClose={handleCloseModal} onSave={handleSaveNewAddress} />}
+      {isModalOpen && (
+        <NewAddressModal
+          onClose={handleCloseModal}
+          onSave={handleSaveNewAddress}
+        />
+      )}
 
       {/* Edit Address Modal */}
       {isEditModalOpen && (

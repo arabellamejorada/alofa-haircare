@@ -40,7 +40,6 @@ const Login = () => {
 
       // Step 2: Merge guest cart with logged-in cart if a guest cart exists
       if (cartId) {
-        console.log("Merging carts:", cartId, customerProfileId);
         await mergeCarts(cartId, customerProfileId);
         console.log("Cart merged successfully.");
         sessionStorage.removeItem("guest_cart_id");

@@ -61,14 +61,12 @@ const CartProvider = ({ children }) => {
 
   useEffect(() => {
     if (justLoggedIn && customerProfileId) {
-      console.log("Fetching customer cart after login and merge...");
       fetchCustomerCart();
       setJustLoggedIn(false); // Reset the flag after fetching
     }
   }, [justLoggedIn, customerProfileId]);
 
   const addToCart = async (product) => {
-    console.log("product: ", product);
     try {
       // Ensure a cart ID exists (either guest or user)
       let currentCartId = cartId;
@@ -101,6 +99,7 @@ const CartProvider = ({ children }) => {
         } else {
           // Add the new item to the cart
           const newCartItem = {
+            cart_item_id: newItem.cart_item_id, // Use the ID from the database
             id: product.id,
             name: product.name,
             value: product.value,

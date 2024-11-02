@@ -1,11 +1,21 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import axios from 'axios';
-import PropTypes from 'prop-types';
+import { useState, useEffect, useCallback, useMemo } from "react";
+import axios from "axios";
+import PropTypes from "prop-types";
 import "../../../../src/App.css";
 
 const EditAddressModal = ({ address, onClose, onSave }) => {
-  // State to hold form values
-  const [formDetails, setFormDetails] = useState({ ...address });
+  const [formDetails, setFormDetails] = useState({
+    shipping_address_id: "",
+    first_name: "",
+    last_name: "",
+    address_line: "",
+    region: "",
+    province: "",
+    city: "",
+    barangay: "",
+    phone_number: "",
+    zip_code: "",
+  });
 
   // State to store fetched data
   const [regions, setRegions] = useState([]);
@@ -14,61 +24,56 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
   const [barangays, setBarangays] = useState([]);
 
   // Mapping of region names to codes
-  const regionMapping = useMemo(() => ({
-    "Ilocos Region": "Region 1",
-    "Cagayan Valley": "Region 2",
-    "Central Luzon": "Region 3",
-    "CALABARZON": "Region 4-A",
-    "MIMAROPA Region": "Region 4-B",
-    "Bicol Region": "Region 5",
-    "Western Visayas": "Region 6",
-    "Central Visayas": "Region 7",
-    "Eastern Visayas": "Region 8",
-    "Zamboanga Peninsula": "Region 9",
-    "Northern Mindanao": "Region 10",
-    "Davao Region": "Region 11",
-    "SOCCSKSARGEN": "Region 12",
-    "Caraga": "Region 13",
-    "National Capital Region (NCR)": "NCR",
-    "Cordillera Administrative Region (CAR)": "CAR",
-    "Bangsamoro Autonomous Region in Muslim Mindanao (BARMM)": "BARMM"
-  }), []);
+  const regionMapping = useMemo(
+    () => ({
+      "Ilocos Region": "Region 1",
+      "Cagayan Valley": "Region 2",
+      "Central Luzon": "Region 3",
+      CALABARZON: "Region 4-A",
+      "MIMAROPA Region": "Region 4-B",
+      "Bicol Region": "Region 5",
+      "Western Visayas": "Region 6",
+      "Central Visayas": "Region 7",
+      "Eastern Visayas": "Region 8",
+      "Zamboanga Peninsula": "Region 9",
+      "Northern Mindanao": "Region 10",
+      "Davao Region": "Region 11",
+      SOCCSKSARGEN: "Region 12",
+      Caraga: "Region 13",
+      "National Capital Region (NCR)": "NCR",
+      "Cordillera Administrative Region (CAR)": "CAR",
+      "Bangsamoro Autonomous Region in Muslim Mindanao (BARMM)": "BARMM",
+    }),
+    [],
+  );
 
   // Fetch regions data
   const fetchRegions = useCallback(async () => {
     try {
-      const response = await axios.get('https://psgc.gitlab.io/api/regions/');
+      const response = await axios.get("https://psgc.gitlab.io/api/regions/");
       const mappedRegions = response.data.map((region) => ({
         ...region,
         name: regionMapping[region.name] || region.name,
       }));
       setRegions(mappedRegions);
     } catch (error) {
-      console.error('Error fetching regions:', error);
+      console.error("Error fetching regions:", error);
     }
   }, [regionMapping]);
-
-  // Fetch regions, provinces, cities, and barangays when modal is open
-  useEffect(() => {
-    fetchRegions();
-    if (address.region) fetchProvinces(address.region);
-    if (address.province) fetchCities(address.province);
-    if (address.city) fetchBarangays(address.city);
-  }, [address, fetchRegions]);
 
   // Fetch provinces data based on region code
   const fetchProvinces = async (regionCode) => {
     if (!regionCode) return;
     try {
-      const response = await axios.get('https://psgc.gitlab.io/api/provinces/');
+      const response = await axios.get("https://psgc.gitlab.io/api/provinces/");
       const filteredProvinces = response.data.filter(
-        (province) => province.regionCode === regionCode
+        (province) => province.regionCode === regionCode,
       );
       setProvinces(filteredProvinces);
       setCities([]);
       setBarangays([]);
     } catch (error) {
-      console.error('Error fetching provinces:', error);
+      console.error("Error fetching provinces:", error);
     }
   };
 
@@ -76,14 +81,16 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
   const fetchCities = async (provinceCode) => {
     if (!provinceCode) return;
     try {
-      const response = await axios.get('https://psgc.gitlab.io/api/cities-municipalities/');
+      const response = await axios.get(
+        "https://psgc.gitlab.io/api/cities-municipalities/",
+      );
       const filteredCities = response.data.filter(
-        (city) => city.provinceCode === provinceCode
+        (city) => city.provinceCode === provinceCode,
       );
       setCities(filteredCities);
       setBarangays([]);
     } catch (error) {
-      console.error('Error fetching cities:', error);
+      console.error("Error fetching cities:", error);
     }
   };
 
@@ -91,15 +98,46 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
   const fetchBarangays = async (cityCode) => {
     if (!cityCode) return;
     try {
-      const response = await axios.get('https://psgc.gitlab.io/api/barangays/');
+      const response = await axios.get("https://psgc.gitlab.io/api/barangays/");
       const filteredBarangays = response.data.filter(
-        (barangay) => barangay.cityCode === cityCode
+        (barangay) => barangay.cityCode === cityCode,
       );
       setBarangays(filteredBarangays);
     } catch (error) {
-      console.error('Error fetching barangays:', error);
+      console.error("Error fetching barangays:", error);
     }
   };
+  // Initialize formDetails and load dependencies
+  useEffect(() => {
+    if (address) {
+      setFormDetails({
+        shipping_address_id: address.shipping_address_id || "",
+        first_name: address.first_name || "",
+        last_name: address.last_name || "",
+        address_line: address.address_line || "",
+        region: address.region || "",
+        province: address.province || "",
+        city: address.city || "",
+        barangay: address.barangay || "",
+        phone_number: address.phone_number || "",
+        zip_code: address.zip_code || "",
+      });
+      fetchRegions(); // Load regions on component mount
+    }
+  }, [address, fetchRegions]);
+
+  // Handle cascading dropdowns based on selection
+  useEffect(() => {
+    if (formDetails.region) fetchProvinces(formDetails.region);
+  }, [formDetails.region]);
+
+  useEffect(() => {
+    if (formDetails.province) fetchCities(formDetails.province);
+  }, [formDetails.province]);
+
+  useEffect(() => {
+    if (formDetails.city) fetchBarangays(formDetails.city);
+  }, [formDetails.city]);
 
   // Handle input changes
   const handleInputChange = async (e) => {
@@ -108,30 +146,75 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
     setFormDetails((prevFormDetails) => {
       let updatedData = { ...prevFormDetails, [name]: value };
 
-      if (name === 'region') {
-        updatedData = { ...updatedData, province: '', city: '', barangay: '' };
-      } else if (name === 'province') {
-        updatedData = { ...updatedData, city: '', barangay: '' };
-      } else if (name === 'city') {
-        updatedData = { ...updatedData, barangay: '' };
+      if (name === "region") {
+        updatedData = { ...updatedData, province: "", city: "", barangay: "" };
+      } else if (name === "province") {
+        updatedData = { ...updatedData, city: "", barangay: "" };
+      } else if (name === "city") {
+        updatedData = { ...updatedData, barangay: "" };
       }
 
       return updatedData;
     });
 
-    if (name === 'region') {
+    // Fetch dependent data based on selection
+    if (name === "region") {
       await fetchProvinces(value);
-    } else if (name === 'province') {
+    } else if (name === "province") {
       await fetchCities(value);
-    } else if (name === 'city') {
+    } else if (name === "city") {
       await fetchBarangays(value);
     }
   };
 
-  // Handle save changes and pass updated address back to parent component
+  // Handle save changes
   const handleSaveChanges = () => {
-    onSave(formDetails);
-    onClose(); // Close the modal after saving changes
+    // Validate required fields
+    const {
+      first_name,
+      last_name,
+      address_line,
+      region,
+      province,
+      city,
+      barangay,
+      phone_number,
+      zip_code,
+    } = formDetails;
+    if (
+      !first_name ||
+      !last_name ||
+      !address_line ||
+      !region ||
+      !province ||
+      !city ||
+      !barangay ||
+      !phone_number ||
+      !zip_code
+    ) {
+      alert("Please fill in all fields.");
+      return;
+    }
+
+    // Retrieve selected options
+    const selectedRegion = regions.find((r) => r.code === formDetails.region);
+    const selectedProvince = provinces.find(
+      (p) => p.code === formDetails.province,
+    );
+    const selectedCity = cities.find((c) => c.code === formDetails.city);
+    const selectedBarangay = barangays.find(
+      (b) => b.code === formDetails.barangay,
+    );
+
+    // Call onSave with updated address details
+    onSave({
+      ...formDetails,
+      region: selectedRegion ? selectedRegion.name : "",
+      province: selectedProvince ? selectedProvince.name : "",
+      city: selectedCity ? selectedCity.name : "",
+      barangay: selectedBarangay ? selectedBarangay.name : "",
+    });
+    onClose();
   };
 
   return (
@@ -143,14 +226,16 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
         >
           &times;
         </button>
-        <h2 className="text-3xl font-bold mb-6 text-alofa-pink">Edit Address</h2>
+        <h2 className="text-3xl font-bold mb-6 text-alofa-pink">
+          Edit Address
+        </h2>
         <form>
           <div className="flex gap-3 mb-4">
             <div className="relative w-full">
               <input
                 type="text"
-                name="firstName"
-                value={formDetails.firstName}
+                name="first_name"
+                value={formDetails.first_name}
                 onChange={handleInputChange}
                 className="block w-full px-3 pb-2 pt-4 text-base 
                   text-gray-900 bg-transparent rounded-lg border 
@@ -159,7 +244,7 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
                 placeholder=" "
               />
               <label
-                htmlFor="firstName"
+                htmlFor="first_name"
                 className="absolute text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] 
                 start-2.5 peer-focus:text-alofa-pink peer-placeholder-shown:scale-100 
                 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4"
@@ -171,8 +256,8 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
             <div className="relative w-full">
               <input
                 type="text"
-                name="lastName"
-                value={formDetails.lastName}
+                name="last_name"
+                value={formDetails.last_name}
                 onChange={handleInputChange}
                 className="block w-full px-3 pb-2 pt-4 text-base 
                   text-gray-900 bg-transparent rounded-lg border 
@@ -181,7 +266,7 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
                 placeholder=" "
               />
               <label
-                htmlFor="lastName"
+                htmlFor="last_name"
                 className="absolute text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] 
                 start-2.5 peer-focus:text-alofa-pink peer-placeholder-shown:scale-100 
                 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4"
@@ -194,8 +279,8 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
           <div className="relative mb-4">
             <input
               type="text"
-              name="street"
-              value={formDetails.street}
+              name="address_line"
+              value={formDetails.address_line}
               onChange={handleInputChange}
               className="block w-full px-3 pb-2 pt-4 text-base 
                 text-gray-900 bg-transparent rounded-lg border 
@@ -204,7 +289,7 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
               placeholder=" "
             />
             <label
-              htmlFor="street"
+              htmlFor="address_line"
               className="absolute text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] 
               start-2.5 peer-focus:text-alofa-pink peer-placeholder-shown:scale-100 
               peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4"
@@ -223,7 +308,9 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
                 border-gray-300 appearance-none focus:outline-none 
                 focus:ring-0 focus:border-alofa-pink peer"
             >
-              <option value="" disabled>Select Region</option>
+              <option value="" disabled>
+                Select Region
+              </option>
               {regions.map((region) => (
                 <option key={region.code} value={region.code}>
                   {region.name}
@@ -327,8 +414,8 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
           <div className="relative mb-10">
             <input
               type="tel"
-              name="phoneNumber"
-              value={formDetails.phoneNumber}
+              name="phone_number"
+              value={formDetails.phone_number}
               onChange={handleInputChange}
               className="block w-full px-3 pb-2 pt-4 text-base 
                 text-gray-900 bg-transparent rounded-lg border 
@@ -349,8 +436,8 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
           <div className="relative mb-10">
             <input
               type="text"
-              name="postalCode"
-              value={formDetails.postalCode}
+              name="zip_code"
+              value={formDetails.zip_code}
               onChange={handleInputChange}
               className="block w-full px-3 pb-2 pt-4 text-base 
                 text-gray-900 bg-transparent rounded-lg border 
@@ -359,7 +446,7 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
               placeholder=" "
             />
             <label
-              htmlFor="postalCode"
+              htmlFor="zip_code"
               className="absolute text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] 
               start-2.5 peer-focus:text-alofa-pink peer-placeholder-shown:scale-100 
               peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4"
