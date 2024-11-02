@@ -17,12 +17,6 @@
   height: 2rem;
 }
 
-.order-confirmation-bg {
-  background-image: url('/static/alofa-white-bg.png');
-  background-size: cover;
-  background-repeat: no-repeat;
-}
-
 
 /* fill: var(--Soft-White, linear-gradient(180deg, #FFF 0%, #FFF8FC 100%));
 stroke-width: 5px;
