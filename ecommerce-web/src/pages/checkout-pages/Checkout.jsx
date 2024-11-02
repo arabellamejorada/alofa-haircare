@@ -1,9 +1,9 @@
 import { useContext, useState, useEffect, useCallback, useMemo } from "react";
-import { CartContext } from "../components/CartContext.jsx";
+import { CartContext } from "../../components/CartContext.jsx";
 import CheckoutAddressModal from './CheckoutAddressModal.jsx';
-import GCashLogo from "../../../public/static/gcash-logo.svg";
-import BPILogo from "../../../public/static/bpi-logo.svg";
-import GCashQR from "../../../public/static/gcash-qr.jpg";
+import GCashLogo from "../../../../public/static/gcash-logo.svg";
+import BPILogo from "../../../../public/static/bpi-logo.svg";
+import GCashQR from "../../../../public/static/gcash-qr.jpg";
 import axios from "axios";
 import { FaRegAddressCard } from "react-icons/fa";
 

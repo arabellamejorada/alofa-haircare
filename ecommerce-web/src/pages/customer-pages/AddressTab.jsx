@@ -8,6 +8,7 @@ import {
   updateShippingAddress,
   deleteShippingAddress,
 } from "../../api/customer.js";
+import PropTypes from "prop-types";
 
 const AddressTab = ({ profileData }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -49,7 +50,7 @@ const AddressTab = ({ profileData }) => {
       }
     };
     fetchAddresses();
-  }, []);
+  }, [profileData.customer_id]);
 
   // Function to open the new address modal
   const handleAddNewAddress = () => {
@@ -149,7 +150,7 @@ const AddressTab = ({ profileData }) => {
       <div className="space-y-4">
         {addresses.length === 0 ? (
           <p className="text-gray-500">
-            No addresses found. Click "Add New Address" to add one.
+            No addresses found. Click &ldquo;Add New Address&ldquo; to add one.
           </p>
         ) : (
           addresses.map((address) => (
@@ -209,6 +210,12 @@ const AddressTab = ({ profileData }) => {
       )}
     </div>
   );
+};
+
+AddressTab.propTypes = {
+  profileData: PropTypes.shape({
+    customer_id: PropTypes.string.isRequired,
+  }).isRequired,
 };
 
 export default AddressTab;
