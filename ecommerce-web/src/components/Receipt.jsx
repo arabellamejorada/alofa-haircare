@@ -11,11 +11,10 @@ const Receipt = ({ orderDetails }) => {
   const discount = orderDetails?.discount || 0;
 
   useEffect(() => {
-    // Set order date when the component mounts
     setOrderDate(new Date());
   }, []);
 
-  // Format order date to '02 Nov 2024, 6:09 PM' in Philippines timezone
+  
   const formatOrderDate = (date) => {
     if (!date) return '';
     return date.toLocaleString('en-PH', {
@@ -34,11 +33,12 @@ const Receipt = ({ orderDetails }) => {
 
   return (
     <div className="relative max-w-lg mx-auto rounded-lg p-6 mt-10 z-20 shadow-xl">
+      <div className="absolute w-[110%] left-1/2 transform shadow-md -translate-x-1/2 -top-4 h-4 bg-gray-200 rounded-t-full z-0"></div>
         <div 
             style={{bottom: '-1.85rem'}}
             className={`absolute -bottom-8 left-0 right-0 h-8 bg-white z-10 zigzag`}>
         </div>
-        <h2 className="text-3xl font-bold text-pink-600 mb-6 font-heading text-left">Order Summary</h2>
+        <h2 className="text-3xl font-bold text-alofa-pink mb-6 font-heading text-left">Order Summary</h2>
             <div className="flex justify-between border-dashed border-b border-gray-300 pb-4 mb-4">
                 <div className="flex flex-col items-start">
                     <p className="text-sm text-gray-600">Date</p>
@@ -56,19 +56,21 @@ const Receipt = ({ orderDetails }) => {
                 </div>
             </div>
 
-      {cartItems.map((item, index) => (
-        <div key={index} className="flex justify-between items-center mb-4">
-          <div className="flex items-center">
-            <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded mr-4" />
-            <div>
-              <p className="text-gray-800 font-semibold">{item.name}</p>
-              <p className="text-sm text-gray-500">Variation: {item.variant || 'N/A'}</p>
-              <p className="text-sm text-gray-500">x{item.quantity}</p>
+        <div className="overflow-y-auto max-h-64 mb-4">
+          {cartItems.map((item, index) => (
+            <div key={index} className="flex justify-between items-center mb-4">
+              <div className="flex items-center">
+                <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded mr-4" />
+                <div>
+                  <p className="text-gray-800 font-semibold">{item.name}</p>
+                  <p className="text-sm text-gray-500">Variation: {item.variant || 'N/A'}</p>
+                  <p className="text-sm text-gray-500">x{item.quantity}</p>
+                </div>
+              </div>
+              <p className="text-gray-800 font-semibold">₱{(item.unit_price * item.quantity).toLocaleString()}</p>
             </div>
-          </div>
-          <p className="text-gray-800 font-semibold">₱{(item.unit_price * item.quantity).toLocaleString()}</p>
+          ))}
         </div>
-      ))}
 
       <div className="border-t border-gray-300 pt-4 mt-4">
         <div className="flex justify-between text-gray-700 mb-2">
