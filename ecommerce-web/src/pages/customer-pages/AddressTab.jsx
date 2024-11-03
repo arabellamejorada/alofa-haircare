@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { FaPlus } from "react-icons/fa";
 import NewAddressModal from "./customer-modals/NewAddressModal.jsx";
-import EditAddressModal from "./customer-modals/EditAddressModal.jsx"; // Import the edit modal
+import EditAddressModal from "./customer-modals/EditAddressModal.jsx";
+import { toast } from "sonner";
+import { ClipLoader } from "react-spinners";
 import {
   createShippingAddress,
   getShippingAddressesByCustomerId,
@@ -11,6 +13,7 @@ import {
 import PropTypes from "prop-types";
 
 const AddressTab = ({ profileData }) => {
+  const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(null);
@@ -32,6 +35,7 @@ const AddressTab = ({ profileData }) => {
   useEffect(() => {
     const fetchAddresses = async () => {
       try {
+        setLoading(true);
         const addresses = await getShippingAddressesByCustomerId(
           profileData.customer_id,
         );
@@ -47,6 +51,8 @@ const AddressTab = ({ profileData }) => {
         } else {
           console.error("Error fetching addresses:", error);
         }
+      } finally {
+        setLoading(false);
       }
     };
     fetchAddresses();
@@ -92,6 +98,7 @@ const AddressTab = ({ profileData }) => {
   // Function to save the edited address
   const handleSaveEditedAddress = async (updatedAddress) => {
     try {
+      setLoading(true);
       console.log("Saving edited address:", updatedAddress);
       console.log("Address ID:", updatedAddress.shipping_address_id);
       const savedAddress = await updateShippingAddress(
@@ -109,6 +116,9 @@ const AddressTab = ({ profileData }) => {
       setIsEditModalOpen(false);
     } catch (error) {
       console.error("Error updating address:", error);
+      toast.success("Failed to update address. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -128,93 +138,103 @@ const AddressTab = ({ profileData }) => {
   };
 
   return (
-    <div className="px-8 py-5 lg:px-8">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-2">
-        <h2 className="bg-gradient-to-b from-alofa-pink via-alofa-pink to-alofa-light-pink bg-clip-text text-transparent font-extrabold text-4xl">
-          My Address
-        </h2>
-        <button
-          onClick={handleAddNewAddress}
-          className="flex items-center px-4 py-2 font-bold text-white rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]"
-        >
-          <FaPlus className="mr-2" />
-          Add New Address
-        </button>
-      </div>
-      <p className="text-sm text-gray-500 mb-8">
-        Last updated: 16 Oct 2024 22:54
-      </p>
+    <div className="relative">
+      {loading && (
+        <div className="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center z-50 pointer-events-none">
+          <ClipLoader size={50} color="#E53E3E" loading={loading} />
+        </div>
+      )}
+      <div className="px-8 py-5 lg:px-8">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-2">
+          <h2 className="bg-gradient-to-b from-alofa-pink via-alofa-pink to-alofa-light-pink bg-clip-text text-transparent font-extrabold text-4xl">
+            My Address
+          </h2>
+          <button
+            onClick={handleAddNewAddress}
+            className="flex items-center px-4 py-2 font-bold text-white rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]"
+          >
+            <FaPlus className="mr-2" />
+            Add New Address
+          </button>
+        </div>
+        <p className="text-sm text-gray-500 mb-8">
+          Last updated: 16 Oct 2024 22:54
+        </p>
 
-      {/* Address List */}
-      <div className="space-y-4">
-        {addresses.length === 0 ? (
-          <p className="text-gray-500">
-            No addresses found. Click &ldquo;Add New Address&ldquo; to add one.
-          </p>
-        ) : (
-          addresses.map((address) => (
-            <div
-              key={address.shipping_address_id}
-              className="p-4 bg-white rounded-lg shadow border border-gray-200 flex justify-between items-start"
-            >
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800">
-                  {address.first_name} {address.last_name}
-                </h3>
-                <span className="text-gray-500">{address.phone_number}</span>
-                <p className="text-sm text-gray-500">{address.address_line}</p>
-                <p className="text-sm text-gray-500">
-                  {address.barangay}, {address.city}, {address.province},{" "}
-                  {address.region}, {address.zip_code}
-                </p>
+        {/* Address List */}
+        <div className="space-y-4">
+          {addresses.length === 0 ? (
+            <p className="text-gray-500">
+              No addresses found. Click &ldquo;Add New Address&ldquo; to add
+              one.
+            </p>
+          ) : (
+            addresses.map((address) => (
+              <div
+                key={address.shipping_address_id}
+                className="p-4 bg-white rounded-lg shadow border border-gray-200 flex justify-between items-start"
+              >
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    {address.first_name} {address.last_name}
+                  </h3>
+                  <span className="text-gray-500">{address.phone_number}</span>
+                  <p className="text-sm text-gray-500">
+                    {address.address_line}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {address.barangay}, {address.city}, {address.province},{" "}
+                    {address.region}, {address.zip_code}
+                  </p>
+                </div>
+                <div className="flex space-x-4">
+                  <button
+                    type="button"
+                    onClick={() => handleOpenEditModal(address)}
+                    className="text-sm text-pink-500 hover:underline focus:outline-none"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleDeleteAddress(address.shipping_address_id)
+                    }
+                    className="text-sm text-pink-500 hover:underline focus:outline-none"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
-              <div className="flex space-x-4">
-                <button
-                  type="button"
-                  onClick={() => handleOpenEditModal(address)}
-                  className="text-sm text-pink-500 hover:underline focus:outline-none"
-                >
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleDeleteAddress(address.shipping_address_id)
-                  }
-                  className="text-sm text-pink-500 hover:underline focus:outline-none"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))
+            ))
+          )}
+        </div>
+
+        {/* New Address Modal */}
+        {isModalOpen && (
+          <NewAddressModal
+            onClose={handleCloseModal}
+            onSave={handleSaveNewAddress}
+          />
+        )}
+
+        {/* Edit Address Modal */}
+        {isEditModalOpen && (
+          <EditAddressModal
+            address={selectedAddress}
+            onClose={handleCloseEditModal}
+            onSave={handleSaveEditedAddress}
+          />
         )}
       </div>
-
-      {/* New Address Modal */}
-      {isModalOpen && (
-        <NewAddressModal
-          onClose={handleCloseModal}
-          onSave={handleSaveNewAddress}
-        />
-      )}
-
-      {/* Edit Address Modal */}
-      {isEditModalOpen && (
-        <EditAddressModal
-          address={selectedAddress}
-          onClose={handleCloseEditModal}
-          onSave={handleSaveEditedAddress}
-        />
-      )}
     </div>
   );
 };
 
 AddressTab.propTypes = {
   profileData: PropTypes.shape({
-    customer_id: PropTypes.string.isRequired,
+    customer_id: PropTypes.number.isRequired,
   }).isRequired,
 };
 

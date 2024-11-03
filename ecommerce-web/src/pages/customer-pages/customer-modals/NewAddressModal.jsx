@@ -140,7 +140,6 @@ const NewAddressModal = ({ onClose, onSave }) => {
       region,
       province,
       city,
-      barangay,
       phone_number,
       zip_code,
     } = formDetails;
@@ -151,7 +150,6 @@ const NewAddressModal = ({ onClose, onSave }) => {
       !region ||
       !province ||
       !city ||
-      !barangay ||
       !phone_number ||
       !zip_code
     ) {
@@ -209,7 +207,7 @@ const NewAddressModal = ({ onClose, onSave }) => {
                 placeholder=" "
               />
               <label
-                htmlFor="firstName"
+                htmlFor="first_name"
                 className="absolute text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] 
                 start-2.5 peer-focus:text-alofa-pink peer-placeholder-shown:scale-100 
                 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4"
@@ -231,7 +229,7 @@ const NewAddressModal = ({ onClose, onSave }) => {
                 placeholder=" "
               />
               <label
-                htmlFor="lastName"
+                htmlFor="last_name"
                 className="absolute text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] 
                 start-2.5 peer-focus:text-alofa-pink peer-placeholder-shown:scale-100 
                 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4"
@@ -254,7 +252,7 @@ const NewAddressModal = ({ onClose, onSave }) => {
               placeholder=" "
             />
             <label
-              htmlFor="street"
+              htmlFor="address_line"
               className="absolute text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] 
               start-2.5 peer-focus:text-alofa-pink peer-placeholder-shown:scale-100 
               peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4"
@@ -389,7 +387,7 @@ const NewAddressModal = ({ onClose, onSave }) => {
               placeholder=" "
             />
             <label
-              htmlFor="phoneNumber"
+              htmlFor="phone_number"
               className="absolute text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] 
               start-2.5 peer-focus:text-alofa-pink peer-placeholder-shown:scale-100 
               peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4"
@@ -411,7 +409,7 @@ const NewAddressModal = ({ onClose, onSave }) => {
               placeholder=" "
             />
             <label
-              htmlFor="postalCode"
+              htmlFor="zip_code"
               className="absolute text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] 
               start-2.5 peer-focus:text-alofa-pink peer-placeholder-shown:scale-100 
               peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4"

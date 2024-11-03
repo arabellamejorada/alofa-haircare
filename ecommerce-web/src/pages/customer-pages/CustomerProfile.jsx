@@ -167,11 +167,17 @@ const CustomerProfile = () => {
           <Routes>
             <Route
               path=""
-              element={<ProfileContent profileData={profileData} />}
+              element={
+                profileData ? (
+                  <ProfileContent profileData={profileData} />
+                ) : null
+              }
             />
             <Route
               path="address"
-              element={<AddressTab profileData={profileData} />}
+              element={
+                profileData ? <AddressTab profileData={profileData} /> : null
+              }
             />
             <Route path="purchases" element={<PurchasesTab />} />
           </Routes>
