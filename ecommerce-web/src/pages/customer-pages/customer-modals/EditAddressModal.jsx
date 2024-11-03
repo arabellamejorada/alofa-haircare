@@ -411,7 +411,7 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
             </label>
           </div>
 
-          <div className="relative mb-10">
+          <div className="relative mb-4">
             <input
               type="tel"
               name="phone_number"
