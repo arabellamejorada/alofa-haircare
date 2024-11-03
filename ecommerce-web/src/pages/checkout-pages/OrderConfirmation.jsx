@@ -18,7 +18,7 @@ const OrderConfirmation = () => {
 
         {/* Billing Address Section */}
         <div className="billing-address mt-6">
-          <h2 className="text-xl font-semibold font-heading mb-3 text-alofa-pink-gradient">Billing Address</h2>
+          <h2 className="text-xl font-semibold font-heading mb-3 text-alofa-pink">Billing Address</h2>
           
           {formDetails && formDetails.firstName ? (
             <div className="grid grid-cols-3 gap-y-3 text-gray-600">
