@@ -188,7 +188,7 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
       !region ||
       !province ||
       !city ||
-      !barangay ||
+      (barangays.length > 0 && !barangay) ||
       !phone_number ||
       !zip_code
     ) {
@@ -392,7 +392,7 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
                 text-gray-900 bg-transparent rounded-lg border 
                 border-gray-300 appearance-none focus:outline-none 
                 focus:ring-0 focus:border-alofa-pink peer"
-              disabled={!formDetails.city}
+              disabled={!formDetails.city || barangays.length === 0}
             >
               <option value="">Select Barangay</option>
               {barangays.map((barangay) => (
