@@ -2,16 +2,17 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import PropTypes from "prop-types";
 import "../../../../src/App.css";
+import { toast } from "sonner";
 
 const NewAddressModal = ({ onClose, onSave }) => {
   const [formDetails, setFormDetails] = useState({
     first_name: "",
     last_name: "",
     address_line: "",
-    region: "",
-    province: "",
-    city: "",
-    barangay: "",
+    region: { name: "", code: "" },
+    province: { name: "", code: "" },
+    city: { name: "", code: "" },
+    barangay: { name: "", code: "" },
     phone_number: "",
     zip_code: "",
   });
@@ -109,14 +110,52 @@ const NewAddressModal = ({ onClose, onSave }) => {
     const { name, value } = e.target;
 
     setFormDetails((prevFormDetails) => {
-      let updatedData = { ...prevFormDetails, [name]: value };
+      let updatedData = { ...prevFormDetails };
 
       if (name === "region") {
-        updatedData = { ...updatedData, province: "", city: "", barangay: "" };
+        const selectedRegion = regions.find((region) => region.code === value);
+        updatedData = {
+          ...updatedData,
+          region: selectedRegion
+            ? { name: selectedRegion.name, code: selectedRegion.code }
+            : { name: "", code: "" },
+          province: { name: "", code: "" },
+          city: { name: "", code: "" },
+          barangay: { name: "", code: "" },
+        };
       } else if (name === "province") {
-        updatedData = { ...updatedData, city: "", barangay: "" };
+        const selectedProvince = provinces.find(
+          (province) => province.code === value,
+        );
+        updatedData = {
+          ...updatedData,
+          province: selectedProvince
+            ? { name: selectedProvince.name, code: selectedProvince.code }
+            : { name: "", code: "" },
+          city: { name: "", code: "" },
+          barangay: { name: "", code: "" },
+        };
       } else if (name === "city") {
-        updatedData = { ...updatedData, barangay: "" };
+        const selectedCity = cities.find((city) => city.code === value);
+        updatedData = {
+          ...updatedData,
+          city: selectedCity
+            ? { name: selectedCity.name, code: selectedCity.code }
+            : { name: "", code: "" },
+          barangay: { name: "", code: "" },
+        };
+      } else if (name === "barangay") {
+        const selectedBarangay = barangays.find(
+          (barangay) => barangay.code === value,
+        );
+        updatedData = {
+          ...updatedData,
+          barangay: selectedBarangay
+            ? { name: selectedBarangay.name, code: selectedBarangay.code }
+            : { name: "", code: "" },
+        };
+      } else {
+        updatedData = { ...updatedData, [name]: value };
       }
 
       return updatedData;
@@ -132,7 +171,6 @@ const NewAddressModal = ({ onClose, onSave }) => {
   };
 
   const handleSaveChanges = () => {
-    // Check if all required fields are filled
     const {
       first_name,
       last_name,
@@ -143,43 +181,22 @@ const NewAddressModal = ({ onClose, onSave }) => {
       phone_number,
       zip_code,
     } = formDetails;
+
     if (
       !first_name ||
       !last_name ||
       !address_line ||
-      !region ||
-      !province ||
-      !city ||
+      !region.code ||
+      !province.code ||
+      !city.code ||
       !phone_number ||
       !zip_code
     ) {
-      alert("Please fill in all fields.");
+      toast.error("Please fill in all fields.");
       return;
     }
-    // Find the selected region, province, city, and barangay based on the selected codes
-    const selectedRegion = regions.find(
-      (region) => region.code === formDetails.region,
-    );
-    const selectedProvince = provinces.find(
-      (province) => province.code === formDetails.province,
-    );
-    const selectedCity = cities.find((city) => city.code === formDetails.city);
-    const selectedBarangay = barangays.find(
-      (barangay) => barangay.code === formDetails.barangay,
-    );
 
-    // Call the onSave prop passed from AddressTab with form details
-    onSave({
-      first_name: formDetails.first_name,
-      last_name: formDetails.last_name,
-      phone_number: formDetails.phone_number,
-      address_line: formDetails.address_line,
-      barangay: selectedBarangay ? selectedBarangay.name : "",
-      city: selectedCity ? selectedCity.name : "",
-      province: selectedProvince ? selectedProvince.name : "",
-      region: selectedRegion ? selectedRegion.name : "",
-      zip_code: formDetails.zip_code,
-    });
+    onSave(formDetails);
   };
 
   return (
@@ -264,7 +281,7 @@ const NewAddressModal = ({ onClose, onSave }) => {
           <div className="relative mb-4">
             <select
               name="region"
-              value={formDetails.region}
+              value={formDetails.region.code}
               onChange={handleInputChange}
               className="block w-full px-3 pb-2 pt-4 text-base 
                 text-gray-900 bg-transparent rounded-lg border 
@@ -290,16 +307,18 @@ const NewAddressModal = ({ onClose, onSave }) => {
             </label>
           </div>
 
+          {/* Repeat similar changes for Province, City, and Barangay fields */}
+          {/* Province */}
           <div className="relative mb-4">
             <select
               name="province"
-              value={formDetails.province}
+              value={formDetails.province.code}
               onChange={handleInputChange}
               className="block w-full px-3 pb-2 pt-4 text-base 
                 text-gray-900 bg-transparent rounded-lg border 
                 border-gray-300 appearance-none focus:outline-none 
                 focus:ring-0 focus:border-alofa-pink peer"
-              disabled={!formDetails.region}
+              disabled={!formDetails.region.code}
             >
               <option value="">Select Province</option>
               {provinces.map((province) => (
@@ -318,16 +337,17 @@ const NewAddressModal = ({ onClose, onSave }) => {
             </label>
           </div>
 
+          {/* City */}
           <div className="relative mb-4">
             <select
               name="city"
-              value={formDetails.city}
+              value={formDetails.city.code}
               onChange={handleInputChange}
               className="block w-full px-3 pb-2 pt-4 text-base 
                 text-gray-900 bg-transparent rounded-lg border 
                 border-gray-300 appearance-none focus:outline-none 
                 focus:ring-0 focus:border-alofa-pink peer"
-              disabled={!formDetails.province}
+              disabled={!formDetails.province.code}
             >
               <option value="">Select City/Municipality</option>
               {cities.map((city) => (
@@ -346,16 +366,17 @@ const NewAddressModal = ({ onClose, onSave }) => {
             </label>
           </div>
 
+          {/* Barangay */}
           <div className="relative mb-4">
             <select
               name="barangay"
-              value={formDetails.barangay}
+              value={formDetails.barangay.code}
               onChange={handleInputChange}
               className="block w-full px-3 pb-2 pt-4 text-base 
                 text-gray-900 bg-transparent rounded-lg border 
                 border-gray-300 appearance-none focus:outline-none 
                 focus:ring-0 focus:border-alofa-pink peer"
-              disabled={!formDetails.city}
+              disabled={!formDetails.city.code || barangays.length === 0}
             >
               <option value="">Select Barangay</option>
               {barangays.map((barangay) => (

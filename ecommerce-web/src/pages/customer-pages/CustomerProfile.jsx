@@ -169,7 +169,10 @@ const CustomerProfile = () => {
               path=""
               element={
                 profileData ? (
-                  <ProfileContent profileData={profileData} />
+                  <ProfileContent
+                    profileData={profileData}
+                    setProfileData={setProfileData}
+                  />
                 ) : null
               }
             />

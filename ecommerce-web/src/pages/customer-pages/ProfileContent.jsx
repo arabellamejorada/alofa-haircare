@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { ClipLoader } from "react-spinners";
 import { updateCustomerProfile } from "../../api/customer";
+import { toast } from "sonner";
+import { getCustomerByProfileId } from "../../api/customer";
 
-const ProfileContent = ({ profileData }) => {
+const ProfileContent = ({ profileData, setProfileData }) => {
   const [editableProfileData, setEditableProfileData] = useState({
     firstName: profileData?.profiles.first_name || "",
     lastName: profileData?.profiles.last_name || "",
@@ -81,10 +83,15 @@ const ProfileContent = ({ profileData }) => {
     };
 
     try {
+      console.log("Profile data:", profileData);
       setLoading(true);
       console.log("Saving profile data:", updatedProfile);
       console.log("Customer ID:", profileData.customer_id);
       await updateCustomerProfile(profileData.customer_id, updatedProfile);
+
+      const data = await getCustomerByProfileId(profileData.profiles.id);
+      console.log("Customer profile data:", data);
+      setProfileData(data);
 
       // Reset the state after saving
       setIsEditing({
@@ -95,8 +102,10 @@ const ProfileContent = ({ profileData }) => {
       });
 
       console.log("Profile data saved:", updatedProfile);
+      toast.success("Profile updated successfully.");
     } catch (error) {
       console.error("Error saving profile data:", error);
+      toast.error("Failed to save profile. Please try again.");
     } finally {
       setLoading(false);
     }
