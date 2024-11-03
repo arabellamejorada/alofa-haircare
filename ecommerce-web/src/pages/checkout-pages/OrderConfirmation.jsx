@@ -8,27 +8,26 @@ const OrderConfirmation = () => {
   console.log("OrderConfirmation state:", location.state);
 
   return (
-    <div className="bg-alofa-bg-white flex flex-col lg:flex-row justify-center p-8 pt-40 lg:px-40 min-h-screen h-full"
-    >
-      <div className="w-full lg:w-1/2 lg:mr-10">
-        <h1 className="text-4xl font-bold font-title text-pink-600 mb-4">Thank you for your purchase!</h1>
-        <p className="text-gray-600 mb-4">
-          Your order will be verified within 24 hours upon checking out. We will
-          notify you by email once your order has been shipped.
+    <div className="bg-alofa-bg-white flex flex-col lg:flex-row justify-between p-8 pt-36 lg:px-36 min-h-screen h-full">
+      {/* Main Content (Thank You and Billing Address) */}
+      <div className="w-full lg:w-1/2 lg:mr-4">
+        <h1 className="text-3xl font-bold font-title text-alofa-pink mb-3">Thank you for your purchase!</h1>
+        <p className="text-gray-600 mb-3">
+          Your order will be verified within 24 hours upon checking out. We will notify you by email once your order has been shipped.
         </p>
 
         {/* Billing Address Section */}
-        <div className="billing-address mt-8">
-          <h2 className="text-2xl font-semibold font-heading mb-4 text-pink-600">Billing Address</h2>
+        <div className="billing-address mt-6">
+          <h2 className="text-xl font-semibold font-heading mb-3 text-alofa-pink-gradient">Billing Address</h2>
           
           {formDetails && formDetails.firstName ? (
-            <div className="grid grid-cols-3 gap-y-4 p-0">
+            <div className="grid grid-cols-3 gap-y-3 text-gray-600">
               {/* Labels */}
-              <p className="text-lg font-bold">Name</p>
-              <p className="col-span-2 text-gray-600">{formDetails.firstName} {formDetails.lastName}</p>
+              <p className="text-base font-bold">Name</p>
+              <p className="col-span-2 text-gray-600 text-base">{formDetails.firstName} {formDetails.lastName}</p>
               
-              <p className="text-lg font-bold">Address</p>
-              <p className="col-span-2 text-gray-600">
+              <p className="text-base font-bold">Address</p>
+              <p className="col-span-2 text-base">
                 {formDetails.street}, 
                 {formDetails.barangayName ? ` ${formDetails.barangayName},` : ""} 
                 {formDetails.cityName ? ` ${formDetails.cityName},` : ""}
@@ -37,21 +36,20 @@ const OrderConfirmation = () => {
                 {formDetails.postalCode}
               </p>
               
-              <p className="text-lg font-bold">Phone</p>
-              <p className="col-span-2 text-gray-600">{formDetails.phoneNumber}</p>
+              <p className="text-base font-bold">Phone</p>
+              <p className="col-span-2 text-base">{formDetails.phoneNumber}</p>
               
-              <p className="text-lg font-bold">Email</p>
-              <p className="col-span-2 text-gray-600">{formDetails.email}</p>
+              <p className="text-base font-bold">Email</p>
+              <p className="col-span-2 text-base">{formDetails.email}</p>
             </div>
           ) : (
             <p className="text-gray-600">No billing address provided.</p>
           )}
         </div>
-
       </div>
 
       {/* Order Summary Section */}
-      <div className="w-full lg:w-1/3 lg:ml-10 mt-5 lg:mt-0">
+      <div className="w-full lg:w-1/2 lg:ml-6 mt-0 lg:mt-0 self-start">
         <Receipt cartItems={cartItems} subtotal={subtotal} paymentMethod={paymentMethod} />
       </div>
     </div>
