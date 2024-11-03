@@ -22,30 +22,32 @@ const OrderConfirmation = () => {
           <h2 className="text-2xl font-semibold font-heading mb-4 text-pink-600">Billing Address</h2>
           
           {formDetails && formDetails.firstName ? (
-            <>
-              <div className="mb-2">
-                <p className="text-lg font-bold">Name</p>
-                <p className="text-gray-600">{formDetails.firstName} {formDetails.lastName}</p>
-              </div>
-              <div className="mb-2">
-                <p className="text-lg font-bold">Address</p>
-                <p className="text-gray-600">
-                  {formDetails.street}, {formDetails.barangay}, {formDetails.city}, {formDetails.province}, {formDetails.region}, {formDetails.postalCode}
-                </p>
-              </div>
-              <div className="mb-2">
-                <p className="text-lg font-bold">Phone</p>
-                <p className="text-gray-600">{formDetails.phoneNumber}</p>
-              </div>
-              <div className="mb-2">
-                <p className="text-lg font-bold">Email</p>
-                <p className="text-gray-600">{formDetails.email}</p>
-              </div>
-            </>
+            <div className="grid grid-cols-3 gap-y-4 p-0">
+              {/* Labels */}
+              <p className="text-lg font-bold">Name</p>
+              <p className="col-span-2 text-gray-600">{formDetails.firstName} {formDetails.lastName}</p>
+              
+              <p className="text-lg font-bold">Address</p>
+              <p className="col-span-2 text-gray-600">
+                {formDetails.street}, 
+                {formDetails.barangayName ? ` ${formDetails.barangayName},` : ""} 
+                {formDetails.cityName ? ` ${formDetails.cityName},` : ""}
+                {formDetails.provinceName ? ` ${formDetails.provinceName},` : ""}
+                {formDetails.regionName ? ` ${formDetails.regionName}, ` : ""} 
+                {formDetails.postalCode}
+              </p>
+              
+              <p className="text-lg font-bold">Phone</p>
+              <p className="col-span-2 text-gray-600">{formDetails.phoneNumber}</p>
+              
+              <p className="text-lg font-bold">Email</p>
+              <p className="col-span-2 text-gray-600">{formDetails.email}</p>
+            </div>
           ) : (
             <p className="text-gray-600">No billing address provided.</p>
           )}
         </div>
+
       </div>
 
       {/* Order Summary Section */}
