@@ -151,7 +151,7 @@ const NewAddressModal = ({ onClose, onSave }) => {
       !region ||
       !province ||
       !city ||
-      !barangay ||
+      (!barangay && barangays.length > 0) ||
       !phone_number ||
       !zip_code
     ) {
@@ -357,7 +357,7 @@ const NewAddressModal = ({ onClose, onSave }) => {
                 text-gray-900 bg-transparent rounded-lg border 
                 border-gray-300 appearance-none focus:outline-none 
                 focus:ring-0 focus:border-alofa-pink peer"
-              disabled={!formDetails.city}
+              disabled={!formDetails.city || barangays.length === 0}
             >
               <option value="">Select Barangay</option>
               {barangays.map((barangay) => (
