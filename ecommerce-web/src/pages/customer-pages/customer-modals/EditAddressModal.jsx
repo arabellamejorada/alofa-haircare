@@ -9,21 +9,19 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
     first_name: "",
     last_name: "",
     address_line: "",
-    region: "",
-    province: "",
-    city: "",
-    barangay: "",
+    region: { name: "", code: "" },
+    province: { name: "", code: "" },
+    city: { name: "", code: "" },
+    barangay: { name: "", code: "" },
     phone_number: "",
     zip_code: "",
   });
 
-  // State to store fetched data
   const [regions, setRegions] = useState([]);
   const [provinces, setProvinces] = useState([]);
   const [cities, setCities] = useState([]);
   const [barangays, setBarangays] = useState([]);
 
-  // Mapping of region names to codes
   const regionMapping = useMemo(
     () => ({
       "Ilocos Region": "Region 1",
@@ -47,7 +45,6 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
     [],
   );
 
-  // Fetch regions data
   const fetchRegions = useCallback(async () => {
     try {
       const response = await axios.get("https://psgc.gitlab.io/api/regions/");
@@ -61,7 +58,6 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
     }
   }, [regionMapping]);
 
-  // Fetch provinces data based on region code
   const fetchProvinces = async (regionCode) => {
     if (!regionCode) return;
     try {
@@ -77,7 +73,6 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
     }
   };
 
-  // Fetch cities data based on province code
   const fetchCities = async (provinceCode) => {
     if (!provinceCode) return;
     try {
@@ -94,7 +89,6 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
     }
   };
 
-  // Fetch barangays data based on city code
   const fetchBarangays = async (cityCode) => {
     if (!cityCode) return;
     try {
@@ -107,7 +101,7 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
       console.error("Error fetching barangays:", error);
     }
   };
-  // Initialize formDetails and load dependencies
+
   useEffect(() => {
     if (address) {
       setFormDetails({
@@ -115,10 +109,10 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
         first_name: address.first_name || "",
         last_name: address.last_name || "",
         address_line: address.address_line || "",
-        region: address.region || "",
-        province: address.province || "",
-        city: address.city || "",
-        barangay: address.barangay || "",
+        region: address.region || { name: "", code: "" },
+        province: address.province || { name: "", code: "" },
+        city: address.city || { name: "", code: "" },
+        barangay: address.barangay || { name: "", code: "" },
         phone_number: address.phone_number || "",
         zip_code: address.zip_code || "",
       });
@@ -126,38 +120,73 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
     }
   }, [address, fetchRegions]);
 
-  // Handle cascading dropdowns based on selection
   useEffect(() => {
-    if (formDetails.region) fetchProvinces(formDetails.region);
+    if (formDetails.region.code) fetchProvinces(formDetails.region.code);
   }, [formDetails.region]);
 
   useEffect(() => {
-    if (formDetails.province) fetchCities(formDetails.province);
+    if (formDetails.province.code) fetchCities(formDetails.province.code);
   }, [formDetails.province]);
 
   useEffect(() => {
-    if (formDetails.city) fetchBarangays(formDetails.city);
+    if (formDetails.city.code) fetchBarangays(formDetails.city.code);
   }, [formDetails.city]);
 
-  // Handle input changes
   const handleInputChange = async (e) => {
     const { name, value } = e.target;
 
     setFormDetails((prevFormDetails) => {
-      let updatedData = { ...prevFormDetails, [name]: value };
+      let updatedData = { ...prevFormDetails };
 
       if (name === "region") {
-        updatedData = { ...updatedData, province: "", city: "", barangay: "" };
+        const selectedRegion = regions.find((region) => region.code === value);
+        updatedData = {
+          ...updatedData,
+          region: selectedRegion
+            ? { name: selectedRegion.name, code: selectedRegion.code }
+            : { name: "", code: "" },
+          province: { name: "", code: "" },
+          city: { name: "", code: "" },
+          barangay: { name: "", code: "" },
+        };
       } else if (name === "province") {
-        updatedData = { ...updatedData, city: "", barangay: "" };
+        const selectedProvince = provinces.find(
+          (province) => province.code === value,
+        );
+        updatedData = {
+          ...updatedData,
+          province: selectedProvince
+            ? { name: selectedProvince.name, code: selectedProvince.code }
+            : { name: "", code: "" },
+          city: { name: "", code: "" },
+          barangay: { name: "", code: "" },
+        };
       } else if (name === "city") {
-        updatedData = { ...updatedData, barangay: "" };
+        const selectedCity = cities.find((city) => city.code === value);
+        updatedData = {
+          ...updatedData,
+          city: selectedCity
+            ? { name: selectedCity.name, code: selectedCity.code }
+            : { name: "", code: "" },
+          barangay: { name: "", code: "" },
+        };
+      } else if (name === "barangay") {
+        const selectedBarangay = barangays.find(
+          (barangay) => barangay.code === value,
+        );
+        updatedData = {
+          ...updatedData,
+          barangay: selectedBarangay
+            ? { name: selectedBarangay.name, code: selectedBarangay.code }
+            : { name: "", code: "" },
+        };
+      } else {
+        updatedData = { ...updatedData, [name]: value };
       }
 
       return updatedData;
     });
 
-    // Fetch dependent data based on selection
     if (name === "region") {
       await fetchProvinces(value);
     } else if (name === "province") {
@@ -167,9 +196,7 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
     }
   };
 
-  // Handle save changes
   const handleSaveChanges = () => {
-    // Validate required fields
     const {
       first_name,
       last_name,
@@ -181,14 +208,14 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
       phone_number,
       zip_code,
     } = formDetails;
+
     if (
       !first_name ||
       !last_name ||
       !address_line ||
-      !region ||
-      !province ||
-      !city ||
-      (barangays.length > 0 && !barangay) ||
+      !region.code ||
+      !province.code ||
+      !city.code ||
       !phone_number ||
       !zip_code
     ) {
@@ -196,24 +223,7 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
       return;
     }
 
-    // Retrieve selected options
-    const selectedRegion = regions.find((r) => r.code === formDetails.region);
-    const selectedProvince = provinces.find(
-      (p) => p.code === formDetails.province,
-    );
-    const selectedCity = cities.find((c) => c.code === formDetails.city);
-    const selectedBarangay = barangays.find(
-      (b) => b.code === formDetails.barangay,
-    );
-
-    // Call onSave with updated address details
-    onSave({
-      ...formDetails,
-      region: selectedRegion ? selectedRegion.name : "",
-      province: selectedProvince ? selectedProvince.name : "",
-      city: selectedCity ? selectedCity.name : "",
-      barangay: selectedBarangay ? selectedBarangay.name : "",
-    });
+    onSave(formDetails);
     onClose();
   };
 
@@ -298,10 +308,12 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
             </label>
           </div>
 
+          {/* Repeat similar changes for Region, Province, City, and Barangay fields */}
+          {/* Region */}
           <div className="relative mb-4">
             <select
               name="region"
-              value={formDetails.region}
+              value={formDetails.region.code}
               onChange={handleInputChange}
               className="block w-full px-3 pb-2 pt-4 text-base 
                 text-gray-900 bg-transparent rounded-lg border 
@@ -327,16 +339,17 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
             </label>
           </div>
 
+          {/* Province */}
           <div className="relative mb-4">
             <select
               name="province"
-              value={formDetails.province}
+              value={formDetails.province.code}
               onChange={handleInputChange}
               className="block w-full px-3 pb-2 pt-4 text-base 
                 text-gray-900 bg-transparent rounded-lg border 
                 border-gray-300 appearance-none focus:outline-none 
                 focus:ring-0 focus:border-alofa-pink peer"
-              disabled={!formDetails.region}
+              disabled={!formDetails.region.code}
             >
               <option value="">Select Province</option>
               {provinces.map((province) => (
@@ -355,16 +368,17 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
             </label>
           </div>
 
+          {/* City */}
           <div className="relative mb-4">
             <select
               name="city"
-              value={formDetails.city}
+              value={formDetails.city.code}
               onChange={handleInputChange}
               className="block w-full px-3 pb-2 pt-4 text-base 
                 text-gray-900 bg-transparent rounded-lg border 
                 border-gray-300 appearance-none focus:outline-none 
                 focus:ring-0 focus:border-alofa-pink peer"
-              disabled={!formDetails.province}
+              disabled={!formDetails.province.code}
             >
               <option value="">Select City/Municipality</option>
               {cities.map((city) => (
@@ -383,16 +397,17 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
             </label>
           </div>
 
+          {/* Barangay */}
           <div className="relative mb-4">
             <select
               name="barangay"
-              value={formDetails.barangay}
+              value={formDetails.barangay.code}
               onChange={handleInputChange}
               className="block w-full px-3 pb-2 pt-4 text-base 
                 text-gray-900 bg-transparent rounded-lg border 
                 border-gray-300 appearance-none focus:outline-none 
                 focus:ring-0 focus:border-alofa-pink peer"
-              disabled={!formDetails.city || barangays.length === 0}
+              disabled={!formDetails.city.code || barangays.length === 0}
             >
               <option value="">Select Barangay</option>
               {barangays.map((barangay) => (
@@ -424,7 +439,7 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
               placeholder=" "
             />
             <label
-              htmlFor="phoneNumber"
+              htmlFor="phone_number"
               className="absolute text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] 
               start-2.5 peer-focus:text-alofa-pink peer-placeholder-shown:scale-100 
               peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4"
@@ -455,7 +470,6 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
             </label>
           </div>
 
-          {/* Save Changes Button */}
           <button
             type="button"
             className="block w-full py-3 text-white font-bold bg-gradient-to-b from-[#FE699F] to-[#F8587A] rounded-lg hover:from-[#F8587A] hover:to-[#FE699F]"

@@ -325,24 +325,8 @@ const updateShippingAddress = async (req, res) => {
   const { first_name, last_name, phone_number, address_line, barangay, city, province, region, zip_code } = req.body;
 
   console.log("shipping_address_id", shipping_address_id);
-  console.log({ first_name
-  }, {
-    last_name
-  }, {
-    phone_number
-  }, {
-    address_line
-  }, {
-    barangay
-  }, {
-    city
-  }, {
-    province
-  }, {
-    region
-  },  {
-    zip_code
-  });
+  console.log("Received updated address: ",first_name, last_name, phone_number, address_line, barangay, city, province, region, zip_code
+  );
   try {
     const { data, error } = await supabase
       .from("shipping_address")
