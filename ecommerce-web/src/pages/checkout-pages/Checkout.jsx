@@ -109,15 +109,17 @@ const Checkout = () => {
 
   // Fetch barangays based on the selected city/municipality
   const fetchBarangays = async (cityCode) => {
-    if (!cityCode) return;
+    if (!cityCode) return [];
     try {
       const response = await axios.get(`https://psgc.gitlab.io/api/barangays/`);
       const filteredBarangays = response.data.filter(
         (barangay) => barangay.cityCode === cityCode,
       );
       setBarangays(filteredBarangays);
+      return filteredBarangays;
     } catch (error) {
       console.error("Error fetching barangays:", error);
+      return [];
     }
   };
 
@@ -148,8 +150,7 @@ const Checkout = () => {
           barangay: "",
         };
       }
-
-      return updatedData;
+        return updatedData;
     });
 
     // Fetch options based on user input
@@ -158,23 +159,54 @@ const Checkout = () => {
     } else if (name === "province") {
       await fetchCities(value);
     } else if (name === "city") {
-      await fetchBarangays(value);
+      const fetchedBarangays = await fetchBarangays(value);
+
+      // if no barangays, formDetails.barangay is set to an emptry string yey
+      if (fetchedBarangays.length === 0) {
+        setFormDetails((prevFormDetails) => ({
+          ...prevFormDetails,
+          barangay: "",
+        }));
+      }
     }
   };
 
   const handleCompleteOrder = () => {
-    if (!formDetails.firstName || !formDetails.lastName || !formDetails.email || !formDetails.phoneNumber || !formDetails.paymentMethod) {
+    if (
+      !formDetails.firstName ||
+      !formDetails.lastName ||
+      !formDetails.email ||
+      !formDetails.phoneNumber ||
+      !formDetails.paymentMethod ||
+      !formDetails.region ||
+      !formDetails.province ||
+      !formDetails.city
+    ) {
       alert("Please fill in all the required fields before completing the order.");
       return;
     }
+  
+    // Only require barangay if there are barangays available
+    if (barangays.length > 0 && !formDetails.barangay) {
+      alert("Please select a barangay.");
+      return;
+    }
+  
+    const formDetailsToPass = {
+      ...formDetails,
+      regionName: regions.find(region => region.code === formDetails.region)?.name || "",
+      provinceName: provinces.find(province => province.code === formDetails.province)?.name || "",
+      cityName: cities.find(city => city.code === formDetails.city)?.name || "",
+      barangayName: barangays.find(barangay => barangay.code === formDetails.barangay)?.name || "",
+    };
 
-    navigate('/order-confirmed', {
+    navigate("/order-confirmed", {
       state: {
-        formDetails,
+        formDetails: formDetailsToPass,
         cartItems,
         subtotal,
         paymentMethod: formDetails.paymentMethod,
-      }
+      },
     });
   };
 
@@ -368,6 +400,7 @@ const Checkout = () => {
                 rounded-lg border border-gray-300 appearance-none focus:outline-none 
                 focus:ring-0 focus:border-alofa-pink peer`}
               disabled={!formDetails.region}
+              placeholder=""
             >
               <option value="">Select Province</option>
               {provinces.map((province) => (
@@ -420,15 +453,19 @@ const Checkout = () => {
               className={`block w-full px-3 pb-2 pt-4 text-base text-gray-900 bg-transparent
                     rounded-lg border border-gray-300 appearance-none focus:outline-none 
                     focus:ring-0 focus:border-alofa-pink peer`}
-              disabled={!formDetails.city}
+              disabled={!formDetails.city || barangays.length === 0}
               placeholder=""
             >
               <option value="">Select Barangay</option>
-              {barangays.map((barangay) => (
-                <option key={barangay.code} value={barangay.code}>
-                  {barangay.name}
-                </option>
-              ))}
+              {barangays.length === 0 ? (
+                <option value="">No Barangay</option>
+              ) : (
+                barangays.map((barangay) => (
+                  <option key={barangay.code} value={barangay.code}>
+                    {barangay.name}
+                  </option>
+                ))
+              )}
             </select>
             <label
               htmlFor="barangay"
