@@ -32,14 +32,14 @@ const ProductCard = ({ id, image, name, value, price, sku }) => {
           />
         </div>
         {/* Product details */}
-        <div className="mt-4 flex flex-col items-start px-4">
+        <div className="flex flex-col items-start px-4">
           <h3
-            className="text-lg font-medium text-gray-700 h-10 overflow-hidden text-ellipsis whitespace-nowrap"
+            className="mt-4 mb-0 text-lg font-medium text-gray-700 h-10 overflow-hidden text-ellipsis whitespace-nowrap"
             style={{ maxWidth: "200px" }}
           >
             {name}
           </h3>
-          <p className="text-md font-medium text-gray-700 h-10 overflow-hidden text-ellipsis whitespace-nowrap">
+          <p className="mb-0 text-md font-medium text-gray-700 h-10 overflow-hidden text-ellipsis whitespace-nowrap">
             {value !== "N/A" ? value : ""}
           </p>
 
