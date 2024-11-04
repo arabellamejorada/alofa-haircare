@@ -38,6 +38,26 @@ const Checkout = () => {
   const [cities, setCities] = useState([]);
   const [barangays, setBarangays] = useState([]);
 
+  const [selectedAddress, setSelectedAddress] = useState(null);
+  const [receiptFile, setReceiptFile] = useState(null);
+  const [uploadedPaymentMethod, setUploadedPaymentMethod] = useState(null);
+
+  useEffect(() => {
+    console.log("Checkout Cart Items:", cartItems);
+  }, [cartItems]);
+
+  const handleFileChange = (e, method) => {
+    const file = e.target.files[0];
+    const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
+
+    if (file && allowedTypes.includes(file.type)) {
+      setReceiptFile(file);
+      setUploadedPaymentMethod(method);
+    } else {
+      alert("Please upload a JPG, PNG, or PDF file.");
+    }
+  };
+
   const [formDetails, setFormDetails] = useState({
     email: "",
     firstName: "",
@@ -748,6 +768,10 @@ const Checkout = () => {
                             paymentMethod: "GCash",
                           });
                         }}
+                        disabled={
+                          uploadedPaymentMethod &&
+                          uploadedPaymentMethod !== "GCash"
+                        }
                       />
                       <span className="font-bold">Gcash</span>
                     </label>
@@ -763,9 +787,20 @@ const Checkout = () => {
                         alt="GCash QR Code"
                         className="w-32 h-32 mb-4"
                       />
-                      <button className="bg-gray-600 hover:bg-gray-800 text-white py-2 px-4 rounded flex items-center gap-2">
+                      <label className="bg-gray-600 hover:bg-gray-800 text-white py-2 px-4 rounded w-40 whitespace-normal text-center inline-block">
                         Upload receipt
-                      </button>
+                        <input
+                          type="file"
+                          accept=".jpg,.jpeg,.png,.pdf"
+                          onChange={(e) => handleFileChange(e, "GCash")}
+                          style={{ display: "none" }}
+                        />
+                      </label>
+                      {receiptFile && (
+                        <p className="italic text-gray-400 mt-2 text-sm">
+                          File: <b className="text-black">{receiptFile.name}</b>
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
