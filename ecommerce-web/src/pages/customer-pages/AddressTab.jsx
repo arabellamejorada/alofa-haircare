@@ -182,9 +182,9 @@ const AddressTab = ({ profileData }) => {
               Add New Address
             </button>
           </div>
-          <p className="text-sm text-gray-500 mb-8">
+          {/* <p className="text-sm text-gray-500 mb-8">
             Last updated: 16 Oct 2024 22:54
-          </p>
+          </p> */}
 
           {/* Address List */}
           <div className="space-y-4">
@@ -208,10 +208,14 @@ const AddressTab = ({ profileData }) => {
                     </span>
                     <p className="text-sm text-gray-500">
                       {address.address_line},
-                      {address.barangay?.name ? ` ${address.barangay.name},` : ""} 
+                      {address.barangay?.name
+                        ? ` ${address.barangay.name},`
+                        : ""}
                       {address.city?.name ? ` ${address.city.name},` : ""}
-                      {address.province?.name ? ` ${address.province.name},` : ""}
-                      {address.region?.name ? ` ${address.region.name}, ` : ""} 
+                      {address.province?.name
+                        ? ` ${address.province.name},`
+                        : ""}
+                      {address.region?.name ? ` ${address.region.name}, ` : ""}
                       {address.zip_code}
                     </p>
                   </div>

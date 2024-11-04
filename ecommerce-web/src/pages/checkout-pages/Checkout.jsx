@@ -1,17 +1,42 @@
 import { useContext, useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { CartContext } from "../../components/CartContext.jsx";
-import SelectAddressModal from './SelectAddressModal.jsx';
+import SelectAddressModal from "./SelectAddressModal.jsx";
 import GCashLogo from "../../../../public/static/gcash-logo.svg";
 import BPILogo from "../../../../public/static/bpi-logo.svg";
 import GCashQR from "../../../../public/static/gcash-qr.jpg";
 import axios from "axios";
 import { FaRegAddressCard } from "react-icons/fa";
+import { AuthContext } from "../../components/AuthContext.jsx";
+import { ClipLoader } from "react-spinners";
+import { getCustomerByProfileId } from "../../api/customer.js";
 
 const Checkout = () => {
+  const { user } = useContext(AuthContext);
+  const [profileData, setProfileData] = useState(null);
+
   const { cartItems, subtotal } = useContext(CartContext);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        const data = await getCustomerByProfileId(user.id);
+        console.log("Customer profile data:", data);
+        setProfileData(data);
+      } catch (error) {
+        console.error("Failed to fetch customer profile", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user?.id) {
+      fetchProfileData();
+    }
+  }, [user]);
 
   useEffect(() => {
     console.log("Checkout Cart Items:", cartItems);
@@ -55,7 +80,7 @@ const Checkout = () => {
       postalCode: address.zip_code,
     }));
     setIsAddressModalOpen(false);
-  }
+  };
 
   // State for Regions, Provinces, Cities, and Barangays
   const [regions, setRegions] = useState([]);
@@ -182,7 +207,7 @@ const Checkout = () => {
           barangay: "",
         };
       }
-        return updatedData;
+      return updatedData;
     });
 
     // Fetch options based on user input
@@ -214,22 +239,31 @@ const Checkout = () => {
       !formDetails.province ||
       !formDetails.city
     ) {
-      alert("Please fill in all the required fields before completing the order.");
+      alert(
+        "Please fill in all the required fields before completing the order.",
+      );
       return;
     }
-  
+
     // Only require barangay if there are barangays available
     if (barangays.length > 0 && !formDetails.barangay) {
       alert("Please select a barangay.");
       return;
     }
-  
+
     const formDetailsToPass = {
       ...formDetails,
-      regionName: regions.find(region => region.code === formDetails.region)?.name || "",
-      provinceName: provinces.find(province => province.code === formDetails.province)?.name || "",
-      cityName: cities.find(city => city.code === formDetails.city)?.name || "",
-      barangayName: barangays.find(barangay => barangay.code === formDetails.barangay)?.name || "",
+      regionName:
+        regions.find((region) => region.code === formDetails.region)?.name ||
+        "",
+      provinceName:
+        provinces.find((province) => province.code === formDetails.province)
+          ?.name || "",
+      cityName:
+        cities.find((city) => city.code === formDetails.city)?.name || "",
+      barangayName:
+        barangays.find((barangay) => barangay.code === formDetails.barangay)
+          ?.name || "",
     };
 
     navigate("/order-confirmed", {
@@ -274,10 +308,10 @@ const Checkout = () => {
           </div>
 
           <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xl font-semibold mb-4 text-gray-500 flex items-center">
-            Shipping Information
-          </h2>
-          <button
+            <h2 className="text-xl font-semibold mb-4 text-gray-500 flex items-center">
+              Shipping Information
+            </h2>
+            <button
               className="ml-4 bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b 
               hover:from-[#F8587A] hover:to-[#FE699F] text-white font-normal py-1 px-3 rounded-md 
               focus:outline-none flex items-center"
@@ -289,7 +323,7 @@ const Checkout = () => {
             {/* Render the modal conditionally */}
             {isAddressModalOpen && (
               <SelectAddressModal
-                customerId={1} // Hardcoded customer ID
+                profileData={profileData}
                 onClose={handleCloseAddressModal}
                 onSave={handleSaveAddress}
               />
@@ -628,14 +662,13 @@ const Checkout = () => {
               </div>
             </div>
           </div>
-          
+
           <button
             onClick={handleCompleteOrder}
             className="font-extrabold text-white py-2 px-4 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]"
           >
             COMPLETE ORDER
           </button>
-          
         </div>
 
         {/* Order Summary Section */}
@@ -668,7 +701,9 @@ const Checkout = () => {
                 </div>
                 <div className="flex-1 text-gray-500">
                   <p className="font-bold">{item.name}</p>
-                  <p className="text-sm text-gray-500">{item.variant?.type} {item.variant?.value}</p>
+                  <p className="text-sm text-gray-500">
+                    {item.variant?.type} {item.variant?.value}
+                  </p>
                 </div>
                 <p className="font-bold text-gray-500">₱{item.unit_price}</p>
               </div>
