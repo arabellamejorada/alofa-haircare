@@ -3,19 +3,28 @@ const path = require('path');
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'public/uploads/'); // Ensure the destination folder exists or create it
+    // Check if this is a proof image upload
+    if (file.fieldname === 'proof_image') {
+      cb(null, 'public/uploads/payment/'); // Set directory for proof images
+    } else {
+      cb(null, 'public/uploads/'); // Default directory for other files
+    }
   },
   filename: function (req, file, cb) {
-    // We'll use the product name and variation value for the filename
+    // Generate a filename based on product name and variation value or use a generic name
     const productName = (req.body.name || 'untitled').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
-
-    // Extract the variation value from the request body
     const variationValue = (req.body.variations?.[0]?.value || 'default').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
-
-    // Ensure each image has a unique timestamp
+    
+    // Unique timestamp suffix for filename
     const extname = path.extname(file.originalname);
     const uniqueSuffix = Math.round(Math.random() * 1E3);
-    cb(null, `${productName}-${variationValue}-${uniqueSuffix}${extname}`);
+    
+    // Check if this is a proof image and set a simpler filename
+    const filename = file.fieldname === 'proof_image'
+      ? `proof-${Date.now()}-${uniqueSuffix}${extname}`
+      : `${productName}-${variationValue}-${uniqueSuffix}${extname}`;
+
+    cb(null, filename);
   }
 });
 
@@ -30,7 +39,7 @@ const upload = multer({
     if (mimetype && extname) {
       return cb(null, true);
     }
-    cb(new Error('Only images (jpeg, jpg, png, gif) are allowed!'));
+    cb(new Error('Only images (jpeg, jpg, png) are allowed!'));
   }
 });
 

@@ -246,7 +246,7 @@ const applyVoucher = async (req, res) => {
     res.status(200).json({
       message: 'Voucher validated successfully',
       discount,
-      totalAmount,
+      voucher_id: voucher.voucher_id,
     });
   } catch (error) {
     console.error('Error applying voucher:', error);

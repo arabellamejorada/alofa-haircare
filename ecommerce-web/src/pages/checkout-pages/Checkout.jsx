@@ -31,6 +31,7 @@ const Checkout = () => {
   const [loading, setLoading] = useState(true);
   const [voucherDiscount, setVoucherDiscount] = useState("");
   const [voucherCode, setVoucherCode] = useState("");
+  const [voucherId, setVoucherId] = useState(null);
 
   // State for Regions, Provinces, Cities, and Barangays
   const [regions, setRegions] = useState([]);
@@ -38,7 +39,6 @@ const Checkout = () => {
   const [cities, setCities] = useState([]);
   const [barangays, setBarangays] = useState([]);
 
-  const [selectedAddress, setSelectedAddress] = useState(null);
   const [receiptFile, setReceiptFile] = useState(null);
   const [uploadedPaymentMethod, setUploadedPaymentMethod] = useState(null);
 
@@ -48,14 +48,15 @@ const Checkout = () => {
 
   const handleFileChange = (e, method) => {
     const file = e.target.files[0];
-    const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
-
-    if (file && allowedTypes.includes(file.type)) {
+    if (file) {
       setReceiptFile(file);
-      setUploadedPaymentMethod(method);
-    } else {
-      alert("Please upload a JPG, PNG, or PDF file.");
+      setUploadedPaymentMethod(method); // Set the payment method that has the uploaded file
     }
+  };
+
+  const handleRemoveFile = () => {
+    setReceiptFile(null);
+    setUploadedPaymentMethod(null); // Reset the uploaded payment method
   };
 
   const [formDetails, setFormDetails] = useState({
@@ -152,6 +153,7 @@ const Checkout = () => {
       // Set form details for the selected address
       setFormDetails((prevFormDetails) => ({
         ...prevFormDetails,
+        shipping_address_id: address.shipping_address_id,
         email: profileData.profiles.email,
         firstName: address.first_name,
         lastName: address.last_name,
@@ -340,35 +342,46 @@ const Checkout = () => {
 
       // Only require barangay if there are barangays available
       if (barangays.length > 0 && !formDetails.barangay) {
-        alert("Please select a barangay.");
+        toast.error("Please select a barangay.");
         return;
       }
 
-      const formDetailsToPass = {
-        ...formDetails,
-        regionName:
-          regions.find((region) => region.code === formDetails.region)?.name ||
-          "",
-        provinceName:
-          provinces.find((province) => province.code === formDetails.province)
-            ?.name || "",
-        cityName:
-          cities.find((city) => city.code === formDetails.city)?.name || "",
-        barangayName:
-          barangays.find((barangay) => barangay.code === formDetails.barangay)
-            ?.name || "",
-        customer_id: profileData.customer_id,
-        proof_image: "",
-        subtotal: subtotal,
-        voucherCode: voucherCode,
-        total_discount: voucherDiscount,
-        total_amount: subtotal - voucherDiscount,
-      };
+      // Create FormData to handle file and other data
+      const formData = new FormData();
 
-      await createOrder(formDetailsToPass, cartItems);
+      // Append order details to FormData
+      formData.append(
+        "orderDetails",
+        JSON.stringify({
+          ...formDetails,
+          customer_id: profileData.customer_id,
+          subtotal: subtotal,
+          voucher_id: voucherId,
+          total_discount: voucherDiscount,
+          total_amount: subtotal + 200 - voucherDiscount,
+          shipping_address_id: formDetails.shipping_address_id,
+        }),
+      );
+
+      // Append cart items as a JSON string
+      formData.append("cartItems", JSON.stringify(cartItems));
+
+      // Append the receipt file if it exists
+      if (receiptFile) {
+        formData.append("proof_image", receiptFile);
+      }
+
+      try {
+        await createOrder(formData);
+      } catch (error) {
+        console.error("Failed to create order:", error);
+        toast.error("Failed to create order. Please try again.");
+        return;
+      }
+
       navigate("/order-confirmed", {
         state: {
-          formDetails: formDetailsToPass,
+          formDetails,
           cartItems,
           subtotal,
           paymentMethod: formDetails.paymentMethod,
@@ -389,38 +402,36 @@ const Checkout = () => {
     try {
       setLoading(true);
 
-      // Ensure voucher code is entered
-      const voucherCode = voucherInputRef.current.value; // Use ref to get input value
+      const voucherCode = voucherInputRef.current.value;
       if (!voucherCode) {
         toast.error("Please enter a voucher code.");
         return;
       }
 
-      // Call the applyVoucher API with the voucher code and subtotal
       const response = await applyVoucher(
         voucherCode,
         subtotal,
         profileData.customer_id,
       );
-
-      // Check if there's an error in the response
+      console.log("Voucher response:", response);
       if (response.error) {
         toast.error(response.error);
         return;
       }
 
       // Successfully applied voucher
-      const { discount } = response;
+      const { discount, voucher_id } = response;
       setVoucherDiscount(discount);
+      setVoucherId(voucher_id);
+
       toast.success(
         `Voucher applied successfully! You saved ₱${(discount || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       );
-      voucherInputRef.current.value = ""; // Use ref to clear input field
+      voucherInputRef.current.value = "";
     } catch (error) {
       if (error.response && error.response.data && error.response.data.error) {
         toast.error(error.response.data.error);
       } else {
-        // Fallback for any unexpected errors
         toast.error("Failed to apply voucher. Please try again.");
       }
       console.error("Failed to apply voucher:", error);
@@ -429,15 +440,19 @@ const Checkout = () => {
     }
   };
 
+  useEffect(() => {
+    console.log("Updated Voucher applied ID:", voucherId);
+    console.log("Updated Voucher applied discount:", voucherDiscount);
+  }, [voucherId, voucherDiscount]);
+
   const handleRemoveVoucher = () => {
-    setVoucherDiscount(0); // Reset the discount value to zero
+    setVoucherDiscount(0);
     if (voucherInputRef.current) {
-      voucherInputRef.current.value = ""; // Clear the voucher code input field
+      voucherInputRef.current.value = "";
     }
     toast.info("Voucher removed successfully");
   };
 
-  // Clear local storage when the order is completed or manually if needed
   const handleClearCheckoutData = () => {
     localStorage.removeItem("checkoutFormDetails");
     localStorage.removeItem("checkoutVoucherCode");
@@ -794,12 +809,25 @@ const Checkout = () => {
                           accept=".jpg,.jpeg,.png,.pdf"
                           onChange={(e) => handleFileChange(e, "GCash")}
                           style={{ display: "none" }}
+                          disabled={
+                            uploadedPaymentMethod &&
+                            uploadedPaymentMethod !== "GCash"
+                          }
                         />
                       </label>
-                      {receiptFile && (
-                        <p className="italic text-gray-400 mt-2 text-sm">
-                          File: <b className="text-black">{receiptFile.name}</b>
-                        </p>
+                      {uploadedPaymentMethod === "GCash" && receiptFile && (
+                        <div className="flex items-center mt-2">
+                          <p className="italic text-gray-400 text-sm">
+                            File:{" "}
+                            <b className="text-black">{receiptFile.name}</b>
+                          </p>
+                          <button
+                            onClick={handleRemoveFile}
+                            className="ml-2 text-red-500 text-xs"
+                          >
+                            Remove
+                          </button>
+                        </div>
                       )}
                     </div>
                   )}
@@ -822,6 +850,10 @@ const Checkout = () => {
                             paymentMethod: "bank",
                           });
                         }}
+                        disabled={
+                          uploadedPaymentMethod &&
+                          uploadedPaymentMethod !== "bank"
+                        }
                       />
                       <span className="font-bold">Bank Transfer</span>
                     </label>
@@ -841,9 +873,33 @@ const Checkout = () => {
                         Account Number: <b>1234-5678-9012</b>
                       </p>
                       <p className="text-sm">Account Name: Alofa Haircare</p>
-                      <button className="bg-gray-600 hover:bg-gray-800 text-white py-2 px-4 rounded flex items-center gap-2 mt-4">
+                      <label className="bg-gray-600 hover:bg-gray-800 text-white py-2 px-4 rounded w-40 whitespace-normal text-center inline-block">
                         Upload receipt
-                      </button>
+                        <input
+                          type="file"
+                          accept=".jpg,.jpeg,.png,.pdf"
+                          onChange={(e) => handleFileChange(e, "bank")}
+                          style={{ display: "none" }}
+                          disabled={
+                            uploadedPaymentMethod &&
+                            uploadedPaymentMethod !== "bank"
+                          }
+                        />
+                      </label>
+                      {uploadedPaymentMethod === "bank" && receiptFile && (
+                        <div className="flex items-center mt-2">
+                          <p className="italic text-gray-400 text-sm">
+                            File:{" "}
+                            <b className="text-black">{receiptFile.name}</b>
+                          </p>
+                          <button
+                            onClick={handleRemoveFile}
+                            className="ml-2 text-red-500 text-xs"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

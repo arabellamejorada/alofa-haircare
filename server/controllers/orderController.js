@@ -1,15 +1,40 @@
 const pool = require('../db.js');
 
 const createOrder = async (req, res) => {
-  const { orderDetails, cartItems  } = req.body;
+    const orderDetails = JSON.parse(req.body.orderDetails);
+    const cartItems = JSON.parse(req.body.cartItems);  
+    const proofImage = req.file ? req.file.path : null;
 
-  console.log('orderDetails received:', orderDetails);
-  console.log('cartItems received:', cartItems);
+    console.log('Order details received:', orderDetails);
+    console.log('Cart items received:', cartItems);
+    console.log('Proof image path:', proofImage);
+
   try {
     // Start a transaction
     await pool.query('BEGIN');
 
-    // Step 1: Insert order details
+    // Look for J&T Express shipping method
+    const shippingMethodResult = await pool.query(
+      `SELECT * FROM shipping_method WHERE courier = 'J&T Express'`
+    );
+    
+    // Step 1: Insert shipping details and get the shipping_id
+    const shippingResult = await pool.query(
+      `INSERT INTO shipping (shipping_date, shipping_fee, tracking_number, shipping_method_id, shipping_address_id)
+       VALUES (NOW(), $1, $2, $3, $4)
+       RETURNING shipping_id`,
+      [
+        orderDetails.shipping_fee || 200, // Default shipping fee for the mean time
+        orderDetails.tracking_number || null,
+        orderDetails.shipping_method_id || shippingMethodResult.rows[0].shipping_method_id,
+        orderDetails.shipping_address_id
+      ]
+    );
+
+    const shipping_id = shippingResult.rows[0].shipping_id;
+    console.log('Generated shipping_id:', shipping_id);
+
+    // Step 2: Insert order details with the generated shipping_id
     const orderResult = await pool.query(
       `INSERT INTO orders (customer_id, total_amount, date_ordered, order_status, payment_method, payment_status, proof_image, shipping_id, subtotal, voucher_id, total_discount)
        VALUES ($1, $2, NOW(), 'pending', $3, 'pending', $4, $5, $6, $7, $8)
@@ -17,9 +42,9 @@ const createOrder = async (req, res) => {
       [
         orderDetails.customer_id,
         orderDetails.total_amount,
-        orderDetails.payment_method,
-        orderDetails.proof_image,
-        orderDetails.shipping_id,
+        orderDetails.paymentMethod,
+        proofImage || null,
+        shipping_id, // Use the generated shipping_id
         orderDetails.subtotal,
         orderDetails.voucher_id,
         orderDetails.total_discount,
@@ -29,8 +54,8 @@ const createOrder = async (req, res) => {
     const newOrder = orderResult.rows[0];
     console.log('New order:', newOrder);
 
-    // Step 2: Insert order items
-    const orderItemsValues = cartItems.map(item => [
+    // Step 3: Insert order items
+    const orderItemsValues = cartItems.flatMap(item => [
       newOrder.order_id,
       item.variation_id,
       item.quantity,
@@ -46,6 +71,31 @@ const createOrder = async (req, res) => {
       orderItemsValues
     );
 
+    // Update current_uses of voucher and set it to inactive if it reached its limit
+    if (orderDetails.voucher_id) {
+      await pool.query(
+        `INSERT INTO used_vouchers (voucher_id, customer_id, used_at) VALUES ($1, $2 , NOW())`,
+        [orderDetails.voucher_id, orderDetails.customer_id]
+      );
+
+      await pool.query(
+        `UPDATE vouchers SET current_uses = current_uses + 1 WHERE voucher_id = $1`,
+        [orderDetails.voucher_id]
+      );
+
+      const voucherResult = await pool.query(
+        `SELECT * FROM vouchers WHERE voucher_id = $1`,
+        [orderDetails.voucher_id]
+      );
+
+      const voucher = voucherResult.rows[0];
+      if (voucher.current_uses >= voucher.max_uses) {
+        await pool.query(
+          `UPDATE vouchers SET is_active = false WHERE voucher_id = $1`,
+          [orderDetails.voucher_id]
+        );
+      }
+    }
     // Commit the transaction
     await pool.query('COMMIT');
 
