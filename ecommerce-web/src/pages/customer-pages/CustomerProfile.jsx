@@ -70,7 +70,7 @@ const CustomerProfile = () => {
         </div>
       )}
 
-      <div className="flex flex-col lg:flex-row items-start justify-center pt-28 px-4 gap-2 max-w-6xl mx-auto overflow-hidden">
+      <div className="flex flex-col lg:flex-row items-start justify-center pt-28 px-4 gap-10 max-w-6xl mx-auto overflow-hidden">
         {/* Sidebar */}
         <aside className="w-full lg:w-1/4 mb-8 lg:mb-0 flex-shrink-0">
           {/* User Info */}

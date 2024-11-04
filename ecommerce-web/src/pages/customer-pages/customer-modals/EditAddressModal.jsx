@@ -204,7 +204,7 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
       region,
       province,
       city,
-      barangay,
+      // barangay,
       phone_number,
       zip_code,
     } = formDetails;
