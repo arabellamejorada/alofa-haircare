@@ -5,6 +5,7 @@ router.get('/test', (req, res) => res.status(200).send('Test route working'));
 
 router.get('/voucher/all', voucherController.getAllVouchers); 
 router.post('/voucher/apply', voucherController.applyVoucher);
+router.get('/voucher/code/:code', voucherController.getVoucherByCode);
 router.get('/voucher/:id', voucherController.getVoucherById);
 router.post('/voucher', voucherController.createVoucher);
 router.put('/voucher/:id', voucherController.updateVoucher);

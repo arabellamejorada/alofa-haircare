@@ -14,13 +14,7 @@ const Navbar = () => {
   const navigate = useNavigate(); // For navigation
 
   const { user, role, signOut } = useContext(AuthContext); // Use 'user' instead of 'token'
-  const { resetCart } = useContext(CartContext); // Reset cart items
-
-  // const totalPrice = cartItems.reduce((sum, item) => {
-  //   const price = parseFloat(item.unit_price) || 0;
-  //   const quantity = item.quantity || 0;
-  //   return sum + price * quantity;
-  // }, 0);
+  const { resetCart } = useContext(CartContext);
 
   const isAuthPage =
     location.pathname === "/login" || location.pathname === "/signup";

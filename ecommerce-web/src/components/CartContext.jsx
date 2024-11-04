@@ -5,7 +5,6 @@ import {
   addCartItem,
   updateCartItem,
   deleteCartItem,
-  getCartById,
   getCartByCustomerId,
 } from "../api/cart";
 import { AuthContext } from "./AuthContext";
@@ -18,11 +17,15 @@ const CartProvider = ({ children }) => {
   const { user, justLoggedIn, setJustLoggedIn } = useContext(AuthContext);
   const customerProfileId = user?.id; // Use 'user' instead of 'token'
 
-  const [cartItems, setCartItems] = useState([]);
+  const [cartItems, setCartItems] = useState(() => {
+    // Initialize cart from localStorage or empty array if not available
+    const storedCart = localStorage.getItem("cartItems");
+    return storedCart ? JSON.parse(storedCart) : [];
+  });
   const [cartId, setCartId] = useState(
     sessionStorage.getItem("guest_cart_id") || null,
   );
-  const [subtotal, setSubtotal] = useState(0);
+  const [subtotal, setSubtotal] = useState();
   const [loading, setLoading] = useState(false);
 
   const createGuestCart = async () => {
@@ -66,14 +69,43 @@ const CartProvider = ({ children }) => {
     }
   }, [justLoggedIn, customerProfileId]);
 
+  // CartProvider component useEffect for initialization
+  useEffect(() => {
+    const savedCartId = localStorage.getItem("cartId");
+    const savedCartItems = localStorage.getItem("cartItems");
+
+    if (savedCartId) setCartId(savedCartId);
+    if (savedCartItems) setCartItems(JSON.parse(savedCartItems));
+
+    if (customerProfileId && !savedCartId) {
+      // Fetch the user's cart if logged in and no saved cart ID
+      fetchCustomerCart();
+    }
+  }, [customerProfileId]);
+
   const addToCart = async (product) => {
     try {
-      // Ensure a cart ID exists (either guest or user)
+      // Check if cartId exists, if not, determine if we need to fetch or create a cart
       let currentCartId = cartId;
+
       if (!currentCartId) {
-        const createdCart = await createGuestCart();
-        currentCartId = createdCart.cart_id; // Use the cart_id from the newly created cart
-        setCartId(currentCartId); // Update the state
+        if (customerProfileId) {
+          // Fetch existing cart for logged-in user if cartId is missing
+          const fetchedCart = await getCartByCustomerId(customerProfileId);
+          if (fetchedCart) {
+            currentCartId = fetchedCart.cart.cart_id;
+            setCartId(currentCartId);
+            setCartItems(fetchedCart.items);
+            calculateSubtotal(fetchedCart.items);
+          } else {
+            throw new Error("No active cart found for customer.");
+          }
+        } else {
+          // Create a guest cart if no user is logged in
+          const createdCart = await createGuestCart();
+          currentCartId = createdCart.cart_id;
+          setCartId(currentCartId);
+        }
       }
 
       // Now, add the item to the cart using the confirmed cart ID
@@ -200,14 +232,17 @@ const CartProvider = ({ children }) => {
 
   const calculateSubtotal = (items) => {
     const newSubtotal = items.reduce((sum, item) => sum + item.item_total, 0);
-    setSubtotal(newSubtotal);
+    setSubtotal(Number(newSubtotal));
   };
 
   // Reset the cart on logout
   const resetCart = async () => {
     setCartItems([]);
-    setSubtotal(0);
+    setSubtotal(Number(0));
     setCartId(null);
+    localStorage.removeItem("cartId");
+    localStorage.removeItem("cartItems");
+    localStorage.removeItem("cart_subtotal");
     sessionStorage.removeItem("guest_cart_id");
 
     // Create a new guest cart after resetting

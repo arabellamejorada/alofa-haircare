@@ -51,7 +51,6 @@ const SelectAddressModal = ({ profileData, onClose, onSave }) => {
       const selectedAddress = addresses.find(
         (address) => address.shipping_address_id === selectedAddressId,
       );
-
       onSave(selectedAddress);
       onClose();
     } else {

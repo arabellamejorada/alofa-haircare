@@ -9,8 +9,16 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(
     () => localStorage.getItem("auth_token") || null,
   );
-  const [user, setUser] = useState(null); // Add this line
-  const [role, setRole] = useState(null);
+
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
+
+  const [role, setRole] = useState(() => {
+    return localStorage.getItem("role") || null;
+  });
+
   const [loading, setLoading] = useState(true);
   const [justLoggedIn, setJustLoggedIn] = useState(false);
 
@@ -27,6 +35,7 @@ export const AuthProvider = ({ children }) => {
 
       // Set role based on role_id from profiles table
       setRole(data.role_id === 3 ? "employee" : "other");
+      localStorage.setItem("role", data.role_id === 3 ? "employee" : "other");
     } catch (err) {
       console.error("Error fetching role:", err.message);
       setRole(null); // Reset role if error occurs
@@ -46,7 +55,11 @@ export const AuthProvider = ({ children }) => {
           localStorage.setItem("auth_token", sessionData.session.access_token);
 
           // Set the user object
-          setUser(sessionData.session.user); // Add this line
+          setUser(sessionData.session.user);
+          localStorage.setItem(
+            "user",
+            JSON.stringify(sessionData.session.user),
+          );
 
           // Fetch the user's role
           await fetchUserRole(sessionData.session.user.id);
@@ -56,12 +69,17 @@ export const AuthProvider = ({ children }) => {
           setUser(null); // Add this line
           setRole(null);
           localStorage.removeItem("auth_token");
+          localStorage.removeItem("user");
+          localStorage.removeItem("role");
         }
       } catch (err) {
         console.error("Error fetching session:", err.message);
         setToken(null);
-        setUser(null); // Add this line
+        setUser(null);
         setRole(null);
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("user");
+        localStorage.removeItem("role");
       } finally {
         setLoading(false);
       }
@@ -80,7 +98,10 @@ export const AuthProvider = ({ children }) => {
 
       setToken(data.session.access_token);
       localStorage.setItem("auth_token", data.session.access_token);
+
       setUser(data.user);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
       await fetchUserRole(data.user.id);
       setJustLoggedIn(true);
       return data;
@@ -89,7 +110,6 @@ export const AuthProvider = ({ children }) => {
       throw err;
     }
   };
-
   const signOut = async () => {
     try {
       const { error } = await supabase.auth.signOut();
@@ -100,6 +120,14 @@ export const AuthProvider = ({ children }) => {
       setRole(null);
       setJustLoggedIn(false);
       localStorage.removeItem("auth_token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("role");
+      localStorage.removeItem("cartItems");
+      localStorage.removeItem("cart_subtotal");
+      localStorage.removeItem("checkoutFormDetails");
+      localStorage.removeItem("checkoutVoucherCode");
+      localStorage.removeItem("checkoutVoucherDiscount");
+
       console.log("User signed out successfully.");
     } catch (err) {
       console.error("Error during sign-out:", err.message);

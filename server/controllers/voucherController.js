@@ -44,6 +44,21 @@ const getVoucherById = async (req, res) => {
   }
 };
 
+// Get a voucher by code
+const getVoucherByCode = async (req, res) => {
+  const { code } = req.params;
+  try {
+    const result = await pool.query(`SELECT * FROM vouchers WHERE code = $1`, [code]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Voucher not found' });
+    }
+    res.status(200).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error fetching voucher:', error);
+    res.status(500).json({ error: 'Failed to fetch voucher' });
+  }
+};
+
 // Create a new voucher
 const createVoucher = async (req, res) => {
   const {
@@ -145,7 +160,6 @@ const deleteVoucher = async (req, res) => {
   }
 };
 
-
 const applyVoucher = async (req, res) => {
   const { code, subtotal, customer_id } = req.body;
   console.log('Applying voucher:', code, subtotal, customer_id);
@@ -178,11 +192,11 @@ const applyVoucher = async (req, res) => {
     if (minSpend && subtotal < minSpend) {
       console.error(`Minimum spend requirement not met. Required: ${minSpend}, Subtotal: ${subtotal}`);
       return res.status(400).json({
-      error: `Minimum spend of ₱${minSpend.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} is required to use this voucher.`,
+        error: `Minimum spend of ₱${minSpend.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} is required to use this voucher.`,
       });
     }
 
-    // Step 4: Retrieve the customer's used vouchers count from the `used_vouchers` table
+    // Step 4: Retrieve the customer's used vouchers count
     let customerVoucherUsage = 0;
     try {
       const customerUsageResult = await pool.query(
@@ -203,53 +217,34 @@ const applyVoucher = async (req, res) => {
       return res.status(400).json({ error: 'Voucher usage limit per customer has been reached' });
     }
 
- // Convert discount_value and max_discount to numbers, setting defaults if undefined
-const discountValue = voucher.discount_value ? Number(voucher.discount_value) : 0;
-const maxDiscount = voucher.max_discount ? Number(voucher.max_discount) : 0;
+    // Convert discount_value and max_discount to numbers
+    const discountValue = voucher.discount_value ? Number(voucher.discount_value) : 0;
+    const maxDiscount = voucher.max_discount ? Number(voucher.max_discount) : 0;
 
-// Step 6: Calculate the discount based on voucher type
-let discount = 0;
+    // Step 6: Calculate the discount
+    let discount = 0;
 
-if (voucher.type === 'percentage') {
-  // Calculate percentage-based discount
-  discount = (subtotal * discountValue) / 100;
+    if (voucher.type === 'percentage') {
+      discount = (subtotal * discountValue) / 100;
+      if (maxDiscount > 0 && discount > maxDiscount) {
+        discount = maxDiscount;
+      }
+    } else if (voucher.type === 'flat') {
+      discount = discountValue;
+      if (maxDiscount > 0 && discount > maxDiscount) {
+        discount = maxDiscount;
+      }
+    }
 
-  // Apply max discount cap if it’s defined and discount exceeds it
-  if (maxDiscount > 0 && discount > maxDiscount) {
-    discount = maxDiscount;
-  }
-} else if (voucher.type === 'flat') {
-  // Apply flat discount directly
-  discount = discountValue;
-
-  // Apply max discount cap if it’s defined and discount exceeds it
-  if (maxDiscount > 0 && discount > maxDiscount) {
-    discount = maxDiscount;
-  }
-}
-
-// Log the calculated discount for debugging purposes
-console.log('Calculated discount:', discount);
+    console.log('Calculated discount:', discount);
 
     // Step 7: Calculate the new total after applying the discount
     const totalAmount = subtotal - discount;
     console.log('Total amount after discount:', totalAmount);
 
-    // Step 8: Insert the voucher usage record into the `used_vouchers` table
-    try {
-      await pool.query(
-        `INSERT INTO used_vouchers (customer_id, voucher_id, used_at) VALUES ($1, $2, NOW())`,
-        [customer_id, voucher.voucher_id]
-      );
-      console.log('Voucher usage record inserted');
-    } catch (insertError) {
-      console.error('Error inserting voucher usage record:', insertError);
-      return res.status(500).json({ error: 'Error recording voucher usage' });
-    }
-
-    // Step 9: Return success response
+    // Step 8: Send response with calculated discount and new total
     res.status(200).json({
-      message: 'Voucher applied successfully',
+      message: 'Voucher validated successfully',
       discount,
       totalAmount,
     });
@@ -259,9 +254,12 @@ console.log('Calculated discount:', discount);
   }
 };
 
+
+
 module.exports = {
   getAllVouchers,
   getVoucherById,
+  getVoucherByCode,
   createVoucher,
   updateVoucher,
   deleteVoucher,

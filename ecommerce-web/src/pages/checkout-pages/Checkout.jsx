@@ -6,6 +6,8 @@ import {
   useMemo,
   useRef,
 } from "react";
+import { ClipLoader } from "react-spinners";
+import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { CartContext } from "../../components/CartContext.jsx";
 import SelectAddressModal from "./SelectAddressModal.jsx";
@@ -15,10 +17,9 @@ import GCashQR from "../../../../public/static/gcash-qr.jpg";
 import axios from "axios";
 import { FaRegAddressCard } from "react-icons/fa";
 import { AuthContext } from "../../components/AuthContext.jsx";
-import { ClipLoader } from "react-spinners";
 import { getCustomerByProfileId } from "../../api/customer.js";
-import { toast } from "sonner";
 import { applyVoucher } from "../../api/cart.js";
+import { createOrder } from "../../api/order.js";
 
 const Checkout = () => {
   const { user } = useContext(AuthContext);
@@ -36,6 +37,22 @@ const Checkout = () => {
   const [provinces, setProvinces] = useState([]);
   const [cities, setCities] = useState([]);
   const [barangays, setBarangays] = useState([]);
+
+  const [formDetails, setFormDetails] = useState({
+    email: "",
+    firstName: "",
+    lastName: "",
+    street: "",
+    region: { name: "", code: "" },
+    province: { name: "", code: "" },
+    city: { name: "", code: "" },
+    barangay: { name: "", code: "" },
+    phoneNumber: "",
+    postalCode: "",
+    paymentMethod: "",
+  });
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -58,21 +75,48 @@ const Checkout = () => {
     console.log("Checkout Cart Items:", cartItems);
   }, [cartItems]);
 
-  const [formDetails, setFormDetails] = useState({
-    email: "",
-    firstName: "",
-    lastName: "",
-    street: "",
-    region: { name: "", code: "" },
-    province: { name: "", code: "" },
-    city: { name: "", code: "" },
-    barangay: { name: "", code: "" },
-    phoneNumber: "",
-    postalCode: "",
-    paymentMethod: "",
-  });
+  // Load saved state from local storage when component mounts
+  useEffect(() => {
+    const savedFormDetails = JSON.parse(
+      localStorage.getItem("checkoutFormDetails"),
+    );
+    const savedVoucherCode = localStorage.getItem("checkoutVoucherCode");
+    const savedVoucherDiscount = localStorage.getItem(
+      "checkoutVoucherDiscount",
+    );
 
-  const navigate = useNavigate();
+    if (savedFormDetails) setFormDetails(savedFormDetails);
+    if (savedVoucherCode) setVoucherCode(savedVoucherCode);
+    if (savedVoucherDiscount) setVoucherDiscount(Number(savedVoucherDiscount));
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("checkoutFormDetails", JSON.stringify(formDetails));
+  }, [formDetails]); // This will save any change to formDetails
+
+  useEffect(() => {
+    localStorage.setItem("checkoutVoucherCode", voucherCode);
+  }, [voucherCode]);
+
+  useEffect(() => {
+    localStorage.setItem("checkoutVoucherDiscount", voucherDiscount);
+  }, [voucherDiscount]);
+
+  useEffect(() => {
+    if (formDetails.region.code) {
+      fetchProvinces(formDetails.region.code);
+    }
+    if (formDetails.province.code) {
+      fetchCities(formDetails.province.code);
+    }
+    if (formDetails.city.code) {
+      fetchBarangays(formDetails.city.code);
+    }
+  }, [
+    formDetails.region.code,
+    formDetails.province.code,
+    formDetails.city.code,
+  ]);
 
   const handleOpenAddressModal = () => {
     setIsAddressModalOpen(true);
@@ -257,7 +301,7 @@ const Checkout = () => {
     });
   };
 
-  const handleCompleteOrder = () => {
+  const handleCompleteOrder = async () => {
     try {
       setLoading(true);
       if (
@@ -293,8 +337,15 @@ const Checkout = () => {
         barangayName:
           barangays.find((barangay) => barangay.code === formDetails.barangay)
             ?.name || "",
+        customer_id: profileData.customer_id,
+        proof_image: "",
+        subtotal: subtotal,
+        voucherCode: voucherCode,
+        total_discount: voucherDiscount,
+        total_amount: subtotal - voucherDiscount,
       };
 
+      await createOrder(formDetailsToPass, cartItems);
       navigate("/order-confirmed", {
         state: {
           formDetails: formDetailsToPass,
@@ -303,6 +354,9 @@ const Checkout = () => {
           paymentMethod: formDetails.paymentMethod,
         },
       });
+
+      // Clear local storage after order is completed
+      handleClearCheckoutData();
     } catch (error) {
       toast.error("Failed to complete order. Please try again.");
       console.error("Failed to complete order:", error);
@@ -336,16 +390,12 @@ const Checkout = () => {
       }
 
       // Successfully applied voucher
-      const { discount, newTotal } = response;
+      const { discount } = response;
       setVoucherDiscount(discount);
       toast.success(
-        `Voucher applied successfully! You saved ₱${discount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+        `Voucher applied successfully! You saved ₱${(discount || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       );
-
-      // Clear the voucher input field
       voucherInputRef.current.value = ""; // Use ref to clear input field
-
-      console.log("New Total after Discount:", newTotal);
     } catch (error) {
       if (error.response && error.response.data && error.response.data.error) {
         toast.error(error.response.data.error);
@@ -365,6 +415,13 @@ const Checkout = () => {
       voucherInputRef.current.value = ""; // Clear the voucher code input field
     }
     toast.info("Voucher removed successfully");
+  };
+
+  // Clear local storage when the order is completed or manually if needed
+  const handleClearCheckoutData = () => {
+    localStorage.removeItem("checkoutFormDetails");
+    localStorage.removeItem("checkoutVoucherCode");
+    localStorage.removeItem("checkoutVoucherDiscount");
   };
 
   return (
@@ -815,11 +872,13 @@ const Checkout = () => {
                 onChange={(e) => setVoucherCode(e.target.value)} // Update voucherCode state on change
                 placeholder="Discount voucher code"
                 className="w-2/3 border p-3 rounded"
+                disabled={voucherDiscount > 0} // Disable if a voucher is applied
               />
               <button
                 type="button"
                 onClick={handleApplyVoucher}
                 className="bg-pink-300 w-1/3 p-3 ml-2 rounded"
+                disabled={voucherDiscount > 0} // Disable if a voucher is applied
               >
                 Apply
               </button>
@@ -833,11 +892,20 @@ const Checkout = () => {
                   {cartItems.reduce((total, item) => total + item.quantity, 0)}{" "}
                   items
                 </span>
-                <span>₱{subtotal.toLocaleString()}</span>
+                <span>
+                  ₱
+                  {subtotal.toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
               </p>
               <p className="flex justify-between mb-2 text-gray-500">
-                <span>Shipping Fee</span>
-                <span>₱{(200).toLocaleString()}</span>
+                <span>Shipping Fee</span>₱
+                {(200).toLocaleString("en-US", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}{" "}
               </p>
 
               {voucherDiscount > 0 && (
@@ -850,7 +918,13 @@ const Checkout = () => {
                     >
                       [{voucherCode}]Remove
                     </button>
-                    <span>-₱{voucherDiscount.toLocaleString()}</span>
+                    <span>
+                      -₱
+                      {voucherDiscount.toLocaleString("en-US", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </span>
                   </div>
                 </div>
               )}
@@ -858,7 +932,11 @@ const Checkout = () => {
               <p className="flex justify-between font-bold text-3xl">
                 <span>Total</span>
                 <span>
-                  ₱{(subtotal + 200 - voucherDiscount).toLocaleString()}
+                  ₱
+                  {(subtotal + 200 - voucherDiscount).toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </span>
               </p>
             </div>
