@@ -3,9 +3,8 @@ import PropTypes from "prop-types";
 import { getShippingAddressesByCustomerId } from "../../api/customer.js";
 import { ClipLoader } from "react-spinners";
 import { toast } from "sonner";
-import { supabase } from "../../supabaseClient";
 
-const SelectAddressModal = ({ onClose, onSave }) => {
+const SelectAddressModal = ({ profileData, onClose, onSave }) => {
   const [loading, setLoading] = useState(false);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [addresses, setAddresses] = useState([]);
@@ -14,17 +13,14 @@ const SelectAddressModal = ({ onClose, onSave }) => {
     const fetchAddresses = async () => {
       try {
         setLoading(true);
-        const { data: { user }, error } = await supabase.auth.getUser();
-        if (error) {
-          throw error;
-        }
-        const customerId = user?.id;
-        if (!customerId) {
+        const customer_id = profileData.customer_id;
+        console.log("customer_id", customer_id);
+        if (!customer_id) {
           throw new Error("Customer ID not found");
         }
-  
+
         // Fetch addresses
-        const addresses = await getShippingAddressesByCustomerId(customerId);
+        const addresses = await getShippingAddressesByCustomerId(customer_id);
         if (addresses.length === 0) {
           setAddresses([]);
         } else {
@@ -34,8 +30,10 @@ const SelectAddressModal = ({ onClose, onSave }) => {
         if (error.response && error.response.status === 404) {
           setAddresses([]);
           console.log("No addresses found for this customer.");
+          toast.error("No addresses found for this customer.");
         } else {
           console.error("Error fetching addresses:", error);
+          toast.error("Error fetching addresses.");
         }
       } finally {
         setLoading(false);
@@ -51,10 +49,9 @@ const SelectAddressModal = ({ onClose, onSave }) => {
   const handleSaveAddress = () => {
     if (selectedAddressId) {
       const selectedAddress = addresses.find(
-        (address) => address.shipping_address_id === selectedAddressId
+        (address) => address.shipping_address_id === selectedAddressId,
       );
       onSave(selectedAddress);
-      toast.success("Address selected successfully.");
       onClose();
     } else {
       toast.error("Please select an address.");
@@ -63,14 +60,25 @@ const SelectAddressModal = ({ onClose, onSave }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-lg">
-        <h2 className="text-2xl font-bold text-alofa-pink mb-4">Select Address</h2>
+      <div className="relative bg-white p-6 rounded-lg shadow-md w-full max-w-lg">
+        <button
+          className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 focus:outline-none focus:ring focus:ring-pink-200 rounded-full"
+          onClick={onClose}
+          aria-label="Close modal"
+        >
+          &times;
+        </button>
+        <h2 className="text-2xl font-bold text-alofa-pink mb-4">
+          Select Address
+        </h2>
         {loading ? (
           <div className="flex justify-center items-center">
             <ClipLoader size={50} color="#E53E3E" loading={loading} />
           </div>
         ) : addresses.length === 0 ? (
-          <p className="text-gray-500">No addresses found. Please add a new address.</p>
+          <p className="text-gray-500">
+            No addresses found. Please add a new address.
+          </p>
         ) : (
           <div className="space-y-4">
             {addresses.map((address) => (
@@ -86,7 +94,9 @@ const SelectAddressModal = ({ onClose, onSave }) => {
                 <input
                   type="radio"
                   checked={selectedAddressId === address.shipping_address_id}
-                  onChange={() => handleSelectAddress(address.shipping_address_id)}
+                  onChange={() =>
+                    handleSelectAddress(address.shipping_address_id)
+                  }
                   className="mt-1"
                 />
                 <div>
