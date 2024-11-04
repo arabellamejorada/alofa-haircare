@@ -1,7 +1,7 @@
 import { useContext, useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { CartContext } from "../../components/CartContext.jsx";
-import CheckoutAddressModal from './CheckoutAddressModal.jsx';
+import SelectAddressModal from './SelectAddressModal.jsx';
 import GCashLogo from "../../../../public/static/gcash-logo.svg";
 import BPILogo from "../../../../public/static/bpi-logo.svg";
 import GCashQR from "../../../../public/static/gcash-qr.jpg";
@@ -10,6 +10,13 @@ import { FaRegAddressCard } from "react-icons/fa";
 
 const Checkout = () => {
   const { cartItems, subtotal } = useContext(CartContext);
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState(null);
+
+  useEffect(() => {
+    console.log("Checkout Cart Items:", cartItems);
+  }, [cartItems]);
+
   const [formDetails, setFormDetails] = useState({
     email: "",
     region: "",
@@ -24,6 +31,31 @@ const Checkout = () => {
   });
 
   const navigate = useNavigate();
+
+  const handleOpenAddressModal = () => {
+    setIsAddressModalOpen(true);
+  };
+
+  const handleCloseAddressModal = () => {
+    setIsAddressModalOpen(false);
+  };
+
+  const handleSaveAddress = (address) => {
+    setSelectedAddress(address);
+    setFormDetails((prevFormDetails) => ({
+      ...prevFormDetails,
+      firstName: address.first_name,
+      lastName: address.last_name,
+      street: address.address_line,
+      barangay: address.barangay?.name || "",
+      city: address.city?.name || "",
+      province: address.province?.name || "",
+      region: address.region?.name || "",
+      phoneNumber: address.phone_number,
+      postalCode: address.zip_code,
+    }));
+    setIsAddressModalOpen(false);
+  }
 
   // State for Regions, Provinces, Cities, and Barangays
   const [regions, setRegions] = useState([]);
@@ -210,25 +242,6 @@ const Checkout = () => {
     });
   };
 
-  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
-  const [selectedAddress, setSelectedAddress] = useState(null);
-
-  // Function to open the modal
-  const handleOpenAddressModal = () => {
-    setIsAddressModalOpen(true);
-  };
-
-  // Function to close the modal
-  const handleCloseAddressModal = () => {
-    setIsAddressModalOpen(false);
-  };
-
-  // Function to handle the selected address
-  const handleSelectAddress = (addressId) => {
-    setSelectedAddress(addressId);
-    setIsAddressModalOpen(false); // Close the modal after selecting an address
-  };
-
   return (
     <div className="pt-15 bg-white p-8 flex justify-center">
       <div className="flex flex-col lg:flex-row items-start justify-between w-full max-w-5xl gap-8">
@@ -275,9 +288,10 @@ const Checkout = () => {
 
             {/* Render the modal conditionally */}
             {isAddressModalOpen && (
-              <CheckoutAddressModal
+              <SelectAddressModal
+                customerId={1} // Hardcoded customer ID
                 onClose={handleCloseAddressModal}
-                onSelectAddress={handleSelectAddress}
+                onSave={handleSaveAddress}
               />
             )}
 
@@ -533,19 +547,19 @@ const Checkout = () => {
             <div className="accordion overflow-hidden">
               {/* Gcash Payment */}
               <div
-                className={`border rounded-lg p-4 mb-4 cursor-pointer transition-all duration-700 ease-in-out ${formDetails.paymentMethod === "gcash" ? "max-h-screen" : "max-h-20"}`}
+                className={`border rounded-lg p-4 mb-4 cursor-pointer transition-all duration-700 ease-in-out ${formDetails.paymentMethod === "GCash" ? "max-h-screen" : "max-h-20"}`}
               >
                 <div className="flex justify-between items-center">
                   <label className="flex items-center gap-2">
                     <input
                       type="radio"
                       name="paymentMethod"
-                      value="gcash"
-                      checked={formDetails.paymentMethod === "gcash"}
+                      value="GCash"
+                      checked={formDetails.paymentMethod === "GCash"}
                       onChange={() => {
                         setFormDetails({
                           ...formDetails,
-                          paymentMethod: "gcash",
+                          paymentMethod: "GCash",
                         });
                       }}
                     />
@@ -553,7 +567,7 @@ const Checkout = () => {
                   </label>
                   <img src={GCashLogo} alt="GCash Logo" className="w-10" />
                 </div>
-                {formDetails.paymentMethod === "gcash" && (
+                {formDetails.paymentMethod === "GCash" && (
                   <div className="mt-4">
                     <p className="text-sm mb-2">
                       Please scan the QR code below to complete the payment:
@@ -654,7 +668,7 @@ const Checkout = () => {
                 </div>
                 <div className="flex-1 text-gray-500">
                   <p className="font-bold">{item.name}</p>
-                  <p className="text-sm text-gray-500">{item.variant}</p>
+                  <p className="text-sm text-gray-500">{item.variant?.type} {item.variant?.value}</p>
                 </div>
                 <p className="font-bold text-gray-500">₱{item.unit_price}</p>
               </div>
