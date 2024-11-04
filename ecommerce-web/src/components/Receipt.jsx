@@ -1,14 +1,17 @@
 import { useEffect, useState, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { CartContext } from '../components/CartContext';
+import { useLocation } from 'react-router-dom';
 
 const Receipt = ({ orderDetails }) => {
   const { cartItems, subtotal } = useContext(CartContext);
   const [orderDate, setOrderDate] = useState(null);
+  const location = useLocation();
+
+  const paymentMethod = orderDetails?.paymentMethod || location.state?.paymentMethod || '';
+  const discount = orderDetails?.discount || location.state?.discount || 0;
   const orderID = '0001'; // Placeholder for now
-  const paymentMethod = orderDetails?.paymentMethod || '';
   const shippingFee = 150; // Assuming fixed shipping fee for now
-  const discount = orderDetails?.discount || 0;
 
   useEffect(() => {
     setOrderDate(new Date());
@@ -32,7 +35,7 @@ const Receipt = ({ orderDetails }) => {
   const total = subtotal + shippingFee - discount;
 
   return (
-    <div className="relative max-w-lg mx-auto rounded-lg p-6 mt-10 z-20 shadow-xl">
+    <div className="relative max-w-lg mx-auto rounded-lg p-6 mt-10 z-20 shadow-xl bg-white">
       <div className="absolute w-[110%] left-1/2 transform shadow-md -translate-x-1/2 -top-4 h-4 bg-gray-200 rounded-t-full z-0"></div>
         <div 
             style={{bottom: '-1.85rem'}}

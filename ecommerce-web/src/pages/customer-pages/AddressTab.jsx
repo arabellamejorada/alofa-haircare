@@ -207,11 +207,11 @@ const AddressTab = ({ profileData }) => {
                       {address.phone_number}
                     </span>
                     <p className="text-sm text-gray-500">
-                      {address.address_line}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {address.barangay?.name}, {address.city?.name},{" "}
-                      {address.province?.name}, {address.region?.name},{" "}
+                      {address.address_line},
+                      {address.barangay?.name ? ` ${address.barangay.name},` : ""} 
+                      {address.city?.name ? ` ${address.city.name},` : ""}
+                      {address.province?.name ? ` ${address.province.name},` : ""}
+                      {address.region?.name ? ` ${address.region.name}, ` : ""} 
                       {address.zip_code}
                     </p>
                   </div>
