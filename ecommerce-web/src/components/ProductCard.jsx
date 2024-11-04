@@ -1,25 +1,31 @@
 import PropTypes from "prop-types";
 import { useState, useContext } from "react";
 import { CartContext } from "./CartContext.jsx";
-// import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 import { ClipLoader } from "react-spinners"; // Import the spinner component
 
 const ProductCard = ({ id, image, name, value, price, sku }) => {
   const { addToCart } = useContext(CartContext);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const navigate = useNavigate();
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (e) => {
+    e.stopPropagation();
     setIsAddingToCart(true);
     // Simulate a delay to show loading effect (you can remove this if unnecessary)
     setTimeout(() => {
       addToCart({ id, image, name, value, price, sku });
-
       setIsAddingToCart(false);
     }, 500); // Add a delay to simulate server response, if needed
   };
 
+  const handleCardClick = () => {
+    navigate(`/products/${id}`);
+  };
+
+
   return (
-    <div className="relative p-2 rounded-lg">
+    <div onClick={handleCardClick} className="relative p-2 rounded-lg cursor-pointer">
       {/* inner card with white background */}
       <div className="bg-white border-4 border-alofa-light-pink rounded-lg shadow-md overflow-hidden flex flex-col justify-between w-56 text-center">
         {/* Square image occupying the whole top */}

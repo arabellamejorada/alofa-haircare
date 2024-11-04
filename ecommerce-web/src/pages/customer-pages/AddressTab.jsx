@@ -170,7 +170,7 @@ const AddressTab = ({ profileData }) => {
         )}
         <div className="px-8 py-5 lg:px-8">
           {/* Header */}
-          <div className="flex justify-between items-center mb-2">
+          <div className="flex justify-between items-center mb-10">
             <h2 className="bg-gradient-to-b from-alofa-pink via-alofa-pink to-alofa-light-pink bg-clip-text text-transparent font-extrabold text-4xl">
               My Address
             </h2>
