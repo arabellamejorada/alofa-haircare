@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import { getShippingAddressesByCustomerId } from "../../api/customer.js";
 import { ClipLoader } from "react-spinners";
 import { toast } from "sonner";
-import { supabase } from "../../supabaseClient";
 
 const SelectAddressModal = ({ profileData, onClose, onSave }) => {
   const [loading, setLoading] = useState(false);
@@ -31,8 +30,10 @@ const SelectAddressModal = ({ profileData, onClose, onSave }) => {
         if (error.response && error.response.status === 404) {
           setAddresses([]);
           console.log("No addresses found for this customer.");
+          toast.error("No addresses found for this customer.");
         } else {
           console.error("Error fetching addresses:", error);
+          toast.error("Error fetching addresses.");
         }
       } finally {
         setLoading(false);
@@ -50,8 +51,8 @@ const SelectAddressModal = ({ profileData, onClose, onSave }) => {
       const selectedAddress = addresses.find(
         (address) => address.shipping_address_id === selectedAddressId,
       );
+
       onSave(selectedAddress);
-      toast.success("Address selected successfully.");
       onClose();
     } else {
       toast.error("Please select an address.");

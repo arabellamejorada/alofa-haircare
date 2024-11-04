@@ -125,4 +125,16 @@ export const mergeCarts = async (guest_cart_id, profile_id) => {
         console.error('Error merging carts: ', error.message);
         throw error;
     }
-}
+} 
+
+export const applyVoucher = async (code, subtotal, customer_id) => {
+    try {
+        console.log("Voucher code received: ", code, subtotal, customer_id);
+        const response = await axios.post('/voucher/apply', { code, subtotal, customer_id });
+        console.log('Voucher applied: ', response.data);
+        return response.data;
+    } catch (error) {
+        console.error('Error applying voucher: ', error.message);
+        throw error;
+    }
+};
