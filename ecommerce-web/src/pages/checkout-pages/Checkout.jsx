@@ -18,7 +18,7 @@ import axios from "axios";
 import { FaRegAddressCard } from "react-icons/fa";
 import { AuthContext } from "../../components/AuthContext.jsx";
 import { getCustomerByProfileId } from "../../api/customer.js";
-import { applyVoucher } from "../../api/cart.js";
+import { getCartByCustomerId, applyVoucher } from "../../api/cart.js";
 import { createOrder } from "../../api/order.js";
 
 const Checkout = () => {
@@ -26,7 +26,7 @@ const Checkout = () => {
   const [profileData, setProfileData] = useState(null);
   const voucherInputRef = useRef(null);
 
-  const { cartItems, subtotal } = useContext(CartContext);
+  const { cartItems, subtotal, updateCartContext } = useContext(CartContext);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [voucherDiscount, setVoucherDiscount] = useState("");
@@ -383,13 +383,20 @@ const Checkout = () => {
         return;
       }
 
+      try {
+        updateCartContext([]);
+      } catch (error) {
+        toast.error("Failed to clear cart. Please refresh the page.");
+      }
+
+      // Optional delay to confirm order creation or allow for backend processing
+      await new Promise((resolve) => setTimeout(resolve, 500)); // 500ms delay
+
+      //get customer cart
+      await getCartByCustomerId(profileData.profiles.id);
       navigate("/order-confirmed", {
         state: {
           formDetails,
-          cartItems,
-          subtotal,
-          total_discount: voucherDiscount,
-          paymentMethod: formDetails.paymentMethod,
           order,
           order_items,
         },

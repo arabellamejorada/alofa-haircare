@@ -47,7 +47,7 @@ const createOrder = async (req, res) => {
         shipping_id, // Use the generated shipping_id
         orderDetails.subtotal,
         orderDetails.voucher_id || null,
-        orderDetails.total_discount,
+        orderDetails.total_discount || 0,
       ]
     );
 
@@ -66,13 +66,11 @@ const createOrder = async (req, res) => {
       .map((_, i) => `($${i * 4 + 1}, $${i * 4 + 2}, $${i * 4 + 3}, $${i * 4 + 4})`)
       .join(', ');
 
-    const orderItemsResult = await pool.query(
-      `INSERT INTO order_items (order_id, variation_id, quantity, price) VALUES ${placeholders}
-      RETURNING *`,
+    await pool.query(
+      `INSERT INTO order_items (order_id, variation_id, quantity, price) VALUES ${placeholders}`,
       orderItemsValues
     );
 
-    const orderItems = orderItemsResult.rows;
     const orderItemsWithDetails = await getOrderItemsWithDetails(newOrder.order_id);
     // Update current_uses of voucher and set it to inactive if it reached its limit
     if (orderDetails.voucher_id) {
@@ -100,6 +98,10 @@ const createOrder = async (req, res) => {
       }
     }
 
+    // Step 4: Delete all items in the cart for this order
+    for (const item of cartItems) {
+      await deleteCartItems(item.cart_item_id);
+    }
     // Commit the transaction
     await pool.query('COMMIT');
 
@@ -139,6 +141,21 @@ const getOrderItemsWithDetails = async (order_id) => {
     throw error;
   }
 };
+
+const deleteCartItems = async (cart_item_id) => {
+  console.log('Deleting cart item:', cart_item_id);
+  try {
+    await pool.query(
+      `DELETE FROM cart_items WHERE cart_item_id = $1`,
+      [cart_item_id]
+    );
+    console.log('Cart item deleted successfully');
+  } catch (error) {
+    console.error('Error deleting cart:', error);
+    throw error;
+  }
+};
+
 
 // Get Orders by Customer ID
 const getOrderByCustomerId = async (req, res) => {
