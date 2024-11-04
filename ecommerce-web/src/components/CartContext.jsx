@@ -232,13 +232,13 @@ const CartProvider = ({ children }) => {
 
   const calculateSubtotal = (items) => {
     const newSubtotal = items.reduce((sum, item) => sum + item.item_total, 0);
-    setSubtotal(Number(newSubtotal));
+    setSubtotal(newSubtotal);
   };
 
   // Reset the cart on logout
   const resetCart = async () => {
     setCartItems([]);
-    setSubtotal(Number(0));
+    setSubtotal(0);
     setCartId(null);
     localStorage.removeItem("cartId");
     localStorage.removeItem("cartItems");
