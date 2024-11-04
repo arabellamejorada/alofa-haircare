@@ -32,7 +32,7 @@ const Receipt = ({ orderDetails }) => {
   const total = subtotal + shippingFee - discount;
 
   return (
-    <div className="relative max-w-lg mx-auto rounded-lg p-6 mt-10 z-20 shadow-xl">
+    <div className="relative max-w-lg mx-auto rounded-lg p-6 mt-10 z-20 shadow-xl bg-white">
       <div className="absolute w-[110%] left-1/2 transform shadow-md -translate-x-1/2 -top-4 h-4 bg-gray-200 rounded-t-full z-0"></div>
         <div 
             style={{bottom: '-1.85rem'}}
