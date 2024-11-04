@@ -46,7 +46,7 @@ const createOrder = async (req, res) => {
         proofImage || null,
         shipping_id, // Use the generated shipping_id
         orderDetails.subtotal,
-        orderDetails.voucher_id,
+        orderDetails.voucher_id || null,
         orderDetails.total_discount,
       ]
     );
@@ -59,18 +59,21 @@ const createOrder = async (req, res) => {
       newOrder.order_id,
       item.variation_id,
       item.quantity,
-      item.price,
+      item.unit_price,
     ]);
 
     const placeholders = cartItems
       .map((_, i) => `($${i * 4 + 1}, $${i * 4 + 2}, $${i * 4 + 3}, $${i * 4 + 4})`)
       .join(', ');
 
-    await pool.query(
-      `INSERT INTO order_items (order_id, variation_id, quantity, price) VALUES ${placeholders}`,
+    const orderItemsResult = await pool.query(
+      `INSERT INTO order_items (order_id, variation_id, quantity, price) VALUES ${placeholders}
+      RETURNING *`,
       orderItemsValues
     );
 
+    const orderItems = orderItemsResult.rows;
+    const orderItemsWithDetails = await getOrderItemsWithDetails(newOrder.order_id);
     // Update current_uses of voucher and set it to inactive if it reached its limit
     if (orderDetails.voucher_id) {
       await pool.query(
@@ -96,15 +99,44 @@ const createOrder = async (req, res) => {
         );
       }
     }
+
     // Commit the transaction
     await pool.query('COMMIT');
 
-    res.status(201).json({ message: 'Order created successfully', order: newOrder });
+    res.status(201).json({ message: 'Order created successfully', order: newOrder, order_items: orderItemsWithDetails });
   } catch (error) {
     // Rollback the transaction in case of an error
     await pool.query('ROLLBACK');
     console.error('Error creating order:', error);
     res.status(500).json({ error: 'Failed to create order' });
+  }
+};
+
+const getOrderItemsWithDetails = async (order_id) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+          oi.order_id,
+          oi.quantity,
+          oi.price,
+          p.name AS product_name,
+          pv.type AS variation_type,
+          pv.value AS variation_value,
+          pv.image AS image
+      FROM 
+          order_items oi
+      JOIN 
+          product_variation pv ON oi.variation_id = pv.variation_id
+      JOIN 
+          product p ON pv.product_id = p.product_id
+      WHERE 
+          oi.order_id = $1
+    `, [order_id]);
+
+    return result.rows; // This will contain each item with its product and variation details
+  } catch (error) {
+    console.error('Error fetching order items with details:', error);
+    throw error;
   }
 };
 

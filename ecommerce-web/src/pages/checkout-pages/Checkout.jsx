@@ -371,8 +371,12 @@ const Checkout = () => {
         formData.append("proof_image", receiptFile);
       }
 
+      let order, order_items;
       try {
-        await createOrder(formData);
+        const response = await createOrder(formData);
+        console.log("Create Order Response:", response);
+        order = response.order; // Assign order_id from response
+        order_items = response.order_items; // Assign order items from response
       } catch (error) {
         console.error("Failed to create order:", error);
         toast.error("Failed to create order. Please try again.");
@@ -384,7 +388,10 @@ const Checkout = () => {
           formDetails,
           cartItems,
           subtotal,
+          total_discount: voucherDiscount,
           paymentMethod: formDetails.paymentMethod,
+          order,
+          order_items,
         },
       });
 
