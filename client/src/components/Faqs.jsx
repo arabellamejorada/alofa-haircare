@@ -170,6 +170,15 @@ const FAQ = () => {
       });
     }
     setShowModal(true);
+
+    // Automatically adjust the height of the answer field when opening the modal
+    setTimeout(() => {
+      const textarea = document.getElementById("answer");
+      if (textarea) {
+        textarea.style.height = "auto";
+        textarea.style.height = `${textarea.scrollHeight}px`;
+      }
+    }, 0);
   };
 
   const renderHeader = (key, label) => (
@@ -191,6 +200,15 @@ const FAQ = () => {
     { key: "question", header: "Question" },
     { key: "answer", header: "Answer" },
   ];
+  const handleAnswerChange = (e) => {
+    const textarea = e.target;
+    textarea.style.height = "auto"; // Reset the height
+    textarea.style.height = `${textarea.scrollHeight}px`; // Set the height based on content
+    setFaqData((prevData) => ({
+      ...prevData,
+      answer: textarea.value,
+    }));
+  };
 
   return (
     <Fragment>
@@ -238,8 +256,8 @@ const FAQ = () => {
           />
         </div>
 
-        <Modal isVisible={showModal} onClose={handleCloseModal}>
-          <form className="p-6" onSubmit={handleSubmit}>
+        <Modal isVisible={showModal} onClose={handleCloseModal} size="large">
+          <form className="p-6 " onSubmit={handleSubmit}>
             <div className="font-extrabold text-3xl text-alofa-highlight mb-4">
               {selectedFaq ? "Edit FAQ" : "Add New FAQ"}
             </div>
@@ -255,7 +273,7 @@ const FAQ = () => {
                 placeholder="FAQ Question"
                 value={faqData.question}
                 onChange={handleInputChange}
-                className="rounded-xl border h-10 px-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300"
+                className="rounded-xl border h-10 px-4 py-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300"
               />
               {errors.question && (
                 <p className="text-red-500 text-sm mt-1">{errors.question}</p>
@@ -271,8 +289,10 @@ const FAQ = () => {
                 id="answer"
                 placeholder="FAQ Answer"
                 value={faqData.answer}
-                onChange={handleInputChange}
-                className="rounded-xl border px-4 py-2 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300"
+                onChange={handleAnswerChange}
+                onInput={handleAnswerChange} // Handles resizing as you type
+                className="rounded-xl border px-4 py-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300"
+                style={{ overflow: "hidden", resize: "none" }} // Prevents scrollbar and manual resizing
               />
               {errors.answer && (
                 <p className="text-red-500 text-sm mt-1">{errors.answer}</p>
