@@ -100,7 +100,7 @@ const ProductDetails = () => {
                   {variation.product_description}{" "}
                 </p>
 
-                {/* Fixed position for In Stock and Price */}
+                {/* Stock Quantity and Price */}
                 <div className="mt-auto flex items-center justify-between text-gray-600 text-lg">
                   <span className="font-semibold">
                     In Stock:{" "}

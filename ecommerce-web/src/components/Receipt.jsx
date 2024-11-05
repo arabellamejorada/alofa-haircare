@@ -1,4 +1,4 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { useLocation } from "react-router-dom";
 
@@ -19,7 +19,7 @@ const Receipt = ({ orderDetails }) => {
   useEffect(() => {
     setOrderDate(new Date());
     console.log("Receipt orderDetails:", orderDetails);
-  }, []);
+  }, [orderDetails]);
 
   const formatOrderDate = (date) => {
     if (!date) return "";
@@ -147,15 +147,23 @@ const Receipt = ({ orderDetails }) => {
 
 Receipt.propTypes = {
   orderDetails: PropTypes.shape({
-    paymentMethod: PropTypes.string,
-    discount: PropTypes.number,
-    billingAddress: PropTypes.shape({
-      name: PropTypes.string,
-      address: PropTypes.string,
-      phone: PropTypes.string,
-      email: PropTypes.string,
-    }),
-  }),
+    order: PropTypes.shape({
+      payment_method: PropTypes.string,
+      total_discount: PropTypes.number,
+      order_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      total_amount: PropTypes.number,
+      subtotal: PropTypes.number,
+    }).isRequired,
+    order_items: PropTypes.arrayOf(
+      PropTypes.shape({
+        product_name: PropTypes.string.isRequired,
+        variation_value: PropTypes.string,
+        quantity: PropTypes.number.isRequired,
+        price: PropTypes.number.isRequired,
+        image: PropTypes.string,
+      })
+    ).isRequired,
+  }).isRequired,
 };
 
 export default Receipt;
