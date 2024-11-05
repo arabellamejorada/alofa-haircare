@@ -1,10 +1,8 @@
-// Modal.jsx
 import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 import { IoCloseCircle } from "react-icons/io5";
 
-const Modal = ({ isVisible, onClose, children, backdropClassName }) => {
-  // Close modal on Escape key press
+const Modal = ({ isVisible, onClose, children, backdropClassName, size }) => {
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "Escape") onClose();
@@ -12,7 +10,6 @@ const Modal = ({ isVisible, onClose, children, backdropClassName }) => {
 
     if (isVisible) {
       document.addEventListener("keydown", handleKeyDown);
-      // Disable background scrolling
       document.body.style.overflow = "hidden";
     }
 
@@ -28,7 +25,6 @@ const Modal = ({ isVisible, onClose, children, backdropClassName }) => {
     if (e.target.id === "wrapper") onClose();
   };
 
-  // Default backdrop classes if none are provided
   const defaultBackdropClasses = "bg-black bg-opacity-75 backdrop-blur-sm";
 
   return (
@@ -42,7 +38,9 @@ const Modal = ({ isVisible, onClose, children, backdropClassName }) => {
       onClick={handleClose}
     >
       <div
-        className="w-fit flex flex-col gap-1"
+        className={`${
+          size === "large" ? "w-[600px]" : "w-fit"
+        } flex flex-col gap-1`}
         onClick={(e) => e.stopPropagation()}
       >
         <IoCloseCircle
@@ -62,7 +60,8 @@ Modal.propTypes = {
   isVisible: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   children: PropTypes.node.isRequired,
-  backdropClassName: PropTypes.string, // New prop
+  backdropClassName: PropTypes.string,
+  size: PropTypes.oneOf(["small", "large"]), // New prop for size
 };
 
 export default Modal;
