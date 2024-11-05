@@ -25,9 +25,12 @@ const CartProvider = ({ children }) => {
   const [cartId, setCartId] = useState(
     sessionStorage.getItem("guest_cart_id") || null,
   );
-  const [subtotal, setSubtotal] = useState();
+  const [subtotal, setSubtotal] = useState(0);
   const [loading, setLoading] = useState(false);
 
+  const updateCartContext = (newCartItems) => {
+    setCartItems(newCartItems);
+  };
   const createGuestCart = async () => {
     try {
       const cart = await createCart(null); // Creates a guest cart
@@ -232,13 +235,13 @@ const CartProvider = ({ children }) => {
 
   const calculateSubtotal = (items) => {
     const newSubtotal = items.reduce((sum, item) => sum + item.item_total, 0);
-    setSubtotal(Number(newSubtotal));
+    setSubtotal(newSubtotal);
   };
 
   // Reset the cart on logout
   const resetCart = async () => {
     setCartItems([]);
-    setSubtotal(Number(0));
+    setSubtotal(0);
     setCartId(null);
     localStorage.removeItem("cartId");
     localStorage.removeItem("cartItems");
@@ -274,6 +277,7 @@ const CartProvider = ({ children }) => {
           loading,
           resetCart,
           fetchCustomerCart,
+          updateCartContext,
         }}
       >
         {!loading && children} {/* Render children only after loading */}

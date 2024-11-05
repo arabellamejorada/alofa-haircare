@@ -1,22 +1,24 @@
 import { useEffect, useState, useContext } from "react";
 import PropTypes from "prop-types";
-import { CartContext } from "../components/CartContext";
 import { useLocation } from "react-router-dom";
 
 const Receipt = ({ orderDetails }) => {
-  const { cartItems, subtotal } = useContext(CartContext);
   const [orderDate, setOrderDate] = useState(null);
   const location = useLocation();
 
   const paymentMethod =
-    orderDetails?.paymentMethod || location.state?.paymentMethod || "";
+    orderDetails?.order.payment_method || location.state?.paymentMethod || "";
   const discount =
     orderDetails?.total_discount || location.state?.total_discount || 0;
-  const orderID = "0001"; // Placeholder for now
+  const orderID = orderDetails.order.order_id;
   const shippingFee = 200; // Assuming fixed shipping fee for now
+  const total = orderDetails.order.total_amount;
+  const subtotal = orderDetails.order.subtotal;
+  const orderItems = orderDetails.order_items;
 
   useEffect(() => {
     setOrderDate(new Date());
+    console.log("Receipt orderDetails:", orderDetails);
   }, []);
 
   const formatOrderDate = (date) => {
@@ -33,9 +35,6 @@ const Receipt = ({ orderDetails }) => {
       })
       .replace(",", "");
   };
-
-  // Calculate total amount
-  const total = subtotal + shippingFee - discount;
 
   return (
     <div className="relative max-w-lg mx-auto rounded-lg p-6 mt-10 z-20 shadow-xl bg-white">
@@ -57,7 +56,7 @@ const Receipt = ({ orderDetails }) => {
         <div className="border-l border-gray-300 mx-1"></div>
         <div className="flex flex-col items-start">
           <p className="text-sm text-gray-600">Order ID</p>
-          <p className="font-semibold text-gray-800">{orderID}</p>
+          <p className="font-semibold text-gray-800">#{orderID}</p>
         </div>
         <div className="border-l border-gray-300 mx-1"></div>
         <div className="flex flex-col items-start">
@@ -67,27 +66,37 @@ const Receipt = ({ orderDetails }) => {
       </div>
 
       <div className="overflow-y-auto max-h-64 mb-4">
-        {cartItems.map((item, index) => (
-          <div key={index} className="flex justify-between items-center mb-4">
-            <div className="flex items-center">
-              <img
-                src={item.image}
-                alt={item.name}
-                className="w-16 h-16 object-cover rounded mr-4"
-              />
-              <div>
-                <p className="text-gray-800 font-semibold">{item.name}</p>
-                <p className="text-sm text-gray-500">
-                  Variation: {item.variant || "N/A"}
-                </p>
-                <p className="text-sm text-gray-500">x{item.quantity}</p>
+        {orderItems.map((item, index) => {
+          // Generate image URL
+          const imageName = item.image ? item.image.split("/").pop() : null;
+          const imageUrl = imageName
+            ? `http://localhost:3001/uploads/${imageName}`
+            : `https://via.placeholder.com/150?text=No+Image+Available`;
+
+          return (
+            <div key={index} className="flex justify-between items-center mb-4">
+              <div className="flex items-center">
+                <img
+                  src={imageUrl}
+                  alt={item.product_name}
+                  className="w-16 h-16 object-cover rounded mr-4"
+                />
+                <div>
+                  <p className="text-gray-800 font-semibold">
+                    {item.product_name}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Variation: {item.variation_value || "N/A"}
+                  </p>
+                  <p className="text-sm text-gray-500">x{item.quantity}</p>
+                </div>
               </div>
+              <p className="text-gray-800 font-semibold">
+                ₱{(item.price * item.quantity).toLocaleString()}
+              </p>
             </div>
-            <p className="text-gray-800 font-semibold">
-              ₱{(item.unit_price * item.quantity).toLocaleString()}
-            </p>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="border-t border-gray-300 pt-4 mt-4">

@@ -2,6 +2,14 @@ const pool = require('../db.js');
 
 const getAllVouchers = async (req, res) => {
   try {
+    // Update expired vouchers to inactive
+    await pool.query(`
+      UPDATE vouchers 
+      SET is_active = false 
+      WHERE expiration_date < NOW() AND is_active = true
+    `);
+
+    // Fetch all vouchers with the updated status
     const result = await pool.query(`
       SELECT 
         voucher_id,
@@ -23,11 +31,6 @@ const getAllVouchers = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch vouchers' });
   }
 };
-
-module.exports = {
-  getAllVouchers,
-};
-
 
 // Get a voucher by ID
 const getVoucherById = async (req, res) => {
@@ -165,6 +168,12 @@ const applyVoucher = async (req, res) => {
   console.log('Applying voucher:', code, subtotal, customer_id);
 
   try {
+     await pool.query(`
+      UPDATE vouchers 
+      SET is_active = false 
+      WHERE expiration_date < NOW() AND is_active = true
+    `);
+
     // Step 1: Fetch the voucher by code and check if it's active
     const voucherResult = await pool.query(
       `SELECT * FROM vouchers WHERE code = $1 AND is_active = true`,
@@ -215,6 +224,12 @@ const applyVoucher = async (req, res) => {
     if (voucher.max_use_per_user !== null && customerVoucherUsage >= voucher.max_use_per_user) {
       console.error('Voucher usage limit per customer has been reached');
       return res.status(400).json({ error: 'Voucher usage limit per customer has been reached' });
+    }
+
+    // Check if the voucher has reached its total limit
+    if (voucher.total_limit !== null && voucher.current_uses >= voucher.total_limit) {
+      console.error('Voucher has reached its total limit');
+      return res.status(400).json({ error: 'Voucher has reached its total limit' });
     }
 
     // Convert discount_value and max_discount to numbers

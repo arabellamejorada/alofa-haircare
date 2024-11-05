@@ -46,8 +46,8 @@ const createOrder = async (req, res) => {
         proofImage || null,
         shipping_id, // Use the generated shipping_id
         orderDetails.subtotal,
-        orderDetails.voucher_id,
-        orderDetails.total_discount,
+        orderDetails.voucher_id || null,
+        orderDetails.total_discount || 0,
       ]
     );
 
@@ -59,7 +59,7 @@ const createOrder = async (req, res) => {
       newOrder.order_id,
       item.variation_id,
       item.quantity,
-      item.price,
+      item.unit_price,
     ]);
 
     const placeholders = cartItems
@@ -71,6 +71,7 @@ const createOrder = async (req, res) => {
       orderItemsValues
     );
 
+    const orderItemsWithDetails = await getOrderItemsWithDetails(newOrder.order_id);
     // Update current_uses of voucher and set it to inactive if it reached its limit
     if (orderDetails.voucher_id) {
       await pool.query(
@@ -96,10 +97,15 @@ const createOrder = async (req, res) => {
         );
       }
     }
+
+    // Step 4: Delete all items in the cart for this order
+    for (const item of cartItems) {
+      await deleteCartItems(item.cart_item_id);
+    }
     // Commit the transaction
     await pool.query('COMMIT');
 
-    res.status(201).json({ message: 'Order created successfully', order: newOrder });
+    res.status(201).json({ message: 'Order created successfully', order: newOrder, order_items: orderItemsWithDetails });
   } catch (error) {
     // Rollback the transaction in case of an error
     await pool.query('ROLLBACK');
@@ -107,6 +113,49 @@ const createOrder = async (req, res) => {
     res.status(500).json({ error: 'Failed to create order' });
   }
 };
+
+const getOrderItemsWithDetails = async (order_id) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+          oi.order_id,
+          oi.quantity,
+          oi.price,
+          p.name AS product_name,
+          pv.type AS variation_type,
+          pv.value AS variation_value,
+          pv.image AS image
+      FROM 
+          order_items oi
+      JOIN 
+          product_variation pv ON oi.variation_id = pv.variation_id
+      JOIN 
+          product p ON pv.product_id = p.product_id
+      WHERE 
+          oi.order_id = $1
+    `, [order_id]);
+
+    return result.rows; // This will contain each item with its product and variation details
+  } catch (error) {
+    console.error('Error fetching order items with details:', error);
+    throw error;
+  }
+};
+
+const deleteCartItems = async (cart_item_id) => {
+  console.log('Deleting cart item:', cart_item_id);
+  try {
+    await pool.query(
+      `DELETE FROM cart_items WHERE cart_item_id = $1`,
+      [cart_item_id]
+    );
+    console.log('Cart item deleted successfully');
+  } catch (error) {
+    console.error('Error deleting cart:', error);
+    throw error;
+  }
+};
+
 
 // Get Orders by Customer ID
 const getOrderByCustomerId = async (req, res) => {

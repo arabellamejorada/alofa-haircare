@@ -5,12 +5,17 @@ const OrderConfirmation = () => {
   const location = useLocation();
   const {
     formDetails = {},
-    cartItems = [],
-    subtotal = 0,
-    paymentMethod = "",
+    order = {},
+    order_items = [],
   } = location.state || {};
 
   console.log("OrderConfirmation state:", location.state);
+
+  const orderDetails = {
+    order,
+    order_items,
+    ...formDetails, // Spread formDetails to include customer details like name, address, etc.
+  };
 
   return (
     <div className="flex flex-col lg:flex-row justify-between p-8 pt-36 lg:px-48 min-h-screen h-full">
@@ -73,11 +78,7 @@ const OrderConfirmation = () => {
 
       {/* Order Summary Section */}
       <div className="relative z-10 w-full lg:w-1/2 lg:ml-6 mt-0 lg:mt-0 self-start">
-        <Receipt
-          cartItems={cartItems}
-          subtotal={subtotal}
-          paymentMethod={paymentMethod}
-        />
+        <Receipt orderDetails={orderDetails} />
       </div>
     </div>
   );

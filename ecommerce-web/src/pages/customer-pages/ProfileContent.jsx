@@ -303,6 +303,7 @@ const ProfileContent = ({ profileData, setProfileData }) => {
 ProfileContent.propTypes = {
   profileData: PropTypes.shape({
     profiles: PropTypes.shape({
+      id: PropTypes.number.isRequired,
       first_name: PropTypes.string,
       last_name: PropTypes.string,
       email: PropTypes.string,
@@ -312,6 +313,7 @@ ProfileContent.propTypes = {
     updated_at: PropTypes.string,
     customer_id: PropTypes.number,
   }),
+  setProfileData: PropTypes.func.isRequired,
 };
 
 export default ProfileContent;
