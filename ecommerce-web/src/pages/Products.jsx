@@ -103,7 +103,7 @@ const Products = () => {
         setLoading(false);
       }, 500); // Add a delay to simulate loading time, if needed
     }
-  }, [selectedCategory, selectedSort, productVariants, products]);
+  }, [selectedCategory, selectedSort, productVariants, products,searchQuery]);
 
   // Separate effect for handling search without showing loading
   useEffect(() => {

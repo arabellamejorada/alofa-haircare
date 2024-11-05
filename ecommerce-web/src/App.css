@@ -17,6 +17,19 @@
   height: 2rem;
 }
 
+/* Hide the up and down arrows for input[type="number"] */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield; /* Firefox */
+  -webkit-appearance: none;
+  appearance: none;
+}
+
 
 /* fill: var(--Soft-White, linear-gradient(180deg, #FFF 0%, #FFF8FC 100%));
 stroke-width: 5px;

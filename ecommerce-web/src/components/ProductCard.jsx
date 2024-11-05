@@ -61,7 +61,7 @@ const ProductCard = ({ id, image, name, value, price, sku }) => {
             className="font-extrabold text-white py-2 px-4 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F] disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleAddToCart}
             aria-label={`Add ${name} ${value} to cart`}
-            disabled={isAddingToCart} // Disable button while adding to cart
+            disabled={isAddingToCart}
           >
             {isAddingToCart ? (
               <ClipLoader size={20} color="#FFFFFF" loading={isAddingToCart} />
