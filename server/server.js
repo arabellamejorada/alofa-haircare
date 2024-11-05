@@ -12,6 +12,7 @@ const cartRoutes = require('./routes/cartRoutes.js');
 const stockRoutes = require('./routes/stockRoutes.js');
 const orderRoutes = require('./routes/orderRoutes.js');
 const voucherRoutes = require('./routes/voucherRoutes.js');
+const faqsRoutes = require('./routes/faqsRoutes.js');
 
 const app = express();
 
@@ -43,6 +44,7 @@ app.use('/', stockRoutes);
 app.use('/', cartRoutes);
 app.use('/', orderRoutes);
 app.use('/', voucherRoutes);
+app.use('/', faqsRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 3001;

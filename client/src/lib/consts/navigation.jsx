@@ -4,7 +4,6 @@ import {
   HiOutlineUsers,
   HiOutlineDocumentText,
   HiOutlineQuestionMarkCircle,
-  HiOutlineCog,
 } from "react-icons/hi";
 import { LiaPeopleCarrySolid } from "react-icons/lia";
 import { MdOutlineCategory, MdOutlineDiscount } from "react-icons/md";
@@ -67,6 +66,12 @@ export const VOUCHER_SIDEBAR_LINKS = [
     label: "Voucher",
     path: "/voucher",
     icon: <MdOutlineDiscount />,
+  },
+  {
+    key: "faqs",
+    label: "FAQs",
+    path: "/faqs",
+    icon: <HiOutlineQuestionMarkCircle />,
   },
 ];
 
