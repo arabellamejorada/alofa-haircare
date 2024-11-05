@@ -1,7 +1,9 @@
+import { useEffect } from "react";
 import Receipt from "../../components/Receipt";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const OrderConfirmation = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   const {
     formDetails = {},
@@ -16,6 +18,20 @@ const OrderConfirmation = () => {
     order_items,
     ...formDetails, // Spread formDetails to include customer details like name, address, etc.
   };
+
+  // Prevent going back to checkout by redirecting to home if back button is pressed
+  useEffect(() => {
+    const handleBackNavigation = () => {
+      navigate("/", { replace: true });
+    };
+
+    window.history.pushState(null, document.title, window.location.href);
+    window.addEventListener("popstate", handleBackNavigation);
+
+    return () => {
+      window.removeEventListener("popstate", handleBackNavigation);
+    };
+  }, [navigate]);
 
   return (
     <div className="flex flex-col lg:flex-row justify-between p-8 pt-36 lg:px-48 min-h-screen h-full">
