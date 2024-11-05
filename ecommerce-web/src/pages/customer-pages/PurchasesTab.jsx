@@ -2,7 +2,9 @@
 
 const PurchasesTab = () => {
   return (
-    <div>otot</div>
+    <div>
+    otot
+    </div>
   )
 }
 

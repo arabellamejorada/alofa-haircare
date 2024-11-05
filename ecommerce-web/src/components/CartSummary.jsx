@@ -1,24 +1,19 @@
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 
-const CartSummary = ({ subtotal, total }) => {
+const CartSummary = ({ subtotal }) => {
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 mt-4">
       <div className="flex justify-between mb-4">
-        <span className="text-gray-500">Subtotal:</span>
-        <span className="text-gray-700">
-          ₱
-          {new Intl.NumberFormat("en-PH", {
-            minimumFractionDigits: 2,
-          }).format(subtotal)}
-        </span>
+        <span className="text-gray-500 italic">Shipping & discounts calculated at checkout</span>
+        
       </div>
       <div className="flex justify-between mb-6 text-lg font-bold">
-        <span>Total:</span>
+        <span>Subtotal:</span>
         <span>
           ₱
           {new Intl.NumberFormat("en-PH", { minimumFractionDigits: 2 }).format(
-            total,
+            subtotal,
           )}
         </span>
       </div>

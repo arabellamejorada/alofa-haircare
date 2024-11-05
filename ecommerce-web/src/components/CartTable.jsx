@@ -5,9 +5,12 @@ import { Link } from "react-router-dom";
 const CartTable = ({ cartItems, handleQuantityChange, handleDelete }) => {
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 h-[700px]">
-      <h2 className="bg-gradient-to-r from-alofa-pink to-alofa-light-pink bg-clip-text text-transparent text-3xl mb-4 font-bold">
-        My Cart
-      </h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="gradient-heading text-3xl font-bold">
+          My Cart
+        </h2>
+        <p className="italic text-gray-600">{cartItems.reduce((total, item) => total + item.quantity, 0)} items</p>
+      </div>
 
       {cartItems.length === 0 ? (
         <p className="text-gray-500 text-center">
