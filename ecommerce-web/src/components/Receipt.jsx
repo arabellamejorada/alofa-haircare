@@ -9,7 +9,7 @@ const Receipt = ({ orderDetails }) => {
   const paymentMethod =
     orderDetails?.order.payment_method || location.state?.paymentMethod || "";
   const discount =
-    orderDetails?.total_discount || location.state?.total_discount || 0;
+    orderDetails?.order.total_discount || location.state?.total_discount || 0;
   const orderID = orderDetails.order.order_id;
   const shippingFee = 200; // Assuming fixed shipping fee for now
   const total = orderDetails.order.total_amount;

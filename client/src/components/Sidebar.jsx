@@ -99,9 +99,9 @@ function SidebarContent({ onClose }) {
         {[
           DASHBOARD_SIDEBAR_LINKS,
           isAdmin ? PRODUCT_SIDEBAR_LINKS : [],
-          isAdmin ? VOUCHER_SIDEBAR_LINKS : [],
           INVENTORY_SIDEBAR_LINKS,
           isAdmin ? EMPLOYEE_SIDEBAR_LINKS : [],
+          isAdmin ? VOUCHER_SIDEBAR_LINKS : [],
         ].map((section, index) =>
           section.length > 0 ? (
             <div key={index} className={index !== 0 ? "pt-5" : ""}>

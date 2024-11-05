@@ -21,6 +21,7 @@ import StockOut from "./components/inventory_tab/stock_out/StockOut";
 import StockOutHistory from "./components/inventory_tab/stock_out/StockOutHistory";
 import Login from "./components/Login";
 import Vouchers from "./components/voucher_tab/Vouchers";
+import Faqs from "./components/Faqs";
 
 import { AuthProvider, AuthContext } from "./components/AuthContext";
 
@@ -31,6 +32,7 @@ const adminOnlyPaths = [
   "/voucher",
   "/suppliers",
   "/employees",
+  "/faqs",
 ];
 
 // Protected Route component
@@ -91,6 +93,10 @@ function App() {
             <Route
               path="voucher"
               element={<ProtectedRoute element={<Vouchers />} />}
+            />
+            <Route
+              path="faqs"
+              element={<ProtectedRoute element={<Faqs />} />}
             />
             <Route
               path="inventory"

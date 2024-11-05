@@ -144,7 +144,7 @@ const CartProvider = ({ children }) => {
             image: product.image,
             unit_price: product.price,
             quantity: quantityToAdd,
-            item_total: product.price,
+            item_total: product.price * quantityToAdd,
             variation_id: product.id,
           };
           updatedCartItems = [...prevItems, newCartItem];
@@ -154,7 +154,6 @@ const CartProvider = ({ children }) => {
         return updatedCartItems;
       });
 
-      // Show a success toast message
       if (product.value !== "N/A" && product.value) {
         toast.success(`${product.name} ${product.value} added to cart!`);
       } else {
@@ -227,12 +226,12 @@ const CartProvider = ({ children }) => {
       );
 
       if (removedItem) {
-        if (removedItem.value !== "N/A") {
-          toast.success(
+        if (removedItem.value !== "N/A" && removedItem.value) {
+          toast.info(
             `${removedItem.name} ${removedItem.value} removed from cart!`,
           );
         } else {
-          toast.success(`${removedItem.name} removed from cart!`);
+          toast.info(`${removedItem.name} removed from cart!`);
         }
       }
     } catch (error) {
