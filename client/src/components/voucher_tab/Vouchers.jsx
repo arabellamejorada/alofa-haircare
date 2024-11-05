@@ -12,6 +12,7 @@ import {
   updateVoucher,
   deleteVoucher,
 } from "../../api/voucher";
+import { render } from "react-dom";
 
 const Voucher = () => {
   const [vouchers, setVouchers] = useState([]);
@@ -23,6 +24,7 @@ const Voucher = () => {
   const [search, setSearch] = useState("");
   const [sortField, setSortField] = useState("voucher_id");
   const [sortOrder, setSortOrder] = useState("asc");
+  const [isActiveFilter, setIsActiveFilter] = useState("");
 
   // Voucher state
   const [voucherData, setVoucherData] = useState({
@@ -76,31 +78,30 @@ const Voucher = () => {
   };
 
   const filteredVouchers = vouchers
-    .filter((voucher) => voucher.code.toLowerCase().includes(search))
+    .filter(
+      (voucher) =>
+        voucher.code.toLowerCase().includes(search) &&
+        (isActiveFilter === "" ||
+          voucher.is_active === (isActiveFilter === "true")),
+    )
     .sort((a, b) => {
       if (sortField) {
         const aValue = a[sortField];
         const bValue = b[sortField];
-
-        // Push null values to the bottom
         if (aValue === null) return 1;
         if (bValue === null) return -1;
-
         const isNumeric = !isNaN(aValue) && !isNaN(bValue);
-
-        if (sortOrder === "asc") {
-          return isNumeric
-            ? parseFloat(aValue) - parseFloat(bValue) // Numeric comparison
+        return sortOrder === "asc"
+          ? isNumeric
+            ? parseFloat(aValue) - parseFloat(bValue)
             : aValue > bValue
               ? 1
-              : -1; // String comparison
-        } else {
-          return isNumeric
-            ? parseFloat(bValue) - parseFloat(aValue) // Numeric comparison
+              : -1
+          : isNumeric
+            ? parseFloat(bValue) - parseFloat(aValue)
             : aValue < bValue
               ? 1
-              : -1; // String comparison
-        }
+              : -1;
       }
       return 0;
     });
@@ -251,6 +252,11 @@ const Voucher = () => {
       isNumeric: true,
     },
     {
+      key: "current_uses",
+      header: renderHeader("current_uses", "Current Uses"),
+      isNumeric: true,
+    },
+    {
       key: "is_active",
       header: renderHeader("is_active", "Active"),
       render: (isActive) => (isActive ? "Yes" : "No"),
@@ -273,22 +279,47 @@ const Voucher = () => {
           <strong className="text-3xl font-bold text-gray-500">Vouchers</strong>
 
           <div className="flex flex-row justify-between mt-4 gap-4">
-            <div className="relative flex items-center w-[300px]">
-              <input
-                type="text"
-                className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
-                placeholder="Search by code"
-                value={search}
-                onChange={handleSearchChange}
-              />
-              {search && (
-                <button
-                  onClick={() => setSearch("")}
-                  className="ml-2 text-alofa-pink hover:text-alofa-dark"
+            {/* Search and isActive Filter */}
+            <div className="flex flex-row gap-4 items-center w-[500px]">
+              {/* Search Input */}
+              <div className="relative flex items-center w-[300px]">
+                <input
+                  type="text"
+                  className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+                  placeholder="Search by code"
+                  value={search}
+                  onChange={handleSearchChange}
+                />
+                {search && (
+                  <button
+                    onClick={() => setSearch("")}
+                    className="ml-2 text-alofa-pink hover:text-alofa-dark"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+
+              {/* isActive Filter */}
+              <div className="relative flex items-center w-[200px]">
+                <select
+                  value={isActiveFilter}
+                  onChange={(e) => setIsActiveFilter(e.target.value)}
+                  className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
                 >
-                  Clear
-                </button>
-              )}
+                  <option value="">All Status</option>
+                  <option value="true">Active</option>
+                  <option value="false">Inactive</option>
+                </select>
+                {isActiveFilter !== "" && (
+                  <button
+                    onClick={() => setIsActiveFilter("")}
+                    className="ml-2 text-alofa-pink hover:text-alofa-dark"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
             </div>
 
             <MdAddBox

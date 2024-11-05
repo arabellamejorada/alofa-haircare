@@ -20,6 +20,7 @@ const getAllVouchers = async (req, res) => {
         max_discount,
         total_limit,
         max_use_per_user,
+        current_uses,
         is_active,
         to_char(expiration_date, 'MM-DD-YYYY, HH:MI AM') AS expiration_date
       FROM vouchers
