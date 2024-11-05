@@ -13,6 +13,7 @@ import './App.css';
 import Navbar from "./shared/Navbar.jsx";
 import Home from "./pages/Home.jsx";
 import Products from "./pages/Products.jsx";
+import ProductDetails from "./pages/ProductDetails.jsx";
 import FAQs from "./pages/FAQs.jsx";
 import ShoppingCart from "./pages/ShoppingCart.jsx";
 import CartItem from "./components/CartItem.jsx";
@@ -41,6 +42,7 @@ const AppContent = () => {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/products" element={<Products />} />
+        <Route path="/products/:productId" element={<ProductDetails />} />
         <Route path="/frequently-asked-questions" element={<FAQs />} />
         <Route path="/shoppingcart" element={<ShoppingCart />} />
         <Route path="/cartitem" element={<CartItem />} />

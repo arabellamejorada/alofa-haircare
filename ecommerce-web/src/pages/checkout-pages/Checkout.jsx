@@ -386,7 +386,7 @@ const Checkout = () => {
       try {
         updateCartContext([]);
       } catch (error) {
-        toast.error("Failed to clear cart. Please refresh the page.");
+        toast.error("Failed to clear cart. Please refresh the page.", error);
       }
 
       // Optional delay to confirm order creation or allow for backend processing
