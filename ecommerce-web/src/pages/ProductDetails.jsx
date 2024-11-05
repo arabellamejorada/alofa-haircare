@@ -1,29 +1,22 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState, useContext } from "react";
 import { CartContext } from "../components/CartContext";
-import { getProductById, getProductVariationById } from "../api/product.js";
+import { getProductVariationById } from "../api/product.js";
 import { ClipLoader } from "react-spinners";
 
 const ProductDetails = () => {
   const { productId } = useParams();
-  const [product, setProduct] = useState(null);
   const [variation, setVariation] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useContext(CartContext);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   useEffect(() => {
+    console.log("Product ID:", productId);
     const fetchProductAndVariation = async () => {
       try {
-        // Fetch product by ID
-        const productData = await getProductById(productId);
-        setProduct(productData);
-
-        // If the product has a variation_id, fetch the variation details
-        if (productData.variation_id) {
-          const variationData = await getProductVariationById(productData.variation_id);
-          setVariation(variationData);
-        }
+        const variationData = await getProductVariationById(productId);
+        setVariation(variationData[0]);
       } catch (error) {
         console.error("Error fetching product details:", error);
       }
@@ -31,22 +24,34 @@ const ProductDetails = () => {
     fetchProductAndVariation();
   }, [productId]);
 
+  useEffect(() => {
+    console.log("Product Variation Updated:", variation);
+  }, [variation]);
+
   const handleAddToCart = () => {
-    if (!product.variation_id) {
+    console.log("Adding to cart variation ID:", variation);
+    console.log("Adding to cart with quantity:", quantity); // Debug log for quantity
+
+    if (!variation.variation_id) {
       console.error("Variation ID is missing.");
       return;
     }
 
-    setIsAddingToCart(true); // Start loading
+    setIsAddingToCart(true);
     setTimeout(() => {
+      const imageName = variation.image
+        ? variation.image.split("/").pop()
+        : null;
       addToCart({
-        id: product.id,
-        image: product.image,
-        name: product.name,
-        price: product.price,
-        variation: variation ? variation.name : "Default", // Ensure variation value is passed
-        variation_id: product.variation_id, // Use variation_id for the cart item
+        id: variation.variation_id,
+        image: imageName
+          ? `http://localhost:3001/uploads/${imageName}`
+          : `https://via.placeholder.com/150?text=No+Image+Available`,
+        name: variation.product_name,
+        price: parseFloat(variation.unit_price) || 0,
+        variation: variation.value,
         quantity,
+        sku: variation.sku,
       });
       setIsAddingToCart(false); // Stop loading
     }, 500); // Adjust delay as necessary
@@ -65,15 +70,18 @@ const ProductDetails = () => {
     <div className="min-h-screen bg-[url('../../public/images/body-bg.png')] bg-cover bg-center flex justify-center items-center">
       {/* Centered Content Container */}
       <div className="p-16 max-w-7xl w-full lg:w-4/5 flex flex-col lg:flex-row gap-16">
-
         {/* Render Product Image and Details only if product is not null */}
-        {product ? (
+        {variation ? (
           <>
             {/* Product Image */}
             <div className="w-full lg:w-1/2 flex justify-center items-center">
               <img
-                src={product.image}
-                alt={product.name}
+                src={
+                  variation && variation.image
+                    ? `http://localhost:3001/uploads/${variation.image.split("/").pop()}`
+                    : "https://via.placeholder.com/150?text=No+Image+Available"
+                }
+                alt={variation ? variation.product_name : "Product Image"}
                 className="rounded-3xl object-cover h-[550px] w-[450px] shadow-xl border-4 border-white"
               />
             </div>
@@ -82,21 +90,29 @@ const ProductDetails = () => {
             <div className="w-full lg:w-1/2 flex flex-col justify-between relative p-0">
               {/* White Container with Product Details */}
               <div className="bg-white shadow-lg p-12 rounded-3xl h-[450px] flex flex-col">
-                <h2 className="gradient-heading text-5xl font-bold font-title mb-2">{product.name}</h2>
+                <h2 className="gradient-heading text-5xl font-bold font-title mb-2">
+                  {variation.product_name}
+                </h2>
                 <p className="text-gray-600 italic text-lg mb-6">
-                  {variation ? variation.value : ""}
+                  {variation.value !== "N/A" ? variation.value : ""}
                 </p>
                 <p className="text-gray-600 mb-8 leading-relaxed text-lg flex-grow">
-                  {product.description || "Lorem ipsum dolor sit amet, consectetur adipiscing elit..."}
+                  {variation.product_description}{" "}
                 </p>
 
                 {/* Fixed position for In Stock and Price */}
                 <div className="mt-auto flex items-center justify-between text-gray-600 text-lg">
                   <span className="font-semibold">
-                    In Stock: <span className="text-black">{product.stock}</span>
+                    In Stock:{" "}
+                    <span className="text-black">
+                      {variation.stock_quantity}
+                    </span>
                   </span>
                   <span className="font-semibold">
-                    Price: <span className="text-black text-2xl font-bold">₱{product.price}</span>
+                    Price:{" "}
+                    <span className="text-black text-2xl font-bold">
+                      ₱{variation.unit_price}
+                    </span>
                   </span>
                 </div>
               </div>
@@ -135,7 +151,11 @@ const ProductDetails = () => {
                   disabled={isAddingToCart} // Disable button during loading
                 >
                   {isAddingToCart ? (
-                    <ClipLoader size={20} color="#FFFFFF" loading={isAddingToCart} />
+                    <ClipLoader
+                      size={20}
+                      color="#FFFFFF"
+                      loading={isAddingToCart}
+                    />
                   ) : (
                     "ADD TO CART"
                   )}

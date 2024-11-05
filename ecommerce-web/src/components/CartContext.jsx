@@ -110,9 +110,12 @@ const CartProvider = ({ children }) => {
           setCartId(currentCartId);
         }
       }
-
-      // Now, add the item to the cart using the confirmed cart ID
-      const newItem = await addCartItem(currentCartId, product.id, 1);
+      const quantityToAdd = product.quantity || 1;
+      const newItem = await addCartItem(
+        currentCartId,
+        product.id,
+        quantityToAdd,
+      );
 
       setCartItems((prevItems) => {
         const existingItem = prevItems.find(
@@ -126,8 +129,8 @@ const CartProvider = ({ children }) => {
             item.variation_id === product.id
               ? {
                   ...item,
-                  quantity: item.quantity + 1,
-                  item_total: (item.quantity + 1) * item.unit_price,
+                  quantity: item.quantity + quantityToAdd,
+                  item_total: (item.quantity + quantityToAdd) * item.unit_price,
                 }
               : item,
           );
@@ -140,7 +143,7 @@ const CartProvider = ({ children }) => {
             value: product.value,
             image: product.image,
             unit_price: product.price,
-            quantity: 1,
+            quantity: quantityToAdd,
             item_total: product.price,
             variation_id: product.id,
           };
@@ -152,7 +155,7 @@ const CartProvider = ({ children }) => {
       });
 
       // Show a success toast message
-      if (product.value !== "N/A") {
+      if (product.value !== "N/A" && product.value) {
         toast.success(`${product.name} ${product.value} added to cart!`);
       } else {
         toast.success(`${product.name} added to cart!`);
@@ -208,15 +211,20 @@ const CartProvider = ({ children }) => {
     try {
       await deleteCartItem(cartId, variation_id);
 
-      setCartItems((prevItems) =>
-        prevItems.filter((item) => item.variation_id !== variation_id),
-      );
+      setCartItems((prevItems) => {
+        const updatedCartItems = prevItems.filter(
+          (item) => item.variation_id !== variation_id,
+        );
+
+        // Update the subtotal after removing the item
+        calculateSubtotal(updatedCartItems);
+
+        return updatedCartItems;
+      });
 
       const removedItem = cartItems.find(
         (item) => item.variation_id === variation_id,
       );
-
-      calculateSubtotal(cartItems);
 
       if (removedItem) {
         if (removedItem.value !== "N/A") {

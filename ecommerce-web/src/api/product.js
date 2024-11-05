@@ -16,7 +16,7 @@ export const getAllProductVariations = async () => {
 export const getProductVariationById = async (id) => {
     try {
         const response = await axios.get(`/product-variations/${id}`);
-        console.log('Product variation fetched: ', response.data);
+        // console.log('Product variation fetched: ', response.data);
         return response.data;
     } catch (error) {
         console.error('Error fetching product variation: ', error);

@@ -213,37 +213,6 @@ const generateSKU = (product_name, variation_type, variation_value, counter) => 
     return sku;
 };
 
-
-// const createProduct = async (req, res) => {
-//     const client = await pool.connect();
-//     const { name, description, product_category_id, product_status_id } = req.body;
-
-//     console.log('Request Body:', req.body);
-//     if (!name || !description || !product_category_id || !product_status_id) {
-//         return res.status(400).json({ message: 'Missing required fields' });
-//     }
-
-//     try {
-//         await client.query('BEGIN');
-
-//         const results = await client.query(
-//             `INSERT INTO product (name, description, product_category_id, product_status_id)
-//             VALUES ($1, $2, $3, $4)
-//             RETURNING product_id`,
-//             [name, description, product_category_id, product_status_id]
-//         );
-//         await client.query('COMMIT'); 
-
-//         res.status(201).json({ message: 'Product added', product_id: results.rows[0].product_id });
-//     } catch (error) {
-//         await client.query('ROLLBACK'); 
-//         console.error('Error creating product:', error);
-//         res.status(500).json({ message: 'Error creating product', error: error.message });
-//     } finally {
-//         client.release();
-//     }
-// };
-
 // Get all products with their respective product category and status names
 const getAllProducts = async (req, res) => {
     const client = await pool.connect();

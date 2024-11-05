@@ -10,7 +10,8 @@ const getAllProductVariations = async (req, res) => {
                 product.product_category_id, 
                 product_category.name AS product_category, 
                 product.name AS product_name, 
-                product_status.description AS status_description
+                product_status.description AS status_description,
+                product.description AS product_description
             FROM 
                 product_variation
             JOIN 
@@ -34,7 +35,29 @@ const getProductVariationById = async (req, res) => {
     const id = parseInt(req.params.id);
     try {
         const productVariation = await pool.query(
-            `SELECT * FROM product_variation WHERE variation_id = $1`,
+            `SELECT 
+                product_variation.*,    
+                product.product_category_id, 
+                product_category.name AS product_category, 
+                product.name AS product_name, 
+                product_status.description AS status_description,
+                product.description AS product_description,
+                inventory.stock_quantity
+            FROM 
+                product_variation
+            JOIN 
+                product ON product_variation.product_id = product.product_id
+            JOIN 
+                product_status ON product_variation.product_status_id = product_status.status_id
+            JOIN 
+                product_category ON product.product_category_id = product_category.product_category_id
+            LEFT JOIN 
+                inventory ON product_variation.variation_id = inventory.variation_id
+            WHERE 
+                product_variation.variation_id = $1
+            ORDER BY 
+                product_variation.variation_id ASC;
+            `,
             [id]
         );
         res.status(200).json(productVariation.rows);
