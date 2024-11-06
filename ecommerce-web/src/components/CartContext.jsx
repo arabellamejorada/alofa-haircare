@@ -6,6 +6,7 @@ import {
   updateCartItem,
   deleteCartItem,
   getCartByCustomerId,
+  getCartById,
 } from "../api/cart";
 import { AuthContext } from "./AuthContext";
 import { toast } from "sonner";
@@ -18,10 +19,10 @@ const CartProvider = ({ children }) => {
   const customerProfileId = user?.id; // Use 'user' instead of 'token'
 
   const [cartItems, setCartItems] = useState(() => {
-    // Initialize cart from localStorage or empty array if not available
     const storedCart = localStorage.getItem("cartItems");
     return storedCart ? JSON.parse(storedCart) : [];
   });
+
   const [cartId, setCartId] = useState(
     sessionStorage.getItem("guest_cart_id") || null,
   );
@@ -31,6 +32,7 @@ const CartProvider = ({ children }) => {
   const updateCartContext = (newCartItems) => {
     setCartItems(newCartItems);
   };
+
   const createGuestCart = async () => {
     try {
       const cart = await createCart(null); // Creates a guest cart
@@ -65,6 +67,26 @@ const CartProvider = ({ children }) => {
     }
   };
 
+  const fetchGuestCart = async () => {
+    if (!cartId) return; // Avoid fetching if cartId is null
+
+    setLoading(true);
+    try {
+      const fetchedCart = await getCartById(cartId);
+      if (!fetchedCart) {
+        throw new Error("No active cart found for guest.");
+      }
+
+      setCartItems(fetchedCart.items);
+      calculateSubtotal(fetchedCart.items);
+    } catch (error) {
+      console.error("Error fetching guest cart:", error);
+      toast.error("Failed to fetch guest cart.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (justLoggedIn && customerProfileId) {
       fetchCustomerCart();
@@ -74,14 +96,16 @@ const CartProvider = ({ children }) => {
 
   // CartProvider component useEffect for initialization
   useEffect(() => {
-    const savedCartId = localStorage.getItem("cartId");
+    const savedCartId = sessionStorage.getItem("guest_cart_id");
     const savedCartItems = localStorage.getItem("cartItems");
 
-    if (savedCartId) setCartId(savedCartId);
+    if (savedCartId) {
+      setCartId(savedCartId);
+      fetchGuestCart();
+    }
     if (savedCartItems) setCartItems(JSON.parse(savedCartItems));
 
     if (customerProfileId && !savedCartId) {
-      // Fetch the user's cart if logged in and no saved cart ID
       fetchCustomerCart();
     }
   }, [customerProfileId]);

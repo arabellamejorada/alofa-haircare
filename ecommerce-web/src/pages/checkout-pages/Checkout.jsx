@@ -28,10 +28,14 @@ const Checkout = () => {
 
   const { cartItems, subtotal, updateCartContext } = useContext(CartContext);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [voucherDiscount, setVoucherDiscount] = useState("");
-  const [voucherCode, setVoucherCode] = useState("");
+  const [loading, setLoading] = useState(false);
   const [voucherId, setVoucherId] = useState(null);
+  const [voucherDiscount, setVoucherDiscount] = useState(() =>
+    Number(localStorage.getItem("checkoutVoucherDiscount") || 0),
+  );
+  const [voucherCode, setVoucherCode] = useState(
+    () => localStorage.getItem("checkoutVoucherCode") || "",
+  );
 
   // State for Regions, Provinces, Cities, and Barangays
   const [regions, setRegions] = useState([]);
@@ -59,25 +63,31 @@ const Checkout = () => {
     setUploadedPaymentMethod(null); // Reset the uploaded payment method
   };
 
-  const [formDetails, setFormDetails] = useState({
-    email: "",
-    firstName: "",
-    lastName: "",
-    street: "",
-    region: { name: "", code: "" },
-    province: { name: "", code: "" },
-    city: { name: "", code: "" },
-    barangay: { name: "", code: "" },
-    phoneNumber: "",
-    postalCode: "",
-    paymentMethod: "",
+  // Initialize state from localStorage if data exists
+  const [formDetails, setFormDetails] = useState(() => {
+    const savedFormDetails = localStorage.getItem("checkoutFormDetails");
+    return savedFormDetails
+      ? JSON.parse(savedFormDetails)
+      : {
+          email: "",
+          firstName: "",
+          lastName: "",
+          street: "",
+          region: { name: "", code: "" },
+          province: { name: "", code: "" },
+          city: { name: "", code: "" },
+          barangay: { name: "", code: "" },
+          phoneNumber: "",
+          postalCode: "",
+          paymentMethod: "",
+        };
   });
-
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
+        setLoading(true);
         const data = await getCustomerByProfileId(user.id);
         setProfileData(data);
       } catch (error) {
@@ -113,7 +123,7 @@ const Checkout = () => {
 
   useEffect(() => {
     localStorage.setItem("checkoutFormDetails", JSON.stringify(formDetails));
-  }, [formDetails]); // This will save any change to formDetails
+  }, [formDetails]);
 
   useEffect(() => {
     localStorage.setItem("checkoutVoucherCode", voucherCode);
