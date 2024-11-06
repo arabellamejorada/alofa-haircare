@@ -1,6 +1,13 @@
 import { useContext } from "react";
 import { Link } from "react-router-dom";
-import { FaTrashAlt, FaPlus, FaMinus, FaTimes } from "react-icons/fa";
+import {
+  FaTrashAlt,
+  FaPlus,
+  FaMinus,
+  FaTimes,
+} from "react-icons/fa";
+import { AiOutlineShoppingCart } from "react-icons/ai";
+import { MdOutlineShoppingCartCheckout } from "react-icons/md"; // Import new icon
 import { CartContext } from "../components/CartContext";
 import PropTypes from "prop-types";
 
@@ -115,7 +122,7 @@ const CartOverview = ({ hovered, setHovered }) => {
 
         {/* Fixed Bottom Section: Subtotal, Total, and Buttons */}
         <div className="border-t pt-4">
-          <div className="flex justify-between text-xl font-extrabold mb-2 text-gray-500">
+          <div className="flex justify-between text-xl font-extrabold mb-2 text-gray-800">
             <span>Subtotal</span>
             <span>
               ₱
@@ -129,14 +136,16 @@ const CartOverview = ({ hovered, setHovered }) => {
           </div>
         </div>
 
-        <div className="flex justify-between">
-          <Link to="/shoppingcart">
-            <button className="font-extrabold text-white py-2 px-4 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]">
+        <div className="flex justify-between gap-4">
+          <Link to="/shoppingcart" className="w-1/2">
+            <button className="w-full font-extrabold flex items-center justify-center gap-2 text-white py-2 px-4 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]">
+              <AiOutlineShoppingCart />
               View Cart
             </button>
           </Link>
-          <Link to="/checkout">
-            <button className="font-extrabold text-white py-2 px-4 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]">
+          <Link to="/checkout" className="w-1/2">
+            <button className="w-full font-extrabold flex items-center justify-center gap-2 text-white py-2 px-4 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]">
+              <MdOutlineShoppingCartCheckout />
               Check Out
             </button>
           </Link>
