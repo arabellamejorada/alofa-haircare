@@ -63,7 +63,8 @@ const CustomerProfile = () => {
   };
 
   return (
-    <div className="relative">
+    // bg-gradient-to-b from-white via-[#FFF8FC] to-[#FFF8FC]
+    <div className="min-h-screen bg-white">
       {loading && (
         <div className="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center z-50 pointer-events-none">
           <ClipLoader size={50} color="#E53E3E" loading={loading} />
@@ -163,7 +164,7 @@ const CustomerProfile = () => {
         </aside>
 
         {/* Main Content */}
-        <main className="w-full lg:w-3/4 p-4 bg-gray-100 rounded-lg shadow-md flex-grow">
+        <main className="w-full lg:w-3/4 p-4 bg-gray-100 rounded-lg shadow-lg flex-grow">
           <Routes>
             <Route
               path=""
