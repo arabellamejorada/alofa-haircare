@@ -50,8 +50,8 @@ function SidebarContent({ onClose }) {
 
         // Fetch additional profile data
         const { data: profile, error: profileError } = await supabase
-          .from("profiles") // Replace "profiles" with your table name
-          .select("first_name, last_name, email, role_id") // Add any additional fields you want
+          .from("profiles")
+          .select("first_name, last_name, email, role_id")
           .eq("id", user.id)
           .single();
 
@@ -75,15 +75,15 @@ function SidebarContent({ onClose }) {
   // Handle logout
   const handleLogout = async () => {
     try {
-      await signOut(); // Call the signOut function from AuthContext
-      navigate("/login"); // Redirect to login page after logout
+      await signOut();
+      navigate("/login");
     } catch (error) {
       console.error("Error during logout:", error.message);
     }
   };
 
-  // Determine user role
   const isAdmin = userMetadata && userMetadata.role_id === ROLE_ADMIN;
+  const isEmployee = userMetadata && userMetadata.role_id === ROLE_EMPLOYEE;
 
   return (
     <>
@@ -95,13 +95,12 @@ function SidebarContent({ onClose }) {
       </div>
       <div className="flex-1 px-5 py-8 flex flex-col gap-0.5">
         {/* Render navigation links */}
-        {/* Only show certain sections if the user is an admin */}
         {[
           DASHBOARD_SIDEBAR_LINKS,
-          isAdmin ? PRODUCT_SIDEBAR_LINKS : [],
+          PRODUCT_SIDEBAR_LINKS, // Available to both admins and employees
           INVENTORY_SIDEBAR_LINKS,
-          isAdmin ? EMPLOYEE_SIDEBAR_LINKS : [],
-          isAdmin ? VOUCHER_SIDEBAR_LINKS : [],
+          isAdmin ? EMPLOYEE_SIDEBAR_LINKS : [], // Admin-only
+          isAdmin ? VOUCHER_SIDEBAR_LINKS : [], // Admin-only
         ].map((section, index) =>
           section.length > 0 ? (
             <div key={index} className={index !== 0 ? "pt-5" : ""}>
@@ -171,7 +170,6 @@ export default function Sidebar({ isOpen, onClose }) {
               onClick={onClose}
             >
               <span className="sr-only">Close sidebar</span>
-              {/* You can add a close icon here */}
             </button>
           </div>
           <SidebarContent onClose={onClose} />

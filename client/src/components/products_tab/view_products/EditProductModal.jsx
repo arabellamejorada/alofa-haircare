@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useContext } from "react";
 import Modal from "../../modal/Modal";
 import { IoMdArrowDropdown } from "react-icons/io";
+import { AuthContext } from "../../AuthContext"; // Import AuthContext
 
 const EditProductModal = ({
   isVisible,
@@ -14,6 +15,9 @@ const EditProductModal = ({
   errors,
   isFormModified,
 }) => {
+  const { role } = useContext(AuthContext); // Access the user's role
+  const isEmployee = role === "employee";
+
   const {
     product_name,
     product_description,
@@ -33,6 +37,7 @@ const EditProductModal = ({
             {selectedProduct ? "Edit Product" : "Add New Product"}
           </div>
 
+          {/* Product Name Field */}
           <div className="flex flex-col gap-2">
             <label className="font-bold" htmlFor="product_name">
               Product Name:
@@ -51,6 +56,7 @@ const EditProductModal = ({
             )}
           </div>
 
+          {/* Category Field - Disabled for Employee */}
           <div className="flex flex-col gap-2">
             <label className="font-bold" htmlFor="category">
               Category:
@@ -61,7 +67,12 @@ const EditProductModal = ({
                 name="product_category"
                 value={product_category}
                 onChange={handleInputChange}
-                className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700"
+                disabled={isEmployee} // Disable for employee role
+                className={`w-full h-10 px-4 appearance-none border rounded-xl ${
+                  isEmployee
+                    ? "bg-gray-200 cursor-not-allowed"
+                    : "bg-gray-50 hover:border-alofa-pink hover:bg-white"
+                } border-slate-300 text-slate-700`}
               >
                 <option value="">Select Category</option>
                 {categories.map((category) => (
@@ -82,6 +93,7 @@ const EditProductModal = ({
             )}
           </div>
 
+          {/* Description Field */}
           <div className="flex flex-col gap-2">
             <label className="font-bold" htmlFor="product_description">
               Description:
@@ -101,6 +113,7 @@ const EditProductModal = ({
             )}
           </div>
 
+          {/* Product Status Field - Disabled for Employee */}
           <div className="flex flex-col gap-2">
             <label className="font-bold" htmlFor="status">
               Product Status:
@@ -111,7 +124,12 @@ const EditProductModal = ({
                 name="product_status"
                 value={product_status}
                 onChange={handleInputChange}
-                className="w-full h-10 px-4 appearance-none border rounded-xl bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700"
+                disabled={isEmployee} // Disable for employee role
+                className={`w-full h-10 px-4 appearance-none border rounded-xl ${
+                  isEmployee
+                    ? "bg-gray-200 cursor-not-allowed"
+                    : "bg-gray-50 hover:border-alofa-pink hover:bg-white"
+                } border-slate-300 text-slate-700`}
               >
                 <option value="">Select Status</option>
                 {statuses.map((status) => (
@@ -129,10 +147,11 @@ const EditProductModal = ({
             )}
           </div>
 
+          {/* Submit and Cancel Buttons */}
           <div className="flex flex-row justify-end gap-4">
             <button
               type="submit"
-              disabled={selectedProduct && !isFormModified()} // Disable button if no edits made
+              disabled={selectedProduct && !isFormModified()} // Disable if no edits made
               className={`px-4 py-2 text-white bg-alofa-highlight rounded-lg hover:bg-alofa-pink ${
                 selectedProduct && !isFormModified()
                   ? "opacity-50 cursor-not-allowed"
