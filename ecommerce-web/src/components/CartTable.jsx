@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 const CartTable = ({ cartItems, handleQuantityChange, handleDelete }) => {
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 h-[700px]">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center mb-2">
         <h2 className="gradient-heading text-3xl font-bold">
           My Cart
         </h2>

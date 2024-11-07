@@ -388,11 +388,19 @@ const mergeCarts = async (req, res) => {
         );
 
         if (customerCart.rowCount === 0) {
-            customerCart = await createNewCart(customer_id);
+            // Create a new cart directly within the transaction if no active cart exists
+            const newCartResult = await client.query(
+                `INSERT INTO cart (customer_id, created_at, last_activity, status)
+                 VALUES ($1, NOW(), NOW(), 'active') RETURNING *`,
+                [customer_id]
+            );
+            customerCart = newCartResult; // Reassign customerCart to the newly created cart
+            console.log('Created new customer cart:', customerCart.rows[0]);
         }
 
         const loggedInCartId = customerCart.rows[0].cart_id;
-
+        console.log('loggedInCartId:', loggedInCartId);
+        
         // Merge guest cart items into the customer's (logged-in) cart
         await client.query(
             `INSERT INTO cart_items (cart_id, variation_id, quantity)
