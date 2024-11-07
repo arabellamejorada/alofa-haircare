@@ -37,7 +37,6 @@ const Checkout = () => {
     () => localStorage.getItem("checkoutVoucherCode") || "",
   );
 
-  // State for Regions, Provinces, Cities, and Barangays
   const [regions, setRegions] = useState([]);
   const [provinces, setProvinces] = useState([]);
   const [cities, setCities] = useState([]);
@@ -54,16 +53,15 @@ const Checkout = () => {
     const file = e.target.files[0];
     if (file) {
       setReceiptFile(file);
-      setUploadedPaymentMethod(method); // Set the payment method that has the uploaded file
+      setUploadedPaymentMethod(method);
     }
   };
 
   const handleRemoveFile = () => {
     setReceiptFile(null);
-    setUploadedPaymentMethod(null); // Reset the uploaded payment method
+    setUploadedPaymentMethod(null);
   };
 
-  // Initialize state from localStorage if data exists
   const [formDetails, setFormDetails] = useState(() => {
     const savedFormDetails = localStorage.getItem("checkoutFormDetails");
     return savedFormDetails
@@ -116,9 +114,12 @@ const Checkout = () => {
       "checkoutVoucherDiscount",
     );
 
+    const savedProofImage = localStorage.getItem("proof_image");
+
     if (savedFormDetails) setFormDetails(savedFormDetails);
     if (savedVoucherCode) setVoucherCode(savedVoucherCode);
     if (savedVoucherDiscount) setVoucherDiscount(Number(savedVoucherDiscount));
+    if (savedProofImage) setReceiptFile(savedProofImage);
   }, []);
 
   useEffect(() => {
@@ -132,6 +133,10 @@ const Checkout = () => {
   useEffect(() => {
     localStorage.setItem("checkoutVoucherDiscount", voucherDiscount);
   }, [voucherDiscount]);
+
+  useEffect(() => {
+    localStorage.setItem("proof_image", receiptFile);
+  }, [receiptFile]);
 
   useEffect(() => {
     if (formDetails.region.code) {
@@ -188,7 +193,6 @@ const Checkout = () => {
         postalCode: address.zip_code,
       }));
 
-      // Trigger the loading of dependent location fields
       if (address.region?.code) {
         await fetchProvinces(address.region.code);
       }
@@ -313,20 +317,20 @@ const Checkout = () => {
           city: { name: "", code: "" },
           barangay: { name: "", code: "" },
         };
-        fetchProvinces(value); // Fetch provinces for selected region
+        fetchProvinces(value);
       } else if (name === "province") {
         updatedData = {
           ...updatedData,
           city: { name: "", code: "" },
           barangay: { name: "", code: "" },
         };
-        fetchCities(value); // Fetch cities for selected province
+        fetchCities(value);
       } else if (name === "city") {
         updatedData = {
           ...updatedData,
           barangay: { name: "", code: "" },
         };
-        fetchBarangays(value); // Fetch barangays for selected city
+        fetchBarangays(value);
       }
 
       return updatedData;
@@ -356,10 +360,8 @@ const Checkout = () => {
         return;
       }
 
-      // Create FormData to handle file and other data
       const formData = new FormData();
 
-      // Append order details to FormData
       formData.append(
         "orderDetails",
         JSON.stringify({
@@ -373,10 +375,8 @@ const Checkout = () => {
         }),
       );
 
-      // Append cart items as a JSON string
       formData.append("cartItems", JSON.stringify(cartItems));
 
-      // Append the receipt file if it exists
       if (receiptFile) {
         formData.append("proof_image", receiptFile);
       }
@@ -385,8 +385,8 @@ const Checkout = () => {
       try {
         const response = await createOrder(formData);
         console.log("Create Order Response:", response);
-        order = response.order; // Assign order_id from response
-        order_items = response.order_items; // Assign order items from response
+        order = response.order;
+        order_items = response.order_items;
       } catch (error) {
         console.error("Failed to create order:", error);
         toast.error("Failed to create order. Please try again.");
