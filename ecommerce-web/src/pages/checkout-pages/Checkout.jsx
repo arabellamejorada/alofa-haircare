@@ -23,6 +23,8 @@ import { createOrder } from "../../api/order.js";
 
 const Checkout = () => {
   const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
+
   const [profileData, setProfileData] = useState(null);
   const voucherInputRef = useRef(null);
 
@@ -43,24 +45,10 @@ const Checkout = () => {
   const [barangays, setBarangays] = useState([]);
 
   const [receiptFile, setReceiptFile] = useState(null);
-  const [uploadedPaymentMethod, setUploadedPaymentMethod] = useState(null);
-
-  useEffect(() => {
-    console.log("Checkout Cart Items:", cartItems);
-  }, [cartItems]);
-
-  const handleFileChange = (e, method) => {
-    const file = e.target.files[0];
-    if (file) {
-      setReceiptFile(file);
-      setUploadedPaymentMethod(method);
-    }
-  };
-
-  const handleRemoveFile = () => {
-    setReceiptFile(null);
-    setUploadedPaymentMethod(null);
-  };
+  const [receiptFileName, setReceiptFileName] = useState("");
+  const [uploadedPaymentMethod, setUploadedPaymentMethod] = useState(
+    () => localStorage.getItem("uploadedPaymentMethod") || null,
+  );
 
   const [formDetails, setFormDetails] = useState(() => {
     const savedFormDetails = localStorage.getItem("checkoutFormDetails");
@@ -80,7 +68,10 @@ const Checkout = () => {
           paymentMethod: "",
         };
   });
-  const navigate = useNavigate();
+
+  useEffect(() => {
+    console.log("Checkout Cart Items:", cartItems);
+  }, [cartItems]);
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -113,13 +104,21 @@ const Checkout = () => {
     const savedVoucherDiscount = localStorage.getItem(
       "checkoutVoucherDiscount",
     );
-
     const savedProofImage = localStorage.getItem("proof_image");
+    const savedProofImageName = localStorage.getItem("proof_image_name");
+    const savedPaymentMethod = localStorage.getItem("uploadedPaymentMethod");
+    // Check if savedProofImage exists and is in the correct format
+    if (savedProofImage && savedProofImage.startsWith("data:image")) {
+      setReceiptFile(savedProofImage);
+      setReceiptFileName(savedProofImageName || ""); // Use empty string if no name is found
+      setUploadedPaymentMethod(savedPaymentMethod || null);
+    } else {
+      console.warn("No valid proof image found in local storage.");
+    }
 
     if (savedFormDetails) setFormDetails(savedFormDetails);
     if (savedVoucherCode) setVoucherCode(savedVoucherCode);
     if (savedVoucherDiscount) setVoucherDiscount(Number(savedVoucherDiscount));
-    if (savedProofImage) setReceiptFile(savedProofImage);
   }, []);
 
   useEffect(() => {
@@ -135,7 +134,9 @@ const Checkout = () => {
   }, [voucherDiscount]);
 
   useEffect(() => {
-    localStorage.setItem("proof_image", receiptFile);
+    if (receiptFile) {
+      localStorage.setItem("proof_image", receiptFile);
+    }
   }, [receiptFile]);
 
   useEffect(() => {
@@ -153,6 +154,35 @@ const Checkout = () => {
     formDetails.province.code,
     formDetails.city.code,
   ]);
+
+  // Handle file upload: convert file to base64, store in local storage, and update state
+  const handleFileChange = (e, method) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result;
+        if (base64String) {
+          localStorage.setItem("proof_image", base64String);
+          localStorage.setItem("proof_image_name", file.name);
+          setReceiptFile(base64String);
+          setReceiptFileName(file.name);
+          setUploadedPaymentMethod(method);
+          localStorage.setItem("uploadedPaymentMethod", method);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Handle file removal: clear the base64 image and file name from state and local storage
+  const handleRemoveFile = () => {
+    setReceiptFile(null);
+    setReceiptFileName("");
+    setUploadedPaymentMethod(null);
+    localStorage.removeItem("proof_image");
+    localStorage.removeItem("proof_image_name");
+  };
 
   const handleOpenAddressModal = () => {
     setIsAddressModalOpen(true);
@@ -481,6 +511,9 @@ const Checkout = () => {
     localStorage.removeItem("checkoutFormDetails");
     localStorage.removeItem("checkoutVoucherCode");
     localStorage.removeItem("checkoutVoucherDiscount");
+    localStorage.removeItem("proof_image");
+    localStorage.removeItem("proof_image_name");
+    localStorage.removeItem("uploadedPaymentMethod");
   };
 
   return (
@@ -841,9 +874,14 @@ const Checkout = () => {
                       </label>
                       {uploadedPaymentMethod === "GCash" && receiptFile && (
                         <div className="flex items-center mt-2">
-                          <p className="italic text-gray-400 text-sm">
+                          <img
+                            src={receiptFile} // Display the base64 image from state
+                            alt="Uploaded Proof"
+                            className="w-32 h-32 object-cover"
+                          />
+                          <p className="italic text-gray-400 text-sm ml-4">
                             File:{" "}
-                            <b className="text-black">{receiptFile.name}</b>
+                            <b className="text-black">{receiptFileName}</b>
                           </p>
                           <button
                             onClick={handleRemoveFile}
@@ -912,9 +950,14 @@ const Checkout = () => {
                       </label>
                       {uploadedPaymentMethod === "bank" && receiptFile && (
                         <div className="flex items-center mt-2">
-                          <p className="italic text-gray-400 text-sm">
+                          <img
+                            src={receiptFile} // Display the base64 image from state
+                            alt="Uploaded Proof"
+                            className="w-32 h-32 object-cover"
+                          />
+                          <p className="italic text-gray-400 text-sm ml-4">
                             File:{" "}
-                            <b className="text-black">{receiptFile.name}</b>
+                            <b className="text-black">{receiptFileName}</b>
                           </p>
                           <button
                             onClick={handleRemoveFile}
@@ -1029,7 +1072,7 @@ const Checkout = () => {
                   <div className="flex items-center">
                     <button
                       onClick={handleRemoveVoucher}
-                      className="ml-2 text-sm text-red-500 hover:text-red-700"
+                      className="ml-2 text-xs text-red-500 hover:text-red-700"
                     >
                       [{voucherCode}]Remove
                     </button>
