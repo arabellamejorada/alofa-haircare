@@ -92,7 +92,7 @@ const CartProvider = ({ children }) => {
       fetchCustomerCart();
       setJustLoggedIn(false); // Reset the flag after fetching
     }
-  }, [justLoggedIn, customerProfileId]);
+  }, [justLoggedIn, customerProfileId, fetchCustomerCart, setJustLoggedIn]);
 
   // CartProvider component useEffect for initialization
   useEffect(() => {
