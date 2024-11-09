@@ -64,7 +64,7 @@ const DataTable = ({
             <tr>
               {columns.map((column) => (
                 <th
-                  className={`px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-alofa-highlight to-alofa-pink text-gray-100 text-md font-semibold uppercase tracking-wider ${
+                  className={`px-5 py-3 border-b-2 border-gray-200 bg-alofa-pink text-gray-100 text-md font-semibold uppercase tracking-wider ${
                     column.isNumeric ? "text-right" : "text-left"
                   }`}
                   key={column.key}
@@ -73,7 +73,7 @@ const DataTable = ({
                 </th>
               ))}
               {!isInventory && (
-                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-alofa-highlight to-alofa-pink text-gray-100 text-center text-md font-semibold uppercase w-[8%]">
+                <th className="px-5 py-3 border-b-2 border-gray-200 bg-alofa-pink text-gray-100 text-center text-md font-semibold uppercase w-[8%]">
                   Actions
                 </th>
               )}
@@ -163,29 +163,28 @@ const DataTable = ({
             ))}
           </tbody>
         </table>
+      </div>
+      {/* Pagination controls */}
+      <div className="flex justify-between items-center p-4">
+        <button
+          className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50"
+          onClick={handlePreviousPage}
+          disabled={currentPage === 1}
+        >
+          Previous
+        </button>
 
-        {/* Pagination controls */}
-        <div className="flex justify-between items-center p-4">
-          <button
-            className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50"
-            onClick={handlePreviousPage}
-            disabled={currentPage === 1}
-          >
-            Previous
-          </button>
+        <span className="text-sm text-gray-700">
+          Page {currentPage} of {totalPages}
+        </span>
 
-          <span className="text-sm text-gray-700">
-            Page {currentPage} of {totalPages}
-          </span>
-
-          <button
-            className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50"
-            onClick={handleNextPage}
-            disabled={currentPage === totalPages}
-          >
-            Next
-          </button>
-        </div>
+        <button
+          className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50"
+          onClick={handleNextPage}
+          disabled={currentPage === totalPages}
+        >
+          Next
+        </button>
       </div>
     </div>
   );

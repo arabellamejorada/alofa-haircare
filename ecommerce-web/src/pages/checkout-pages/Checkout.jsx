@@ -1,4 +1,4 @@
-import {
+import React, {
   useContext,
   useState,
   useEffect,
@@ -23,8 +23,6 @@ import { createOrder } from "../../api/order.js";
 
 const Checkout = () => {
   const { user } = useContext(AuthContext);
-  const navigate = useNavigate();
-
   const [profileData, setProfileData] = useState(null);
   const voucherInputRef = useRef(null);
 
@@ -45,10 +43,24 @@ const Checkout = () => {
   const [barangays, setBarangays] = useState([]);
 
   const [receiptFile, setReceiptFile] = useState(null);
-  const [receiptFileName, setReceiptFileName] = useState("");
-  const [uploadedPaymentMethod, setUploadedPaymentMethod] = useState(
-    () => localStorage.getItem("uploadedPaymentMethod") || null,
-  );
+  const [uploadedPaymentMethod, setUploadedPaymentMethod] = useState(null);
+
+  useEffect(() => {
+    console.log("Checkout Cart Items:", cartItems);
+  }, [cartItems]);
+
+  const handleFileChange = (e, method) => {
+    const file = e.target.files[0];
+    if (file) {
+      setReceiptFile(file);
+      setUploadedPaymentMethod(method);
+    }
+  };
+
+  const handleRemoveFile = () => {
+    setReceiptFile(null);
+    setUploadedPaymentMethod(null);
+  };
 
   const [formDetails, setFormDetails] = useState(() => {
     const savedFormDetails = localStorage.getItem("checkoutFormDetails");
@@ -66,12 +78,11 @@ const Checkout = () => {
           phoneNumber: "",
           postalCode: "",
           paymentMethod: "",
+          shipping_address_id: null,
         };
   });
 
-  useEffect(() => {
-    console.log("Checkout Cart Items:", cartItems);
-  }, [cartItems]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -91,10 +102,6 @@ const Checkout = () => {
     }
   }, [user]);
 
-  useEffect(() => {
-    console.log("Checkout Cart Items:", cartItems);
-  }, [cartItems]);
-
   // Load saved state from local storage when component mounts
   useEffect(() => {
     const savedFormDetails = JSON.parse(
@@ -104,17 +111,6 @@ const Checkout = () => {
     const savedVoucherDiscount = localStorage.getItem(
       "checkoutVoucherDiscount",
     );
-    const savedProofImage = localStorage.getItem("proof_image");
-    const savedProofImageName = localStorage.getItem("proof_image_name");
-    const savedPaymentMethod = localStorage.getItem("uploadedPaymentMethod");
-    // Check if savedProofImage exists and is in the correct format
-    if (savedProofImage && savedProofImage.startsWith("data:image")) {
-      setReceiptFile(savedProofImage);
-      setReceiptFileName(savedProofImageName || ""); // Use empty string if no name is found
-      setUploadedPaymentMethod(savedPaymentMethod || null);
-    } else {
-      console.warn("No valid proof image found in local storage.");
-    }
 
     if (savedFormDetails) setFormDetails(savedFormDetails);
     if (savedVoucherCode) setVoucherCode(savedVoucherCode);
@@ -134,12 +130,6 @@ const Checkout = () => {
   }, [voucherDiscount]);
 
   useEffect(() => {
-    if (receiptFile) {
-      localStorage.setItem("proof_image", receiptFile);
-    }
-  }, [receiptFile]);
-
-  useEffect(() => {
     if (formDetails.region.code) {
       fetchProvinces(formDetails.region.code);
     }
@@ -154,35 +144,6 @@ const Checkout = () => {
     formDetails.province.code,
     formDetails.city.code,
   ]);
-
-  // Handle file upload: convert file to base64, store in local storage, and update state
-  const handleFileChange = (e, method) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result;
-        if (base64String) {
-          localStorage.setItem("proof_image", base64String);
-          localStorage.setItem("proof_image_name", file.name);
-          setReceiptFile(base64String);
-          setReceiptFileName(file.name);
-          setUploadedPaymentMethod(method);
-          localStorage.setItem("uploadedPaymentMethod", method);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  // Handle file removal: clear the base64 image and file name from state and local storage
-  const handleRemoveFile = () => {
-    setReceiptFile(null);
-    setReceiptFileName("");
-    setUploadedPaymentMethod(null);
-    localStorage.removeItem("proof_image");
-    localStorage.removeItem("proof_image_name");
-  };
 
   const handleOpenAddressModal = () => {
     setIsAddressModalOpen(true);
@@ -338,29 +299,43 @@ const Checkout = () => {
     const { name, value } = e.target;
 
     setFormDetails((prevFormDetails) => {
-      let updatedData = { ...prevFormDetails, [name]: value };
+      let updatedData = { ...prevFormDetails };
 
       if (name === "region") {
-        updatedData = {
-          ...updatedData,
-          province: { name: "", code: "" },
-          city: { name: "", code: "" },
-          barangay: { name: "", code: "" },
+        const selectedRegion = regions.find((r) => r.code === value);
+        updatedData.region = {
+          name: selectedRegion ? selectedRegion.name : "",
+          code: value,
         };
+        updatedData.province = { name: "", code: "" };
+        updatedData.city = { name: "", code: "" };
+        updatedData.barangay = { name: "", code: "" };
         fetchProvinces(value);
       } else if (name === "province") {
-        updatedData = {
-          ...updatedData,
-          city: { name: "", code: "" },
-          barangay: { name: "", code: "" },
+        const selectedProvince = provinces.find((p) => p.code === value);
+        updatedData.province = {
+          name: selectedProvince ? selectedProvince.name : "",
+          code: value,
         };
+        updatedData.city = { name: "", code: "" };
+        updatedData.barangay = { name: "", code: "" };
         fetchCities(value);
       } else if (name === "city") {
-        updatedData = {
-          ...updatedData,
-          barangay: { name: "", code: "" },
+        const selectedCity = cities.find((c) => c.code === value);
+        updatedData.city = {
+          name: selectedCity ? selectedCity.name : "",
+          code: value,
         };
+        updatedData.barangay = { name: "", code: "" };
         fetchBarangays(value);
+      } else if (name === "barangay") {
+        const selectedBarangay = barangays.find((b) => b.code === value);
+        updatedData.barangay = {
+          name: selectedBarangay ? selectedBarangay.name : "",
+          code: value,
+        };
+      } else {
+        updatedData[name] = value;
       }
 
       return updatedData;
@@ -376,35 +351,39 @@ const Checkout = () => {
         !formDetails.email ||
         !formDetails.phoneNumber ||
         !formDetails.paymentMethod ||
-        !formDetails.region ||
-        !formDetails.province ||
-        !formDetails.city
+        !formDetails.region.code ||
+        !formDetails.province.code ||
+        !formDetails.city.code ||
+        !formDetails.shipping_address_id
       ) {
         toast.error("Please fill out all required fields.");
+        setLoading(false);
         return;
       }
 
       // Only require barangay if there are barangays available
-      if (barangays.length > 0 && !formDetails.barangay) {
+      if (barangays.length > 0 && !formDetails.barangay.code) {
         toast.error("Please select a barangay.");
+        setLoading(false);
         return;
       }
 
       const formData = new FormData();
 
-      formData.append(
-        "orderDetails",
-        JSON.stringify({
-          ...formDetails,
-          customer_id: profileData.customer_id,
-          subtotal: subtotal,
-          voucher_id: voucherId,
-          total_discount: voucherDiscount,
-          total_amount: subtotal + 200 - voucherDiscount,
-          shipping_address_id: formDetails.shipping_address_id,
-        }),
-      );
+      // Explicitly define the orderDetails object with necessary fields
+      const orderDetails = {
+        customer_id: profileData.customer_id,
+        subtotal: subtotal,
+        voucher_id: voucherId,
+        total_discount: voucherDiscount,
+        total_amount: subtotal + 200 - voucherDiscount,
+        shipping_address_id: formDetails.shipping_address_id,
+        paymentMethod: formDetails.paymentMethod, // Should match method_name in payment_method table
+        shipping_fee: 200, // Include shipping fee if required by backend
+        // proof_image will be handled separately
+      };
 
+      formData.append("orderDetails", JSON.stringify(orderDetails));
       formData.append("cartItems", JSON.stringify(cartItems));
 
       if (receiptFile) {
@@ -420,20 +399,23 @@ const Checkout = () => {
       } catch (error) {
         console.error("Failed to create order:", error);
         toast.error("Failed to create order. Please try again.");
+        setLoading(false);
         return;
       }
 
       try {
         updateCartContext([]);
       } catch (error) {
-        toast.error("Failed to clear cart. Please refresh the page.", error);
+        toast.error("Failed to clear cart. Please refresh the page.");
+        console.error("Failed to clear cart:", error);
       }
 
       // Optional delay to confirm order creation or allow for backend processing
       await new Promise((resolve) => setTimeout(resolve, 500)); // 500ms delay
 
-      //get customer cart
+      // Get customer cart
       await getCartByCustomerId(profileData.profiles.id);
+
       navigate("/order-confirmed", {
         state: {
           formDetails,
@@ -442,8 +424,10 @@ const Checkout = () => {
         },
       });
 
-      // Clear local storage after order is completed
+      // Clear local storage and reset state after order is completed
       handleClearCheckoutData();
+      setReceiptFile(null);
+      setUploadedPaymentMethod(null);
     } catch (error) {
       toast.error("Failed to complete order. Please try again.");
       console.error("Failed to complete order:", error);
@@ -459,6 +443,7 @@ const Checkout = () => {
       const voucherCode = voucherInputRef.current.value;
       if (!voucherCode) {
         toast.error("Please enter a voucher code.");
+        setLoading(false);
         return;
       }
 
@@ -470,6 +455,7 @@ const Checkout = () => {
       console.log("Voucher response:", response);
       if (response.error) {
         toast.error(response.error);
+        setLoading(false);
         return;
       }
 
@@ -479,7 +465,10 @@ const Checkout = () => {
       setVoucherId(voucher_id);
 
       toast.success(
-        `Voucher applied successfully! You saved ₱${(discount || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+        `Voucher applied successfully! You saved ₱${discount.toLocaleString(
+          "en-US",
+          { minimumFractionDigits: 2, maximumFractionDigits: 2 },
+        )}`,
       );
       voucherInputRef.current.value = "";
     } catch (error) {
@@ -501,6 +490,7 @@ const Checkout = () => {
 
   const handleRemoveVoucher = () => {
     setVoucherDiscount(0);
+    setVoucherId(null);
     if (voucherInputRef.current) {
       voucherInputRef.current.value = "";
     }
@@ -511,9 +501,6 @@ const Checkout = () => {
     localStorage.removeItem("checkoutFormDetails");
     localStorage.removeItem("checkoutVoucherCode");
     localStorage.removeItem("checkoutVoucherDiscount");
-    localStorage.removeItem("proof_image");
-    localStorage.removeItem("proof_image_name");
-    localStorage.removeItem("uploadedPaymentMethod");
   };
 
   return (
@@ -691,7 +678,7 @@ const Checkout = () => {
                 className={`block w-full px-3 pb-2 pt-4 text-base text-gray-900 bg-transparent
                 rounded-lg border border-gray-300 appearance-none focus:outline-none 
                 focus:ring-0 focus:border-alofa-pink peer`}
-                disabled={!formDetails.region}
+                disabled={!formDetails.region.code}
                 placeholder=""
               >
                 <option value="">Select Province</option>
@@ -718,7 +705,7 @@ const Checkout = () => {
                 className={`block w-full px-3 pb-2 pt-4 text-base text-gray-900 bg-transparent
                   rounded-lg border border-gray-300 appearance-none focus:outline-none 
                   focus:ring-0 focus:border-alofa-pink peer`}
-                disabled={!formDetails.province}
+                disabled={!formDetails.province.code}
                 placeholder=""
               >
                 <option value="">Select City/Municipality</option>
@@ -745,7 +732,7 @@ const Checkout = () => {
                 className={`block w-full px-3 pb-2 pt-4 text-base text-gray-900 bg-transparent
                     rounded-lg border border-gray-300 appearance-none focus:outline-none 
                     focus:ring-0 focus:border-alofa-pink peer`}
-                disabled={!formDetails.city || barangays.length === 0}
+                disabled={!formDetails.city.code || barangays.length === 0}
                 placeholder=""
               >
                 <option value="">Select Barangay</option>
@@ -825,7 +812,11 @@ const Checkout = () => {
               <div className="accordion overflow-hidden">
                 {/* Gcash Payment */}
                 <div
-                  className={`border rounded-lg p-4 mb-4 cursor-pointer transition-all duration-700 ease-in-out ${formDetails.paymentMethod === "GCash" ? "max-h-screen" : "max-h-20"}`}
+                  className={`border rounded-lg p-4 mb-4 cursor-pointer transition-all duration-700 ease-in-out ${
+                    formDetails.paymentMethod === "GCash"
+                      ? "max-h-screen"
+                      : "max-h-20"
+                  }`}
                 >
                   <div className="flex justify-between items-center">
                     <label className="flex items-center gap-2">
@@ -874,14 +865,9 @@ const Checkout = () => {
                       </label>
                       {uploadedPaymentMethod === "GCash" && receiptFile && (
                         <div className="flex items-center mt-2">
-                          <img
-                            src={receiptFile} // Display the base64 image from state
-                            alt="Uploaded Proof"
-                            className="w-32 h-32 object-cover"
-                          />
-                          <p className="italic text-gray-400 text-sm ml-4">
+                          <p className="italic text-gray-400 text-sm">
                             File:{" "}
-                            <b className="text-black">{receiptFileName}</b>
+                            <b className="text-black">{receiptFile.name}</b>
                           </p>
                           <button
                             onClick={handleRemoveFile}
@@ -897,24 +883,28 @@ const Checkout = () => {
 
                 {/* Bank Transfer */}
                 <div
-                  className={`border rounded-lg p-4 mb-4 cursor-pointer transition-all duration-700 ease-in-out ${formDetails.paymentMethod === "bank" ? "max-h-screen" : "max-h-20"}`}
+                  className={`border rounded-lg p-4 mb-4 cursor-pointer transition-all duration-700 ease-in-out ${
+                    formDetails.paymentMethod === "Bank Transfer"
+                      ? "max-h-screen"
+                      : "max-h-20"
+                  }`}
                 >
                   <div className="flex justify-between items-center">
                     <label className="flex items-center gap-2">
                       <input
                         type="radio"
                         name="paymentMethod"
-                        value="bank"
-                        checked={formDetails.paymentMethod === "bank"}
+                        value="Bank Transfer"
+                        checked={formDetails.paymentMethod === "Bank Transfer"}
                         onChange={() => {
                           setFormDetails({
                             ...formDetails,
-                            paymentMethod: "bank",
+                            paymentMethod: "Bank Transfer",
                           });
                         }}
                         disabled={
                           uploadedPaymentMethod &&
-                          uploadedPaymentMethod !== "bank"
+                          uploadedPaymentMethod !== "Bank Transfer"
                         }
                       />
                       <span className="font-bold">Bank Transfer</span>
@@ -925,7 +915,7 @@ const Checkout = () => {
                       className="w-10"
                     />
                   </div>
-                  {formDetails.paymentMethod === "bank" && (
+                  {formDetails.paymentMethod === "Bank Transfer" && (
                     <div className="mt-4">
                       <p className="text-sm mb-2">Bank details for transfer:</p>
                       <p className="text-sm">
@@ -940,33 +930,29 @@ const Checkout = () => {
                         <input
                           type="file"
                           accept=".jpg,.jpeg,.png,.pdf"
-                          onChange={(e) => handleFileChange(e, "bank")}
+                          onChange={(e) => handleFileChange(e, "Bank Transfer")}
                           style={{ display: "none" }}
                           disabled={
                             uploadedPaymentMethod &&
-                            uploadedPaymentMethod !== "bank"
+                            uploadedPaymentMethod !== "Bank Transfer"
                           }
                         />
                       </label>
-                      {uploadedPaymentMethod === "bank" && receiptFile && (
-                        <div className="flex items-center mt-2">
-                          <img
-                            src={receiptFile} // Display the base64 image from state
-                            alt="Uploaded Proof"
-                            className="w-32 h-32 object-cover"
-                          />
-                          <p className="italic text-gray-400 text-sm ml-4">
-                            File:{" "}
-                            <b className="text-black">{receiptFileName}</b>
-                          </p>
-                          <button
-                            onClick={handleRemoveFile}
-                            className="ml-2 text-red-500 text-xs"
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      )}
+                      {uploadedPaymentMethod === "Bank Transfer" &&
+                        receiptFile && (
+                          <div className="flex items-center mt-2">
+                            <p className="italic text-gray-400 text-sm">
+                              File:{" "}
+                              <b className="text-black">{receiptFile.name}</b>
+                            </p>
+                            <button
+                              onClick={handleRemoveFile}
+                              className="ml-2 text-red-500 text-xs"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        )}
                     </div>
                   )}
                 </div>
@@ -1072,9 +1058,9 @@ const Checkout = () => {
                   <div className="flex items-center">
                     <button
                       onClick={handleRemoveVoucher}
-                      className="ml-2 text-xs text-red-500 hover:text-red-700"
+                      className="ml-2 text-sm text-red-500 hover:text-red-700"
                     >
-                      [{voucherCode}]Remove
+                      [{voucherCode}] Remove
                     </button>
                     <span>
                       -₱

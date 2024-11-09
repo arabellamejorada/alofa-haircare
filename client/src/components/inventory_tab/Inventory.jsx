@@ -14,6 +14,10 @@ const Inventory = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowsPerPage = 10;
+
   // Filter states
   const [search, setSearch] = useState("");
   const [selectedProduct] = useState("");
@@ -34,7 +38,6 @@ const Inventory = () => {
         ]);
 
         setInventory(inventoryData);
-        // Ensure inventoryHistory is set correctly
         if (
           inventoryHistoryResponse &&
           Array.isArray(inventoryHistoryResponse.data)
@@ -54,12 +57,12 @@ const Inventory = () => {
     fetchData();
   }, []);
 
-  // Toggle row expansion
+  // Toggle row expansion to ensure only one row is expanded at a time
   const toggleRow = (variationId) => {
     if (expandedRows.includes(variationId)) {
-      setExpandedRows(expandedRows.filter((id) => id !== variationId));
+      setExpandedRows([]); // Close the currently expanded row
     } else {
-      setExpandedRows([...expandedRows, variationId]);
+      setExpandedRows([variationId]); // Expand the new row and close others
     }
   };
 
@@ -78,7 +81,7 @@ const Inventory = () => {
     );
   };
 
-  // Filter inventory data based on search, product, and status
+  // Calculate filtered and paginated data
   const filteredInventory = inventory.filter((item) => {
     const productName = item.product_name?.toLowerCase() || "";
     const variation = `${item.type || ""} - ${item.value || ""}`.toLowerCase();
@@ -103,6 +106,19 @@ const Inventory = () => {
     );
   });
 
+  const totalPages = Math.ceil(filteredInventory.length / rowsPerPage);
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentData = filteredInventory.slice(indexOfFirstRow, indexOfLastRow);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
   // Define columns for inventory table
   const columns = [
     { key: "inventory_id", header: "ID" },
@@ -126,7 +142,7 @@ const Inventory = () => {
           </div>
         )}
 
-        <div className="container mx-auto p-4">
+        <div className="container mx-auto">
           <strong className="text-3xl font-bold text-gray-500">
             Inventory
           </strong>
@@ -172,7 +188,7 @@ const Inventory = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredInventory.map((item) => (
+              {currentData.map((item) => (
                 <Fragment key={item.inventory_id}>
                   <tr>
                     {columns.slice(0, -1).map((column) => (
@@ -265,6 +281,29 @@ const Inventory = () => {
               ))}
             </tbody>
           </table>
+
+          {/* Pagination Controls */}
+          <div className="flex justify-between items-center p-4">
+            <button
+              className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50"
+              onClick={handlePreviousPage}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </button>
+
+            <span className="text-sm text-gray-700">
+              Page {currentPage} of {totalPages}
+            </span>
+
+            <button
+              className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50"
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </button>
+          </div>
         </div>
       </div>
     </Fragment>

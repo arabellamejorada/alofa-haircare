@@ -4,8 +4,8 @@ import {
   Routes,
   Route,
   Navigate,
-  useLocation, // Added code
-  Link, // Added code
+  useLocation,
+  Link,
 } from "react-router-dom";
 import { Toaster } from "sonner";
 import Layout from "./components/shared/Layout";
@@ -22,44 +22,24 @@ import StockOutHistory from "./components/inventory_tab/stock_out/StockOutHistor
 import Login from "./components/Login";
 import Vouchers from "./components/voucher_tab/Vouchers";
 import Faqs from "./components/Faqs";
+import OrderVerification from "./components/orders_tab/OrderVerification";
 
 import { AuthProvider, AuthContext } from "./components/AuthContext";
 
-// Define admin-only paths (Added code)
-const adminOnlyPaths = [
-  "/products",
-  "/productcategories",
-  "/voucher",
-  "/suppliers",
-  "/employees",
-  "/faqs",
-];
+const ProtectedRoute = ({ element, adminOnly = false }) => {
+  const { token, role } = useContext(AuthContext);
+  const location = useLocation();
 
-// Protected Route component
-const ProtectedRoute = ({ element }) => {
-  const { token, role } = useContext(AuthContext); // Access token and role from AuthContext
-  const location = useLocation(); // Added code
-
-  // If user is not logged in, redirect to login
-  if (!token) {
+  if (!token) return <Navigate to="/login" replace />;
+  if (role !== "admin" && role !== "employee")
     return <Navigate to="/login" replace />;
-  }
-
-  // If user is not an admin or employee, redirect to login
-  if (role !== "admin" && role !== "employee") {
-    return <Navigate to="/login" replace />;
-  }
-
-  // Check if the path is admin-only and if the user is not an admin (Added code)
-  if (adminOnlyPaths.includes(location.pathname) && role !== "admin") {
+  if (adminOnly && role !== "admin")
     return <Navigate to="/not-authorized" replace />;
-  }
 
-  // Render the protected component
   return element;
 };
 
-// Not Authorized component (Added code)
+// Not Authorized component
 function NotAuthorized() {
   return (
     <div style={{ padding: "2rem", textAlign: "center" }}>
@@ -76,10 +56,8 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        {/* Toaster should be accessible across the entire app */}
         <Toaster richColors position="top-right" />
         <Routes>
-          {/* Add the Layout component as the parent route. Sidebar and Header are Layout Components */}
           <Route path="/" element={<ProtectedRoute element={<Layout />} />}>
             <Route index element={<ProtectedRoute element={<Dashboard />} />} />
             <Route
@@ -92,11 +70,11 @@ function App() {
             />
             <Route
               path="voucher"
-              element={<ProtectedRoute element={<Vouchers />} />}
+              element={<ProtectedRoute element={<Vouchers />} adminOnly />}
             />
             <Route
               path="faqs"
-              element={<ProtectedRoute element={<Faqs />} />}
+              element={<ProtectedRoute element={<Faqs />} adminOnly />}
             />
             <Route
               path="inventory"
@@ -120,15 +98,18 @@ function App() {
             />
             <Route
               path="suppliers"
-              element={<ProtectedRoute element={<Suppliers />} />}
+              element={<ProtectedRoute element={<Suppliers />} adminOnly />}
             />
             <Route
               path="employees"
-              element={<ProtectedRoute element={<Employees />} />}
+              element={<ProtectedRoute element={<Employees />} adminOnly />}
+            />
+            <Route
+              path="orderVerification"
+              element={<ProtectedRoute element={<OrderVerification />} />}
             />
           </Route>
           <Route path="login" element={<Login />} />
-          {/* Not Authorized Route (Added code) */}
           <Route path="not-authorized" element={<NotAuthorized />} />
         </Routes>
       </Router>
