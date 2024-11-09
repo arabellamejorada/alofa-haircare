@@ -292,7 +292,7 @@ const getAllOrdersWithOrderItems = async (req, res) => {
     const ordersResult = await pool.query(`
       SELECT 
         o.*, 
-        o.date_ordered AS order_date,
+        to_char(o.date_ordered, 'MM-DD-YYYY, HH:MI AM') AS order_date,
         oi.order_item_id, 
         oi.variation_id, 
         oi.quantity, 
