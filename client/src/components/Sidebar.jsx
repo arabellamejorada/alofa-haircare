@@ -7,6 +7,7 @@ import {
   PRODUCT_SIDEBAR_LINKS,
   VOUCHER_SIDEBAR_LINKS,
   INVENTORY_SIDEBAR_LINKS,
+  ORDERS_SIDEBAR_LINKS,
   EMPLOYEE_SIDEBAR_LINKS,
 } from "../lib/consts/navigation";
 import { HiOutlineLogout } from "react-icons/hi";
@@ -99,6 +100,7 @@ function SidebarContent({ onClose }) {
           DASHBOARD_SIDEBAR_LINKS,
           PRODUCT_SIDEBAR_LINKS, // Available to both admins and employees
           INVENTORY_SIDEBAR_LINKS,
+          ORDERS_SIDEBAR_LINKS,
           isAdmin ? EMPLOYEE_SIDEBAR_LINKS : [], // Admin-only
           isAdmin ? VOUCHER_SIDEBAR_LINKS : [], // Admin-only
         ].map((section, index) =>

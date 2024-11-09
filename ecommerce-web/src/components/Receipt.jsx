@@ -1,24 +1,34 @@
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import { useLocation } from "react-router-dom";
 
 const Receipt = ({ orderDetails }) => {
   const [orderDate, setOrderDate] = useState(null);
-  const location = useLocation();
 
-  const paymentMethod =
-    orderDetails?.order.payment_method || location.state?.paymentMethod || "";
-  const discount =
-    orderDetails?.order.total_discount || location.state?.total_discount || 0;
+  const paymentMethod = orderDetails.order.payment_method_name || "";
+  const discount = parseFloat(orderDetails.order.total_discount) || 0;
   const orderID = orderDetails.order.order_id;
-  const shippingFee = 200; // Assuming fixed shipping fee for now
-  const total = orderDetails.order.total_amount;
-  const subtotal = orderDetails.order.subtotal;
+  const subtotal = parseFloat(orderDetails.order.subtotal) || 0;
+  const total = parseFloat(orderDetails.order.total_amount) || 0;
+  const shippingFee = parseFloat(orderDetails.order.shipping_fee) || 0;
   const orderItems = orderDetails.order_items;
 
   useEffect(() => {
-    setOrderDate(new Date());
-    console.log("Receipt orderDetails:", orderDetails);
+    const orderDateString = orderDetails.order.order_date;
+    console.log("order_date:", orderDateString);
+
+    if (orderDateString) {
+      const date = new Date(orderDateString);
+      if (!isNaN(date.getTime())) {
+        setOrderDate(date);
+        console.log("Parsed Date:", date);
+      } else {
+        console.error("Invalid date format:", orderDateString);
+        setOrderDate(null);
+      }
+    } else {
+      console.error("order_date is missing in orderDetails.order");
+      setOrderDate(null);
+    }
   }, [orderDetails]);
 
   const formatOrderDate = (date) => {
@@ -148,11 +158,13 @@ const Receipt = ({ orderDetails }) => {
 Receipt.propTypes = {
   orderDetails: PropTypes.shape({
     order: PropTypes.shape({
-      payment_method: PropTypes.string,
+      payment_method_name: PropTypes.string,
       total_discount: PropTypes.number,
       order_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
       total_amount: PropTypes.number,
       subtotal: PropTypes.number,
+      shipping_fee: PropTypes.number,
+      order_date: PropTypes.string,
     }).isRequired,
     order_items: PropTypes.arrayOf(
       PropTypes.shape({
@@ -161,7 +173,7 @@ Receipt.propTypes = {
         quantity: PropTypes.number.isRequired,
         price: PropTypes.number.isRequired,
         image: PropTypes.string,
-      })
+      }),
     ).isRequired,
   }).isRequired,
 };

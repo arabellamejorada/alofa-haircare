@@ -142,7 +142,7 @@ const Inventory = () => {
           </div>
         )}
 
-        <div className="container mx-auto p-4">
+        <div className="container mx-auto">
           <strong className="text-3xl font-bold text-gray-500">
             Inventory
           </strong>

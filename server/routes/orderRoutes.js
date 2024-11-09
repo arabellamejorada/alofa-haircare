@@ -9,4 +9,10 @@ router.get('/order/customer/:customer_id', orderController.getOrderByCustomerId)
 router.get('/order/:order_id', orderController.getOrderByOrderId);
 router.get('/order/:order_id/items', orderController.getOrderItemsByOrderId);
 
+// Update payment status of an order
+router.put('/order/:order_id/payment-status', orderController.updateOrderPaymentStatus);
+
+// Update order status of an order
+router.put('/order/:order_id/order-status', orderController.updateOrderStatus);
+
 module.exports = router;

@@ -22,6 +22,7 @@ import StockOutHistory from "./components/inventory_tab/stock_out/StockOutHistor
 import Login from "./components/Login";
 import Vouchers from "./components/voucher_tab/Vouchers";
 import Faqs from "./components/Faqs";
+import OrderVerification from "./components/orders_tab/OrderVerification";
 
 import { AuthProvider, AuthContext } from "./components/AuthContext";
 
@@ -102,6 +103,10 @@ function App() {
             <Route
               path="employees"
               element={<ProtectedRoute element={<Employees />} adminOnly />}
+            />
+            <Route
+              path="orderVerification"
+              element={<ProtectedRoute element={<OrderVerification />} />}
             />
           </Route>
           <Route path="login" element={<Login />} />

@@ -5,19 +5,30 @@ import { useLocation, useNavigate } from "react-router-dom";
 const OrderConfirmation = () => {
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Extract order, order_items, and formDetails from location.state
   const {
-    formDetails = {},
     order = {},
     order_items = [],
+    formDetails = {},
   } = location.state || {};
+
+  // If location.state is undefined or missing order data, redirect to home
+  useEffect(() => {
+    if (!location.state || !order.order_id) {
+      navigate("/", { replace: true });
+    }
+  }, [location.state, navigate, order.order_id]);
 
   console.log("OrderConfirmation state:", location.state);
 
   const orderDetails = {
     order,
     order_items,
-    ...formDetails, // Spread formDetails to include customer details like name, address, etc.
   };
+
+  // Determine the shipping address to display
+  const shippingAddress = order.shipping_address || formDetails;
 
   // Prevent going back to checkout by redirecting to home if back button is pressed
   useEffect(() => {
@@ -56,35 +67,43 @@ const OrderConfirmation = () => {
             Billing Address
           </h2>
 
-          {formDetails && formDetails.firstName ? (
+          {shippingAddress &&
+          (shippingAddress.firstName || shippingAddress.first_name) ? (
             <div className="grid grid-cols-4 gap-y-2 text-gray-600">
               {/* Labels */}
               <p className="col-span-1 text-base font-bold m-0">Name</p>
               <p className="col-span-3 text-gray-600 text-base m-0">
-                {formDetails.firstName} {formDetails.lastName}
+                {shippingAddress.firstName || shippingAddress.first_name}{" "}
+                {shippingAddress.lastName || shippingAddress.last_name}
               </p>
 
               <p className="col-span-1 text-base font-bold m-0">Address</p>
               <p className="col-span-3 text-base m-0">
-                {formDetails.street},
-                {formDetails.barangay.name
-                  ? ` ${formDetails.barangay.name},`
+                {shippingAddress.street || shippingAddress.address_line},
+                {shippingAddress.barangay?.name || shippingAddress.barangay
+                  ? ` ${shippingAddress.barangay.name || shippingAddress.barangay},`
                   : ""}
-                {formDetails.city.name ? ` ${formDetails.city.name},` : ""}
-                {formDetails.province.name
-                  ? ` ${formDetails.province.name},`
+                {shippingAddress.city?.name || shippingAddress.city
+                  ? ` ${shippingAddress.city.name || shippingAddress.city},`
                   : ""}
-                {formDetails.region.name ? ` ${formDetails.region.name}, ` : ""}
-                {formDetails.postalCode}
+                {shippingAddress.province?.name || shippingAddress.province
+                  ? ` ${shippingAddress.province.name || shippingAddress.province},`
+                  : ""}
+                {shippingAddress.region?.name || shippingAddress.region
+                  ? ` ${shippingAddress.region.name || shippingAddress.region}, `
+                  : ""}
+                {shippingAddress.postalCode || shippingAddress.zip_code}
               </p>
 
               <p className="col-span-1 text-base font-bold m-0">Phone</p>
               <p className="col-span-3 text-base m-0">
-                {formDetails.phoneNumber}
+                {shippingAddress.phoneNumber || shippingAddress.phone_number}
               </p>
 
               <p className="col-span-1 text-base font-bold m-0">Email</p>
-              <p className="col-span-3 text-base m-0">{formDetails.email}</p>
+              <p className="col-span-3 text-base m-0">
+                {order.customer_email || formDetails.email}
+              </p>
             </div>
           ) : (
             <p className="text-gray-600">No billing address provided.</p>
