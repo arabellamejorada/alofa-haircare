@@ -1,13 +1,22 @@
 const pool = require('../db.js');
 
+// Update voucher status based on validity period
+const updateVoucherStatus = async () => {
+  await pool.query(`
+    UPDATE vouchers
+    SET is_active = CASE
+        WHEN valid_from <= NOW() AND valid_until >= NOW() THEN true
+        ELSE false
+    END
+    WHERE (is_active = true AND valid_until < NOW()) 
+       OR (is_active = false AND valid_from <= NOW() AND valid_until >= NOW())
+  `);
+};
+
+// Get all vouchers
 const getAllVouchers = async (req, res) => {
   try {
-    // Update expired vouchers to inactive
-    await pool.query(`
-      UPDATE vouchers 
-      SET is_active = false 
-      WHERE expiration_date < NOW() AND is_active = true
-    `);
+    await updateVoucherStatus();
 
     // Fetch all vouchers with the updated status
     const result = await pool.query(`
@@ -22,7 +31,9 @@ const getAllVouchers = async (req, res) => {
         max_use_per_user,
         current_uses,
         is_active,
-        to_char(expiration_date, 'MM-DD-YYYY, HH:MI AM') AS expiration_date
+        to_char(valid_from, 'MM-DD-YYYY, HH:MI AM') AS valid_from,
+        to_char(valid_until, 'MM-DD-YYYY, HH:MI AM') AS valid_until,
+        discount_scope
       FROM vouchers
     `);
 
@@ -33,14 +44,33 @@ const getAllVouchers = async (req, res) => {
   }
 };
 
-// Get a voucher by ID
+// Get a voucher by ID  
 const getVoucherById = async (req, res) => {
   const { id } = req.params;
-  try {
-    const result = await pool.query(`SELECT * FROM vouchers WHERE voucher_id = $1`, [id]);
+  
+  try { 
+    const result = await pool.query(`
+      SELECT
+        voucher_id,
+        code,
+        type,
+        discount_value,
+        min_spend,
+        max_discount,
+        total_limit,
+        max_use_per_user,
+        current_uses,
+        is_active,
+        to_char(valid_from, 'MM-DD-YYYY, HH:MI AM') AS valid_from,
+        to_char(valid_until, 'MM-DD-YYYY, HH:MI AM') AS valid_until,
+        discount_scope
+      FROM vouchers
+      WHERE voucher_id = $1`, [id]);
+
     if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Voucher not found' });
     }
+
     res.status(200).json(result.rows[0]);
   } catch (error) {
     console.error('Error fetching voucher:', error);
@@ -48,23 +78,37 @@ const getVoucherById = async (req, res) => {
   }
 };
 
-// Get a voucher by code
-const getVoucherByCode = async (req, res) => {
-  const { code } = req.params;
+// Get product variations associated with a voucher
+const getVoucherProductVariations = async (req, res) => {
+  const { id } = req.params;
+  
   try {
-    const result = await pool.query(`SELECT * FROM vouchers WHERE code = $1`, [code]);
-    if (result.rowCount === 0) {
-      return res.status(404).json({ error: 'Voucher not found' });
-    }
-    res.status(200).json(result.rows[0]);
+    const result = await pool.query(
+      `SELECT 
+          pv.variation_id,
+          pv.sku, 
+          p.name,
+          pv.value, 
+          pv.unit_price 
+        FROM voucher_product_variation vpv
+        JOIN product_variation pv ON vpv.variation_id = pv.variation_id
+        JOIN product p ON pv.product_id = p.product_id
+        WHERE vpv.voucher_id = $1`,
+      [id]
+    );
+
+    res.status(200).json(result.rows);
   } catch (error) {
-    console.error('Error fetching voucher:', error);
-    res.status(500).json({ error: 'Failed to fetch voucher' });
+    console.error('Error fetching product variations:', error);
+    res.status(500).json({ error: 'Failed to fetch product variations' });
   }
 };
+
+
 
 // Create a new voucher
 const createVoucher = async (req, res) => {
+  console.log('Creating voucher:', req.body);
   const {
     code,
     type,
@@ -74,25 +118,31 @@ const createVoucher = async (req, res) => {
     total_limit,
     max_use_per_user,
     is_active,
-    expiration_date,
+    valid_from,
+    valid_until,
+    discount_scope,
   } = req.body;
 
   try {
     const result = await pool.query(
-      `INSERT INTO vouchers (code, type, discount_value, min_spend, max_discount, total_limit, max_use_per_user, is_active, expiration_date, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW()) RETURNING *`,
-      [
-        code,
-        type,
-        discount_value,
-        min_spend || null,
-        max_discount || null,
-        total_limit || null,
-        max_use_per_user || null,
-        is_active,
-        expiration_date,
-      ]
+      `INSERT INTO vouchers
+        (code, type, discount_value, min_spend, max_discount, total_limit, max_use_per_user, is_active, valid_from, valid_until, discount_scope)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
+        [
+          code,
+          type,
+          discount_value,
+          min_spend,
+          max_discount || null,
+          total_limit,
+          max_use_per_user,
+          is_active,
+          valid_from,
+          valid_until,
+          discount_scope,
+        ]
     );
+
     res.status(201).json({ message: 'Voucher created successfully', voucher: result.rows[0] });
   } catch (error) {
     console.error('Error creating voucher:', error);
@@ -102,6 +152,7 @@ const createVoucher = async (req, res) => {
 
 // Update an existing voucher
 const updateVoucher = async (req, res) => {
+  console.log('Updating voucher:', req.body);
   const { id } = req.params;
   const {
     code,
@@ -112,27 +163,40 @@ const updateVoucher = async (req, res) => {
     total_limit,
     max_use_per_user,
     is_active,
-    expiration_date,
+    valid_from,
+    valid_until,
+    discount_scope,
   } = req.body;
 
   try {
     const result = await pool.query(
       `UPDATE vouchers
-       SET code = $1, type = $2, discount_value = $3, min_spend = $4, max_discount = $5, total_limit = $6,
-           max_use_per_user = $7, is_active = $8, expiration_date = $9
-       WHERE voucher_id = $10 RETURNING *`,
-      [
-        code,
-        type,
-        discount_value,
-        min_spend,
-        max_discount,
-        total_limit,
-        max_use_per_user,
-        is_active,
-        expiration_date,
-        id,
-      ]
+        SET code = $1,
+            type = $2,
+            discount_value = $3,
+            min_spend = $4,
+            max_discount = $5,
+            total_limit = $6,
+            max_use_per_user = $7,
+            is_active = $8,
+            valid_from = $9,
+            valid_until = $10,
+            discount_scope = $11
+        WHERE voucher_id = $12 RETURNING *`,
+        [
+          code,
+          type,
+          discount_value,
+          min_spend || null,
+          max_discount || null,
+          total_limit,
+          max_use_per_user,
+          is_active,
+          valid_from,
+          valid_until,
+          discount_scope,
+          id,
+        ]
     );
 
     if (result.rowCount === 0) {
@@ -146,12 +210,25 @@ const updateVoucher = async (req, res) => {
   }
 };
 
-// Delete a voucher
+// Delete a voucher if it exists and if it has not been used
 const deleteVoucher = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const result = await pool.query(`DELETE FROM vouchers WHERE voucher_id = $1 RETURNING *`, [id]);
+    // Check if the voucher has been used
+    const usedVoucherResult = await pool.query(
+      `SELECT * FROM used_vouchers WHERE voucher_id = $1`,
+      [id]
+    );
+
+    if (usedVoucherResult.rowCount > 0) {
+      return res.status(400).json({ error: 'Voucher has been used and cannot be deleted' });
+    }
+
+    const result = await pool.query(
+      `DELETE FROM vouchers WHERE voucher_id = $1 RETURNING *`,
+      [id]
+    );
 
     if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Voucher not found' });
@@ -164,18 +241,16 @@ const deleteVoucher = async (req, res) => {
   }
 };
 
+
 const applyVoucher = async (req, res) => {
-  const { code, subtotal, customer_id } = req.body;
-  console.log('Applying voucher:', code, subtotal, customer_id);
+  const { code, subtotal, customer_id, cartItems = []} = req.body;
+  console.log('Applying voucher:', code, cartItems, subtotal, customer_id);
 
   try {
-     await pool.query(`
-      UPDATE vouchers 
-      SET is_active = false 
-      WHERE expiration_date < NOW() AND is_active = true
-    `);
+    // Step 1: Validate and update voucher status
+    await updateVoucherStatus();
 
-    // Step 1: Fetch the voucher by code and check if it's active
+    // Step 2: Fetch the voucher by code and check if it's active
     const voucherResult = await pool.query(
       `SELECT * FROM vouchers WHERE code = $1 AND is_active = true`,
       [code]
@@ -189,16 +264,16 @@ const applyVoucher = async (req, res) => {
     const voucher = voucherResult.rows[0];
     console.log('Voucher details:', voucher);
 
-    // Step 2: Check if the voucher has expired
+   // Check validity period
     const currentDate = new Date();
-    const expirationDate = new Date(voucher.expiration_date);
-    if (expirationDate < currentDate) {
-      console.error('Voucher has expired');
-      return res.status(400).json({ error: 'Voucher has expired' });
+    const validFrom = new Date(voucher.valid_from);
+    const validUntil = new Date(voucher.valid_until);
+    if (currentDate < validFrom || currentDate > validUntil) {
+      return res.status(400).json({ error: 'Voucher is not valid at this time' });
     }
 
+    // Check minimum spend
     const minSpend = voucher.min_spend ? Number(voucher.min_spend) : 0;
-    // Step 3: Check minimum spend requirement
     if (minSpend && subtotal < minSpend) {
       console.error(`Minimum spend requirement not met. Required: ${minSpend}, Subtotal: ${subtotal}`);
       return res.status(400).json({
@@ -206,7 +281,7 @@ const applyVoucher = async (req, res) => {
       });
     }
 
-    // Step 4: Retrieve the customer's used vouchers count
+    // Check usage limits per customer and total limit
     let customerVoucherUsage = 0;
     try {
       const customerUsageResult = await pool.query(
@@ -221,48 +296,114 @@ const applyVoucher = async (req, res) => {
       return res.status(500).json({ error: 'Error retrieving customer usage count' });
     }
 
-    // Step 5: Check the per-customer usage limit
     if (voucher.max_use_per_user !== null && customerVoucherUsage >= voucher.max_use_per_user) {
       console.error('Voucher usage limit per customer has been reached');
       return res.status(400).json({ error: 'Voucher usage limit per customer has been reached' });
     }
 
-    // Check if the voucher has reached its total limit
     if (voucher.total_limit !== null && voucher.current_uses >= voucher.total_limit) {
       console.error('Voucher has reached its total limit');
       return res.status(400).json({ error: 'Voucher has reached its total limit' });
     }
 
-    // Convert discount_value and max_discount to numbers
-    const discountValue = voucher.discount_value ? Number(voucher.discount_value) : 0;
+    // Step 2: Calculate the discount based on the voucher
+    const discountValue = Number(voucher.discount_value);
     const maxDiscount = voucher.max_discount ? Number(voucher.max_discount) : 0;
-
-    // Step 6: Calculate the discount
     let discount = 0;
 
-    if (voucher.type === 'percentage') {
-      discount = (subtotal * discountValue) / 100;
-      if (maxDiscount > 0 && discount > maxDiscount) {
-        discount = maxDiscount;
-      }
-    } else if (voucher.type === 'flat') {
-      discount = discountValue;
-      if (maxDiscount > 0 && discount > maxDiscount) {
-        discount = maxDiscount;
-      }
+    // Fetch applicable variations if the discount scope is for product_variation
+    let applicableVariationIds = [];
+    if (voucher.discount_scope === 'product_variation') {
+        const applicableItems = await pool.query(
+            `SELECT pv.variation_id FROM voucher_product_variation vpv
+            JOIN product_variation pv ON vpv.variation_id = pv.variation_id
+            WHERE vpv.voucher_id = $1`,
+            [voucher.voucher_id]
+        );
+
+        applicableVariationIds = applicableItems.rows.map(row => row.variation_id);
+    } else if (voucher.discount_scope === 'total') {
+        // Apply discount to all items
+        applicableVariationIds = cartItems.map(item => item.variation_id);
     }
 
-    console.log('Calculated discount:', discount);
+    // Calculate total cart price for proportional distribution
+    const totalPrice = cartItems.reduce((acc, item) => acc + item.unit_price * item.quantity, 0);
 
-    // Step 7: Calculate the new total after applying the discount
+    // Determine the total discount based on the voucher type and apply the cap
+    let totalDiscount = 0;
+    if (voucher.discount_scope === 'total') {
+        if (voucher.type === "percentage") {
+            totalDiscount = (totalPrice * discountValue) / 100;
+        } else if (voucher.type === "flat") {
+            totalDiscount = discountValue;
+            console.log('Total discount:', totalDiscount);
+        }
+        totalDiscount = Math.min(totalDiscount, maxDiscount);
+        console.log('Total discount:', totalDiscount);
+    }
+
+   // Update cart items with discounted prices where applicable
+    const updatedCartItems = cartItems.map((item) => {
+        let discounted_price = null; // Default to null for non-discounted items
+        let itemDiscount = 0;
+
+        if (applicableVariationIds.includes(item.variation_id)) {
+            // Only apply discount if the item is in the applicableVariationIds list
+            if (voucher.discount_scope === 'product_variation') {
+                // Handle product variation discount scope
+                if (voucher.type === "percentage") {
+                    itemDiscount = (item.unit_price * discountValue) / 100;
+                    discounted_price = Math.max(item.unit_price - itemDiscount, 0);
+                } else if (voucher.type === "flat") {
+                    itemDiscount = discountValue;
+                    discounted_price = Math.max(item.unit_price - itemDiscount, 0);
+                }
+
+                if (maxDiscount > 0) {
+                    const cappedDiscountPrice = Math.max(item.unit_price - maxDiscount, 0);
+                    discounted_price = Math.min(discounted_price, cappedDiscountPrice);
+                }
+
+                discount += (item.unit_price - discounted_price) * item.quantity;
+
+            } else if (voucher.discount_scope === 'total') {
+                console.log('Applying total discount to item:', item.variation_id);
+                // Proportionally distribute the total discount based on the item's contribution to total price
+                const itemSubtotal = item.unit_price * item.quantity;
+                const itemProportion = itemSubtotal / totalPrice;
+                itemDiscount = itemProportion * totalDiscount;
+                console.log('Item subtotal:', itemSubtotal);
+                console.log('Item proportion:', itemProportion);
+                console.log('totalprice:', totalPrice);
+                console.log('Item discount:', itemDiscount);
+                // Calculate the discounted price per unit for this item
+                discounted_price = Math.max(item.unit_price - (itemDiscount / item.quantity), 0);
+                console.log('Discounted price:', discounted_price);
+                // Accumulate the total discount for tracking
+                discount += itemDiscount;
+            }
+        }
+
+        // Return item with discounted price or null if not applicable
+        return {
+            ...item,
+            discounted_price: discounted_price !== null ? parseFloat(discounted_price.toFixed(2)) : null
+        };
+    });
+
+
+    // Calculate the new total after applying the discount
     const totalAmount = subtotal - discount;
     console.log('Total amount after discount:', totalAmount);
 
-    // Step 8: Send response with calculated discount and new total
+    // Send response with updated cart items
     res.status(200).json({
-      message: 'Voucher validated successfully',
+      message: 'Voucher applied successfully',
       discount,
+      totalAmount,
       voucher_id: voucher.voucher_id,
+      updatedCartItems: updatedCartItems, // Updated cart items with discounted prices
     });
   } catch (error) {
     console.error('Error applying voucher:', error);
@@ -271,13 +412,138 @@ const applyVoucher = async (req, res) => {
 };
 
 
+// CRUD operations for voucher-product variation relationships
+const addVoucherProductVariation = async (req, res) => {
+  const { voucher_id, variation_id } = req.body;
+
+  console.log('Adding product variation to voucher:', voucher_id, variation_id);
+  try {
+    // Step 1: Check the voucher's discount_scope
+    const voucherResult = await pool.query(
+      `SELECT discount_scope FROM vouchers WHERE voucher_id = $1`,
+      [voucher_id]
+    );
+
+    if (voucherResult.rowCount === 0) {
+      return res.status(404).json({ error: 'Voucher not found' });
+    }
+
+    const { discount_scope } = voucherResult.rows[0];
+
+    // Step 2: Restrict addition if scope is "total"
+    if (discount_scope === 'total') {
+      console.error('Cannot add product variations to a voucher with a "total" discount scope');
+
+      return res.status(400).json({
+        error: 'Cannot add product variations to a voucher with a "total" discount scope'
+      });
+    }
+
+    // Step 3: Proceed with adding the product variation if scope is "product_variation"
+    await pool.query(
+      `INSERT INTO voucher_product_variation (voucher_id, variation_id) VALUES ($1, $2)`,
+      [voucher_id, variation_id]
+    );
+
+    res.status(201).json({ message: 'Product variation added to voucher' });
+  } catch (error) {
+    console.error('Error adding product variation to voucher:', error);
+    res.status(500).json({ error: 'Failed to add product variation to voucher' });
+  }
+};
+
+
+const removeVoucherProductVariation = async (req, res) => {
+  const { voucher_id, variation_id } = req.body;
+  try {
+    await pool.query(
+      `DELETE FROM voucher_product_variation WHERE voucher_id = $1 AND variation_id = $2`,
+      [voucher_id, variation_id]
+    );
+    console.log('Product variation removed from voucher:', voucher_id, variation_id);
+    res.status(200).json({ message: 'Product variation removed from voucher' });
+  } catch (error) {
+    console.error('Error removing product variation from voucher:', error);
+    res.status(500).json({ error: 'Failed to remove product variation from voucher' });
+  }
+};
+
+const manageVoucherVariations = async (req, res) => {
+  const { voucher_id, variations = [] } = req.body;
+  console.log('Managing voucher variations:', voucher_id, variations);
+
+  try {
+    // Step 1: Validate the voucher's discount_scope
+    const voucherResult = await pool.query(
+      `SELECT discount_scope FROM vouchers WHERE voucher_id = $1`,
+      [voucher_id]
+    );
+
+    if (voucherResult.rowCount === 0) {
+      return res.status(404).json({ error: 'Voucher not found' });
+    }
+
+    const { discount_scope } = voucherResult.rows[0];
+
+    // Restrict management if the discount scope is "total"
+    if (discount_scope === 'total') {
+      console.error('Cannot manage product variations for a voucher with a "total" discount scope');
+      return res.status(400).json({
+        error: 'Cannot manage product variations for a voucher with a "total" discount scope'
+      });
+    }
+
+    // Step 2: Fetch existing product variations associated with the voucher
+    const existingVariationsResult = await pool.query(
+      `SELECT variation_id FROM voucher_product_variation WHERE voucher_id = $1`,
+      [voucher_id]
+    );
+
+    const existingVariations = existingVariationsResult.rows.map(row => row.variation_id);
+
+    // Determine variations to add or remove
+    const variationsToAdd = variations.filter(variation => !existingVariations.includes(variation));
+    const variationsToRemove = existingVariations.filter(variation => !variations.includes(variation));
+
+    // Insert new variations if any
+    if (variationsToAdd.length > 0) {
+      const addPromises = variationsToAdd.map(variation_id =>
+        pool.query(
+          `INSERT INTO voucher_product_variation (voucher_id, variation_id) VALUES ($1, $2)`,
+          [voucher_id, variation_id]
+        )
+      );
+      await Promise.all(addPromises);
+    }
+
+    // Remove variations if any
+    if (variationsToRemove.length > 0) {
+      const removePromises = variationsToRemove.map(variation_id =>
+        pool.query(
+          `DELETE FROM voucher_product_variation WHERE voucher_id = $1 AND variation_id = $2`,
+          [voucher_id, variation_id]
+        )
+      );
+      await Promise.all(removePromises);
+    }
+
+    res.status(200).json({ message: 'Voucher variations managed successfully' });
+  } catch (error) {
+    console.error('Error managing voucher variations:', error);
+    res.status(500).json({ error: 'Failed to manage voucher variations' });
+  }
+};
+
 
 module.exports = {
   getAllVouchers,
+  getVoucherProductVariations,
   getVoucherById,
-  getVoucherByCode,
   createVoucher,
   updateVoucher,
   deleteVoucher,
-  applyVoucher
+  applyVoucher,
+  addVoucherProductVariation,
+  removeVoucherProductVariation,
+  manageVoucherVariations,
 };

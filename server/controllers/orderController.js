@@ -93,13 +93,13 @@ const createOrder = async (req, res) => {
     const newOrder = orderResult.rows[0];
     console.log("New order:", newOrder);
 
-    // Step 3: Insert order items
-    const orderItemsValues = cartItems.flatMap((item) => [
-      newOrder.order_id,
-      item.variation_id,
-      item.quantity,
-      item.unit_price,
-    ]);
+   // Step 3: Insert order items with discounted price if applicable
+  const orderItemsValues = cartItems.flatMap((item) => [
+    newOrder.order_id,
+    item.variation_id,
+    item.quantity,
+    item.discounted_price !== null && item.discounted_price !== undefined ? item.discounted_price : item.unit_price,
+  ]);
 
     const placeholders = cartItems
       .map(

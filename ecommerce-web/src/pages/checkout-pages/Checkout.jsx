@@ -26,7 +26,13 @@ const Checkout = () => {
   const [profileData, setProfileData] = useState(null);
   const voucherInputRef = useRef(null);
 
-  const { cartItems, subtotal, updateCartContext } = useContext(CartContext);
+  const {
+    cartItems,
+    setCartItems,
+    subtotal,
+    updateCartContext,
+    resetSubtotal,
+  } = useContext(CartContext);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [voucherId, setVoucherId] = useState(null);
@@ -378,9 +384,8 @@ const Checkout = () => {
         total_discount: voucherDiscount,
         total_amount: subtotal + 200 - voucherDiscount,
         shipping_address_id: formDetails.shipping_address_id,
-        paymentMethod: formDetails.paymentMethod, // Should match method_name in payment_method table
-        shipping_fee: 200, // Include shipping fee if required by backend
-        // proof_image will be handled separately
+        paymentMethod: formDetails.paymentMethod,
+        shipping_fee: 200,
       };
 
       formData.append("orderDetails", JSON.stringify(orderDetails));
@@ -405,6 +410,7 @@ const Checkout = () => {
 
       try {
         updateCartContext([]);
+        resetSubtotal();
       } catch (error) {
         toast.error("Failed to clear cart. Please refresh the page.");
         console.error("Failed to clear cart:", error);
@@ -451,7 +457,9 @@ const Checkout = () => {
         voucherCode,
         subtotal,
         profileData.customer_id,
+        cartItems,
       );
+
       console.log("Voucher response:", response);
       if (response.error) {
         toast.error(response.error);
@@ -460,9 +468,10 @@ const Checkout = () => {
       }
 
       // Successfully applied voucher
-      const { discount, voucher_id } = response;
+      const { discount, voucher_id, updatedCartItems } = response;
       setVoucherDiscount(discount);
       setVoucherId(voucher_id);
+      setCartItems(updatedCartItems);
 
       toast.success(
         `Voucher applied successfully! You saved ₱${discount.toLocaleString(
@@ -491,9 +500,19 @@ const Checkout = () => {
   const handleRemoveVoucher = () => {
     setVoucherDiscount(0);
     setVoucherId(null);
+
+    setCartItems(
+      cartItems.map((item) => {
+        const updatedItem = { ...item };
+        delete updatedItem.discounted_price;
+        return updatedItem;
+      }),
+    );
+
     if (voucherInputRef.current) {
       voucherInputRef.current.value = "";
     }
+
     toast.info("Voucher removed successfully");
   };
 
@@ -501,6 +520,10 @@ const Checkout = () => {
     localStorage.removeItem("checkoutFormDetails");
     localStorage.removeItem("checkoutVoucherCode");
     localStorage.removeItem("checkoutVoucherDiscount");
+    localStorage.removeItem("checkoutCartItems");
+    localStorage.removeItem("proof_image");
+    localStorage.removeItem("receiptFile");
+    localStorage.removeItem("uploadedPaymentMethod");
   };
 
   return (
@@ -999,10 +1022,52 @@ const Checkout = () => {
                   <div className="flex-1 text-gray-500">
                     <p className="font-bold">{item.name}</p>
                     <p className="text-sm text-gray-500">
-                      {item.variant?.type} {item.variant?.value}
+                      ₱
+                      {item.unit_price.toLocaleString("en-US", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                      {item.value && item.value !== "N/A"
+                        ? ", " + item.value
+                        : ""}
                     </p>
                   </div>
-                  <p className="font-bold text-gray-500">₱{item.unit_price}</p>
+                  <div className="flex flex-col items-end">
+                    {item.discounted_price ? (
+                      <>
+                        <p className="font-bold text-gray-500 line-through">
+                          ₱
+                          {(item.unit_price * item.quantity).toLocaleString(
+                            "en-US",
+                            {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            },
+                          )}
+                        </p>
+                        <p className="font-bold text-red-500">
+                          ₱
+                          {(
+                            item.discounted_price * item.quantity
+                          ).toLocaleString("en-US", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </p>
+                      </>
+                    ) : (
+                      <p className="font-bold text-gray-500">
+                        ₱
+                        {(item.unit_price * item.quantity).toLocaleString(
+                          "en-US",
+                          {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          },
+                        )}
+                      </p>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

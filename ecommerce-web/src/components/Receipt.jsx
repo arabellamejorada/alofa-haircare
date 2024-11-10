@@ -96,7 +96,10 @@ const Receipt = ({ orderDetails }) => {
                     {item.product_name}
                   </p>
                   <p className="text-sm text-gray-500">
-                    Variation: {item.variation_value || "N/A"}
+                    {item.variation_value &&
+                      !item.variation_value.includes("N/A") && (
+                        <div>Variation: {item.variation_value}</div>
+                      )}
                   </p>
                   <p className="text-sm text-gray-500">x{item.quantity}</p>
                 </div>
