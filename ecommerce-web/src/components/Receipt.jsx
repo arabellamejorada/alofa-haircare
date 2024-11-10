@@ -105,7 +105,11 @@ const Receipt = ({ orderDetails }) => {
                 </div>
               </div>
               <p className="text-gray-800 font-semibold">
-                ₱{(item.price * item.quantity).toLocaleString()}
+                ₱
+                {(item.quantity * item.price).toLocaleString("en-US", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}{" "}
               </p>
             </div>
           );

@@ -241,9 +241,8 @@ const deleteVoucher = async (req, res) => {
   }
 };
 
-
 const applyVoucher = async (req, res) => {
-  const { code, subtotal, customer_id, cartItems = []} = req.body;
+  const { code, subtotal, customer_id, cartItems = [] } = req.body;
   console.log('Applying voucher:', code, cartItems, subtotal, customer_id);
 
   try {
@@ -264,7 +263,7 @@ const applyVoucher = async (req, res) => {
     const voucher = voucherResult.rows[0];
     console.log('Voucher details:', voucher);
 
-   // Check validity period
+    // Check validity period
     const currentDate = new Date();
     const validFrom = new Date(voucher.valid_from);
     const validUntil = new Date(voucher.valid_until);
@@ -306,7 +305,7 @@ const applyVoucher = async (req, res) => {
       return res.status(400).json({ error: 'Voucher has reached its total limit' });
     }
 
-    // Step 2: Calculate the discount based on the voucher
+    // Step 3: Calculate the discount based on the voucher
     const discountValue = Number(voucher.discount_value);
     const maxDiscount = voucher.max_discount ? Number(voucher.max_discount) : 0;
     let discount = 0;
@@ -314,84 +313,131 @@ const applyVoucher = async (req, res) => {
     // Fetch applicable variations if the discount scope is for product_variation
     let applicableVariationIds = [];
     if (voucher.discount_scope === 'product_variation') {
-        const applicableItems = await pool.query(
-            `SELECT pv.variation_id FROM voucher_product_variation vpv
-            JOIN product_variation pv ON vpv.variation_id = pv.variation_id
-            WHERE vpv.voucher_id = $1`,
-            [voucher.voucher_id]
-        );
+      const applicableItems = await pool.query(
+        `SELECT pv.variation_id FROM voucher_product_variation vpv
+        JOIN product_variation pv ON vpv.variation_id = pv.variation_id
+        WHERE vpv.voucher_id = $1`,
+        [voucher.voucher_id]
+      );
 
-        applicableVariationIds = applicableItems.rows.map(row => row.variation_id);
+      applicableVariationIds = applicableItems.rows.map(row => row.variation_id);
     } else if (voucher.discount_scope === 'total') {
-        // Apply discount to all items
-        applicableVariationIds = cartItems.map(item => item.variation_id);
+      // Apply discount to all items
+      applicableVariationIds = cartItems.map(item => item.variation_id);
+    }
+
+    // Check if any items in the cart match the applicable variations
+    const matchingItems = cartItems.filter(item => applicableVariationIds.includes(item.variation_id));
+    if (matchingItems.length === 0) {
+      console.log('No items in the cart match the voucher criteria');
+      return res.status(400).json({ error: 'No items in the cart match the voucher criteria'});
+    } else {
+      console.log('Matching items:', matchingItems);
     }
 
     // Calculate total cart price for proportional distribution
     const totalPrice = cartItems.reduce((acc, item) => acc + item.unit_price * item.quantity, 0);
+    console.log('Total cart price:', totalPrice);
 
-    // Determine the total discount based on the voucher type and apply the cap
+    // Determine the total discount based on the voucher type and apply the cap if maxDiscount > 0
     let totalDiscount = 0;
     if (voucher.discount_scope === 'total') {
-        if (voucher.type === "percentage") {
-            totalDiscount = (totalPrice * discountValue) / 100;
-        } else if (voucher.type === "flat") {
-            totalDiscount = discountValue;
-            console.log('Total discount:', totalDiscount);
-        }
+      if (voucher.type === "percentage") {
+        totalDiscount = (totalPrice * discountValue) / 100;
+        console.log('Calculated total percentage discount:', totalDiscount);
+      } else if (voucher.type === "flat") {
+        totalDiscount = discountValue;
+        console.log('Calculated total flat discount:', totalDiscount);
+      }
+
+      // Apply max discount cap only if it's greater than 0
+      if (maxDiscount > 0) {
         totalDiscount = Math.min(totalDiscount, maxDiscount);
-        console.log('Total discount:', totalDiscount);
+      }
+      console.log('Total discount after applying cap:', totalDiscount);
     }
 
-   // Update cart items with discounted prices where applicable
+    // Proceed with applying the discount if totalDiscount is greater than 0
     const updatedCartItems = cartItems.map((item) => {
-        let discounted_price = null; // Default to null for non-discounted items
-        let itemDiscount = 0;
+      let discounted_price = null; // Default to null for non-discounted items
+      let itemDiscount = 0;
 
-        if (applicableVariationIds.includes(item.variation_id)) {
-            // Only apply discount if the item is in the applicableVariationIds list
-            if (voucher.discount_scope === 'product_variation') {
-                // Handle product variation discount scope
-                if (voucher.type === "percentage") {
-                    itemDiscount = (item.unit_price * discountValue) / 100;
-                    discounted_price = Math.max(item.unit_price - itemDiscount, 0);
-                } else if (voucher.type === "flat") {
-                    itemDiscount = discountValue;
-                    discounted_price = Math.max(item.unit_price - itemDiscount, 0);
-                }
+      if (applicableVariationIds.includes(item.variation_id)) {
+        if (voucher.discount_scope === 'product_variation') {
+          console.log('Applying discount to item:', item.variation_id);
 
-                if (maxDiscount > 0) {
-                    const cappedDiscountPrice = Math.max(item.unit_price - maxDiscount, 0);
-                    discounted_price = Math.min(discounted_price, cappedDiscountPrice);
-                }
+          // Step 1: Calculate the total price of applicable items
+          const totalPriceOfApplicableItems = cartItems
+            .filter(i => applicableVariationIds.includes(i.variation_id))
+            .reduce((acc, i) => acc + i.unit_price * i.quantity, 0);
 
-                discount += (item.unit_price - discounted_price) * item.quantity;
+          // Step 2: Calculate the initial total discount based on percentage or flat type
+          let totalDiscount = 0;
+          if (voucher.type === "percentage") {
+            totalDiscount = (totalPriceOfApplicableItems * discountValue) / 100;
+          } else if (voucher.type === "flat") {
+            totalDiscount = discountValue * item.quantity;
+          }
 
-            } else if (voucher.discount_scope === 'total') {
-                console.log('Applying total discount to item:', item.variation_id);
-                // Proportionally distribute the total discount based on the item's contribution to total price
-                const itemSubtotal = item.unit_price * item.quantity;
-                const itemProportion = itemSubtotal / totalPrice;
-                itemDiscount = itemProportion * totalDiscount;
-                console.log('Item subtotal:', itemSubtotal);
-                console.log('Item proportion:', itemProportion);
-                console.log('totalprice:', totalPrice);
-                console.log('Item discount:', itemDiscount);
-                // Calculate the discounted price per unit for this item
-                discounted_price = Math.max(item.unit_price - (itemDiscount / item.quantity), 0);
-                console.log('Discounted price:', discounted_price);
-                // Accumulate the total discount for tracking
-                discount += itemDiscount;
-            }
+          // Step 3: Apply the max discount cap if totalDiscount exceeds it
+          if (maxDiscount > 0) {
+            totalDiscount = Math.min(totalDiscount, maxDiscount);
+          }
+          console.log('Total discount after applying max cap:', totalDiscount);
+
+          // Step 4: Calculate the item discount proportionally
+          const itemSubtotal = item.unit_price * item.quantity;
+          const itemProportion = itemSubtotal / totalPriceOfApplicableItems;
+          itemDiscount = itemProportion * totalDiscount; // Proportionally allocate the capped discount
+
+          console.log('Item Subtotal:', itemSubtotal);
+          console.log('Item Proportion:', itemProportion);
+          console.log('Proportionally distributed item discount:', itemDiscount);
+
+        } else if (voucher.discount_scope === 'total') {
+          // For 'total' scope, distribute the total discount across all items in the cart
+          console.log('Applying total discount to item:', item.variation_id);
+
+          // Calculate the total cart price
+          const totalCartPrice = cartItems.reduce((acc, i) => acc + i.unit_price * i.quantity, 0);
+          
+          // Step 1: Calculate total discount based on the voucher type
+          let totalDiscount = 0;
+          if (voucher.type === "percentage") {
+            totalDiscount = (totalCartPrice * discountValue) / 100;
+          } else if (voucher.type === "flat") {
+            totalDiscount = discountValue;
+          }
+
+          // Apply max discount cap if needed
+          if (maxDiscount > 0) {
+            totalDiscount = Math.min(totalDiscount, maxDiscount);
+          }
+
+          // Step 2: Distribute the capped discount proportionally based on each item's price contribution
+          const itemSubtotal = item.unit_price * item.quantity;
+          const itemProportion = itemSubtotal / totalCartPrice;
+          itemDiscount = itemProportion * totalDiscount;
+
+          console.log('Item Subtotal:', itemSubtotal);
+          console.log('Item Proportion:', itemProportion);
+          console.log('Item Discount:', itemDiscount);
         }
 
-        // Return item with discounted price or null if not applicable
-        return {
-            ...item,
-            discounted_price: discounted_price !== null ? parseFloat(discounted_price.toFixed(2)) : null
-        };
-    });
+        // Calculate the discounted price per unit for this item
+        discounted_price = Math.max(item.unit_price - (itemDiscount / item.quantity), 0);
+        console.log('Discounted price per unit for item:', discounted_price);
 
+        // Accumulate the total discount for tracking
+        discount += itemDiscount;
+      }
+
+      // Return the item with discounted price or null if not applicable
+      return {
+        ...item,
+        discounted_price: discounted_price !== null ? parseFloat(discounted_price.toFixed(2)) : null
+      };
+    });
 
     // Calculate the new total after applying the discount
     const totalAmount = subtotal - discount;
@@ -410,6 +456,7 @@ const applyVoucher = async (req, res) => {
     res.status(500).json({ error: 'Failed to apply voucher' });
   }
 };
+
 
 
 // CRUD operations for voucher-product variation relationships
