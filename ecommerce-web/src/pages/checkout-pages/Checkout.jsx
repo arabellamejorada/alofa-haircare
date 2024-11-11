@@ -172,7 +172,24 @@ const Checkout = () => {
       formData.append("cartItems", JSON.stringify(cartItems));
 
       if (receiptFile) {
-        formData.append("proof_image", receiptFileName);
+        // Extract MIME type and base64 data from the data URL
+        const mimeType = receiptFile.match(/data:(.*);base64,/)[1];
+        const base64Data = receiptFile.replace(/^data:image\/\w+;base64,/, "");
+
+        // Convert base64 to binary data
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: mimeType });
+
+        // Use the stored filename or provide a default
+        const fileName = receiptFileName || "receipt_image.jpg";
+
+        // Append the image blob with filename
+        formData.append("proof_image", blob, fileName);
       }
 
       // Log all formData contents
