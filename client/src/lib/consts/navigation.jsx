@@ -6,8 +6,13 @@ import {
   HiOutlineQuestionMarkCircle,
 } from "react-icons/hi";
 import { LiaPeopleCarrySolid } from "react-icons/lia";
-import { MdOutlineCategory, MdOutlineDiscount } from "react-icons/md";
+import {
+  MdOutlineCategory,
+  MdOutlineDiscount,
+  MdOutlineLocalShipping,
+} from "react-icons/md";
 import { FiTrendingDown, FiTrendingUp } from "react-icons/fi";
+import { IoBagCheckOutline } from "react-icons/io5";
 
 export const DASHBOARD_SIDEBAR_LINKS = [
   {
@@ -94,6 +99,21 @@ export const INVENTORY_SIDEBAR_LINKS = [
     label: "Stock Out",
     path: "/stockout",
     icon: <FiTrendingDown />,
+  },
+];
+
+export const ORDERS_SIDEBAR_LINKS = [
+  {
+    key: "order_verification",
+    label: "Orders",
+    path: "/orderVerification",
+    icon: <IoBagCheckOutline />,
+  },
+  {
+    key: "shipping",
+    label: "Shipping",
+    path: "/shipping",
+    icon: <MdOutlineLocalShipping />,
   },
 ];
 

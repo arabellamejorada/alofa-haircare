@@ -1,4 +1,3 @@
-// src/shared/CartSidebar.jsx
 import { useContext } from "react";
 import { Link } from "react-router-dom";
 import { FaTrashAlt, FaPlus, FaMinus, FaTimes } from "react-icons/fa";

@@ -31,6 +31,16 @@ const CartProvider = ({ children }) => {
 
   const updateCartContext = (newCartItems) => {
     setCartItems(newCartItems);
+    setSubtotal(
+      newCartItems.reduce(
+        (acc, item) => acc + item.unit_price * item.quantity,
+        0,
+      ),
+    );
+  };
+
+  const resetSubtotal = () => {
+    setSubtotal(0);
   };
 
   const createGuestCart = async () => {
@@ -307,6 +317,7 @@ const CartProvider = ({ children }) => {
           subtotal,
           loading,
           resetCart,
+          resetSubtotal,
           fetchCustomerCart,
           updateCartContext,
         }}
