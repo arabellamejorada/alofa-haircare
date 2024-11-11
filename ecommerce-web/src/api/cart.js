@@ -127,10 +127,10 @@ export const mergeCarts = async (guest_cart_id, profile_id) => {
     }
 } 
 
-export const applyVoucher = async (code, subtotal, customer_id) => {
+export const applyVoucher = async (code, subtotal, customer_id, cartItems) => {
     try {
-        console.log("Voucher code received: ", code, subtotal, customer_id);
-        const response = await axios.post('/voucher/apply', { code, subtotal, customer_id });
+        console.log("Voucher code received: ", code, subtotal, customer_id, cartItems);
+        const response = await axios.post('/voucher/apply', { code, subtotal, customer_id, cartItems });
         return response.data;
     } catch (error) {
         console.error('Error applying voucher: ', error.message);
