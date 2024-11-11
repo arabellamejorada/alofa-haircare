@@ -115,6 +115,12 @@ export const ORDERS_SIDEBAR_LINKS = [
     path: "/shipping",
     icon: <MdOutlineLocalShipping />,
   },
+  {
+    key: "refund",
+    label: "Refund",
+    path: "/refund",
+    icon: <HiOutlineDocumentText />,
+  }
 ];
 
 export const EMPLOYEE_SIDEBAR_LINKS = [
