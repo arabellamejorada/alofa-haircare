@@ -12,6 +12,8 @@ const ShippingAddress = ({
   profileData,
   loading,
   setLoading,
+  barangays,
+  setBarangays,
   formDetails,
   setFormDetails,
   uploadedPaymentMethod,
@@ -24,7 +26,6 @@ const ShippingAddress = ({
   const [regions, setRegions] = useState([]);
   const [provinces, setProvinces] = useState([]);
   const [cities, setCities] = useState([]);
-  const [barangays, setBarangays] = useState([]);
 
   const handleInputChange = async (e) => {
     const { name, value } = e.target;
@@ -261,7 +262,7 @@ const ShippingAddress = ({
       )}
 
       {/* Customer Info Section */}
-      <div className="w-full lg:w-2/3">
+      <div className="w-full lg:6/8">
         <h2 className="text-xl font-semibold mb-4 text-gray-500">Contact</h2>
 
         <div className="relative mb-6">
@@ -271,18 +272,18 @@ const ShippingAddress = ({
             value={formDetails.email}
             onChange={handleInputChange}
             className="block w-full px-3 pb-2 pt-4 text-base 
-              text-gray-900 bg-transparent rounded-lg border 
-              border-gray-300 appearance-none focus:outline-none 
-              focus:ring-0 focus:border-alofa-pink peer"
+                    text-gray-900 bg-transparent rounded-lg border 
+                    border-gray-300 appearance-none focus:outline-none 
+                    focus:ring-0 focus:border-alofa-pink peer"
             placeholder=" "
           />
           <label
             htmlFor="email"
             className="absolute text-sm text-gray-500 dark:text-gray-400
-              duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] 
-              start-2.5 peer-focus:text-alofa-pink peer-placeholder-shown:scale-100 
-              peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4 
-              rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto"
+                    duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] 
+                    start-2.5 peer-focus:text-alofa-pink peer-placeholder-shown:scale-100 
+                    peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4 
+                    rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto"
           >
             Email
           </label>
@@ -294,8 +295,8 @@ const ShippingAddress = ({
           </h2>
           <button
             className="ml-4 bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b 
-              hover:from-[#F8587A] hover:to-[#FE699F] text-white font-normal py-1 px-3 rounded-md 
-              focus:outline-none flex items-center"
+                    hover:from-[#F8587A] hover:to-[#FE699F] text-white font-normal py-1 px-3 rounded-md 
+                    focus:outline-none flex items-center"
             onClick={handleOpenAddressModal}
           >
             <FaRegAddressCard className="mr-2" /> Select Address
@@ -320,18 +321,18 @@ const ShippingAddress = ({
               value={formDetails.firstName}
               onChange={handleInputChange}
               className="block w-full px-3 pb-2 pt-4 text-base 
-                      text-gray-900 bg-transparent rounded-lg border 
-                      border-gray-300 appearance-none focus:outline-none 
-                      focus:ring-0 focus:border-alofa-pink peer"
+                            text-gray-900 bg-transparent rounded-lg border 
+                            border-gray-300 appearance-none focus:outline-none 
+                            focus:ring-0 focus:border-alofa-pink peer"
               placeholder=" "
             />
             <label
               htmlFor="firstName"
               className="absolute text-sm text-gray-500 dark:text-gray-400
-                    duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] 
-                    start-2.5 peer-focus:text-alofa-pink peer-placeholder-shown:scale-100 
-                    peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4 
-                    rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto"
+                        duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] 
+                        start-2.5 peer-focus:text-alofa-pink peer-placeholder-shown:scale-100 
+                        peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4 
+                        rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto"
             >
               First Name
             </label>
@@ -345,18 +346,18 @@ const ShippingAddress = ({
               value={formDetails.lastName}
               onChange={handleInputChange}
               className="block w-full px-3 pb-2 pt-4 text-base 
-                    text-gray-900 bg-transparent rounded-lg border 
-                    border-gray-300 appearance-none focus:outline-none 
-                    focus:ring-0 focus:border-alofa-pink peer"
+                            text-gray-900 bg-transparent rounded-lg border 
+                            border-gray-300 appearance-none focus:outline-none 
+                            focus:ring-0 focus:border-alofa-pink peer"
               placeholder=" "
             />
             <label
               htmlFor="lastName"
               className="absolute text-sm text-gray-500 dark:text-gray-400
-                    duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] 
-                    start-2.5 peer-focus:text-alofa-pink peer-placeholder-shown:scale-100 
-                    peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4 
-                    rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto"
+                            duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] 
+                            start-2.5 peer-focus:text-alofa-pink peer-placeholder-shown:scale-100 
+                            peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4 
+                            rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto"
             >
               Last Name
             </label>
@@ -370,18 +371,18 @@ const ShippingAddress = ({
             value={formDetails.street}
             onChange={handleInputChange}
             className="block w-full px-3 pb-2 pt-4 text-base 
-              text-gray-900 bg-transparent rounded-lg border 
-              border-gray-300 appearance-none focus:outline-none 
-              focus:ring-0 focus:border-alofa-pink peer mb-4"
+                    text-gray-900 bg-transparent rounded-lg border 
+                    border-gray-300 appearance-none focus:outline-none 
+                    focus:ring-0 focus:border-alofa-pink peer mb-4"
             placeholder=""
           />
           <label
             htmlFor="street"
             className="absolute text-sm text-gray-500 dark:text-gray-400
-              duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] 
-              start-2.5 peer-focus:text-alofa-pink peer-placeholder-shown:scale-100 
-              peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4 
-              rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto"
+                    duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] 
+                    start-2.5 peer-focus:text-alofa-pink peer-placeholder-shown:scale-100 
+                    peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4 
+                    rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto"
           >
             Street and house number
           </label>
@@ -692,12 +693,14 @@ const ShippingAddress = ({
                 </div>
               )}
             </div>
-            <button
-              onClick={handleCompleteOrder}
-              className="font-extrabold text-white py-2 px-4 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]"
-            >
-              COMPLETE ORDER
-            </button>
+            <div className="mb-6">
+              <button
+                onClick={handleCompleteOrder}
+                className="font-extrabold text-white py-2 px-4 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]"
+              >
+                COMPLETE ORDER
+              </button>
+            </div>
           </div>
         </div>
       </div>

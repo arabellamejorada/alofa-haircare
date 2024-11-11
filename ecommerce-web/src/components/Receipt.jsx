@@ -13,6 +13,7 @@ const Receipt = ({ orderDetails }) => {
   const orderItems = orderDetails.order_items;
 
   useEffect(() => {
+    console.log("orderDetails:", orderDetails);
     const orderDateString = orderDetails.order.order_date;
     console.log("order_date:", orderDateString);
 
@@ -95,12 +96,13 @@ const Receipt = ({ orderDetails }) => {
                   <p className="text-gray-800 font-semibold">
                     {item.product_name}
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <div className="text-sm text-gray-500">
                     {item.variation_value &&
                       !item.variation_value.includes("N/A") && (
-                        <div>Variation: {item.variation_value}</div>
+                        <span>Variation: {item.variation_value}</span>
                       )}
-                  </p>
+                  </div>
+
                   <p className="text-sm text-gray-500">x{item.quantity}</p>
                 </div>
               </div>
