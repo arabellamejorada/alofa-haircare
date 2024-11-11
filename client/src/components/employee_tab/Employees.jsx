@@ -17,7 +17,6 @@ const Employees = () => {
   const [employees, setEmployees] = useState([]);
   const [roles, setRoles] = useState([]);
   const [statuses, setStatuses] = useState([]);
-  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [originalEmployeeData, setOriginalEmployeeData] = useState(null);
 
@@ -55,8 +54,9 @@ const Employees = () => {
         setEmployees(employeesData);
         setRoles(rolesData);
         setStatuses(employeeStatusData);
-      } catch (err) {
-        setError("Failed to fetch data");
+      } catch (error) {
+        console.error("Error fetching employees:", error);
+        toast.error("Failed to fetch employees.");
       } finally {
         setLoading(false);
       }

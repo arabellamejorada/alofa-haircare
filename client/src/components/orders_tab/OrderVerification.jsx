@@ -67,8 +67,13 @@ const OrderVerification = () => {
     setSortOrder(newSortOrder);
     setOrders((prevData) =>
       [...prevData].sort((a, b) => {
-        if (a[field] < b[field]) return newSortOrder === "asc" ? -1 : 1;
-        if (a[field] > b[field]) return newSortOrder === "asc" ? 1 : -1;
+        const aField =
+          field === "total_amount" ? parseFloat(a[field]) : a[field];
+        const bField =
+          field === "total_amount" ? parseFloat(b[field]) : b[field];
+
+        if (aField < bField) return newSortOrder === "asc" ? -1 : 1;
+        if (aField > bField) return newSortOrder === "asc" ? 1 : -1;
         return 0;
       }),
     );

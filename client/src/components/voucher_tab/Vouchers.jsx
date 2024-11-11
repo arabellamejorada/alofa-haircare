@@ -1,18 +1,23 @@
 import React, { Fragment, useEffect, useState } from "react";
-import DataTable from "../shared/DataTable";
 import ConfirmModal from "../shared/ConfirmModal";
-import { MdAddBox } from "react-icons/md";
+import { MdAddBox, MdEditDocument } from "react-icons/md";
 import { FaArrowUp, FaArrowDown } from "react-icons/fa";
-import Modal from "../modal/Modal";
+import {
+  IoMdArrowDropdownCircle,
+  IoMdArrowDroprightCircle,
+} from "react-icons/io";
 import { toast } from "sonner";
 import { ClipLoader } from "react-spinners";
+import VoucherModal from "./VoucherModal";
+import VariationsModal from "./VariationsModal";
 import {
   createVoucher,
   getAllVouchers,
+  getVoucherProductVariations,
   updateVoucher,
   deleteVoucher,
+  manageVoucherVariations,
 } from "../../api/voucher";
-import { render } from "react-dom";
 
 const Voucher = () => {
   const [vouchers, setVouchers] = useState([]);
@@ -26,6 +31,17 @@ const Voucher = () => {
   const [sortOrder, setSortOrder] = useState("asc");
   const [isActiveFilter, setIsActiveFilter] = useState("");
 
+  const [expandedRows, setExpandedRows] = useState([]);
+  const [variations, setVariations] = useState({});
+
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [confirmMessage, setConfirmMessage] = useState("");
+  const [confirmAction, setConfirmAction] = useState(null);
+
+  const [variationsModalOpen, setVariationsModalOpen] = useState(false);
+  const [currentVoucherVariations, setCurrentVoucherVariations] = useState([]);
+  const [currentVoucherId, setCurrentVoucherId] = useState(null);
+
   // Voucher state
   const [voucherData, setVoucherData] = useState({
     code: "",
@@ -36,12 +52,10 @@ const Voucher = () => {
     total_limit: "",
     max_use_per_user: "",
     is_active: true,
-    expiration_date: "",
+    valid_from: "",
+    valid_until: "",
+    discount_scope: "",
   });
-
-  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-  const [confirmMessage, setConfirmMessage] = useState("");
-  const [confirmAction, setConfirmAction] = useState(null);
 
   useEffect(() => {
     fetchVouchers();
@@ -59,12 +73,28 @@ const Voucher = () => {
     }
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setVoucherData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+  const fetchProductVariations = async (selectedVoucher) => {
+    console.log(selectedVoucher);
+    try {
+      const response = await getVoucherProductVariations(selectedVoucher);
+      setVariations((prevVariations) => ({
+        ...prevVariations,
+        [selectedVoucher]: response,
+      }));
+    } catch (error) {
+      toast.error("Failed to fetch product variations");
+    }
+  };
+
+  const toggleRow = (voucherId) => {
+    if (expandedRows.includes(voucherId)) {
+      setExpandedRows(expandedRows.filter((id) => id !== voucherId));
+    } else {
+      setExpandedRows([...expandedRows, voucherId]);
+      if (!variations[voucherId] || variations[voucherId].length === 0) {
+        fetchProductVariations(voucherId);
+      }
+    }
   };
 
   const handleSearchChange = (e) => {
@@ -77,41 +107,14 @@ const Voucher = () => {
     setSortField(field);
   };
 
-  const filteredVouchers = vouchers
-    .filter(
-      (voucher) =>
-        voucher.code.toLowerCase().includes(search) &&
-        (isActiveFilter === "" ||
-          voucher.is_active === (isActiveFilter === "true")),
-    )
-    .sort((a, b) => {
-      if (sortField) {
-        const aValue = a[sortField];
-        const bValue = b[sortField];
-        if (aValue === null) return 1;
-        if (bValue === null) return -1;
-        const isNumeric = !isNaN(aValue) && !isNaN(bValue);
-        return sortOrder === "asc"
-          ? isNumeric
-            ? parseFloat(aValue) - parseFloat(bValue)
-            : aValue > bValue
-              ? 1
-              : -1
-          : isNumeric
-            ? parseFloat(bValue) - parseFloat(aValue)
-            : aValue < bValue
-              ? 1
-              : -1;
-      }
-      return 0;
-    });
-
   const validateForm = () => {
     const validationErrors = {};
     if (!voucherData.code) validationErrors.code = "Voucher code is required";
     if (!voucherData.type) validationErrors.type = "Voucher type is required";
     if (voucherData.discount_value <= 0)
       validationErrors.discount_value = "Discount value must be greater than 0";
+    if (!voucherData.discount_scope)
+      validationErrors.discount_scope = "Discount scope is required";
     setErrors(validationErrors);
     return Object.keys(validationErrors).length === 0;
   };
@@ -142,14 +145,15 @@ const Voucher = () => {
     }
   };
 
-  const handleDeleteVoucher = async (voucher) => {
+  const handleDeleteVoucher = async (voucherId) => {
+    console.log("delete voucher", voucherId);
     setConfirmMessage(
-      `Are you sure you want to delete the voucher "${voucher.code}"?`,
+      `Are you sure you want to delete the voucher "${selectedVoucher.code}"?`,
     );
     setConfirmAction(() => async () => {
       try {
         setLoading(true);
-        await deleteVoucher(voucher.voucher_id);
+        await deleteVoucher(selectedVoucher.voucher_id);
         toast.success("Voucher deleted successfully.");
         fetchVouchers();
       } catch (error) {
@@ -157,17 +161,10 @@ const Voucher = () => {
       } finally {
         setLoading(false);
         setIsConfirmModalOpen(false);
+        handleCloseModal();
       }
     });
     setIsConfirmModalOpen(true);
-  };
-
-  const handleConfirmClose = () => {
-    setIsConfirmModalOpen(false);
-  };
-
-  const handleConfirm = () => {
-    if (confirmAction) confirmAction();
   };
 
   const handleCloseModal = () => {
@@ -182,7 +179,9 @@ const Voucher = () => {
       total_limit: "",
       max_use_per_user: "",
       is_active: true,
-      expiration_date: "",
+      valid_from: "",
+      valid_until: "",
+      discount_scope: "",
     });
     setErrors({});
   };
@@ -190,7 +189,9 @@ const Voucher = () => {
   const openModal = (voucher = null) => {
     if (voucher) {
       setSelectedVoucher(voucher);
-      setVoucherData(voucher);
+      setVoucherData({
+        ...voucher,
+      });
     } else {
       setSelectedVoucher(null);
       setVoucherData({
@@ -202,10 +203,44 @@ const Voucher = () => {
         total_limit: "",
         max_use_per_user: "",
         is_active: true,
-        expiration_date: "",
+        valid_from: "",
+        valid_until: "",
+        discount_scope: "",
       });
     }
     setShowModal(true);
+  };
+
+  const handleEditVoucherVariations = (voucherId) => {
+    setCurrentVoucherId(voucherId);
+    setCurrentVoucherVariations(variations[voucherId] || []);
+    setVariationsModalOpen(true);
+  };
+
+  const saveVoucherVariations = async (selectedVariations) => {
+    try {
+      setLoading(true);
+      // Save the variations
+      await manageVoucherVariations(currentVoucherId, selectedVariations);
+
+      // Fetch updated variations with full details
+      const updatedVariations =
+        await getVoucherProductVariations(currentVoucherId);
+
+      // Update the state with full variation details
+      setVariations((prevVariations) => ({
+        ...prevVariations,
+        [currentVoucherId]: updatedVariations,
+      }));
+
+      setVariationsModalOpen(false);
+      setCurrentVoucherId(null);
+      toast.success("Voucher variations updated successfully.");
+    } catch (error) {
+      toast.error("Failed to update voucher variations. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const renderHeader = (key, label) => (
@@ -221,6 +256,7 @@ const Voucher = () => {
       )}
     </div>
   );
+
   const columns = [
     { key: "voucher_id", header: renderHeader("voucher_id", "ID") },
     { key: "code", header: renderHeader("code", "Code") },
@@ -228,335 +264,335 @@ const Voucher = () => {
     {
       key: "discount_value",
       header: renderHeader("discount_value", "Discount Value"),
-      isNumeric: true,
-    },
-    {
-      key: "min_spend",
-      header: renderHeader("min_spend", "Min Spend"),
-      isNumeric: true,
-    },
-    {
-      key: "max_discount",
-      header: renderHeader("max_discount", "Max Discount"),
-      isNumeric: true,
-    },
-    {
-      key: "total_limit",
-      header: renderHeader("total_limit", "Usage Limit"),
-      isNumeric: true,
-    },
-
-    {
-      key: "max_use_per_user",
-      header: renderHeader("max_use_per_user", "Max Use/User"),
-      isNumeric: true,
-    },
-    {
-      key: "current_uses",
-      header: renderHeader("current_uses", "Current Uses"),
-      isNumeric: true,
     },
     {
       key: "is_active",
       header: renderHeader("is_active", "Active"),
       render: (isActive) => (isActive ? "Yes" : "No"),
     },
+
     {
-      key: "expiration_date",
-      header: renderHeader("expiration_date", "Expiration Date"),
+      key: "discount_scope",
+      header: renderHeader("discount_scope", "Discount Scope"),
     },
   ];
 
+  const variationColumns = [
+    { key: "sku", header: "SKU" },
+    { key: "name", header: "Product Name" },
+    { key: "value", header: "Variation" },
+    { key: "unit_price", header: "Unit Price" },
+  ];
+
+  const filteredVouchers = vouchers
+    .filter(
+      (voucher) =>
+        voucher.code.toLowerCase().includes(search) &&
+        (isActiveFilter === "" ||
+          voucher.is_active === (isActiveFilter === "true")),
+    )
+    .sort((a, b) => {
+      if (sortField) {
+        const aValue = a[sortField];
+        const bValue = b[sortField];
+        if (aValue === null) return 1;
+        if (bValue === null) return -1;
+        const isNumeric = !isNaN(aValue) && !isNaN(bValue);
+        return sortOrder === "asc"
+          ? isNumeric
+            ? parseFloat(aValue) - parseFloat(bValue)
+            : aValue > bValue
+              ? 1
+              : -1
+          : isNumeric
+            ? parseFloat(bValue) - parseFloat(aValue)
+            : aValue < bValue
+              ? 1
+              : -1;
+      }
+      return 0;
+    });
+
   return (
-    <Fragment>
+    <>
       <div className="relative">
+        {/* Loader */}
         {loading && (
           <div className="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center z-50">
             <ClipLoader size={50} color="#E53E3E" loading={loading} />
           </div>
         )}
-        <div className="flex flex-col gap-2">
+
+        {/* Main content */}
+        <div className="container mx-auto">
           <strong className="text-3xl font-bold text-gray-500">Vouchers</strong>
 
-          <div className="flex flex-row justify-between mt-4 gap-4">
-            {/* Search and isActive Filter */}
-            <div className="flex flex-row gap-4 items-center w-[500px]">
-              {/* Search Input */}
-              <div className="relative flex items-center w-[300px]">
-                <input
-                  type="text"
-                  className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
-                  placeholder="Search by code"
-                  value={search}
-                  onChange={handleSearchChange}
-                />
-                {search && (
-                  <button
-                    onClick={() => setSearch("")}
-                    className="ml-2 text-alofa-pink hover:text-alofa-dark"
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
-
-              {/* isActive Filter */}
-              <div className="relative flex items-center w-[200px]">
-                <select
-                  value={isActiveFilter}
-                  onChange={(e) => setIsActiveFilter(e.target.value)}
-                  className="w-full h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+          {/* Filters Section */}
+          <div className="flex items-center justify-between mt-4 flex-nowrap">
+            {/* Left Side Filters */}
+            <div className="flex items-center space-x-4">
+              {/* Search input */}
+              <input
+                type="text"
+                className="w-full max-w-md h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+                placeholder="Search by code"
+                value={search}
+                onChange={handleSearchChange}
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  className="text-sm text-alofa-pink hover:text-alofa-dark"
                 >
-                  <option value="">All Status</option>
-                  <option value="true">Active</option>
-                  <option value="false">Inactive</option>
-                </select>
-                {isActiveFilter !== "" && (
-                  <button
-                    onClick={() => setIsActiveFilter("")}
-                    className="ml-2 text-alofa-pink hover:text-alofa-dark"
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
+                  Clear
+                </button>
+              )}
+              {/* Status filter */}
+              <select
+                value={isActiveFilter}
+                onChange={(e) => setIsActiveFilter(e.target.value)}
+                className="h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+              >
+                <option value="">All Status</option>
+                <option value="true">Active</option>
+                <option value="false">Inactive</option>
+              </select>
+              {isActiveFilter !== "" && (
+                <button
+                  onClick={() => setIsActiveFilter("")}
+                  className="ml-2 text-alofa-pink hover:text-alofa-dark"
+                >
+                  Clear
+                </button>
+              )}
             </div>
 
+            {/* Right Side Add Voucher Button */}
             <MdAddBox
               fontSize={40}
-              className="text-gray-400 mx-2 hover:text-alofa-highlight active:text-alofa-pink"
+              className="text-gray-400 hover:text-alofa-highlight active:text-alofa-pink cursor-pointer"
               onClick={() => openModal()}
             />
           </div>
 
-          <DataTable
-            data={filteredVouchers}
-            columns={columns}
-            onEdit={openModal}
+          {/* Voucher Table */}
+          <table className="min-w-full bg-white mt-4 shadow-md rounded-lg overflow-hidden">
+            <thead>
+              <tr>
+                {columns.map((column) => (
+                  <th
+                    key={column.key}
+                    className="px-3 py-2 border-b-2 border-gray-200 bg-alofa-pink text-white text-left text-sm font-semibold"
+                    onClick={() => handleColumnSort(column.key)}
+                  >
+                    {column.header}
+                  </th>
+                ))}
+                <th className="px-3 py-2 border-b-2 border-gray-200 bg-alofa-pink text-white text-center text-sm font-semibold">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredVouchers.map((voucher) => (
+                <Fragment key={voucher.voucher_id}>
+                  <tr>
+                    {columns.map((column) => (
+                      <td
+                        key={column.key}
+                        className={`px-5 py-3 border-b ${
+                          column.key === "discount_value" ? "text-right" : ""
+                        }`}
+                      >
+                        {column.key === "is_active"
+                          ? voucher.is_active
+                            ? "Yes"
+                            : "No"
+                          : column.key === "discount_value"
+                            ? voucher.type === "flat"
+                              ? `₱${new Intl.NumberFormat("en-PH", {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                }).format(voucher.discount_value)}`
+                              : `${voucher.discount_value}%`
+                            : voucher[column.key] || "N/A"}
+                      </td>
+                    ))}
+                    <td className="text-center border-b py-2">
+                      <button
+                        className="text-alofa-pink hover:text-alofa-dark"
+                        onClick={() => openModal(voucher)}
+                        tabIndex={0}
+                        aria-label="Edit"
+                      >
+                        <MdEditDocument fontSize={24} />
+                      </button>
+                      <button
+                        onClick={() => toggleRow(voucher.voucher_id)}
+                        className="focus:outline-none"
+                      >
+                        {expandedRows.includes(voucher.voucher_id) ? (
+                          <IoMdArrowDropdownCircle
+                            fontSize={24}
+                            className="text-alofa-pink hover:text-alofa-dark"
+                          />
+                        ) : (
+                          <IoMdArrowDroprightCircle
+                            fontSize={24}
+                            className="text-alofa-pink hover:text-alofa-dark"
+                          />
+                        )}
+                      </button>
+                    </td>
+                  </tr>
+
+                  {/* Expanded details row */}
+                  {expandedRows.includes(voucher.voucher_id) && (
+                    <tr>
+                      <td
+                        colSpan={columns.length + 1}
+                        className="bg-gray-50 p-4 shadow-inner"
+                      >
+                        <div className="grid grid-cols-3 gap-y-1 gap-x-4 text-gray-700 text-xs font-semibold p-2 border-b border-gray-200">
+                          <div>
+                            Max Use Per User: {voucher.max_use_per_user}
+                          </div>
+
+                          <div>
+                            Min Spend: ₱
+                            {Number(voucher.min_spend).toLocaleString("en-US", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                          </div>
+
+                          <div>Valid From: {voucher.valid_from}</div>
+                          <div>Usage Limit: {voucher.total_limit}</div>
+                          <div>
+                            Max Discount:
+                            {voucher.max_discount
+                              ? ` ₱${Number(
+                                  voucher.max_discount,
+                                ).toLocaleString("en-US", {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}`
+                              : " N/A"}
+                          </div>
+                          <div>Valid Until: {voucher.valid_until}</div>
+                        </div>
+
+                        {voucher.discount_scope === "product_variation" && (
+                          <div>
+                            <strong className="text-sm font-semibold text-gray-700 mb-2 block">
+                              Product Variations Applicable for {voucher.code}
+                            </strong>
+                            <button
+                              type="button"
+                              className="px-4 py-1 mb-2 bg-alofa-pink text-white rounded-md hover:bg-alofa-dark"
+                              onClick={() =>
+                                handleEditVoucherVariations(voucher.voucher_id)
+                              }
+                            >
+                              Add/Remove Variations
+                            </button>
+
+                            <table className="min-w-full bg-white border rounded-lg overflow-hidden shadow-md">
+                              <thead className="bg-gray-100 text-gray-700">
+                                <tr>
+                                  <th className="px-3 py-2 text-left text-sm font-semibold">
+                                    Index
+                                  </th>
+                                  {variationColumns.map((col) => (
+                                    <th
+                                      key={col.key}
+                                      className="px-3 py-2 text-left text-sm font-semibold"
+                                    >
+                                      {col.header}
+                                    </th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {(variations[voucher.voucher_id] || []).map(
+                                  (variation, index) => (
+                                    <tr
+                                      key={index}
+                                      className="hover:bg-gray-50"
+                                    >
+                                      <td className="px-3 py-2 border-b text-center">
+                                        {index + 1}
+                                      </td>
+                                      {variationColumns.map((col) => (
+                                        <td
+                                          key={col.key}
+                                          className="px-3 py-2 border-b text-gray-800"
+                                        >
+                                          {col.key === "unit_price" &&
+                                          variation[col.key] !== undefined
+                                            ? `₱${Number(
+                                                variation[col.key],
+                                              ).toLocaleString("en-US", {
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2,
+                                              })}`
+                                            : variation[col.key] || "N/A"}
+                                        </td>
+                                      ))}
+                                    </tr>
+                                  ),
+                                )}
+                                {(variations[voucher.voucher_id] || [])
+                                  .length === 0 && (
+                                  <tr>
+                                    <td
+                                      colSpan={variationColumns.length + 1}
+                                      className="px-3 py-2 text-center text-gray-500"
+                                    >
+                                      No variations added yet.
+                                    </td>
+                                  </tr>
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
+              ))}
+            </tbody>
+          </table>
+
+          {/* Modals */}
+          <VoucherModal
+            isOpen={showModal}
+            onClose={handleCloseModal}
+            onSubmit={handleSubmit}
             onDelete={handleDeleteVoucher}
-            isEmployee={true}
+            voucherData={voucherData}
+            setVoucherData={setVoucherData}
+            selectedVoucher={selectedVoucher}
+            errors={errors}
+          />
+
+          <VariationsModal
+            isOpen={variationsModalOpen}
+            onClose={() => setVariationsModalOpen(false)}
+            voucherVariations={currentVoucherVariations}
+            onSave={saveVoucherVariations}
+          />
+
+          <ConfirmModal
+            isOpen={isConfirmModalOpen}
+            onClose={() => setIsConfirmModalOpen(false)}
+            onConfirm={() => confirmAction()}
+            message={confirmMessage}
           />
         </div>
-
-        <Modal isVisible={showModal} onClose={handleCloseModal}>
-          <form className="p-6" onSubmit={handleSubmit}>
-            <div className="font-extrabold text-3xl text-alofa-highlight mb-4">
-              {selectedVoucher ? "Edit Voucher" : "Add New Voucher"}
-            </div>
-
-            {/* Code Input (Single Column) */}
-            <div className="flex flex-col mb-4">
-              <label className="font-bold" htmlFor="code">
-                Code
-              </label>
-              <input
-                type="text"
-                name="code"
-                id="code"
-                placeholder="Voucher Code"
-                value={voucherData.code}
-                onChange={handleInputChange}
-                className="rounded-xl border h-10 px-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300"
-              />
-              {errors.code && (
-                <p className="text-red-500 text-sm mt-1">{errors.code}</p>
-              )}
-            </div>
-
-            {/* Two-Column Layout for Other Inputs */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Type Input */}
-              <div className="flex flex-col">
-                <label className="font-bold" htmlFor="type">
-                  Type
-                </label>
-                <select
-                  name="type"
-                  id="type"
-                  value={voucherData.type}
-                  onChange={handleInputChange}
-                  className="rounded-xl border h-10 px-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300"
-                >
-                  <option value="">Select Type</option>
-                  <option value="percentage">Percentage</option>
-                  <option value="flat">Flat</option>
-                </select>
-                {errors.type && (
-                  <p className="text-red-500 text-sm mt-1">{errors.type}</p>
-                )}
-              </div>
-
-              {/* Discount Value Input */}
-              <div className="flex flex-col">
-                <label className="font-bold" htmlFor="discount_value">
-                  Discount Value
-                </label>
-                <input
-                  type="number"
-                  name="discount_value"
-                  id="discount_value"
-                  placeholder="Discount Value"
-                  value={voucherData.discount_value}
-                  onChange={handleInputChange}
-                  className="rounded-xl border h-10 px-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300"
-                />
-                {errors.discount_value && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.discount_value}
-                  </p>
-                )}
-              </div>
-
-              {/* Min Spend Input */}
-              <div className="flex flex-col">
-                <label className="font-bold" htmlFor="min_spend">
-                  Min. Spend
-                </label>
-                <input
-                  type="number"
-                  name="min_spend"
-                  id="min_spend"
-                  placeholder="Min Spend"
-                  value={voucherData.min_spend}
-                  onChange={handleInputChange}
-                  className="rounded-xl border h-10 px-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300"
-                />
-                {errors.min_spend && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.min_spend}
-                  </p>
-                )}
-              </div>
-
-              {/* Max Discount Input */}
-              <div className="flex flex-col">
-                <label className="font-bold" htmlFor="max_discount">
-                  Max. Discount
-                </label>
-                <input
-                  type="number"
-                  name="max_discount"
-                  id="max_discount"
-                  placeholder="Max Discount"
-                  value={voucherData.max_discount}
-                  onChange={handleInputChange}
-                  className="rounded-xl border h-10 px-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300"
-                  disabled={voucherData.type === "flat"} // Disable if type is flat
-                />
-                {errors.max_discount && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.max_discount}
-                  </p>
-                )}
-              </div>
-
-              {/* Total Limit Input */}
-              <div className="flex flex-col">
-                <label className="font-bold" htmlFor="total_limit">
-                  Usage Limit
-                </label>
-                <input
-                  type="number"
-                  name="total_limit"
-                  id="total_limit"
-                  placeholder="Total Limit"
-                  value={voucherData.total_limit}
-                  onChange={handleInputChange}
-                  className="rounded-xl border h-10 px-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300"
-                />
-                {errors.total_limit && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.total_limit}
-                  </p>
-                )}
-              </div>
-
-              {/* Max Use Per User Input */}
-              <div className="flex flex-col">
-                <label className="font-bold" htmlFor="max_use_per_user">
-                  Max. Use Per User
-                </label>
-                <input
-                  type="number"
-                  name="max_use_per_user"
-                  id="max_use_per_user"
-                  placeholder="Max Use Per User"
-                  value={voucherData.max_use_per_user}
-                  onChange={handleInputChange}
-                  className="rounded-xl border h-10 px-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300"
-                />
-                {errors.max_use_per_user && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.max_use_per_user}
-                  </p>
-                )}
-              </div>
-
-              {/* Is Active Input */}
-              <div className="flex flex-col">
-                <label className="font-bold" htmlFor="is_active">
-                  Is Active
-                </label>
-                <select
-                  name="is_active"
-                  id="is_active"
-                  value={voucherData.is_active}
-                  onChange={handleInputChange}
-                  className="rounded-xl border h-10 px-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300"
-                >
-                  <option value={true}>True</option>
-                  <option value={false}>False</option>
-                </select>
-              </div>
-
-              {/* Expiration Date Input */}
-              <div className="flex flex-col">
-                <label className="font-bold" htmlFor="expiration_date">
-                  Expiration Date
-                </label>
-                <input
-                  type="date"
-                  name="expiration_date"
-                  id="expiration_date"
-                  value={voucherData.expiration_date}
-                  onChange={handleInputChange}
-                  className="rounded-xl border h-10 px-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300"
-                />
-                {errors.expiration_date && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.expiration_date}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Submit & Cancel Buttons */}
-            <div className="flex flex-row justify-end gap-4 mt-6">
-              <button
-                type="submit"
-                className="px-4 py-2 text-white bg-alofa-highlight rounded-lg hover:bg-alofa-pink"
-              >
-                {selectedVoucher ? "Update Voucher" : "Add Voucher"}
-              </button>
-              <button
-                type="button"
-                onClick={handleCloseModal}
-                className="px-4 py-2 text-white bg-gray-400 rounded-lg hover:bg-gray-500"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        </Modal>
-
-        <ConfirmModal
-          isOpen={isConfirmModalOpen}
-          onClose={handleConfirmClose}
-          onConfirm={handleConfirm}
-          message={confirmMessage}
-        />
       </div>
-    </Fragment>
+    </>
   );
 };
 

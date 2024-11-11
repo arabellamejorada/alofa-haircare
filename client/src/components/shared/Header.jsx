@@ -1,6 +1,6 @@
 // Header.jsx
 import React, { useEffect, useState } from "react";
-import { HiOutlineBell, HiOutlineChatAlt, HiMenu } from "react-icons/hi";
+import { HiMenu } from "react-icons/hi";
 import { FaUserAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../supabaseClient";
@@ -10,15 +10,12 @@ import Modal from "../modal/Modal"; // Adjust the import path as necessary
 
 export default function Header({ onMenuClick }) {
   const navigate = useNavigate();
-  const [userName, setUserName] = useState("");
+  // const [userName, setUserName] = useState("");
   const [userMetadata, setUserMetadata] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [isModalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
-      setLoading(true);
-
       // Get the current session
       const {
         data: { session },
@@ -27,7 +24,6 @@ export default function Header({ onMenuClick }) {
 
       if (sessionError) {
         console.error("Error getting session:", sessionError);
-        setLoading(false);
         navigate("/login");
         return;
       }
@@ -45,15 +41,13 @@ export default function Header({ onMenuClick }) {
         if (profileError) {
           console.error("Error fetching user profile:", profileError);
         } else {
-          setUserName(profile.first_name);
+          // setUserName(profile.first_name);
           setUserMetadata(profile);
         }
       } else {
         // If no user is logged in, navigate to the login page or handle accordingly
         navigate("/login");
       }
-
-      setLoading(false);
     };
 
     fetchUserData();

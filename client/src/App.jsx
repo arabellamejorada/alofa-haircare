@@ -4,7 +4,6 @@ import {
   Routes,
   Route,
   Navigate,
-  useLocation,
   Link,
 } from "react-router-dom";
 import { Toaster } from "sonner";
@@ -28,7 +27,6 @@ import { AuthProvider, AuthContext } from "./components/AuthContext";
 
 const ProtectedRoute = ({ element, adminOnly = false }) => {
   const { token, role } = useContext(AuthContext);
-  const location = useLocation();
 
   if (!token) return <Navigate to="/login" replace />;
   if (role !== "admin" && role !== "employee")
