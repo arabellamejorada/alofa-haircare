@@ -8,7 +8,6 @@ import GCashQR from "../../../../public/static/gcash-qr.jpg";
 import { FaRegAddressCard } from "react-icons/fa";
 
 const ShippingAddress = ({
-  user,
   profileData,
   loading,
   setLoading,
@@ -21,6 +20,7 @@ const ShippingAddress = ({
   handleCompleteOrder,
   receiptFile,
   setReceiptFile,
+  setReceiptFileName,
 }) => {
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [regions, setRegions] = useState([]);
@@ -77,15 +77,36 @@ const ShippingAddress = ({
   const handleFileChange = (e, method) => {
     const file = e.target.files[0];
     if (file) {
-      setReceiptFile(file);
-      setUploadedPaymentMethod(method);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result;
+        if (base64String) {
+          localStorage.setItem("proof_image", base64String);
+          localStorage.setItem("proof_image_name", file.name);
+          setReceiptFile(base64String);
+          setReceiptFileName(file.name);
+          setUploadedPaymentMethod(method);
+          localStorage.setItem("uploadedPaymentMethod", method);
+        }
+      };
+      reader.readAsDataURL(file);
     }
   };
 
+  // Handle file removal: clear the base64 image and file name from state and local storage
   const handleRemoveFile = () => {
     setReceiptFile(null);
+    setReceiptFileName("");
     setUploadedPaymentMethod(null);
+    localStorage.removeItem("proof_image");
+    localStorage.removeItem("proof_image_name");
   };
+
+  useEffect(() => {
+    if (receiptFile) {
+      localStorage.setItem("proof_image", receiptFile);
+    }
+  }, [receiptFile]);
 
   useEffect(() => {
     if (formDetails.region.code) {
@@ -612,6 +633,11 @@ const ShippingAddress = ({
                       <p className="italic text-gray-400 text-sm">
                         File: <b className="text-black">{receiptFile.name}</b>
                       </p>
+                      <img
+                        src={receiptFile}
+                        alt="Uploaded Proof"
+                        className="w-32 h-32 object-cover"
+                      />
                       <button
                         onClick={handleRemoveFile}
                         className="ml-2 text-red-500 text-xs"
@@ -682,6 +708,11 @@ const ShippingAddress = ({
                       <p className="italic text-gray-400 text-sm">
                         File: <b className="text-black">{receiptFile.name}</b>
                       </p>
+                      <img
+                        src={receiptFile}
+                        alt="Uploaded Proof"
+                        className="w-32 h-32 object-cover"
+                      />
                       <button
                         onClick={handleRemoveFile}
                         className="ml-2 text-red-500 text-xs"

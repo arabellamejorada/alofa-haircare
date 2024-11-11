@@ -29,8 +29,16 @@ const Checkout = () => {
     () => localStorage.getItem("checkoutVoucherCode") || "",
   );
 
-  const [receiptFile, setReceiptFile] = useState(null);
-  const [uploadedPaymentMethod, setUploadedPaymentMethod] = useState(null);
+  const [receiptFile, setReceiptFile] = useState(() => {
+    return localStorage.getItem("proof_image") || null;
+  });
+  const [receiptFileName, setReceiptFileName] = useState(() => {
+    return localStorage.getItem("proof_image_name") || "";
+  });
+  const [uploadedPaymentMethod, setUploadedPaymentMethod] = useState(() => {
+    return localStorage.getItem("uploadedPaymentMethod") || null;
+  });
+
   const navigate = useNavigate();
 
   const [formDetails, setFormDetails] = useState(() => {
@@ -52,6 +60,18 @@ const Checkout = () => {
           shipping_address_id: null,
         };
   });
+
+  useEffect(() => {
+    const savedProofImage = localStorage.getItem("proof_image");
+    const savedProofImageName = localStorage.getItem("proof_image_name");
+    const savedPaymentMethod = localStorage.getItem("uploadedPaymentMethod");
+
+    if (savedProofImage && savedProofImage.startsWith("data:image")) {
+      setReceiptFile(savedProofImage);
+      setReceiptFileName(savedProofImageName || "");
+      setUploadedPaymentMethod(savedPaymentMethod || null);
+    }
+  }, []);
 
   useEffect(() => {
     console.log("Checkout Cart Items:", cartItems);
@@ -152,9 +172,14 @@ const Checkout = () => {
       formData.append("cartItems", JSON.stringify(cartItems));
 
       if (receiptFile) {
-        formData.append("proof_image", receiptFile);
+        formData.append("proof_image", receiptFileName);
       }
 
+      // Log all formData contents
+      console.log("Creating order with form data:");
+      for (let [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
+      }
       let order, order_items;
       try {
         const response = await createOrder(formData);
@@ -305,6 +330,8 @@ const Checkout = () => {
             handleCompleteOrder={handleCompleteOrder}
             receiptFile={receiptFile}
             setReceiptFile={setReceiptFile}
+            receiptFileName={receiptFileName}
+            setReceiptFileName={setReceiptFileName}
           />
         </div>
 
