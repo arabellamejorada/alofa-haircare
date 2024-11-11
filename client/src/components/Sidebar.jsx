@@ -16,7 +16,7 @@ import { AuthContext } from "./AuthContext.jsx";
 
 // Define role IDs (adjust these values to match your actual role IDs)
 const ROLE_ADMIN = 2;
-const ROLE_EMPLOYEE = 3;
+// const ROLE_EMPLOYEE = 3;
 
 const linkClasses =
   "flex items-center gap-2 font-light px-3 py-2 hover:bg-alofa-highlight hover:no-underline active:bg-alofa-dark rounded-md text-base";
@@ -84,7 +84,7 @@ function SidebarContent({ onClose }) {
   };
 
   const isAdmin = userMetadata && userMetadata.role_id === ROLE_ADMIN;
-  const isEmployee = userMetadata && userMetadata.role_id === ROLE_EMPLOYEE;
+  // const isEmployee = userMetadata && userMetadata.role_id === ROLE_EMPLOYEE;
 
   return (
     <>
