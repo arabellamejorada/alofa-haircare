@@ -1,33 +1,63 @@
-import { useEffect, useState } from 'react';
-import { useParams } from "react-router-dom";
-import axios from './axios';
+import { useState, useEffect } from 'react';
+import PropTypes from 'prop-types'; // Importing prop-types
 
-const TransactionCard = () => {
-  const { orderId } = useParams();
+const TransactionCard = ({ activeTab, searchQuery }) => {
   const [order, setOrder] = useState(null);
 
+  // Mocked transaction data, can be replaced by fetched data later
   useEffect(() => {
-    const fetchOrder = async () => {
-      try {
-        const response = await axios.get(`/order/${orderId}`);
-        setOrder(response.data);
-      } catch (error) {
-        console.error("Error fetching order details:", error);
-      }
-    };
-    
-    fetchOrder();
-  }, [orderId]);
+    const placeholderTransactions = [
+      {
+        id: "20240001",
+        status: "Completed",
+        products: [
+          { id: "1", name: "Jade Hair Brush", value: 1, price: 280, sku: "BRUSH-JADE" },
+        ],
+        total: 280,
+      },
+      {
+        id: "20240002",
+        status: "To Ship",
+        products: [
+          { id: "2", name: "Hair Oil", value: 1, price: 450, sku: "HAIR-OIL-LAV" },
+        ],
+        total: 450,
+      },
+      {
+        id: "20240003",
+        status: "To Receive",
+        products: [
+          { id: "3", name: "Hair Clips Set", value: 2, price: 150, sku: "CLIPS-PSTL" },
+        ],
+        total: 300,
+      },
+    ];
+
+    // Filter transactions based on activeTab and searchQuery
+    const filteredOrder = placeholderTransactions.find(
+      (transaction) =>
+        (activeTab === "All" || transaction.status === activeTab) &&
+        (searchQuery === "" ||
+          transaction.id.includes(searchQuery) ||
+          transaction.products.some((product) =>
+            product.name.toLowerCase().includes(searchQuery.toLowerCase())
+          ))
+    );
+
+    setOrder(filteredOrder);
+  }, [activeTab, searchQuery]);
 
   if (!order) {
-    return <div>no</div>;
+    return null; // Return nothing if there's no order matching the criteria
   }
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg shadow-md p-4 mb-6">
       <div className="flex justify-between items-center mb-4">
         <div className="text-gray-700 font-semibold">Order ID #{order.id}</div>
-        <div className={`text-${order.status === 'delivered' ? 'green' : 'red'}-600 font-medium`}>{order.status === 'delivered' ? 'Parcel has been delivered' : 'Parcel is on the way'}</div>
+        <div className={`text-${order.status === 'Completed' ? 'green' : 'red'}-600 font-medium`}>
+          {order.status === 'Completed' ? 'Parcel has been delivered' : 'Parcel is on the way'}
+        </div>
       </div>
 
       {order.products.map((product) => (
@@ -63,6 +93,12 @@ const TransactionCard = () => {
       </div>
     </div>
   );
+};
+
+// Adding propTypes for props validation
+TransactionCard.propTypes = {
+  activeTab: PropTypes.string.isRequired,
+  searchQuery: PropTypes.string.isRequired,
 };
 
 export default TransactionCard;
