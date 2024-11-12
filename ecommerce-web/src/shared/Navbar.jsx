@@ -2,25 +2,21 @@ import { useState, useContext, useEffect } from "react";
 import { FaUserAlt, FaShoppingCart } from "react-icons/fa";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { CartContext } from "../components/CartContext";
-import { AuthContext } from "../components/AuthContext"; // Import AuthContext
+import { AuthContext } from "../components/AuthContext";
 import { ClipLoader } from "react-spinners";
 import NavbarBG from "../../../public/static/alofa-navbar-white.png";
 import CartOverview from "./CartOverview";
 
 const Navbar = () => {
   const [hovered, setHovered] = useState(false);
-  const { loading, resetCart } = useContext(CartContext); // Removed unused variables
-  const location = useLocation(); // Get the current route
-  const navigate = useNavigate(); // For navigation
+  const { loading, resetCart } = useContext(CartContext);
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  const { user, role, signOut } = useContext(AuthContext); // Use 'user' instead of 'token'
-
-  const isAuthPage =
-    location.pathname === "/login" || location.pathname === "/signup";
+  const { user, role, signOut } = useContext(AuthContext);
+  const isAuthPage = location.pathname === "/login" || location.pathname === "/signup";
   const isCheckoutPage = location.pathname === "/checkout";
-  const isLoggedIn = Boolean(user); // Use 'user' to determine if logged in
-
-  // Check if the current page is `/profile`
+  const isLoggedIn = Boolean(user);
   const isProfilePage = location.pathname.startsWith("/profile");
 
   // Handle logout
@@ -28,13 +24,21 @@ const Navbar = () => {
     localStorage.removeItem("auth_token");
     signOut();
     await resetCart();
-    // Redirect to home page
     navigate("/");
   };
 
+  // New handler function to toggle cart visibility
+  const toggleCartVisibility = () => {
+    if (hovered) {
+      setHovered(false); // Close cart
+    } else {
+      setHovered(true); // Open cart
+    }
+  };
+
   useEffect(() => {
-    console.log("Current user:", user); // Log 'user' instead of 'token'
-    console.log("Current role:", role); // Debugging log to check role value
+    console.log("Current user:", user);
+    console.log("Current role:", role);
   }, [user, role]);
 
   if (loading) {
@@ -123,15 +127,12 @@ const Navbar = () => {
         {/* Right-side Content */}
         <div className="text-lg text-alofa-pink sm:flex items-center gap-4 hidden">
           {isAuthPage ? (
-            // Show Home link on the right only when on login or signup page
             <Link to="/" className="hover:text-pink-700 items-baseline gap-2">
               Home
             </Link>
           ) : (
-            // For non-auth pages
             <>
               {isLoggedIn && !isCheckoutPage ? (
-                // When user is logged in
                 <>
                   <Link
                     to="/profile"
@@ -146,19 +147,14 @@ const Navbar = () => {
                     Logout
                   </button>
                   {/* Shopping Cart Icon */}
-                  <div
-                    className="relative"
-                    onMouseEnter={() => setHovered(true)}
-                    onMouseLeave={() => setHovered(false)}
-                  >
-                    <div className="text-[#FE699F] p-3 rounded-full transition-colors duration-300 hover:delay-700 hover:text-gray-500 cursor-pointer">
+                  <div className="relative" onClick={toggleCartVisibility}>
+                    <div className="text-[#FE699F] p-3 rounded-full transition-colors duration-300 hover:text-gray-500 cursor-pointer">
                       <FaShoppingCart />
                     </div>
                     <CartOverview hovered={hovered} setHovered={setHovered} />
                   </div>
                 </>
               ) : !isCheckoutPage ? (
-                // When user is not logged in
                 <>
                   <Link
                     to="/login"
@@ -174,12 +170,8 @@ const Navbar = () => {
                     Sign Up
                   </Link>
                   {/* Shopping Cart Icon */}
-                  <div
-                    className="relative"
-                    onMouseEnter={() => setHovered(true)}
-                    onMouseLeave={() => setHovered(false)}
-                  >
-                    <div className="text-[#FE699F] p-3 rounded-full transition-colors duration-300 hover:delay-700 hover:text-gray-500 cursor-pointer">
+                  <div className="relative" onClick={toggleCartVisibility}>
+                    <div className="text-[#FE699F] p-3 rounded-full transition-colors duration-300 hover:text-gray-500 cursor-pointer">
                       <FaShoppingCart />
                     </div>
                     <CartOverview hovered={hovered} setHovered={setHovered} />
