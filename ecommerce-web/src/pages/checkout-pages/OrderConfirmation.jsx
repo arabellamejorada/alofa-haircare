@@ -23,8 +23,17 @@ const OrderConfirmation = () => {
   console.log("OrderConfirmation state:", location.state);
 
   const orderDetails = {
-    order,
-    order_items,
+    order: {
+      ...order,
+      total_discount: parseFloat(order.total_discount) || 0,
+      total_amount: parseFloat(order.total_amount) || 0,
+      subtotal: parseFloat(order.subtotal) || 0,
+      shipping_fee: parseFloat(order.shipping_fee) || 0,
+    },
+    order_items: order_items.map((item) => ({
+      ...item,
+      price: parseFloat(item.price) || 0,
+    })),
   };
 
   // Determine the shipping address to display

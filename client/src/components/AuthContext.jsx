@@ -1,6 +1,12 @@
 /* Purpose: To manage user authentication, roles, and session persistence in your React application.*/
 
-import React, { createContext, useState, useEffect, useContext } from "react";
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  useContext,
+  useCallback,
+} from "react";
 import { supabase } from "../supabaseClient.jsx";
 
 export const AuthContext = createContext();
@@ -16,7 +22,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
   // Function to check if the profile belongs to an employee or admin
-  const fetchUserRole = async (userId) => {
+  const fetchUserRole = useCallback(async (userId) => {
     try {
       // Fetch the role_id from profiles table
       const { data: profileData, error: profileError } = await supabase
@@ -60,9 +66,9 @@ export const AuthProvider = ({ children }) => {
       setRole(null); // Reset role on error
       throw err; // Re-throw error to be handled in signIn
     }
-  };
+  }, []);
 
-  const checkSession = async () => {
+  const checkSession = useCallback(async () => {
     try {
       setLoading(true);
       const { data: sessionData, error: sessionError } =
@@ -91,9 +97,7 @@ export const AuthProvider = ({ children }) => {
         setToken(null);
         localStorage.removeItem("auth_token");
       }
-
       console.log("Session checked successfully.");
-      console.log("user details:", user);
     } catch (err) {
       console.error("Error checking session:", err.message);
       setToken(null);
@@ -101,11 +105,11 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchUserRole]);
 
   useEffect(() => {
     checkSession();
-  }, []);
+  }, [checkSession]);
 
   const signIn = async (email, password) => {
     try {
