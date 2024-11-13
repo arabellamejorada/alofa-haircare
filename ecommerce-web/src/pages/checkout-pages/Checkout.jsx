@@ -67,7 +67,12 @@ const Checkout = () => {
     const savedProofImage = localStorage.getItem("proof_image");
     const savedProofImageName = localStorage.getItem("proof_image_name");
     const savedPaymentMethod = localStorage.getItem("uploadedPaymentMethod");
-
+    const savedCartItems = JSON.parse(
+      localStorage.getItem("checkoutCartItems"),
+    );
+    if (savedCartItems) {
+      setCartItems(savedCartItems);
+    }
     if (savedProofImage && savedProofImage.startsWith("data:image")) {
       setReceiptFile(savedProofImage);
       setReceiptFileName(savedProofImageName || "");
@@ -76,7 +81,8 @@ const Checkout = () => {
   }, []);
 
   useEffect(() => {
-    console.log("Checkout Cart Items:", cartItems);
+    localStorage.setItem("checkoutCartItems", JSON.stringify(cartItems));
+    console.log("Updated Cart Items:", cartItems);
   }, [cartItems]);
 
   useEffect(() => {
@@ -298,7 +304,19 @@ const Checkout = () => {
       const { discount, voucher_id, updatedCartItems } = response;
       setVoucherDiscount(discount);
       setVoucherId(voucher_id);
-      setCartItems(updatedCartItems);
+
+      // Update cart items with discounted prices and save to local storage
+      const discountedCartItems = updatedCartItems.map((item) => ({
+        ...item,
+        discounted_price: item.discounted_price,
+      }));
+      setCartItems(discountedCartItems);
+      localStorage.setItem(
+        "checkoutCartItems",
+        JSON.stringify(discountedCartItems),
+      );
+      localStorage.setItem("checkoutVoucherCode", voucherCode);
+      localStorage.setItem("checkoutVoucherDiscount", discount);
 
       toast.success(
         `Voucher applied successfully! You saved ₱${discount.toLocaleString(
@@ -328,12 +346,16 @@ const Checkout = () => {
     setVoucherDiscount(0);
     setVoucherId(null);
 
-    setCartItems(
-      cartItems.map((item) => {
-        const updatedItem = { ...item };
-        delete updatedItem.discounted_price;
-        return updatedItem;
-      }),
+    const originalCartItems = cartItems.map((item) => {
+      const updatedItem = { ...item };
+      delete updatedItem.discounted_price; // Remove discounted price
+      return updatedItem;
+    });
+
+    setCartItems(originalCartItems);
+    localStorage.setItem(
+      "checkoutCartItems",
+      JSON.stringify(originalCartItems),
     );
 
     if (voucherInputRef.current) {
