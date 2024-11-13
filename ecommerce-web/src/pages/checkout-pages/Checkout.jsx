@@ -127,24 +127,36 @@ const Checkout = () => {
   const validateErrors = () => {
     const newErrors = {};
 
-    const requiredFields = [
-      "email",
-      "firstName",
-      "lastName",
-      "street",
-      "region",
-      "province",
-      "city",
-      "phoneNumber",
-      "postalCode",
-      "paymentMethod",
-    ];
-
-    requiredFields.forEach((field) => {
-      if (!formDetails[field] || !formDetails[field].code) {
-        newErrors[field] = "Field is required";
-      }
-    });
+    if (!formDetails.firstName) {
+      newErrors.firstName = "First name is required.";
+    }
+    if (!formDetails.lastName) {
+      newErrors.lastName = "Last name is required.";
+    }
+    if (!formDetails.email) {
+      newErrors.email = "Email is required.";
+    }
+    if (!formDetails.phoneNumber) {
+      newErrors.phoneNumber = "Phone number is required.";
+    }
+    if (!formDetails.street) {
+      newErrors.street = "Address is required.";
+    }
+    if (!formDetails.region.code) {
+      newErrors.region = "Region is required.";
+    }
+    if (!formDetails.province.code) {
+      newErrors.province = "Province is required.";
+    }
+    if (!formDetails.city.code) {
+      newErrors.city = "City is required.";
+    }
+    if (!formDetails.postalCode) {
+      newErrors.postalCode = "Postal code is required.";
+    }
+    if (!formDetails.paymentMethod) {
+      newErrors.paymentMethod = "Payment method is required.";
+    }
 
     setErrors(newErrors);
   };
@@ -152,7 +164,13 @@ const Checkout = () => {
   const handleCompleteOrder = async () => {
     try {
       setLoading(true);
+
       validateErrors();
+      if (Object.keys(errors).length > 0) {
+        toast.error("Please fill out all required fields.");
+        setLoading(false);
+        return;
+      }
 
       // Only require barangay if there are barangays available
       if (barangays.length > 0 && !formDetails.barangay.code) {

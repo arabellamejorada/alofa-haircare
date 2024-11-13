@@ -104,7 +104,23 @@ const getVoucherProductVariations = async (req, res) => {
   }
 };
 
+// Get All Used Vouchers
+const getAllUsedVouchers = async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        uv.*,
+        v.code
+      FROM used_vouchers uv
+      JOIN vouchers v ON uv.voucher_id = v.voucher_id
+    `);
 
+    res.status(200).json(result.rows);
+  } catch (error) {
+    console.error('Error fetching used vouchers:', error);
+    res.status(500).json({ error: 'Failed to fetch used vouchers' });
+  }
+};
 
 // Create a new voucher
 const createVoucher = async (req, res) => {
@@ -586,6 +602,7 @@ module.exports = {
   getAllVouchers,
   getVoucherProductVariations,
   getVoucherById,
+  getAllUsedVouchers,
   createVoucher,
   updateVoucher,
   deleteVoucher,
