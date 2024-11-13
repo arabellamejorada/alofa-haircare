@@ -19,8 +19,8 @@ const CartProvider = ({ children }) => {
   const customerProfileId = user?.id; // Use 'user' instead of 'token'
 
   const [cartItems, setCartItems] = useState(() => {
-    const storedCart = localStorage.getItem("cartItems");
-    return storedCart ? JSON.parse(storedCart) : [];
+    const savedCartItems = localStorage.getItem("checkoutCartItems");
+    return savedCartItems ? JSON.parse(savedCartItems) : [];
   });
 
   const [cartId, setCartId] = useState(

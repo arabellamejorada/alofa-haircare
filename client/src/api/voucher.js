@@ -77,3 +77,13 @@ export const manageVoucherVariations = async (voucherId, variations) => {
     throw error; // Propagate the error to handle it in the calling function
   }
 };
+
+export const getAllUsedVouchers = async () => {
+    try {
+        const response = await axios.get('/voucher/all/used');
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching used vouchers: ', error);
+        throw error;
+    }
+};  

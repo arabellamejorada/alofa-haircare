@@ -6,7 +6,8 @@ const voucherController = require('../controllers/voucherController');
 router.get('/test', (req, res) => res.status(200).send('Test route working'));
 
 // Voucher routes
-router.get('/voucher/all', voucherController.getAllVouchers); 
+router.get('/voucher/all/used', voucherController.getAllUsedVouchers);
+router.get('/voucher/all', voucherController.getAllVouchers);
 router.get('/voucher/variations/:id', voucherController.getVoucherProductVariations);
 router.post('/voucher/apply', voucherController.applyVoucher);
 router.post('/voucher', voucherController.createVoucher);
