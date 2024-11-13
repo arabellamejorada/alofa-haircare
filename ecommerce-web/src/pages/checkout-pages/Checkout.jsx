@@ -22,6 +22,8 @@ const Checkout = () => {
   const [loading, setLoading] = useState(false);
   const [barangays, setBarangays] = useState([]);
   const [voucherId, setVoucherId] = useState(null);
+  const [errors, setErrors] = useState([]);
+
   const [voucherDiscount, setVoucherDiscount] = useState(() =>
     Number(localStorage.getItem("checkoutVoucherDiscount") || 0),
   );
@@ -122,34 +124,39 @@ const Checkout = () => {
     localStorage.setItem("checkoutVoucherDiscount", voucherDiscount);
   }, [voucherDiscount]);
 
+  const validateErrors = () => {
+    const newErrors = {};
+
+    const requiredFields = [
+      "email",
+      "firstName",
+      "lastName",
+      "street",
+      "region",
+      "province",
+      "city",
+      "phoneNumber",
+      "postalCode",
+      "paymentMethod",
+    ];
+
+    requiredFields.forEach((field) => {
+      if (!formDetails[field] || !formDetails[field].code) {
+        newErrors[field] = "Field is required";
+      }
+    });
+
+    setErrors(newErrors);
+  };
+
   const handleCompleteOrder = async () => {
     try {
       setLoading(true);
-      if (
-        !formDetails.firstName ||
-        !formDetails.lastName ||
-        !formDetails.email ||
-        !formDetails.phoneNumber ||
-        !formDetails.paymentMethod ||
-        !formDetails.region.code ||
-        !formDetails.province.code ||
-        !formDetails.city.code ||
-        !formDetails.shipping_address_id
-      ) {
-        toast.error("Please fill out all required fields.");
-        setLoading(false);
-        return;
-      }
-
-      if (!receiptFile) {
-        toast.error("Please upload a proof of payment.");
-        setLoading(false);
-        return;
-      }
+      validateErrors();
 
       // Only require barangay if there are barangays available
       if (barangays.length > 0 && !formDetails.barangay.code) {
-        toast.error("Please select a barangay.");
+        toast.error("Field is required.");
         setLoading(false);
         return;
       }
@@ -237,7 +244,7 @@ const Checkout = () => {
       setReceiptFile(null);
       setUploadedPaymentMethod(null);
     } catch (error) {
-      toast.error("Failed to complete order. Please try again.");
+      toast.error("Please fill out all required fields.");
       console.error("Failed to complete order:", error);
     } finally {
       setLoading(false);
@@ -349,6 +356,8 @@ const Checkout = () => {
             setReceiptFile={setReceiptFile}
             receiptFileName={receiptFileName}
             setReceiptFileName={setReceiptFileName}
+            errors={errors}
+            setErrors={setErrors}
           />
         </div>
 
