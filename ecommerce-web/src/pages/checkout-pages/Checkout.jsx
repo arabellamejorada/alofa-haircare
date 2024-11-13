@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect, useRef } from "react";
+import { useContext, useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { CartContext } from "../../components/CartContext.jsx";
@@ -533,7 +533,7 @@ const Checkout = () => {
                     onClick={handleRemoveVoucher}
                     className="ml-2 text-sm text-red-500 hover:text-red-700"
                   >
-                    [{voucherCode}] Remove
+                    [{voucherCode}]  Remove
                   </button>
                   <span>
                     -₱

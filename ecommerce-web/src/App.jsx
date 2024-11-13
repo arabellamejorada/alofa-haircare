@@ -3,7 +3,7 @@ import {
   Routes,
   Route,
   Navigate,
-  // useLocation,
+  useLocation,
 } from "react-router-dom";
 import PropTypes from "prop-types";
 import { useContext } from "react";
@@ -11,6 +11,7 @@ import { CartProvider } from "./components/CartContext";
 import { AuthProvider, AuthContext } from "./components/AuthContext.jsx"; // Import AuthProvider
 import './App.css';
 import Navbar from "./shared/Navbar.jsx";
+import Footer from "./shared/Footer.jsx";
 import Home from "./pages/Home.jsx";
 import Products from "./pages/Products.jsx";
 import ProductDetails from "./pages/ProductDetails.jsx";
@@ -23,12 +24,17 @@ import SignUp from "./pages/SignUp.jsx";
 import Profile from "./pages/customer-pages/CustomerProfile.jsx";
 import OrderConfirmation from "./pages/checkout-pages/OrderConfirmation.jsx";
 
+
 import "./App.css";
 import { Toaster } from "sonner";
 
 const AppContent = () => {
-  // const location = useLocation();
+  const location = useLocation();
   const { loading, setToken } = useContext(AuthContext);
+
+  // Determine whether to display Navbar/Footer
+  const isAuthPage = location.pathname === "/login" || location.pathname === "/signup";
+  const isCheckoutPage = location.pathname === "/checkout";
 
   // Show loading screen while verifying session
   if (loading) {
@@ -59,6 +65,8 @@ const AppContent = () => {
         />
         <Route path="/order-confirmed" element={<OrderConfirmation />} />
       </Routes>
+
+      {!isAuthPage && !isCheckoutPage && <Footer />}
     </>
   );
 };

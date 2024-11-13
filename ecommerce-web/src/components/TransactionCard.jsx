@@ -51,10 +51,13 @@ const TransactionCard = ({ activeTab, searchQuery }) => {
     return null; // Return nothing if there's no order matching the criteria
   }
 
+  // Calculate the total number of items in the order
+  const totalItems = order.products.reduce((acc, product) => acc + product.value, 0);
+
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-md p-4 mb-6">
+    <div className="bg-gray-100 border border-gray-200 rounded-lg shadow-md p-4 mb-6">
       <div className="flex justify-between items-center mb-4">
-        <div className="text-gray-700 font-semibold">Order ID #{order.id}</div>
+        <div className="text-gray-700 font-medium">Order ID #{order.id}</div>
         <div className={`text-${order.status === 'Completed' ? 'green' : 'red'}-600 font-medium`}>
           {order.status === 'Completed' ? 'Parcel has been delivered' : 'Parcel is on the way'}
         </div>
@@ -80,14 +83,17 @@ const TransactionCard = ({ activeTab, searchQuery }) => {
         </div>
       ))}
 
-      <div className="border-t border-gray-200 pt-4 flex justify-between items-center">
-        <div className="text-pink-600 font-semibold">Order Total: ₱{order.total}</div>
-        <div className="flex gap-2">
-          <button className="bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2 px-4 rounded">
+      <div className="border-t border-gray-200 pt-4">
+        <div className="flex flex-col items-end mb-4">
+          <div className="text-gray-600 text-sm">Total {totalItems} items</div>
+          <div className="text-pink-600 font-bold text-xl">₱{order.total}</div>
+        </div>
+        <div className="flex gap-2 justify-end">
+          <button className="bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F] text-white font-semibold py-2 px-4 rounded">
             Buy Again
           </button>
-          <button className="border border-pink-500 hover:bg-gray-100 hover:underline text-gray-700 font-semibold py-2 px-4 rounded">
-            Request Return/Refund
+          <button className="border border-pink-500 hover:bg-gray-100 hover:underline text-gray-700 font-medium py-2 px-4 rounded">
+            Request Refund
           </button>
         </div>
       </div>

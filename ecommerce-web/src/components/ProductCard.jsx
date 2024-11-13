@@ -8,6 +8,7 @@ const ProductCard = ({ id, image, name, value, price, sku }) => {
   const { addToCart } = useContext(CartContext);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const navigate = useNavigate();
+  
 
   const handleAddToCart = (e) => {
     e.stopPropagation();

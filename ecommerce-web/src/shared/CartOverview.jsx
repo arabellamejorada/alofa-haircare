@@ -4,10 +4,9 @@ import { FaTrashAlt, FaPlus, FaMinus, FaTimes } from "react-icons/fa";
 import { AiOutlineShoppingCart } from "react-icons/ai";
 import { MdOutlineShoppingCartCheckout } from "react-icons/md";
 import { CartContext } from "../components/CartContext";
-import PropTypes from "prop-types";
 
-const CartOverview = ({ hovered, setHovered }) => {
-  const { cartItems, handleQuantityChange, handleDelete, subtotal } = useContext(CartContext);
+const CartOverview = () => {
+  const { cartItems, handleQuantityChange, handleDelete, subtotal, hovered, setHovered } = useContext(CartContext);
 
   const handleIncrement = (variation_id, currentQuantity) => {
     handleQuantityChange(variation_id, currentQuantity + 1);
@@ -20,7 +19,6 @@ const CartOverview = ({ hovered, setHovered }) => {
   };
 
   const closeCart = () => {
-    console.log("Close button clicked"); // Debugging statement
     setHovered(false);
   };
 
@@ -31,10 +29,7 @@ const CartOverview = ({ hovered, setHovered }) => {
         className={`fixed inset-0 bg-black transition-opacity duration-300 z-30 ${
           hovered ? "opacity-30 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`}
-        onClick={() => {
-          console.log("Overlay clicked"); // Debugging statement
-          setHovered(false);
-        }} // Close cart when clicking on the overlay
+        onClick={() => setHovered(false)} // Close cart when clicking on the overlay
       />
 
       {/* Cart Sidebar */}
@@ -42,6 +37,7 @@ const CartOverview = ({ hovered, setHovered }) => {
         className={`fixed top-0 right-0 h-full w-[25rem] bg-white shadow-lg z-40 transition-transform duration-300 ${
           hovered ? "translate-x-0" : "translate-x-full"
         }`}
+        onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the cart
       >
         {/* Close Button */}
         <button
@@ -157,11 +153,6 @@ const CartOverview = ({ hovered, setHovered }) => {
       </div>
     </>
   );
-};
-
-CartOverview.propTypes = {
-  hovered: PropTypes.bool.isRequired,
-  setHovered: PropTypes.func.isRequired,
 };
 
 export default CartOverview;
