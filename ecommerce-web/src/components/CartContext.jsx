@@ -20,8 +20,8 @@ const CartProvider = ({ children }) => {
   const [hovered, setHovered] = useState(false);
 
   const [cartItems, setCartItems] = useState(() => {
-    const storedCart = localStorage.getItem("cartItems");
-    return storedCart ? JSON.parse(storedCart) : [];
+    const savedCartItems = localStorage.getItem("checkoutCartItems");
+    return savedCartItems ? JSON.parse(savedCartItems) : [];
   });
 
   const [cartId, setCartId] = useState(

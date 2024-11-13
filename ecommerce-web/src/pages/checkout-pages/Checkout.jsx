@@ -22,6 +22,8 @@ const Checkout = () => {
   const [loading, setLoading] = useState(false);
   const [barangays, setBarangays] = useState([]);
   const [voucherId, setVoucherId] = useState(null);
+  const [errors, setErrors] = useState([]);
+
   const [voucherDiscount, setVoucherDiscount] = useState(() =>
     Number(localStorage.getItem("checkoutVoucherDiscount") || 0),
   );
@@ -65,7 +67,12 @@ const Checkout = () => {
     const savedProofImage = localStorage.getItem("proof_image");
     const savedProofImageName = localStorage.getItem("proof_image_name");
     const savedPaymentMethod = localStorage.getItem("uploadedPaymentMethod");
-
+    const savedCartItems = JSON.parse(
+      localStorage.getItem("checkoutCartItems"),
+    );
+    if (savedCartItems) {
+      setCartItems(savedCartItems);
+    }
     if (savedProofImage && savedProofImage.startsWith("data:image")) {
       setReceiptFile(savedProofImage);
       setReceiptFileName(savedProofImageName || "");
@@ -74,7 +81,8 @@ const Checkout = () => {
   }, []);
 
   useEffect(() => {
-    console.log("Checkout Cart Items:", cartItems);
+    localStorage.setItem("checkoutCartItems", JSON.stringify(cartItems));
+    console.log("Updated Cart Items:", cartItems);
   }, [cartItems]);
 
   useEffect(() => {
@@ -122,34 +130,57 @@ const Checkout = () => {
     localStorage.setItem("checkoutVoucherDiscount", voucherDiscount);
   }, [voucherDiscount]);
 
+  const validateErrors = () => {
+    const newErrors = {};
+
+    if (!formDetails.firstName) {
+      newErrors.firstName = "First name is required.";
+    }
+    if (!formDetails.lastName) {
+      newErrors.lastName = "Last name is required.";
+    }
+    if (!formDetails.email) {
+      newErrors.email = "Email is required.";
+    }
+    if (!formDetails.phoneNumber) {
+      newErrors.phoneNumber = "Phone number is required.";
+    }
+    if (!formDetails.street) {
+      newErrors.street = "Address is required.";
+    }
+    if (!formDetails.region.code) {
+      newErrors.region = "Region is required.";
+    }
+    if (!formDetails.province.code) {
+      newErrors.province = "Province is required.";
+    }
+    if (!formDetails.city.code) {
+      newErrors.city = "City is required.";
+    }
+    if (!formDetails.postalCode) {
+      newErrors.postalCode = "Postal code is required.";
+    }
+    if (!formDetails.paymentMethod) {
+      newErrors.paymentMethod = "Payment method is required.";
+    }
+
+    setErrors(newErrors);
+  };
+
   const handleCompleteOrder = async () => {
     try {
       setLoading(true);
-      if (
-        !formDetails.firstName ||
-        !formDetails.lastName ||
-        !formDetails.email ||
-        !formDetails.phoneNumber ||
-        !formDetails.paymentMethod ||
-        !formDetails.region.code ||
-        !formDetails.province.code ||
-        !formDetails.city.code ||
-        !formDetails.shipping_address_id
-      ) {
-        toast.error("Please fill out all required fields.");
-        setLoading(false);
-        return;
-      }
 
-      if (!receiptFile) {
-        toast.error("Please upload a proof of payment.");
+      validateErrors();
+      if (Object.keys(errors).length > 0) {
+        toast.error("Please fill out all required fields.");
         setLoading(false);
         return;
       }
 
       // Only require barangay if there are barangays available
       if (barangays.length > 0 && !formDetails.barangay.code) {
-        toast.error("Please select a barangay.");
+        toast.error("Field is required.");
         setLoading(false);
         return;
       }
@@ -237,7 +268,7 @@ const Checkout = () => {
       setReceiptFile(null);
       setUploadedPaymentMethod(null);
     } catch (error) {
-      toast.error("Failed to complete order. Please try again.");
+      toast.error("Please fill out all required fields.");
       console.error("Failed to complete order:", error);
     } finally {
       setLoading(false);
@@ -273,7 +304,19 @@ const Checkout = () => {
       const { discount, voucher_id, updatedCartItems } = response;
       setVoucherDiscount(discount);
       setVoucherId(voucher_id);
-      setCartItems(updatedCartItems);
+
+      // Update cart items with discounted prices and save to local storage
+      const discountedCartItems = updatedCartItems.map((item) => ({
+        ...item,
+        discounted_price: item.discounted_price,
+      }));
+      setCartItems(discountedCartItems);
+      localStorage.setItem(
+        "checkoutCartItems",
+        JSON.stringify(discountedCartItems),
+      );
+      localStorage.setItem("checkoutVoucherCode", voucherCode);
+      localStorage.setItem("checkoutVoucherDiscount", discount);
 
       toast.success(
         `Voucher applied successfully! You saved ₱${discount.toLocaleString(
@@ -303,12 +346,16 @@ const Checkout = () => {
     setVoucherDiscount(0);
     setVoucherId(null);
 
-    setCartItems(
-      cartItems.map((item) => {
-        const updatedItem = { ...item };
-        delete updatedItem.discounted_price;
-        return updatedItem;
-      }),
+    const originalCartItems = cartItems.map((item) => {
+      const updatedItem = { ...item };
+      delete updatedItem.discounted_price; // Remove discounted price
+      return updatedItem;
+    });
+
+    setCartItems(originalCartItems);
+    localStorage.setItem(
+      "checkoutCartItems",
+      JSON.stringify(originalCartItems),
     );
 
     if (voucherInputRef.current) {
@@ -349,6 +396,8 @@ const Checkout = () => {
             setReceiptFile={setReceiptFile}
             receiptFileName={receiptFileName}
             setReceiptFileName={setReceiptFileName}
+            errors={errors}
+            setErrors={setErrors}
           />
         </div>
 
