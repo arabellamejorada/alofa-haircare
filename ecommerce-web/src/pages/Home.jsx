@@ -12,7 +12,7 @@ const Home = () => {
       </section>
 
       {/* About Us Section */}
-      <section className="about-us-section h-screen flex flex-col justify-center items-center bg-white">
+      <section className="about-us-section bg-[url('../../public/images/about-us-bg.png')] bg-cover bg-center h-screen flex flex-col justify-center items-center bg-white">
         <div className="text-center max-w-3xl px-4">
           <h2 className="text-6xl font-title font-bold text-alofa-pink mb-4">About Us</h2>
           <p className="text-gray-700 text-lg leading-relaxed">
