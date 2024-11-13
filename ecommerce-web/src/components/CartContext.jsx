@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { createContext, useState, useEffect, useContext } from "react";
+import { createContext, useState, useEffect, useContext, useCallback } from "react";
 import {
   createCart,
   addCartItem,
@@ -17,6 +17,7 @@ export const CartContext = createContext();
 const CartProvider = ({ children }) => {
   const { user, justLoggedIn, setJustLoggedIn } = useContext(AuthContext);
   const customerProfileId = user?.id; // Use 'user' instead of 'token'
+  const [hovered, setHovered] = useState(false);
 
   const [cartItems, setCartItems] = useState(() => {
     const storedCart = localStorage.getItem("cartItems");
@@ -56,7 +57,7 @@ const CartProvider = ({ children }) => {
     }
   };
 
-  const fetchCustomerCart = async () => {
+  const fetchCustomerCart = useCallback(async () => {
     if (!customerProfileId) return; // Avoid fetching if customerProfileId is null
 
     setLoading(true);
@@ -75,9 +76,9 @@ const CartProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [customerProfileId]);
 
-  const fetchGuestCart = async () => {
+  const fetchGuestCart = useCallback(async () => {
     if (!cartId) return; // Avoid fetching if cartId is null
 
     setLoading(true);
@@ -95,7 +96,7 @@ const CartProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  },[cartId]);;
 
   useEffect(() => {
     if (justLoggedIn && customerProfileId) {
@@ -118,7 +119,7 @@ const CartProvider = ({ children }) => {
     if (customerProfileId && !savedCartId) {
       fetchCustomerCart();
     }
-  }, [customerProfileId]);
+  }, [customerProfileId, fetchGuestCart, fetchCustomerCart]);
 
   const addToCart = async (product) => {
     try {
@@ -187,6 +188,8 @@ const CartProvider = ({ children }) => {
         calculateSubtotal(updatedCartItems);
         return updatedCartItems;
       });
+
+      setHovered(true);
 
       if (product.value !== "N/A" && product.value) {
         toast.success(`${product.name} ${product.value} added to cart!`);
@@ -320,6 +323,8 @@ const CartProvider = ({ children }) => {
           resetSubtotal,
           fetchCustomerCart,
           updateCartContext,
+          hovered,
+          setHovered,
         }}
       >
         {!loading && children} {/* Render children only after loading */}

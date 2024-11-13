@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from "react";
+import { useContext, useEffect } from "react";
 import { FaUserAlt, FaShoppingCart } from "react-icons/fa";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { CartContext } from "../components/CartContext";
@@ -8,8 +8,7 @@ import NavbarBG from "../../../public/static/alofa-navbar-white.png";
 import CartOverview from "./CartOverview";
 
 const Navbar = () => {
-  const [hovered, setHovered] = useState(false);
-  const { loading, resetCart } = useContext(CartContext);
+  const { loading, resetCart, hovered, setHovered } = useContext(CartContext);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -29,11 +28,7 @@ const Navbar = () => {
 
   // New handler function to toggle cart visibility
   const toggleCartVisibility = () => {
-    if (hovered) {
-      setHovered(false); // Close cart
-    } else {
-      setHovered(true); // Open cart
-    }
+    setHovered(!hovered); // Toggle cart visibility
   };
 
   useEffect(() => {
@@ -151,7 +146,7 @@ const Navbar = () => {
                     <div className="text-[#FE699F] p-3 rounded-full transition-colors duration-300 hover:text-gray-500 cursor-pointer">
                       <FaShoppingCart />
                     </div>
-                    <CartOverview hovered={hovered} setHovered={setHovered} />
+                    <CartOverview />
                   </div>
                 </>
               ) : !isCheckoutPage ? (
@@ -174,7 +169,7 @@ const Navbar = () => {
                     <div className="text-[#FE699F] p-3 rounded-full transition-colors duration-300 hover:text-gray-500 cursor-pointer">
                       <FaShoppingCart />
                     </div>
-                    <CartOverview hovered={hovered} setHovered={setHovered} />
+                    <CartOverview />
                   </div>
                 </>
               ) : null}
