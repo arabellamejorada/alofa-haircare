@@ -18,7 +18,6 @@ const CustomerProfile = () => {
   const { user } = useContext(AuthContext);
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
-
   const [isAccountOpen, setIsAccountOpen] = useState(true);
 
   const location = useLocation();
@@ -63,7 +62,6 @@ const CustomerProfile = () => {
   };
 
   return (
-    // bg-gradient-to-b from-white via-[#FFF8FC] to-[#FFF8FC]
     <div className="min-h-screen bg-white">
       {loading && (
         <div className="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center z-50 pointer-events-none">
@@ -98,7 +96,7 @@ const CustomerProfile = () => {
 
             {/* Sidebar Links */}
             <nav className="mt-8">
-              <ul className="space-y-4">
+              <ul className="space-y-1">
                 {/* My Account Toggle */}
                 <li>
                   <button
@@ -164,7 +162,7 @@ const CustomerProfile = () => {
         </aside>
 
         {/* Main Content */}
-        <main className="w-full lg:w-3/4 p-4 bg-gray-100 rounded-lg shadow-lg flex-grow">
+        <main className="w-full lg:w-full max-w-7xl p-8 flex-grow mx-auto">
           <Routes>
             <Route
               path=""

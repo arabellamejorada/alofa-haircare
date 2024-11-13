@@ -117,7 +117,7 @@ const ProfileContent = ({ profileData, setProfileData }) => {
   };
 
   return (
-    <div className="relative">
+    <div className="relative bg-gray-100 rounded-lg shadow-lg p-6">
       {loading && (
         <div className="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center z-50 pointer-events-none">
           <ClipLoader size={50} color="#E53E3E" loading={loading} />
