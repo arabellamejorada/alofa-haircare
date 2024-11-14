@@ -73,7 +73,7 @@ export const getCartById = async (cart_id) => {
       items: updatedItems,
     };
 
-    console.log("Cart Fetched: ", updatedCartData);
+    console.log("GetCartById Cart Fetched: ", updatedCartData);
     return updatedCartData;
   } catch (error) {
     console.error("Error retrieving cart: ", error.message);
@@ -83,7 +83,6 @@ export const getCartById = async (cart_id) => {
 
 
 export const getCartByCustomerId = async (profile_id) => {
-  console.log("Customer ID received: ", profile_id);
   try {
     const response = await axios.get(`/cart/customer/${profile_id}`);
 
@@ -107,7 +106,7 @@ export const getCartByCustomerId = async (profile_id) => {
       items: updatedItems,
     };
 
-    console.log("Updated Cart Data: ", updatedCartData);
+    console.log("Updated Cart Data by customerid: ", updatedCartData);
     return updatedCartData;
   } catch (error) {
     console.error("Error retrieving cart: ", error.message);

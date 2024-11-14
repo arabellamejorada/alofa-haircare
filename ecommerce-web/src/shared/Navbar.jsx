@@ -8,12 +8,13 @@ import NavbarBG from "../../../public/static/alofa-navbar-white.png";
 import CartOverview from "./CartOverview";
 
 const Navbar = () => {
-  const { loading, resetCart, hovered, setHovered } = useContext(CartContext);
+  const { resetCart, hovered, setHovered } = useContext(CartContext);
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { user, role, signOut } = useContext(AuthContext);
-  const isAuthPage = location.pathname === "/login" || location.pathname === "/signup";
+  const { user, signOut } = useContext(AuthContext);
+  const isAuthPage =
+    location.pathname === "/login" || location.pathname === "/signup";
   const isCheckoutPage = location.pathname === "/checkout";
   const isLoggedIn = Boolean(user);
   const isProfilePage = location.pathname.startsWith("/profile");
@@ -30,23 +31,6 @@ const Navbar = () => {
   const toggleCartVisibility = () => {
     setHovered(!hovered); // Toggle cart visibility
   };
-
-  useEffect(() => {
-    console.log("Current user:", user);
-    console.log("Current role:", role);
-  }, [user, role]);
-
-  if (loading) {
-    return (
-      <div className="relative">
-        {loading && (
-          <div className="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center z-50">
-            <ClipLoader size={50} color="#E53E3E" loading={loading} />
-          </div>
-        )}
-      </div>
-    );
-  }
 
   return (
     <header

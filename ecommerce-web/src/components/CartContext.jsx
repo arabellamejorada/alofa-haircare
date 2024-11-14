@@ -1,5 +1,11 @@
 import PropTypes from "prop-types";
-import { createContext, useState, useEffect, useContext, useCallback } from "react";
+import {
+  createContext,
+  useState,
+  useEffect,
+  useContext,
+  useCallback,
+} from "react";
 import {
   createCart,
   addCartItem,
@@ -60,7 +66,6 @@ const CartProvider = ({ children }) => {
   const fetchCustomerCart = useCallback(async () => {
     if (!customerProfileId) return; // Avoid fetching if customerProfileId is null
 
-    setLoading(true);
     try {
       const fetchedCart = await getCartByCustomerId(customerProfileId);
       if (!fetchedCart) {
@@ -73,8 +78,6 @@ const CartProvider = ({ children }) => {
     } catch (error) {
       console.error("Error fetching customer cart:", error);
       toast.error("Failed to fetch customer cart.");
-    } finally {
-      setLoading(false);
     }
   }, [customerProfileId]);
 
@@ -96,7 +99,7 @@ const CartProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  },[cartId]);;
+  }, [cartId]);
 
   useEffect(() => {
     if (justLoggedIn && customerProfileId) {
@@ -119,7 +122,7 @@ const CartProvider = ({ children }) => {
     if (customerProfileId && !savedCartId) {
       fetchCustomerCart();
     }
-  }, [customerProfileId, fetchGuestCart, fetchCustomerCart]);
+  }, []);
 
   const addToCart = async (product) => {
     try {

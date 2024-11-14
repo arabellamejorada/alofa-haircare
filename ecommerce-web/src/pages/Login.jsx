@@ -33,7 +33,7 @@ const Login = () => {
     e.preventDefault();
     try {
       setLoading(true);
-
+      console.log("Logging in with form data:", formData);
       // Step 1: Use signIn from AuthContext to handle login
       const data = await signIn(formData.emailAddress, formData.password_input);
       const customerProfileId = data.user.id;
