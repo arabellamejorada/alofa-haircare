@@ -94,7 +94,7 @@ function SidebarContent({ onClose }) {
           {loading ? "Hello!" : userName ? `Hello, ${userName}!` : "Hello!"}
         </div>
       </div>
-      <div className="flex-1 px-5 py-8 flex flex-col gap-0.5">
+      <div className="flex-1 px-5 py-8 flex flex-col gap-0.5 overflow-y-auto max-h-screen">
         {/* Render navigation links */}
         {[
           DASHBOARD_SIDEBAR_LINKS,
