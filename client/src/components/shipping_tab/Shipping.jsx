@@ -2,7 +2,6 @@ import React, { useState, useEffect, Fragment } from "react";
 import {
   getAllOrdersWithItems,
   updateShippingStatusAndTrackingNumber,
-  updateOrderStatus,
 } from "../../api/orders";
 import { ClipLoader } from "react-spinners";
 import Modal from "../modal/Modal";
@@ -67,10 +66,13 @@ const Shipping = () => {
     const paymentStatus = order.payment_status_name?.toLowerCase() || "";
     const searchLower = search.toLowerCase();
 
+    // Filter for "Preparing", "Shipped", or "Completed" statuses
+    const allowedStatuses = ["Preparing", "Shipped", "Completed"];
     return (
-      orderId.includes(searchLower) ||
-      customerName.includes(searchLower) ||
-      paymentStatus.includes(searchLower)
+      allowedStatuses.includes(order.order_status_name) && // Only include these statuses
+      (orderId.includes(searchLower) ||
+        customerName.includes(searchLower) ||
+        paymentStatus.includes(searchLower))
     );
   });
 
