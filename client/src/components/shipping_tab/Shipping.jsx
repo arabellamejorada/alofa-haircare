@@ -1,43 +1,25 @@
 import React, { useState, useEffect, Fragment } from "react";
 import {
   getAllOrdersWithItems,
-  updateOrderPaymentStatus,
+  updateShippingStatusAndTrackingNumber,
   updateOrderStatus,
 } from "../../api/orders";
 import { ClipLoader } from "react-spinners";
-import { FaArrowUp, FaArrowDown } from "react-icons/fa";
-import Modal from "../modal/Modal"; // Adjust the import path as needed
-import PaymentStatusBadge from "../shared/PaymentStatusBadge"; // Import the PaymentStatusBadge component
+import Modal from "../modal/Modal";
+import PaymentStatusBadge from "../shared/PaymentStatusBadge";
 
-const OrderVerification = () => {
+const Shipping = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 10;
-
-  // Filter states
   const [search, setSearch] = useState("");
-
-  // Sorting states
   const [sortField, setSortField] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
-
-  // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
-
-  const [isFullScreen, setIsFullScreen] = useState(false);
-
-  const handleImageClick = () => {
-    setIsFullScreen(true);
-  };
-
-  const closeFullScreen = () => {
-    setIsFullScreen(false);
-  };
+  const [trackingNumber, setTrackingNumber] = useState("");
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -60,7 +42,6 @@ const OrderVerification = () => {
     fetchOrders();
   }, []);
 
-  // Handle sorting
   const handleSort = (field) => {
     const newSortOrder =
       sortField === field && sortOrder === "asc" ? "desc" : "asc";
@@ -80,7 +61,6 @@ const OrderVerification = () => {
     );
   };
 
-  // Calculate filtered and paginated data
   const filteredOrders = orders.filter((order) => {
     const orderId = order.order_id.toString();
     const customerName = order.customer_name?.toLowerCase() || "";
@@ -107,71 +87,93 @@ const OrderVerification = () => {
     if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
 
-  // Define columns for orders table, using PaymentStatusBadge for payment status
   const columns = [
     { key: "order_id", header: "Order ID" },
     { key: "customer_name", header: "Customer Name" },
     {
-      key: "total_amount",
-      header: "Total Amount",
-      align: "right",
-      render: (amount) => `₱${Number(amount).toFixed(2).toLocaleString()}`,
-    },
-    {
-      key: "payment_status_name",
-      header: "Payment Status",
-      render: (status) => <PaymentStatusBadge status={status} />, // Use PaymentStatusBadge here
+      key: "order_status_name",
+      header: "Order Status",
+      render: (status) => <PaymentStatusBadge status={status} />,
     },
     { key: "order_date", header: "Date Ordered" },
     { key: "action", header: "Action" },
+    { key: "view_orders", header: "View Orders" },
   ];
 
   const openModal = (order) => {
     setSelectedOrder(order);
+    setTrackingNumber(order.tracking_number || "");
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
     setSelectedOrder(null);
+    setTrackingNumber("");
     setIsModalOpen(false);
   };
 
-  const handleVerifyPayment = async () => {
+  const handleUpdateShippingStatus = async () => {
     if (!selectedOrder) return;
+
     try {
       setLoading(true);
-      // Step 1: Update payment status to "Verified" (ID: 2)
-      await updateOrderPaymentStatus(selectedOrder.order_id, 2); // Assuming 2 is 'Verified'
 
-      // Step 2: Update order status to "Preparing" (ID: 2)
-      await updateOrderStatus(selectedOrder.order_id, 2); // Assuming 2 is 'Preparing'
+      let nextStatusId;
+      let nextStatusName;
 
-      // Update the local state to reflect both status changes
+      if (selectedOrder.order_status_id === 2) {
+        nextStatusId = 3;
+        nextStatusName = "Shipped";
+      } else if (selectedOrder.order_status_id === 3) {
+        nextStatusId = 4;
+        nextStatusName = "Completed";
+      } else {
+        return;
+      }
+
+      // Check `shipping_id` instead of `id`
+      await updateShippingStatusAndTrackingNumber(
+        selectedOrder.shipping_id, // Use shipping_id here
+        nextStatusId,
+        trackingNumber,
+      );
+
+      // Update local state to reflect changes
       setOrders((prevOrders) =>
         prevOrders.map((order) =>
           order.order_id === selectedOrder.order_id
             ? {
                 ...order,
-                payment_status_id: 2,
-                payment_status_name: "Verified",
-                order_status_id: 2,
-                order_status_name: "Preparing",
+                order_status_id: nextStatusId,
+                order_status_name: nextStatusName,
+                tracking_number: trackingNumber,
               }
             : order,
         ),
       );
 
+      // Also update the `selectedOrder`
+      setSelectedOrder((prevSelectedOrder) => ({
+        ...prevSelectedOrder,
+        order_status_id: nextStatusId,
+        order_status_name: nextStatusName,
+        tracking_number: trackingNumber,
+      }));
+
       closeModal();
     } catch (error) {
-      console.error(
-        "Error verifying payment and updating order status:",
-        error,
-      );
-      setError("Failed to verify payment and update order status");
+      console.error("Error updating shipping status:", error);
+      setError("Failed to update shipping status");
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (selectedOrder) {
+      setTrackingNumber(selectedOrder.tracking_number || "");
+    }
+  }, [selectedOrder]);
 
   if (error) return <div className="text-red-500">{error}</div>;
 
@@ -185,11 +187,8 @@ const OrderVerification = () => {
         )}
 
         <div className="container mx-auto">
-          <strong className="text-3xl font-bold text-gray-500">
-            Verify Order Payments
-          </strong>
+          <strong className="text-3xl font-bold text-gray-500">Shipping</strong>
 
-          {/* Filters Section */}
           <div className="flex flex-row flex-wrap items-center gap-4 mt-4">
             <input
               type="text"
@@ -208,7 +207,6 @@ const OrderVerification = () => {
             )}
           </div>
 
-          {/* Orders Table */}
           <table className="min-w-full bg-white mt-4 shadow-md rounded-lg overflow-hidden">
             <thead>
               <tr>
@@ -221,12 +219,6 @@ const OrderVerification = () => {
                     onClick={() => handleSort(column.key)}
                   >
                     {column.header}
-                    {sortField === column.key &&
-                      (sortOrder === "asc" ? (
-                        <FaArrowUp className="inline ml-2" />
-                      ) : (
-                        <FaArrowDown className="inline ml-2" />
-                      ))}
                   </th>
                 ))}
               </tr>
@@ -234,32 +226,32 @@ const OrderVerification = () => {
             <tbody>
               {currentData.map((order) => (
                 <tr key={order.order_id}>
-                  {columns.slice(0, -1).map((column) => (
+                  {columns.map((column) => (
                     <td
                       key={column.key}
-                      className={`px-5 py-2 border-b ${
+                      className={`px-5 py-3 border-b ${
                         column.align === "right" ? "text-right" : ""
                       }`}
                     >
-                      {column.render
-                        ? column.render(order[column.key])
-                        : order[column.key]}
+                      {column.key === "action" ? (
+                        <button
+                          onClick={() => openModal(order)}
+                          className="px-3 py-1 bg-alofa-pink text-white rounded hover:bg-alofa-dark w-fit"
+                        >
+                          Update Shipping
+                        </button>
+                      ) : column.render ? (
+                        column.render(order[column.key])
+                      ) : (
+                        order[column.key]
+                      )}
                     </td>
                   ))}
-                  <td className="text-left border-b">
-                    <button
-                      onClick={() => openModal(order)}
-                      className="px-3 py-1 bg-alofa-pink text-white rounded hover:bg-alofa-dark w-fit"
-                    >
-                      Review Payment
-                    </button>
-                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
 
-          {/* Pagination Controls */}
           <div className="flex justify-between items-center p-4">
             <button
               className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50"
@@ -281,96 +273,38 @@ const OrderVerification = () => {
               Next
             </button>
           </div>
-          {/* Order Details Modal */}
+
           {isModalOpen && selectedOrder && (
-            <Modal isVisible={isModalOpen} onClose={closeModal} size="large">
+            <Modal isVisible={isModalOpen} onClose={closeModal} size="small">
+              {console.log("Selected Order:", selectedOrder)}
               <div className="p-6 max-h-[80vh] overflow-y-auto flex flex-col bg-white rounded-lg ">
-                <h2 className="text-4xl font-bold mb-6 text-alofa-pink">
-                  Order Details
-                </h2>
-
-                <div className="flex flex-col md:flex-row gap-2">
-                  {/* Order Details Section */}
-                  <div className="flex-1 text-lg space-y-3">
-                    <div className="flex flex-col gap-3 pb-4">
-                      <div className="flex flex-col">
-                        <strong className="font-bold">Customer Name:</strong>
-                        <div>{selectedOrder.customer_name}</div>
-                      </div>
-                      <div>
-                        <strong className="font-bold">Total Amount:</strong>
-                        <div>
-                          ₱{Number(selectedOrder.total_amount).toLocaleString()}
-                        </div>
-                      </div>
-                      <div>
-                        <strong className="font-bold">Payment Status:</strong>
-                        <div>
-                          <PaymentStatusBadge
-                            status={selectedOrder.payment_status_name}
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <strong className="font-bold">Order Status:</strong>
-                        <div>{selectedOrder.order_status_name}</div>
-                      </div>
-                      <div>
-                        <strong className="font-bold">Date Ordered:</strong>
-                        <div>
-                          {(() => {
-                            const dateValue = selectedOrder.order_date;
-                            if (!dateValue) return "Date not available";
-                            const date = new Date(dateValue);
-                            return !isNaN(date.getTime())
-                              ? date.toLocaleString()
-                              : "Date not available";
-                          })()}
-                        </div>
-                      </div>
-                    </div>
+                <div className="flex flex-col w-full">
+                  <div className="font-extrabold text-3xl text-alofa-dark mb-4">
+                    Update Shipping Status
                   </div>
-
-                  {/* Proof Image Section */}
-                  {selectedOrder.proof_image ? (
-                    <div>
-                      <strong className="font-bold mb-2">
-                        Proof of Payment:
-                      </strong>
-                      <img
-                        src={`http://localhost:3001/${selectedOrder.proof_image.substring(7)}`}
-                        alt="Payment Proof"
-                        className="mt-2 max-w-xs h-[30rem] mx-auto border rounded-lg shadow-md transform transition-transform duration-300 hover:scale-105 cursor-pointer"
-                        onClick={handleImageClick}
-                      />
-
-                      {/* Full-Screen Image Modal */}
-                      {isFullScreen && (
-                        <div
-                          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80"
-                          onClick={closeFullScreen}
-                        >
-                          <img
-                            src={`http://localhost:3001/${selectedOrder.proof_image.substring(7)}`}
-                            alt="Full-Sized Payment Proof"
-                            className="max-w-full max-h-full rounded-lg shadow-lg"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="mt-4 text-red-500 font-semibold">
-                      No payment proof image available.
-                    </div>
-                  )}
+                  <label className="font-bold" htmlFor="tracking_number">
+                    Tracking Number:
+                  </label>
+                  <input
+                    type="text"
+                    name="tracking_number"
+                    id="tracking_number"
+                    placeholder="Tracking Number"
+                    className="rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700"
+                    value={trackingNumber}
+                    onChange={(e) => setTrackingNumber(e.target.value)}
+                  />
                 </div>
-                {/* Action Button */}
                 <div className="mt-8 flex justify-end">
                   <button
-                    onClick={handleVerifyPayment}
+                    onClick={handleUpdateShippingStatus}
                     className="px-5 py-2 bg-green-600 text-white rounded-lg shadow-lg hover:bg-green-700 transition duration-200"
                   >
-                    Verify Payment
+                    {selectedOrder.order_status_id === 2
+                      ? "Order Shipped"
+                      : selectedOrder.order_status_id === 3
+                        ? "Order Complete"
+                        : `Update Status (Status ID: ${selectedOrder.order_status_id || "N/A"})`}
                   </button>
                 </div>
               </div>
@@ -382,4 +316,4 @@ const OrderVerification = () => {
   );
 };
 
-export default OrderVerification;
+export default Shipping;

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { IoMdCheckmarkCircle } from "react-icons/io";
-import PaymentStatusBadge from "./PaymentStatusBadge"; // Ensure this component is imported
+import PaymentStatusBadge from "../shared/PaymentStatusBadge"; // Ensure this component is imported
 
 const formatColumnName = (columnName) => {
   if (columnName.toLowerCase() === "id") return columnName.toUpperCase();

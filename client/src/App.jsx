@@ -22,6 +22,7 @@ import Login from "./components/Login";
 import Vouchers from "./components/voucher_tab/Vouchers";
 import Faqs from "./components/Faqs";
 import OrderVerification from "./components/orders_tab/OrderVerification";
+import Shipping from "./components/shipping_tab/Shipping";
 
 import { AuthProvider, AuthContext } from "./components/AuthContext";
 
@@ -105,6 +106,10 @@ function App() {
             <Route
               path="orderVerification"
               element={<ProtectedRoute element={<OrderVerification />} />}
+            />
+            <Route
+              path="shipping"
+              element={<ProtectedRoute element={<Shipping />} />}
             />
           </Route>
           <Route path="login" element={<Login />} />

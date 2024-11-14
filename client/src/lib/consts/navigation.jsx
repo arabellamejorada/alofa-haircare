@@ -105,7 +105,7 @@ export const INVENTORY_SIDEBAR_LINKS = [
 export const ORDERS_SIDEBAR_LINKS = [
   {
     key: "order_verification",
-    label: "Orders",
+    label: "Order Verification",
     path: "/orderVerification",
     icon: <IoBagCheckOutline />,
   },

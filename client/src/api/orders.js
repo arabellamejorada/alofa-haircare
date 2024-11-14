@@ -80,15 +80,38 @@ export const updateOrderPaymentStatus = async (orderId, paymentStatusId) => {
   }
 };
 
-export const updateOrderStatus = async (orderId, orderStatusId) => {
+export const updateOrderStatus = async (
+  orderId,
+  orderStatusId,
+  trackingNumber,
+) => {
   try {
     const response = await axios.put(`/order/${orderId}/order-status`, {
       order_status_id: orderStatusId,
+      tracking_number: trackingNumber,
     });
-    console.log("Order status updated: ", response.data);
+    console.log("Order status and tracking number updated:", response.data);
     return response.data;
   } catch (error) {
-    console.error("Error updating order status: ", error);
+    console.error("Error updating order status and tracking number:", error);
+    throw error;
+  }
+};
+
+export const updateShippingStatusAndTrackingNumber = async (
+  shippingId,
+  orderStatusId,
+  trackingNumber,
+) => {
+  try {
+    const response = await axios.put(`/shipping/${shippingId}/status`, {
+      order_status_id: orderStatusId, // Use order_status_id instead of shipping_status_id
+      tracking_number: trackingNumber,
+    });
+    console.log("Order status and tracking number updated:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating order status and tracking number:", error);
     throw error;
   }
 };
