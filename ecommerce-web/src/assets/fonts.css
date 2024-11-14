@@ -1,14 +1,20 @@
 @font-face {
-    font-family: 'Yavome';
-    src: url('/fonts/YavomeRegular-4BwED.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-  }
+  font-family: "Yavome";
+  src: url("/fonts/YavomeRegular-4BwED.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
 
-  @font-face {
-    font-family: 'Yeseva One';
-    src: url('/fonts/YesevaOne-Regular.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-  }
-  
+@font-face {
+  font-family: "Yeseva One";
+  src: url("/fonts/YesevaOne-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Calgary";
+  src: url("/fonts/Calgary_DEMO.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}

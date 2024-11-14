@@ -6,6 +6,7 @@ import GCashLogo from "../../../../public/static/gcash-logo.svg";
 import BPILogo from "../../../../public/static/bpi-logo.svg";
 import GCashQR from "../../../../public/static/gcash-qr.jpg";
 import { FaRegAddressCard } from "react-icons/fa";
+import { render } from "react-dom";
 
 const ShippingAddress = ({
   profileData,
@@ -21,6 +22,8 @@ const ShippingAddress = ({
   receiptFile,
   setReceiptFile,
   setReceiptFileName,
+  errors,
+  setErrors,
 }) => {
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [regions, setRegions] = useState([]);
@@ -29,6 +32,12 @@ const ShippingAddress = ({
 
   const handleInputChange = async (e) => {
     const { name, value } = e.target;
+
+    // Validate field on change
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: validateField(name, value),
+    }));
 
     setFormDetails((prevFormDetails) => {
       let updatedData = { ...prevFormDetails };
@@ -182,6 +191,14 @@ const ShippingAddress = ({
     }
   };
 
+  const validateField = (name, value) => {
+    let error = "";
+    if (!value) {
+      error = "Field is required";
+    }
+    return error;
+  };
+
   // Memoize region mapping to prevent unnecessary re-renders
   const regionMapping = useMemo(
     () => ({
@@ -274,6 +291,12 @@ const ShippingAddress = ({
     }
   };
 
+  const renderError = (field) => {
+    if (errors[field]) {
+      return <span className="text-red-500 text-xs">{errors[field]}</span>;
+    }
+  };
+
   return (
     <div className="relative">
       {loading && (
@@ -308,6 +331,7 @@ const ShippingAddress = ({
           >
             Email
           </label>
+          {renderError("email")}
         </div>
 
         <div className="flex items-center justify-between mb-3">
@@ -357,6 +381,7 @@ const ShippingAddress = ({
             >
               First Name
             </label>
+            {renderError("firstName")}
           </div>
 
           <div className="relative w-full">
@@ -382,6 +407,7 @@ const ShippingAddress = ({
             >
               Last Name
             </label>
+            {renderError("lastName")}
           </div>
         </div>
 
@@ -395,10 +421,10 @@ const ShippingAddress = ({
                     text-gray-900 bg-transparent rounded-lg border 
                     border-gray-300 appearance-none focus:outline-none 
                     focus:ring-0 focus:border-alofa-pink peer mb-4"
-            placeholder=""
+            placeholder=" "
           />
           <label
-            htmlFor="street"
+            htmlFor="email"
             className="absolute text-sm text-gray-500 dark:text-gray-400
                     duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] 
                     start-2.5 peer-focus:text-alofa-pink peer-placeholder-shown:scale-100 
@@ -407,6 +433,7 @@ const ShippingAddress = ({
           >
             Street and house number
           </label>
+          {renderError("street")}
         </div>
 
         <div className="relative mb-4">
@@ -435,6 +462,7 @@ const ShippingAddress = ({
           >
             Region
           </label>
+          {renderError("region")}
         </div>
 
         <div className="relative mb-4">
@@ -462,6 +490,7 @@ const ShippingAddress = ({
           >
             Province
           </label>
+          {renderError("province")}
         </div>
 
         <div className="relative mb-4">
@@ -489,6 +518,7 @@ const ShippingAddress = ({
           >
             City/Municipality
           </label>
+          {renderError("city")}
         </div>
 
         <div className="relative mb-4">
@@ -545,6 +575,7 @@ const ShippingAddress = ({
           >
             Phone Number
           </label>
+          {renderError("phoneNumber")}
         </div>
 
         <div className="relative mb-4">
@@ -570,6 +601,7 @@ const ShippingAddress = ({
           >
             Postal Code
           </label>
+          {renderError("postalCode")}
         </div>
 
         {/* Payment and Submit Button */}
@@ -628,6 +660,7 @@ const ShippingAddress = ({
                       }
                     />
                   </label>
+
                   {uploadedPaymentMethod === "GCash" && receiptFile && (
                     <div className="flex items-center mt-2">
                       <p className="italic text-gray-400 text-sm">

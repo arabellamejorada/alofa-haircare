@@ -300,7 +300,14 @@ const OrderVerification = () => {
                       <div>
                         <strong className="font-bold">Total Amount:</strong>
                         <div>
-                          ₱{Number(selectedOrder.total_amount).toLocaleString()}
+                          ₱
+                          {Number(selectedOrder.total_amount).toLocaleString(
+                            undefined,
+                            {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            },
+                          )}
                         </div>
                       </div>
                       <div>

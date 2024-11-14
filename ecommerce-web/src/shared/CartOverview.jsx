@@ -1,16 +1,13 @@
-// src/shared/CartSidebar.jsx
 import { useContext } from "react";
 import { Link } from "react-router-dom";
 import { FaTrashAlt, FaPlus, FaMinus, FaTimes } from "react-icons/fa";
 import { AiOutlineShoppingCart } from "react-icons/ai";
-import { MdOutlineShoppingCartCheckout } from "react-icons/md"; // Import new icon
+import { MdOutlineShoppingCartCheckout } from "react-icons/md";
 import { CartContext } from "../components/CartContext";
-import PropTypes from "prop-types";
 
-const CartOverview = ({ hovered, setHovered }) => {
-  const { cartItems, handleQuantityChange, handleDelete, subtotal } = useContext(CartContext);
+const CartOverview = () => {
+  const { cartItems, handleQuantityChange, handleDelete, subtotal, hovered, setHovered } = useContext(CartContext);
 
-  // Handler functions for increment and decrement
   const handleIncrement = (variation_id, currentQuantity) => {
     handleQuantityChange(variation_id, currentQuantity + 1);
   };
@@ -21,14 +18,18 @@ const CartOverview = ({ hovered, setHovered }) => {
     }
   };
 
+  const closeCart = () => {
+    setHovered(false);
+  };
+
   return (
     <>
       {/* Overlay */}
       <div
         className={`fixed inset-0 bg-black transition-opacity duration-300 z-30 ${
-          hovered ? "opacity-30" : "opacity-0 pointer-events-none"
+          hovered ? "opacity-30 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`}
-        onClick={() => setHovered(false)}
+        onClick={() => setHovered(false)} // Close cart when clicking on the overlay
       />
 
       {/* Cart Sidebar */}
@@ -36,17 +37,17 @@ const CartOverview = ({ hovered, setHovered }) => {
         className={`fixed top-0 right-0 h-full w-[25rem] bg-white shadow-lg z-40 transition-transform duration-300 ${
           hovered ? "translate-x-0" : "translate-x-full"
         }`}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
+        onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the cart
       >
         {/* Close Button */}
         <button
-          onClick={() => setHovered(false)}
+          onClick={closeCart} // Close the cart when clicked
           className="absolute top-5 right-5 text-gray-300 hover:text-gray-700"
         >
           <FaTimes size={25} />
         </button>
 
+        {/* Cart Content */}
         <div className="p-4 h-full flex flex-col">
           <h1 className="text-2xl gradient-heading font-bold mb-0">Cart Overview</h1>
           <div className="text-md text-gray-500 mb-4 italic">
@@ -58,7 +59,6 @@ const CartOverview = ({ hovered, setHovered }) => {
               cartItems.map((item) => (
                 <div key={item.cart_item_id} className="mb-2">
                   <div className="flex items-center gap-3 p-2">
-                    {/* Link wrapping the product image */}
                     <Link to={`/products/${item.variation_id}`}>
                       <img
                         src={item.image}
@@ -67,10 +67,8 @@ const CartOverview = ({ hovered, setHovered }) => {
                       />
                     </Link>
                     <div className="flex-1">
-                      {/* Name and Delete Button in One Row */}
                       <div className="flex items-center justify-between mb-1">
                         <h3 className="font-semibold text-gray-700">{item.name}</h3>
-                        {/* Delete Button */}
                         <button
                           onClick={() => handleDelete(item.variation_id)}
                           className="text-gray-400 hover:text-red-500"
@@ -78,7 +76,6 @@ const CartOverview = ({ hovered, setHovered }) => {
                           <FaTrashAlt />
                         </button>
                       </div>
-                      {/* Price and Variation */}
                       <div className="flex items-center gap-1 mb-2">
                         <p className="text-sm text-gray-700 font-light">₱{item.unit_price}</p>
                         {item.value && (
@@ -87,7 +84,6 @@ const CartOverview = ({ hovered, setHovered }) => {
                           </p>
                         )}
                       </div>
-                      {/* Quantity Selector */}
                       <div className="flex items-center gap-1 mt-4">
                         <button
                           onClick={() => handleDecrement(item.variation_id, item.quantity)}
@@ -123,7 +119,7 @@ const CartOverview = ({ hovered, setHovered }) => {
             )}
           </div>
 
-          {/* Fixed Bottom Section: Subtotal, Total, and Buttons */}
+          {/* Fixed Bottom Section */}
           <div className="border-t pt-4">
             <div className="flex justify-between text-xl font-extrabold mb-2 text-gray-800">
               <span>Subtotal</span>
@@ -157,11 +153,6 @@ const CartOverview = ({ hovered, setHovered }) => {
       </div>
     </>
   );
-};
-
-CartOverview.propTypes = {
-  hovered: PropTypes.bool.isRequired,
-  setHovered: PropTypes.func.isRequired,
 };
 
 export default CartOverview;
