@@ -1,5 +1,6 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { FaUserAlt, FaShoppingCart } from "react-icons/fa";
+import { IoLogOutOutline, IoLogOut } from "react-icons/io5";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { CartContext } from "../components/CartContext";
 import { AuthContext } from "../components/AuthContext";
@@ -17,6 +18,8 @@ const Navbar = () => {
   const isCheckoutPage = location.pathname === "/checkout";
   const isLoggedIn = Boolean(user);
   const isProfilePage = location.pathname.startsWith("/profile");
+
+  const [isLogoutHovered, setIsLogoutHovered] = useState(false); // State for hover effect on logout icon
 
   // Handle logout
   const handleLogout = async () => {
@@ -135,12 +138,20 @@ const Navbar = () => {
                   >
                     <FaUserAlt />
                   </Link>
+
                   <button
                     onClick={handleLogout}
+                    onMouseEnter={() => setIsLogoutHovered(true)} // Set hover state on mouse enter
+                    onMouseLeave={() => setIsLogoutHovered(false)} // Remove hover state on mouse leave
                     className="hover:text-pink-700 flex items-center gap-2"
                   >
-                    Logout
+                    {isLogoutHovered ? (
+                      <IoLogOut size={24} />
+                    ) : (
+                      <IoLogOutOutline size={24} />
+                    )}
                   </button>
+
                   {/* Shopping Cart Icon */}
                   <div className="relative" onClick={toggleCartVisibility}>
                     <div className="text-[#FE699F] p-3 rounded-full transition-colors duration-300 hover:text-gray-500 cursor-pointer">

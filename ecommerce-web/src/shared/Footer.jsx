@@ -22,10 +22,10 @@ const Footer = () => {
               <h2 className="text-lg font-semibold mb-2">Follow Us</h2>
               <ul>
                 <li className="flex items-center mb-1">
-                  <FaFacebookF className="mr-2" /> Facebook
+                  <FaFacebookF className="mr-2" /> <a href="https://www.facebook.com/profile.php?id=100083016888414" target="_blank" rel="noopener noreferrer">Facebook</a>
                 </li>
                 <li className="flex items-center mb-1">
-                  <FaInstagram className="mr-2" /> Instagram
+                  <FaInstagram className="mr-2" /> <a href="https://www.instagram.com/alofahaircare/" target="_blank" rel="noopener noreferrer">Instagram</a>
                 </li>
                 <li className="flex items-center">
                   <FaTiktok className="mr-2" /> Tiktok
