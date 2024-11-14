@@ -17,7 +17,7 @@ const createEmployee = async (req, res) => {
         email: email,
         password: password, // Set the predefined password
         email_confirm: true,
-        
+
         user_metadata: {
           first_name,
           last_name,
@@ -104,22 +104,22 @@ const getAllEmployees = async (req, res) => {
 };
 
 const getEmployeeIdByProfileId = async (req, res) => {
-    const { profile_id } = req.params;
+  const { profile_id } = req.params;
 
-      // Fetch the employee ID based on profile ID
-    const result = await pool.query(
-        `SELECT employee_id FROM employee WHERE profile_id = $1`,
-        [profile_id]
-    );
-    const employee_id = result.rows.length > 0 ? result.rows[0].employee_id : null;
+  // Fetch the employee ID based on profile ID
+  const result = await pool.query(
+    `SELECT employee_id FROM employee WHERE profile_id = $1`,
+    [profile_id],
+  );
+  const employee_id =
+    result.rows.length > 0 ? result.rows[0].employee_id : null;
 
-    if (!employee_id) {
-        return res.status(404).json({ message: "Employee not found" });
-    }
+  if (!employee_id) {
+    return res.status(404).json({ message: "Employee not found" });
+  }
 
-    res.status(200).json({ employee_id });
+  res.status(200).json({ employee_id });
 };
-
 
 const getEmployeeById = async (req, res) => {
   const client = await pool.connect();

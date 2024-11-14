@@ -93,13 +93,15 @@ const createOrder = async (req, res) => {
     const newOrder = orderResult.rows[0];
     console.log("New order:", newOrder);
 
-   // Step 3: Insert order items with discounted price if applicable
-  const orderItemsValues = cartItems.flatMap((item) => [
-    newOrder.order_id,
-    item.variation_id,
-    item.quantity,
-    item.discounted_price !== null && item.discounted_price !== undefined ? item.discounted_price : item.unit_price,
-  ]);
+    // Step 3: Insert order items with discounted price if applicable
+    const orderItemsValues = cartItems.flatMap((item) => [
+      newOrder.order_id,
+      item.variation_id,
+      item.quantity,
+      item.discounted_price !== null && item.discounted_price !== undefined
+        ? item.discounted_price
+        : item.unit_price,
+    ]);
 
     const placeholders = cartItems
       .map(
@@ -530,6 +532,39 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
+const updateShippingStatusAndTrackingNumber = async (req, res) => {
+  const { shipping_id } = req.params;
+  const { order_status_id, tracking_number } = req.body;
+
+  try {
+    await pool.query("BEGIN");
+
+    // Update the order status in the orders table
+    await pool.query(
+      `UPDATE orders SET order_status_id = $1 WHERE shipping_id = $2`,
+      [order_status_id, shipping_id],
+    );
+
+    // Update the tracking number in the shipping table
+    await pool.query(
+      `UPDATE shipping SET tracking_number = $1 WHERE shipping_id = $2`,
+      [tracking_number, shipping_id],
+    );
+
+    await pool.query("COMMIT");
+
+    res.status(200).json({
+      message: "Order status and tracking number updated successfully",
+    });
+  } catch (error) {
+    await pool.query("ROLLBACK");
+    console.error("Error updating order status and tracking number:", error);
+    res
+      .status(500)
+      .json({ error: "Failed to update order status and tracking number" });
+  }
+};
+
 module.exports = {
   createOrder,
   getOrderByCustomerId,
@@ -538,4 +573,5 @@ module.exports = {
   getOrderItemsByOrderId,
   updateOrderPaymentStatus,
   updateOrderStatus,
+  updateShippingStatusAndTrackingNumber,
 };

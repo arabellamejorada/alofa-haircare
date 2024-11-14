@@ -15,4 +15,7 @@ router.put('/order/:order_id/payment-status', orderController.updateOrderPayment
 // Update order status of an order
 router.put('/order/:order_id/order-status', orderController.updateOrderStatus);
 
+router.put('/shipping/:shipping_id/status', orderController.updateShippingStatusAndTrackingNumber);
+
+
 module.exports = router;

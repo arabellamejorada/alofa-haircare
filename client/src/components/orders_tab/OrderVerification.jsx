@@ -2,11 +2,12 @@ import React, { useState, useEffect, Fragment } from "react";
 import {
   getAllOrdersWithItems,
   updateOrderPaymentStatus,
+  updateOrderStatus,
 } from "../../api/orders";
 import { ClipLoader } from "react-spinners";
 import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 import Modal from "../modal/Modal"; // Adjust the import path as needed
-import PaymentStatusBadge from "./PaymentStatusBadge"; // Import the PaymentStatusBadge component
+import PaymentStatusBadge from "../shared/PaymentStatusBadge"; // Import the PaymentStatusBadge component
 
 const OrderVerification = () => {
   const [orders, setOrders] = useState([]);
@@ -121,7 +122,6 @@ const OrderVerification = () => {
       header: "Payment Status",
       render: (status) => <PaymentStatusBadge status={status} />, // Use PaymentStatusBadge here
     },
-    { key: "order_status_name", header: "Order Status" },
     { key: "order_date", header: "Date Ordered" },
     { key: "action", header: "Action" },
   ];
@@ -140,9 +140,13 @@ const OrderVerification = () => {
     if (!selectedOrder) return;
     try {
       setLoading(true);
+      // Step 1: Update payment status to "Verified" (ID: 2)
       await updateOrderPaymentStatus(selectedOrder.order_id, 2); // Assuming 2 is 'Verified'
 
-      // Update the local state to reflect the change
+      // Step 2: Update order status to "Preparing" (ID: 2)
+      await updateOrderStatus(selectedOrder.order_id, 2); // Assuming 2 is 'Preparing'
+
+      // Update the local state to reflect both status changes
       setOrders((prevOrders) =>
         prevOrders.map((order) =>
           order.order_id === selectedOrder.order_id
@@ -150,14 +154,20 @@ const OrderVerification = () => {
                 ...order,
                 payment_status_id: 2,
                 payment_status_name: "Verified",
+                order_status_id: 2,
+                order_status_name: "Preparing",
               }
             : order,
         ),
       );
+
       closeModal();
     } catch (error) {
-      console.error("Error verifying payment:", error);
-      setError("Failed to verify payment");
+      console.error(
+        "Error verifying payment and updating order status:",
+        error,
+      );
+      setError("Failed to verify payment and update order status");
     } finally {
       setLoading(false);
     }
@@ -236,7 +246,7 @@ const OrderVerification = () => {
                         : order[column.key]}
                     </td>
                   ))}
-                  <td className="text-center border-b">
+                  <td className="text-left border-b">
                     <button
                       onClick={() => openModal(order)}
                       className="px-3 py-1 bg-alofa-pink text-white rounded hover:bg-alofa-dark w-fit"
@@ -283,11 +293,11 @@ const OrderVerification = () => {
                   {/* Order Details Section */}
                   <div className="flex-1 text-lg space-y-3">
                     <div className="flex flex-col gap-3 pb-4">
-                      <p className="flex flex-col">
+                      <div className="flex flex-col">
                         <strong className="font-bold">Customer Name:</strong>
                         <div>{selectedOrder.customer_name}</div>
-                      </p>
-                      <p>
+                      </div>
+                      <div>
                         <strong className="font-bold">Total Amount:</strong>
                         <div>
                           ₱
@@ -299,20 +309,20 @@ const OrderVerification = () => {
                             },
                           )}
                         </div>
-                      </p>
-                      <p>
+                      </div>
+                      <div>
                         <strong className="font-bold">Payment Status:</strong>
                         <div>
                           <PaymentStatusBadge
                             status={selectedOrder.payment_status_name}
                           />
                         </div>
-                      </p>
-                      <p>
+                      </div>
+                      <div>
                         <strong className="font-bold">Order Status:</strong>
                         <div>{selectedOrder.order_status_name}</div>
-                      </p>
-                      <p>
+                      </div>
+                      <div>
                         <strong className="font-bold">Date Ordered:</strong>
                         <div>
                           {(() => {
@@ -324,7 +334,7 @@ const OrderVerification = () => {
                               : "Date not available";
                           })()}
                         </div>
-                      </p>
+                      </div>
                     </div>
                   </div>
 
@@ -356,17 +366,16 @@ const OrderVerification = () => {
                       )}
                     </div>
                   ) : (
-                    <p className="mt-4 text-red-500 font-semibold">
+                    <div className="mt-4 text-red-500 font-semibold">
                       No payment proof image available.
-                    </p>
+                    </div>
                   )}
                 </div>
-
                 {/* Action Button */}
                 <div className="mt-8 flex justify-end">
                   <button
                     onClick={handleVerifyPayment}
-                    className="px-6 py-3 bg-green-600 text-white rounded-lg shadow-lg hover:bg-green-700 transition duration-200"
+                    className="px-5 py-2 bg-green-600 text-white rounded-lg shadow-lg hover:bg-green-700 transition duration-200"
                   >
                     Verify Payment
                   </button>
