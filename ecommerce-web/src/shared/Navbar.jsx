@@ -1,9 +1,8 @@
-import { useContext, useEffect } from "react";
+import { useContext } from "react";
 import { FaUserAlt, FaShoppingCart } from "react-icons/fa";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { CartContext } from "../components/CartContext";
 import { AuthContext } from "../components/AuthContext";
-import { ClipLoader } from "react-spinners";
 import NavbarBG from "../../../public/static/alofa-navbar-white.png";
 import CartOverview from "./CartOverview";
 
