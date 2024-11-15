@@ -115,7 +115,11 @@ const OrderVerification = () => {
       key: "total_amount",
       header: "Total Amount",
       align: "right",
-      render: (amount) => `₱${Number(amount).toFixed(2).toLocaleString()}`,
+      render: (amount) =>
+        `₱${Number(amount).toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}`,
     },
     {
       key: "payment_status_name",

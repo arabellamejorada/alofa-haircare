@@ -270,7 +270,7 @@ const ProductsTab = () => {
         !selectedCategory || product.product_category === selectedCategory;
 
       const matchesStatus = selectedStatus
-        ? product.product_status_id === parseInt(selectedStatus)
+        ? product.status_id === parseInt(selectedStatus)
         : !showArchived
           ? product.product_status.toLowerCase() !== "archived"
           : true;

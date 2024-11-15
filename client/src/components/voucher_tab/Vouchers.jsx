@@ -66,6 +66,7 @@ const Voucher = () => {
       setLoading(true);
       const vouchersData = await getAllVouchers();
       setVouchers(vouchersData);
+      console.log(vouchersData);
     } catch (error) {
       toast.error("Failed to fetch vouchers");
     } finally {
@@ -457,6 +458,7 @@ const Voucher = () => {
                           <div>
                             Max Use Per User: {voucher.max_use_per_user}
                           </div>
+                          <div>Current Usage: {voucher.current_uses || 0}</div>
 
                           <div>
                             Min Spend: ₱
