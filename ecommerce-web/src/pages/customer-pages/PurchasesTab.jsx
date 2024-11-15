@@ -41,18 +41,22 @@ const PurchasesTab = () => {
   }, []);
 
   useEffect(() => {
-    console.log("transactions", transactions);
-    const filtered = transactions.filter(
-      (transaction) =>
+    const filtered = transactions.filter((transaction) => {
+      const orderIdString = String(transaction.order_id || "");
+
+      const matchesOrderId = orderIdString
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+
+      const matchesProductName = transaction.order_items.some((product) =>
+        product.product_name.toLowerCase().includes(searchQuery.toLowerCase()),
+      );
+
+      return (
         (activeTab === "All" || transaction.order_status_name === activeTab) &&
-        (searchQuery === "" ||
-          transaction.order_id.includes(searchQuery) ||
-          transaction.order_items.some((product) =>
-            product.product_name
-              .toLowerCase()
-              .includes(searchQuery.toLowerCase()),
-          )),
-    );
+        (searchQuery === "" || matchesOrderId || matchesProductName)
+      );
+    });
 
     setFilteredOrders(filtered);
   }, [activeTab, searchQuery, transactions]);
@@ -122,13 +126,7 @@ const PurchasesTab = () => {
       <div className="space-y-4">
         {filteredOrders.length > 0 ? (
           filteredOrders.map((order) => (
-            <TransactionCard
-              key={order.order_id}
-              activeTab={activeTab}
-              searchQuery={searchQuery}
-              order={order}
-              transactions={transactions}
-            />
+            <TransactionCard key={order.order_id} order={order} />
           ))
         ) : (
           <div className="text-center text-gray-500">No orders found.</div>

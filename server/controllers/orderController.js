@@ -249,6 +249,7 @@ const getOrderByProfileId = async (req, res) => {
       `
       SELECT 
         o.*,
+        to_char(o.date_ordered, 'MM-DD-YYYY, HH:MI AM') AS date_ordered,
         os.status_name AS order_status_name,
         pm.method_name AS payment_method_name,
         ps.status_name AS payment_status_name,
