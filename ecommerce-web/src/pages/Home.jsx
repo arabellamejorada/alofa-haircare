@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
 const Home = () => {
   return (
@@ -6,21 +7,29 @@ const Home = () => {
       {/* Hero Section */}
       <section className="hero-section bg-[url('../../public/images/hero-bg.png')] bg-cover bg-center h-screen flex flex-col justify-center items-start pl-10 relative overflow-hidden">
         <div className="px-40">
-        <h1
-          className="text-9xl font-title font-bold text-[#FFFFFF] text-left"
-          style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)' }}
-        >
-          Simple and Clean Haircare
-        </h1>
+          <motion.h1
+            className="text-9xl font-heading font-black text-[#FFFFFF] text-left"
+            style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, ease: 'easeInOut' }}
+          >
+            Simple and Clean Haircare.
+          </motion.h1>
 
-        <Link to="/products">
-          <button className="relative mt-8 font-bold focus:outline-none bg-gradient-to-b from-[#FE699F] to-[#F8587A] text-white py-5 px-10 rounded-full text-2xl shadow-lg overflow-hidden transition-transform duration-300 transform hover:scale-110">
-            Browse Products
-            {/* Soft Shine Overlay */}
-            <span className="absolute inset-0 rounded-full bg-gradient-radial from-white/30 to-transparent opacity-50 transform -translate-x-1 -translate-y-1 scale-125"></span>
-          </button>
-        </Link>
-
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 0.5, ease: 'easeInOut' }}
+          >
+            <Link to="/products">
+              <button className="relative mt-8 font-bold focus:outline-none bg-gradient-to-b from-[#FE699F] to-[#F8587A] text-white py-5 px-10 rounded-full text-2xl shadow-lg overflow-hidden transition-transform duration-300 transform hover:scale-110">
+                Browse Products
+                {/* Soft Shine Overlay */}
+                <span className="absolute inset-0 rounded-full bg-gradient-radial from-white/30 to-transparent opacity-50 transform -translate-x-1 -translate-y-1 scale-125"></span>
+              </button>
+            </Link>
+          </motion.div>
         </div>
       </section>
 

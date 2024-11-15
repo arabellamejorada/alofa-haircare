@@ -28,6 +28,7 @@ npm install react-query
 npm install styled-components
 npm install react-icons --save
 npm install prop-types
+npm install framer-motion
 
 ensure localhost:5173
 
