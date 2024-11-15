@@ -91,35 +91,43 @@ const CartOverview = () => {
                           </p>
                         )}
                       </div>
-                      <div className="flex items-center gap-1 mt-4">
-                        <button
-                          onClick={() =>
-                            handleDecrement(item.variation_id, item.quantity)
-                          }
-                          className="w-5 h-5 bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F] text-white rounded-full flex items-center justify-center"
-                        >
-                          <FaMinus className="w-2 h-2" />
-                        </button>
-                        <input
-                          type="number"
-                          value={item.quantity}
-                          onChange={(e) => {
-                            const value = parseInt(e.target.value, 10);
-                            if (!isNaN(value) && value >= 1) {
-                              handleQuantityChange(item.variation_id, value);
+                      <div className="flex items-center justify-between mt-4">
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() =>
+                              handleDecrement(item.variation_id, item.quantity)
                             }
-                          }}
-                          className="w-8 h-6 border text-sm border-gray-300 rounded-md text-center text-black"
-                          min="1"
-                        />
-                        <button
-                          onClick={() =>
-                            handleIncrement(item.variation_id, item.quantity)
-                          }
-                          className="w-5 h-5 bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F] text-white rounded-full flex items-center justify-center"
-                        >
-                          <FaPlus className="w-2 h-2" />
-                        </button>
+                            className="w-5 h-5 bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F] text-white rounded-full flex items-center justify-center"
+                          >
+                            <FaMinus className="w-2 h-2" />
+                          </button>
+                          <input
+                            type="number"
+                            value={item.quantity}
+                            onChange={(e) => {
+                              const value = parseInt(e.target.value, 10);
+                              if (!isNaN(value) && value >= 1) {
+                                handleQuantityChange(item.variation_id, value);
+                              }
+                            }}
+                            className="w-8 h-6 border text-sm border-gray-300 rounded-md text-center text-black"
+                            min="1"
+                          />
+                          <button
+                            onClick={() =>
+                              handleIncrement(item.variation_id, item.quantity)
+                            }
+                            className="w-5 h-5 bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F] text-white rounded-full flex items-center justify-center"
+                          >
+                            <FaPlus className="w-2 h-2" />
+                          </button>
+                        </div>
+                        <div className="text-sm font-semibold text-gray-700">
+                          ₱
+                          {new Intl.NumberFormat("en-PH", {
+                            minimumFractionDigits: 2,
+                          }).format(item.quantity * item.unit_price)}
+                        </div>
                       </div>
                     </div>
                   </div>

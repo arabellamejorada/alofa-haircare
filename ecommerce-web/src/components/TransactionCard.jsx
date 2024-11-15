@@ -1,35 +1,47 @@
+import { useState } from "react";
 import PropTypes from "prop-types";
+import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 
 const TransactionCard = ({ activeTab, order }) => {
-  const totalItems = order.order_items.reduce(
-    (acc, item) => acc + item.quantity,
-    0,
-  );
+  const [isExpanded, setIsExpanded] = useState(false);
+  const totalItems = order.order_items.reduce((acc, item) => acc + item.quantity, 0);
+
+  const toggleExpanded = () => {
+    setIsExpanded(!isExpanded);
+  };
 
   return (
-    <div className="bg-gray-100 border border-gray-200 rounded-lg shadow-md p-4 mb-6">
-      <div className="flex justify-between items-center mb-1">
-        <div className="text-gray-700 font-medium">
-          Date Ordered: {order.date_ordered}
-        </div>
-        <div className="text-gray-700 font-medium">
-          Order ID #{order.order_id}
+    <div className="bg-gray-50 border border-gray-200 rounded-lg shadow-lg p-4 mb-6">
+      {/* Order Info Section */}
+      <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-300">
+        <div>
+          <div className="text-gray-500 font-normal mb-0">
+            Order placed: {order.date_ordered}
+          </div>
+          <div className="text-gray-500 font-normal">
+            Order ID #{order.order_id}
+          </div>
         </div>
         <div
-          className={`text-${
-            order.order_status_name === "Completed" ? "green" : "red"
-          }-600 font-medium`}
+          className={`font-medium ${
+            order.order_status_name === "Completed"
+              ? "text-green-600"
+              : "italic text-gray-600"
+          }`}
         >
           {order.order_status_name}
         </div>
       </div>
+
+      {/* Tracking Information */}
       {(activeTab === "To Receive" || activeTab === "Completed") && (
         <div className="text-gray-700 font-medium mb-4">
           Tracking Number: {order.tracking_number} (J&T Express)
         </div>
       )}
 
-      {order.order_items.map((product) => {
+      {/* Order Items */}
+      {order.order_items.slice(0, isExpanded ? order.order_items.length : 2).map((product) => {
         const imageName = product.image ? product.image.split("/").pop() : null;
         const imageUrl = imageName
           ? `http://localhost:3001/uploads/${imageName}`
@@ -49,9 +61,7 @@ const TransactionCard = ({ activeTab, order }) => {
                 </div>
                 <div className="text-gray-600">
                   x{product.quantity}
-                  {product.value && product.value !== "N/A"
-                    ? ` ${product.value}`
-                    : ""}
+                  {product.value && product.value !== "N/A" ? ` ${product.value}` : ""}
                 </div>
               </div>
               <div className="text-right">
@@ -62,17 +72,37 @@ const TransactionCard = ({ activeTab, order }) => {
                     maximumFractionDigits: 2,
                   })}
                 </div>
-                <div className="text-gray-600">SKU: {product.sku || "N/A"}</div>
               </div>
             </div>
           </div>
         );
       })}
 
+      {/* View More Button */}
+      {order.order_items.length > 2 && (
+        <div className="flex justify-center text-center mb-4">
+          <button
+            onClick={toggleExpanded}
+            className="text-gray-500 hover:text-gray-600 font-normal flex items-center justify-center"
+          >
+            {isExpanded ? (
+              <>
+                View Less <IoIosArrowUp className="ml-1" />
+              </>
+            ) : (
+              <>
+                View More <IoIosArrowDown className="ml-1" />
+              </>
+            )}
+          </button>
+        </div>
+      )}
+
+      {/* Total Section */}
       <div className="border-t border-gray-200 pt-4">
         <div className="flex flex-col items-end mb-4">
           <div className="text-gray-600 text-sm">Total {totalItems} items</div>
-          <div className="text-pink-600 font-bold text-xl">
+          <div className="text-alofa-pink font-bold text-xl">
             ₱
             {order.total_amount.toLocaleString("en-US", {
               minimumFractionDigits: 2,
@@ -94,8 +124,11 @@ const TransactionCard = ({ activeTab, order }) => {
 };
 
 TransactionCard.propTypes = {
+  activeTab: PropTypes.string.isRequired,
   order: PropTypes.shape({
     order_id: PropTypes.number.isRequired,
+    date_ordered: PropTypes.string.isRequired,
+    tracking_number: PropTypes.string,
     order_status_name: PropTypes.string.isRequired,
     order_items: PropTypes.arrayOf(
       PropTypes.shape({
@@ -107,7 +140,7 @@ TransactionCard.propTypes = {
         image: PropTypes.string,
         value: PropTypes.string,
         sku: PropTypes.string,
-      }),
+      })
     ).isRequired,
     total_amount: PropTypes.number.isRequired,
   }).isRequired,
