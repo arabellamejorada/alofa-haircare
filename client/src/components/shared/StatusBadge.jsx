@@ -1,7 +1,7 @@
 // PaymentStatusBadge.js
 import React from "react";
 
-const PaymentStatusBadge = ({ status }) => {
+const StatusBadge = ({ status }) => {
   // Define color classes based on status type
   const statusColors = {
     Pending: "bg-orange-200 text-orange-800",
@@ -25,4 +25,4 @@ const PaymentStatusBadge = ({ status }) => {
   );
 };
 
-export default PaymentStatusBadge;
+export default StatusBadge;
