@@ -81,11 +81,6 @@ const Checkout = () => {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("checkoutCartItems", JSON.stringify(cartItems));
-    console.log("Updated Cart Items:", cartItems);
-  }, [cartItems]);
-
-  useEffect(() => {
     const fetchProfileData = async () => {
       try {
         setLoading(true);
@@ -533,7 +528,7 @@ const Checkout = () => {
                     onClick={handleRemoveVoucher}
                     className="ml-2 text-sm text-red-500 hover:text-red-700"
                   >
-                    [{voucherCode}]  Remove
+                    [{voucherCode}] Remove
                   </button>
                   <span>
                     -₱

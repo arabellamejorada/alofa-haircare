@@ -4,8 +4,15 @@ import CartSummary from "../components/CartSummary.jsx";
 import { CartContext } from "../components/CartContext.jsx";
 
 const ShoppingCart = () => {
-  const { cartItems, handleQuantityChange, handleDelete, subtotal, loading } =
-    useContext(CartContext);
+  const {
+    cartItems,
+    handleQuantityChange,
+    handleDelete,
+    handleDecrement,
+    handleIncrement,
+    subtotal,
+    loading,
+  } = useContext(CartContext);
 
   const total = subtotal; // can modify if included ang tax and all
 
@@ -33,6 +40,8 @@ const ShoppingCart = () => {
             cartItems={processedCartItems}
             handleQuantityChange={handleQuantityChange}
             handleDelete={handleDelete}
+            handleDecrement={handleDecrement}
+            handleIncrement={handleIncrement}
           />
         </div>
         <div className="w-3/4">
