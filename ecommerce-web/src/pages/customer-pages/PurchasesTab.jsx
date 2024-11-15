@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useMemo } from "react";
 import TransactionCard from "../../components/TransactionCard.jsx";
 import { getOrderByProfileId } from "../../api/order.js";
 import { AuthContext } from "../../components/AuthContext";
@@ -11,14 +11,18 @@ const PurchasesTab = () => {
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [transactions, setTransactions] = useState([]);
 
-  const statusMap = {
-    All: null,
-    Pending: "Pending",
-    "To Ship": "Preparing",
-    "To Receive": "Shipped",
-    Completed: "Completed",
-    "For Refund": "For Refund",
-  };
+  
+  const statusMap = useMemo(
+    () => ({
+      All: null,
+      Pending: "Pending",
+      "To Ship": "Preparing",
+      "To Receive": "Shipped",
+      Completed: "Completed",
+      "For Refund": "For Refund",
+    }),
+    []
+  );
 
   useEffect(() => {
     console.log("user", user);
@@ -30,7 +34,11 @@ const PurchasesTab = () => {
       try {
         const orders = await getOrderByProfileId(user.id);
         console.log("Fetched orders:", orders);
-        setTransactions(orders);
+        // Sort the orders by date_ordered in descending order
+        const sortedOrders = orders.sort(
+          (a, b) => new Date(b.date_ordered) - new Date(a.date_ordered)
+        );
+        setTransactions(sortedOrders);
       } catch (error) {
         console.error("Error fetching orders:", error);
       }
@@ -58,7 +66,7 @@ const PurchasesTab = () => {
         .includes(searchQuery.toLowerCase());
 
       const matchesProductName = transaction.order_items.some((product) =>
-        product.product_name.toLowerCase().includes(searchQuery.toLowerCase()),
+        product.product_name.toLowerCase().includes(searchQuery.toLowerCase())
       );
 
       const requiredStatus = statusMap[activeTab];
@@ -71,7 +79,7 @@ const PurchasesTab = () => {
     });
 
     setFilteredOrders(filtered);
-  }, [activeTab, searchQuery, transactions]);
+  }, [activeTab, searchQuery, transactions, statusMap]);
 
   const handleTabClick = (tab, index) => {
     setActiveTab(tab);
@@ -93,8 +101,9 @@ const PurchasesTab = () => {
       </div>
     );
   }
+
   return (
-    <div className=" rounded-lg w-full max-w-7xl mx-auto">
+    <div className="rounded-lg w-full max-w-7xl mx-auto mb-4">
       {/* Tabs */}
       <div className="relative mb-4 border-b border-gray-200">
         <div className="flex space-x-4">
