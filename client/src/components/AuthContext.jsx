@@ -1,4 +1,3 @@
-/* Purpose: To manage user authentication, roles, and session persistence in your React application.*/
 import React, {
   createContext,
   useState,
@@ -19,11 +18,11 @@ export const AuthProvider = ({ children }) => {
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const [employeeId, setEmployeeId] = useState(null);
 
-  // Function to check if the profile belongs to an employee or admin
   const fetchUserRole = useCallback(async (userId) => {
     try {
-      // Fetch the role_id from profiles table
+      // Fetch the profile data, including role_id
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("role_id")
@@ -32,38 +31,39 @@ export const AuthProvider = ({ children }) => {
 
       if (profileError) throw profileError;
 
-      // If role_id is 2 (admin), set the role to admin
-      if (profileData.role_id === 2) {
-        setRole("admin");
-        return "admin";
+      // Fetch the employee details, including employee_id
+      const { data: employeeData, error: employeeError } = await supabase
+        .from("employee")
+        .select("employee_id, profile_id")
+        .eq("profile_id", userId)
+        .single();
+
+      if (employeeError && employeeError.code !== "PGRST116") {
+        // Ignore "No rows found" error (code PGRST116), but throw others
+        throw employeeError;
       }
 
-      // If role_id is 3 (employee), check the employee table
-      if (profileData.role_id === 3) {
-        const { data: employeeData, error: employeeError } = await supabase
-          .from("employee")
-          .select("profile_id")
-          .eq("profile_id", userId)
-          .single();
+      // Set the employeeId if available
+      setEmployeeId(employeeData ? employeeData.employee_id : null);
 
-        if (employeeError) throw employeeError;
-
-        if (employeeData) {
+      // Determine the role based on role_id
+      switch (profileData.role_id) {
+        case 2:
+          setRole("admin");
+          return "admin";
+        case 3:
           setRole("employee");
           return "employee";
-        } else {
+        default:
           throw new Error(
             "Access denied. Only employees and admins can log in.",
           );
-        }
       }
-
-      // If the user is not an admin or employee, throw an error
-      throw new Error("Access denied. Only employees and admins can log in.");
     } catch (err) {
       console.error("Error fetching role:", err.message);
-      setRole(null); // Reset role on error
-      throw err; // Re-throw error to be handled in signIn
+      setRole(null);
+      setEmployeeId(null);
+      throw err;
     }
   }, []);
 
@@ -75,19 +75,17 @@ export const AuthProvider = ({ children }) => {
       if (sessionError) throw sessionError;
 
       if (sessionData?.session) {
-        // Fetch user role and set token if valid
         const userRole = await fetchUserRole(sessionData.session.user.id);
         if (userRole === "employee" || userRole === "admin") {
           setToken(sessionData.session.access_token);
           localStorage.setItem("auth_token", sessionData.session.access_token);
 
-          // Fetch and set the user details
           const { data: userDetails } = await supabase
             .from("profiles")
             .select("*")
             .eq("id", sessionData.session.user.id)
             .single();
-          setUser(userDetails); // Set user data
+          setUser(userDetails);
         } else {
           setToken(null);
           localStorage.removeItem("auth_token");
@@ -96,7 +94,6 @@ export const AuthProvider = ({ children }) => {
         setToken(null);
         localStorage.removeItem("auth_token");
       }
-      console.log("Session checked successfully.");
     } catch (err) {
       console.error("Error checking session:", err.message);
       setToken(null);
@@ -118,33 +115,24 @@ export const AuthProvider = ({ children }) => {
       });
       if (error) throw error;
 
-      // Fetch the user's role and check if the user is an admin or employee
       const userRole = await fetchUserRole(data.user.id);
 
-      // Set token only if the user is an admin or employee
       if (userRole === "employee" || userRole === "admin") {
         setToken(data.session.access_token);
         localStorage.setItem("auth_token", data.session.access_token);
+        await checkSession();
       } else {
-        // Clear token if unauthorized
         setToken(null);
         localStorage.removeItem("auth_token");
         throw new Error("Access denied. Only employees and admins can log in.");
       }
-
-      await checkSession();
-      console.log("User signed in successfully.");
-      console.log("User role:", userRole);
-      console.log("User data:", data.user);
     } catch (err) {
       console.error("Error during sign-in:", err.message);
-
-      // Reset token and role on error
       setToken(null);
       setRole(null);
       setUser(null);
+      setEmployeeId(null);
       localStorage.removeItem("auth_token");
-
       throw err;
     }
   };
@@ -157,8 +145,8 @@ export const AuthProvider = ({ children }) => {
       setToken(null);
       setRole(null);
       setUser(null);
+      setEmployeeId(null);
       localStorage.removeItem("auth_token");
-      console.log("User signed out successfully.");
     } catch (err) {
       console.error("Error during sign-out:", err.message);
       throw err;
@@ -167,7 +155,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ token, role, user, signIn, signOut, loading }}
+      value={{ token, role, user, employeeId, signIn, signOut, loading }}
     >
       {!loading && children}
     </AuthContext.Provider>

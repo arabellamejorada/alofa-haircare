@@ -1,18 +1,24 @@
+// src/components/ShippingTabs/OrdersTab.jsx
+
 import React, { useState, useEffect } from "react";
 import {
   getAllOrdersWithItems,
   updateShippingStatusAndTrackingNumber,
   getOrderItemsByOrderId,
 } from "../../../api/orders";
+import { createStockOut } from "../../../api/stockOut";
 import { ClipLoader } from "react-spinners";
 import Modal from "../../modal/Modal";
 import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 import PaymentStatusBadge from "../../shared/StatusBadge";
 import { toast } from "sonner";
+import { useAuth } from "../../AuthContext";
 
 const OrdersTab = ({ statusFilter }) => {
-  const [orders, setOrders] = useState([]);
+  const { employeeId } = useAuth();
+  console.log("Employee ID from useAuth:", employeeId);
 
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [error, setError] = useState(null);
@@ -47,8 +53,8 @@ const OrdersTab = ({ statusFilter }) => {
         response.order_items.forEach((item) => {
           initialCheckedItems[item.order_item_id] =
             order.order_status_id === 3 || order.order_status_id === 4
-              ? true // Shipped or Completed
-              : !!checkedItems[item.order_item_id]; // Keep previous state or false
+              ? true
+              : !!checkedItems[item.order_item_id];
         });
         setCheckedItems(initialCheckedItems);
       } else {
@@ -84,13 +90,11 @@ const OrdersTab = ({ statusFilter }) => {
   const handleUpdateShippingStatus = async () => {
     if (!selectedOrder) return;
 
-    // **Check if tracking number is empty**
     if (!trackingNumber) {
       toast.error("Please enter a tracking number.");
       return;
     }
 
-    // **Check if all items are checked**
     if (!allItemsChecked()) {
       toast.error(
         "Please verify all items are prepared before updating the status.",
@@ -114,13 +118,18 @@ const OrdersTab = ({ statusFilter }) => {
         return;
       }
 
+      // Only handle stock out when status changes to "Shipped"
+      if (nextStatusName === "Shipped") {
+        await handleStockOutOnShipping();
+      }
+
+      // Update the shipping status and tracking number
       await updateShippingStatusAndTrackingNumber(
         selectedOrder.shipping_id,
         nextStatusId,
         trackingNumber,
       );
 
-      // **Show success toast**
       toast.success("Shipping status updated successfully.");
 
       closeModal();
@@ -133,22 +142,62 @@ const OrdersTab = ({ statusFilter }) => {
     }
   };
 
+  const handleStockOutOnShipping = async () => {
+    if (!allItemsChecked()) {
+      toast.error("Please check all items before shipping.");
+      return;
+    }
+
+    if (!employeeId) {
+      toast.error("Employee ID is missing. Cannot proceed with stock out.");
+      console.error("Employee ID is null or undefined.");
+      return;
+    }
+
+    console.log("Employee ID:", employeeId);
+
+    // Prepare data with the current date and dynamic reason based on order ID
+    const stockOutDate = new Date().toISOString();
+    const stockOutProducts = orderItems.map((item) => ({
+      variation_id: item.variation_id,
+      quantity: item.quantity,
+      reason: `Shipped Order #${selectedOrder.order_id}`,
+    }));
+
+    const stockOutData = {
+      stock_out_date: stockOutDate,
+      order_id: selectedOrder.order_id,
+      employee_id: employeeId,
+      stockOutProducts, // Correct field name
+    };
+
+    console.log("Preparing to create stock out with data:", stockOutData);
+
+    try {
+      await createStockOut(stockOutData);
+      toast.success("Stock out recorded successfully for shipped order.");
+    } catch (error) {
+      console.error("Error processing stock out and shipping:", error);
+      toast.error("An error occurred while processing the stock out.");
+      throw error; // Re-throw to prevent proceeding
+    }
+  };
+
   const handleCancelShipping = async () => {
     if (!selectedOrder) return;
 
     try {
       setUpdatingStatus(true);
 
-      const revertStatusId = 2; // "Preparing"
+      const revertStatusId = 2;
       const revertStatusName = "Preparing";
 
       await updateShippingStatusAndTrackingNumber(
         selectedOrder.shipping_id,
         revertStatusId,
-        null, // Reset tracking number to null
+        null,
       );
 
-      // Update local state
       setOrders((prevOrders) =>
         prevOrders.map((order) =>
           order.order_id === selectedOrder.order_id
@@ -162,7 +211,6 @@ const OrdersTab = ({ statusFilter }) => {
         ),
       );
 
-      // Update selected order state
       setSelectedOrder((prevSelectedOrder) => ({
         ...prevSelectedOrder,
         order_status_id: revertStatusId,
@@ -170,9 +218,7 @@ const OrdersTab = ({ statusFilter }) => {
         tracking_number: null,
       }));
 
-      // **Reset checkedItems**
       setCheckedItems({});
-
       toast.success("Shipping cancelled successfully.");
 
       closeModal();
@@ -269,7 +315,6 @@ const OrdersTab = ({ statusFilter }) => {
     );
   }
 
-  // **Check if there are no orders and display a message**
   if (orders.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -287,7 +332,6 @@ const OrdersTab = ({ statusFilter }) => {
 
   return (
     <>
-      {/* Table and Pagination wrapped in a relative container */}
       <div className="relative">
         {/* Table */}
         <table className="min-w-full bg-white mt-4 shadow-md rounded-lg overflow-hidden">
@@ -296,7 +340,7 @@ const OrdersTab = ({ statusFilter }) => {
               {columns.map((column) => (
                 <th
                   key={column.key}
-                  className="px-5 py-3 border-b-2 border-gray-200 bg-alofa-pink text-white text-left text-sm font-semibold"
+                  className="px-5 py-3 border-b-2 border-gray-200 bg-alofa-pink text-white text-left text-sm font-semibold cursor-pointer"
                   onClick={() => handleSort(column.key)}
                 >
                   {column.header}
@@ -367,7 +411,6 @@ const OrdersTab = ({ statusFilter }) => {
       {isModalOpen && selectedOrder && (
         <Modal isVisible={isModalOpen} onClose={closeModal} size="small">
           <div className="p-6 max-h-[80vh] overflow-y-auto flex flex-col bg-white rounded-lg">
-            {/* Removed the updatingStatus condition here */}
             <>
               <div className="flex flex-col w-full">
                 <div className="font-extrabold text-3xl text-alofa-dark mb-4">
