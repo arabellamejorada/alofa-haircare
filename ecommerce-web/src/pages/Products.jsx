@@ -103,7 +103,7 @@ const Products = () => {
         setLoading(false);
       }, 500); // Add a delay to simulate loading time, if needed
     }
-  }, [selectedCategory, selectedSort, productVariants, products,searchQuery]);
+  }, [selectedCategory, selectedSort, productVariants, products, searchQuery]);
 
   // Separate effect for handling search without showing loading
   useEffect(() => {
@@ -153,7 +153,7 @@ const Products = () => {
       )}
 
       <div
-        className={`pt-32 bg-[url('../../public/images/body-bg.png')] bg-cover bg-center min-h-screen p-8 flex flex-col items-center w-full overflow-x-hidden ${loading ? "opacity-50" : ""}`}
+        className={`pt-24 bg-[url('../../public/images/body-bg.png')] bg-cover bg-center min-h-screen p-8 flex flex-col items-center w-full overflow-x-hidden ${loading ? "opacity-50" : ""}`}
       >
         {/* Search and FilterButton in smaller viewports */}
         <div className="block lg:hidden mb-4 w-full gap-4 items-center">
@@ -189,8 +189,8 @@ const Products = () => {
             />
           </div>
 
-          {/* Products Grid */}
-          <div className="w-full lg:w-full h-[730px] overflow-y-auto overflow-x-hidden">
+          {/* Products Grid - Updated to scroll with the page */}
+          <div className="w-full lg:w-full">
             {filteredProducts.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {filteredProducts.map((product) => (
