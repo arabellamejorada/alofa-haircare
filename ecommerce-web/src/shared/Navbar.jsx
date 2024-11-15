@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { FaUserAlt, FaShoppingCart } from "react-icons/fa";
+import { FaRegUser, FaUser, FaShoppingCart } from "react-icons/fa"; // Import FaRegUser and FaUser
 import { IoLogOutOutline, IoLogOut } from "react-icons/io5";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { CartContext } from "../components/CartContext";
@@ -20,6 +20,7 @@ const Navbar = () => {
   const isProfilePage = location.pathname.startsWith("/profile");
 
   const [isLogoutHovered, setIsLogoutHovered] = useState(false); // State for hover effect on logout icon
+  const [isUserIconHovered, setIsUserIconHovered] = useState(false); // State for hover effect on user icon
 
   // Handle logout
   const handleLogout = async () => {
@@ -115,13 +116,21 @@ const Navbar = () => {
             <>
               {isLoggedIn && !isCheckoutPage ? (
                 <>
+                  {/* User Icon with hover effect */}
                   <Link
                     to="/profile"
+                    onMouseEnter={() => setIsUserIconHovered(true)} // Set hover state on mouse enter
+                    onMouseLeave={() => setIsUserIconHovered(false)} // Remove hover state on mouse leave
                     className="hover:text-pink-700 flex items-center gap-2"
                   >
-                    <FaUserAlt />
+                    {isUserIconHovered ? (
+                      <FaUser size={20} />
+                    ) : (
+                      <FaRegUser size={20} />
+                    )}
                   </Link>
 
+                  {/* Logout Icon */}
                   <button
                     onClick={handleLogout}
                     onMouseEnter={() => setIsLogoutHovered(true)} // Set hover state on mouse enter
@@ -134,6 +143,8 @@ const Navbar = () => {
                       <IoLogOutOutline size={24} />
                     )}
                   </button>
+
+                  <div className="border-l border-gray-300 h-6 mx-2"></div> {/* Divider */}
 
                   {/* Shopping Cart Icon */}
                   <div className="relative" onClick={toggleCartVisibility}>
@@ -158,6 +169,7 @@ const Navbar = () => {
                   >
                     Sign Up
                   </Link>
+                  <div className="border-l border-gray-300 h-6 mx-2"></div> {/* Divider */}
                   {/* Shopping Cart Icon */}
                   <div className="relative" onClick={toggleCartVisibility}>
                     <div className="text-[#FE699F] p-3 rounded-full transition-colors duration-300 hover:text-gray-500 cursor-pointer">

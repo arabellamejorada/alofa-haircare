@@ -21,9 +21,9 @@ export default {
 
       },
       fontFamily: {
-        'title': ['Yavome', 'sans-serif'],
-        'title1': ['Calgary', 'sans-serif'],
-        'heading': ['Yeseva One', 'sans-serif'],
+        'title': ['Yavome', 'serif'],
+        'title1': ["Kaftan"],
+        'heading': ['Yeseva One', 'serif'],
         'body': ["Montserrat", "serif"],
       }
     },
