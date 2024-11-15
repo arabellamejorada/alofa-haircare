@@ -6,9 +6,9 @@ const Home = () => {
     <div className="home-container">
       {/* Hero Section */}
       <section className="hero-section bg-[url('../../public/images/hero-bg.png')] bg-cover bg-center h-screen flex flex-col justify-center items-start pl-10 relative overflow-hidden">
-        <div className="px-40">
+        <div className="px-56">
           <motion.h1
-            className="text-9xl font-body font-extrabold text-[#FFFFFF] text-left"
+            className="mb-4 text-8xl font-body font-extrabold text-[#FFFFFF] text-left"
             style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
