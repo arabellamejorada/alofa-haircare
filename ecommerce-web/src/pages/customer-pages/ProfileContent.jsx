@@ -303,7 +303,7 @@ const ProfileContent = ({ profileData, setProfileData }) => {
 ProfileContent.propTypes = {
   profileData: PropTypes.shape({
     profiles: PropTypes.shape({
-      id: PropTypes.number.isRequired,
+      id: PropTypes.string.isRequired,
       first_name: PropTypes.string,
       last_name: PropTypes.string,
       email: PropTypes.string,
