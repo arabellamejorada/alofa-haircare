@@ -181,7 +181,10 @@ const CustomerProfile = () => {
                 profileData ? <AddressTab profileData={profileData} /> : null
               }
             />
-            <Route path="purchases" element={<PurchasesTab />} />
+            <Route
+              path="purchases"
+              element={<PurchasesTab profileData={profileData} />}
+            />
           </Routes>
         </main>
       </div>

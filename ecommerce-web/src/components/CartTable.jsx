@@ -1,15 +1,21 @@
-import { FaTrashAlt } from "react-icons/fa";
+import { FaTrashAlt, FaPlus, FaMinus } from "react-icons/fa";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 
-const CartTable = ({ cartItems, handleQuantityChange, handleDelete }) => {
+const CartTable = ({
+  cartItems,
+  handleQuantityChange,
+  handleDelete,
+  handleDecrement,
+  handleIncrement,
+}) => {
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 h-[700px]">
       <div className="flex justify-between items-center mb-2">
-        <h2 className="gradient-heading text-3xl font-bold">
-          My Cart
-        </h2>
-        <p className="italic text-gray-600">{cartItems.reduce((total, item) => total + item.quantity, 0)} items</p>
+        <h2 className="gradient-heading text-3xl font-bold">My Cart</h2>
+        <p className="italic text-gray-600">
+          {cartItems.reduce((total, item) => total + item.quantity, 0)} items
+        </p>
       </div>
 
       {cartItems.length === 0 ? (
@@ -54,19 +60,37 @@ const CartTable = ({ cartItems, handleQuantityChange, handleDelete }) => {
                       minimumFractionDigits: 2,
                     }).format(item.unit_price)}
                   </td>
-                  <td className="p-2">
-                    <input
-                      type="number"
-                      className="w-12 border rounded text-center"
-                      value={item.quantity}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        if (/^\d*$/.test(value)) {
-                          handleQuantityChange(item.variation_id, value);
+                  <td>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() =>
+                          handleDecrement(item.variation_id, item.quantity)
                         }
-                      }}
-                      min="1"
-                    />
+                        className="w-5 h-5 bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F] text-white rounded-full flex items-center justify-center"
+                      >
+                        <FaMinus className="w-2 h-2" />
+                      </button>
+                      <input
+                        type="number"
+                        value={item.quantity}
+                        onChange={(e) => {
+                          const value = parseInt(e.target.value, 10);
+                          if (!isNaN(value) && value >= 1) {
+                            handleQuantityChange(item.variation_id, value);
+                          }
+                        }}
+                        className="w-8 h-6 border text-sm border-gray-300 rounded-md text-center text-black"
+                        min="1"
+                      />
+                      <button
+                        onClick={() =>
+                          handleIncrement(item.variation_id, item.quantity)
+                        }
+                        className="w-5 h-5 bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F] text-white rounded-full flex items-center justify-center"
+                      >
+                        <FaPlus className="w-2 h-2" />
+                      </button>
+                    </div>
                   </td>
                   <td className="p-2">
                     ₱
@@ -107,6 +131,8 @@ CartTable.propTypes = {
   ).isRequired,
   handleQuantityChange: PropTypes.func.isRequired,
   handleDelete: PropTypes.func.isRequired,
+  handleDecrement: PropTypes.func.isRequired,
+  handleIncrement: PropTypes.func.isRequired,
 };
 
 export default CartTable;

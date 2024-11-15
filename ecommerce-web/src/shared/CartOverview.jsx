@@ -6,17 +6,16 @@ import { MdOutlineShoppingCartCheckout } from "react-icons/md";
 import { CartContext } from "../components/CartContext";
 
 const CartOverview = () => {
-  const { cartItems, handleQuantityChange, handleDelete, subtotal, hovered, setHovered } = useContext(CartContext);
-
-  const handleIncrement = (variation_id, currentQuantity) => {
-    handleQuantityChange(variation_id, currentQuantity + 1);
-  };
-
-  const handleDecrement = (variation_id, currentQuantity) => {
-    if (currentQuantity > 1) {
-      handleQuantityChange(variation_id, currentQuantity - 1);
-    }
-  };
+  const {
+    cartItems,
+    handleQuantityChange,
+    handleDelete,
+    handleIncrement,
+    handleDecrement,
+    subtotal,
+    hovered,
+    setHovered,
+  } = useContext(CartContext);
 
   const closeCart = () => {
     setHovered(false);
@@ -27,7 +26,9 @@ const CartOverview = () => {
       {/* Overlay */}
       <div
         className={`fixed inset-0 bg-black transition-opacity duration-300 z-30 ${
-          hovered ? "opacity-30 pointer-events-auto" : "opacity-0 pointer-events-none"
+          hovered
+            ? "opacity-30 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
         }`}
         onClick={() => setHovered(false)} // Close cart when clicking on the overlay
       />
@@ -49,7 +50,9 @@ const CartOverview = () => {
 
         {/* Cart Content */}
         <div className="p-4 h-full flex flex-col">
-          <h1 className="text-2xl gradient-heading font-bold mb-0">Cart Overview</h1>
+          <h1 className="text-2xl gradient-heading font-bold mb-0">
+            Cart Overview
+          </h1>
           <div className="text-md text-gray-500 mb-4 italic">
             {cartItems.reduce((total, item) => total + item.quantity, 0)} items
           </div>
@@ -68,7 +71,9 @@ const CartOverview = () => {
                     </Link>
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-1">
-                        <h3 className="font-semibold text-gray-700">{item.name}</h3>
+                        <h3 className="font-semibold text-gray-700">
+                          {item.name}
+                        </h3>
                         <button
                           onClick={() => handleDelete(item.variation_id)}
                           className="text-gray-400 hover:text-red-500"
@@ -77,7 +82,9 @@ const CartOverview = () => {
                         </button>
                       </div>
                       <div className="flex items-center gap-1 mb-2">
-                        <p className="text-sm text-gray-700 font-light">₱{item.unit_price}</p>
+                        <p className="text-sm text-gray-700 font-light">
+                          ₱{item.unit_price}
+                        </p>
                         {item.value && (
                           <p className="text-sm font-semibold text-gray-700">
                             {item.value !== "N/A" ? item.value : ""}
@@ -86,7 +93,9 @@ const CartOverview = () => {
                       </div>
                       <div className="flex items-center gap-1 mt-4">
                         <button
-                          onClick={() => handleDecrement(item.variation_id, item.quantity)}
+                          onClick={() =>
+                            handleDecrement(item.variation_id, item.quantity)
+                          }
                           className="w-5 h-5 bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F] text-white rounded-full flex items-center justify-center"
                         >
                           <FaMinus className="w-2 h-2" />
@@ -104,7 +113,9 @@ const CartOverview = () => {
                           min="1"
                         />
                         <button
-                          onClick={() => handleIncrement(item.variation_id, item.quantity)}
+                          onClick={() =>
+                            handleIncrement(item.variation_id, item.quantity)
+                          }
                           className="w-5 h-5 bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F] text-white rounded-full flex items-center justify-center"
                         >
                           <FaPlus className="w-2 h-2" />
