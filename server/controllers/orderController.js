@@ -241,31 +241,52 @@ const deleteCartItems = async (cart_item_id) => {
   }
 };
 
-// Get Orders by Customer ID
-const getOrderByCustomerId = async (req, res) => {
-  const { customer_id } = req.params;
-
+// Get Orders by Customer ID with order_items
+const getOrderByProfileId = async (req, res) => {
+  const { profile_id } = req.params;
   try {
     const ordersResult = await pool.query(
       `
       SELECT 
-        o.*, 
-        o.date_ordered AS order_date,
+        o.*,
         os.status_name AS order_status_name,
         pm.method_name AS payment_method_name,
         ps.status_name AS payment_status_name,
         p.first_name AS profile_first_name,
-        p.last_name AS profile_last_name
-      FROM orders o
-      LEFT JOIN order_status os ON o.order_status_id = os.status_id
-      LEFT JOIN payment_method pm ON o.payment_method_id = pm.method_id
-      LEFT JOIN payment_status ps ON o.payment_status_id = ps.status_id
-      LEFT JOIN customer c ON o.customer_id = c.customer_id
-      LEFT JOIN profiles p ON c.profile_id = p.id
-      WHERE o.customer_id = $1
-      ORDER BY o.order_id;
+        p.last_name AS profile_last_name,
+        JSON_AGG(
+            JSON_BUILD_OBJECT(
+                'order_item_id', oi.order_item_id,
+                'variation_id', oi.variation_id,
+                'quantity', oi.quantity,
+                'unit_price', oi.price,
+                'item_subtotal', oi.price * oi.quantity,
+                'image', pv.image,
+                'value', pv.value,
+                'sku', pv.sku,
+                'product_name', pr.name
+            )
+        ) AS order_items
+    FROM orders o
+    LEFT JOIN order_status os ON o.order_status_id = os.status_id
+    LEFT JOIN payment_method pm ON o.payment_method_id = pm.method_id
+    LEFT JOIN payment_status ps ON o.payment_status_id = ps.status_id
+    LEFT JOIN customer c ON o.customer_id = c.customer_id
+    LEFT JOIN profiles p ON c.profile_id = p.id
+    LEFT JOIN order_items oi ON o.order_id = oi.order_id
+    LEFT JOIN product_variation pv ON oi.variation_id = pv.variation_id
+    LEFT JOIN product pr ON pv.product_id = pr.product_id
+    WHERE p.id = $1
+    GROUP BY 
+        o.order_id, 
+        os.status_name, 
+        pm.method_name, 
+        ps.status_name, 
+        p.first_name, 
+        p.last_name
+    ORDER BY o.order_id;
     `,
-      [customer_id],
+      [profile_id],
     );
 
     if (ordersResult.rowCount === 0) {
@@ -281,7 +302,7 @@ const getOrderByCustomerId = async (req, res) => {
       return order;
     });
 
-    res.status(200).json({ orders: orders });
+    res.status(200).json(orders);
   } catch (error) {
     console.error("Error fetching orders:", error);
     res.status(500).json({ error: "Failed to fetch orders" });
@@ -364,7 +385,7 @@ const getAllOrdersWithOrderItems = async (req, res) => {
   }
 };
 
-// Get Order with Order items by Order ID
+// Get Order with Order items by Order IDD
 const getOrderByOrderId = async (req, res) => {
   const { order_id } = req.params;
 
@@ -567,7 +588,7 @@ const updateShippingStatusAndTrackingNumber = async (req, res) => {
 
 module.exports = {
   createOrder,
-  getOrderByCustomerId,
+  getOrderByProfileId,
   getAllOrdersWithOrderItems,
   getOrderByOrderId,
   getOrderItemsByOrderId,

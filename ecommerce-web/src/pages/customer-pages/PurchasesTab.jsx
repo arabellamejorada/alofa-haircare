@@ -1,33 +1,33 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import TransactionCard from "../../components/TransactionCard.jsx";
+import { getOrderByProfileId } from "../../api/order.js";
+import { AuthContext } from "../../components/AuthContext";
 
 const PurchasesTab = () => {
+  const { user } = useContext(AuthContext);
   const [activeTab, setActiveTab] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [tabUnderlineStyle, setTabUnderlineStyle] = useState({});
-  const [filteredOrders, setFilteredOrders] = useState([]); // To store filtered transaction data
+  const [filteredOrders, setFilteredOrders] = useState([]);
+  const [transactions, setTransactions] = useState([]);
 
-  // Placeholder transaction data (Mock Data)
-  const placeholderTransactions = [
-    {
-      id: "20240001",
-      status: "Completed",
-      products: [{ id: "1", name: "Jade Hair Brush", value: 1, price: 280, sku: "BRUSH-JADE" }],
-      total: 280,
-    },
-    {
-      id: "20240002",
-      status: "To Ship",
-      products: [{ id: "2", name: "Hair Oil", value: 1, price: 450, sku: "HAIR-OIL-LAV" }],
-      total: 450,
-    },
-    {
-      id: "20240003",
-      status: "To Receive",
-      products: [{ id: "3", name: "Hair Clips Set", value: 2, price: 150, sku: "CLIPS-PSTL" }],
-      total: 300,
-    },
-  ];
+  useEffect(() => {
+    console.log("user", user);
+    const fetchOrderTransactions = async () => {
+      if (!user) {
+        console.error("user is not defined");
+        return;
+      }
+      try {
+        const orders = await getOrderByProfileId(user.id);
+        console.log("Fetched orders:", orders);
+        setTransactions(orders);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      }
+    };
+    fetchOrderTransactions();
+  }, [user]);
 
   useEffect(() => {
     // Set the initial position of the underline when the component first mounts
@@ -41,19 +41,21 @@ const PurchasesTab = () => {
   }, []);
 
   useEffect(() => {
-    // Filter transactions based on activeTab and searchQuery
-    const filtered = placeholderTransactions.filter(
+    console.log("transactions", transactions);
+    const filtered = transactions.filter(
       (transaction) =>
-        (activeTab === "All" || transaction.status === activeTab) &&
+        (activeTab === "All" || transaction.order_status_name === activeTab) &&
         (searchQuery === "" ||
-          transaction.id.includes(searchQuery) ||
-          transaction.products.some((product) =>
-            product.name.toLowerCase().includes(searchQuery.toLowerCase())
-          ))
+          transaction.order_id.includes(searchQuery) ||
+          transaction.order_items.some((product) =>
+            product.product_name
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase()),
+          )),
     );
 
     setFilteredOrders(filtered);
-  }, [activeTab, searchQuery]);
+  }, [activeTab, searchQuery, transactions]);
 
   const handleTabClick = (tab, index) => {
     setActiveTab(tab);
@@ -67,23 +69,33 @@ const PurchasesTab = () => {
     }
   };
 
+  // Render a fallback if customer_id is not available
+  if (!user) {
+    return (
+      <div className="text-center text-gray-500">
+        No customer information available.
+      </div>
+    );
+  }
   return (
     <div className=" rounded-lg w-full max-w-7xl mx-auto">
       {/* Tabs */}
       <div className="relative mb-4 border-b border-gray-200">
         <div className="flex space-x-4">
-          {["All", "To Ship", "To Receive", "Completed", "For Refund"].map((tab, index) => (
-            <button
-              key={tab}
-              id={`tab-${index}`}
-              onClick={() => handleTabClick(tab, index)}
-              className={`relative px-4 py-2 font-semibold ${
-                activeTab === tab ? "text-black" : "text-gray-500"
-              } focus:outline-none`}
-            >
-              {tab}
-            </button>
-          ))}
+          {["All", "To Ship", "To Receive", "Completed", "For Refund"].map(
+            (tab, index) => (
+              <button
+                key={tab}
+                id={`tab-${index}`}
+                onClick={() => handleTabClick(tab, index)}
+                className={`relative px-4 py-2 font-semibold ${
+                  activeTab === tab ? "text-black" : "text-gray-500"
+                } focus:outline-none`}
+              >
+                {tab}
+              </button>
+            ),
+          )}
         </div>
         {/* Underline */}
         <span
@@ -110,7 +122,13 @@ const PurchasesTab = () => {
       <div className="space-y-4">
         {filteredOrders.length > 0 ? (
           filteredOrders.map((order) => (
-            <TransactionCard key={order.id} activeTab={activeTab} searchQuery={searchQuery} order={order} />
+            <TransactionCard
+              key={order.order_id}
+              activeTab={activeTab}
+              searchQuery={searchQuery}
+              order={order}
+              transactions={transactions}
+            />
           ))
         ) : (
           <div className="text-center text-gray-500">No orders found.</div>
