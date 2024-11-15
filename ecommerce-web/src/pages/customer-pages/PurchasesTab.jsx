@@ -11,6 +11,15 @@ const PurchasesTab = () => {
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [transactions, setTransactions] = useState([]);
 
+  const statusMap = {
+    All: null,
+    Pending: "Pending",
+    "To Ship": "Preparing",
+    "To Receive": "Shipped",
+    Completed: "Completed",
+    "For Refund": "For Refund",
+  };
+
   useEffect(() => {
     console.log("user", user);
     const fetchOrderTransactions = async () => {
@@ -52,8 +61,11 @@ const PurchasesTab = () => {
         product.product_name.toLowerCase().includes(searchQuery.toLowerCase()),
       );
 
+      const requiredStatus = statusMap[activeTab];
+
       return (
-        (activeTab === "All" || transaction.order_status_name === activeTab) &&
+        (activeTab === "All" ||
+          transaction.order_status_name === requiredStatus) &&
         (searchQuery === "" || matchesOrderId || matchesProductName)
       );
     });
@@ -86,20 +98,25 @@ const PurchasesTab = () => {
       {/* Tabs */}
       <div className="relative mb-4 border-b border-gray-200">
         <div className="flex space-x-4">
-          {["All", "To Ship", "To Receive", "Completed", "For Refund"].map(
-            (tab, index) => (
-              <button
-                key={tab}
-                id={`tab-${index}`}
-                onClick={() => handleTabClick(tab, index)}
-                className={`relative px-4 py-2 font-semibold ${
-                  activeTab === tab ? "text-black" : "text-gray-500"
-                } focus:outline-none`}
-              >
-                {tab}
-              </button>
-            ),
-          )}
+          {[
+            "All",
+            "Pending",
+            "To Ship",
+            "To Receive",
+            "Completed",
+            "For Refund",
+          ].map((tab, index) => (
+            <button
+              key={tab}
+              id={`tab-${index}`}
+              onClick={() => handleTabClick(tab, index)}
+              className={`relative px-4 py-2 font-semibold ${
+                activeTab === tab ? "text-black" : "text-gray-500"
+              } focus:outline-none`}
+            >
+              {tab}
+            </button>
+          ))}
         </div>
         {/* Underline */}
         <span
@@ -126,7 +143,11 @@ const PurchasesTab = () => {
       <div className="space-y-4">
         {filteredOrders.length > 0 ? (
           filteredOrders.map((order) => (
-            <TransactionCard key={order.order_id} order={order} />
+            <TransactionCard
+              key={order.order_id}
+              activeTab={activeTab}
+              order={order}
+            />
           ))
         ) : (
           <div className="text-center text-gray-500">No orders found.</div>

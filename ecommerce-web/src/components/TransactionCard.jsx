@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 
-const TransactionCard = ({ order }) => {
+const TransactionCard = ({ activeTab, order }) => {
   const totalItems = order.order_items.reduce(
     (acc, item) => acc + item.quantity,
     0,
@@ -8,7 +8,7 @@ const TransactionCard = ({ order }) => {
 
   return (
     <div className="bg-gray-100 border border-gray-200 rounded-lg shadow-md p-4 mb-6">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center mb-1">
         <div className="text-gray-700 font-medium">
           Date Ordered: {order.date_ordered}
         </div>
@@ -23,6 +23,11 @@ const TransactionCard = ({ order }) => {
           {order.order_status_name}
         </div>
       </div>
+      {(activeTab === "To Receive" || activeTab === "Completed") && (
+        <div className="text-gray-700 font-medium mb-4">
+          Tracking Number: {order.tracking_number} (J&T Express)
+        </div>
+      )}
 
       {order.order_items.map((product) => {
         const imageName = product.image ? product.image.split("/").pop() : null;

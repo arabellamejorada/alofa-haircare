@@ -34,7 +34,7 @@ export const getOrderByProfileId = async (profile_id) => {
 
     return formattedTransactions;
   } catch (error) {
-    console.error("Error fetching orders by customer ID:", error);
+    console.error("Error fetching orders by  profile ID:", error);
     throw error;
   }
 };

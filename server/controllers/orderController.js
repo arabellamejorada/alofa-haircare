@@ -255,6 +255,7 @@ const getOrderByProfileId = async (req, res) => {
         ps.status_name AS payment_status_name,
         p.first_name AS profile_first_name,
         p.last_name AS profile_last_name,
+        s.tracking_number,
         JSON_AGG(
             JSON_BUILD_OBJECT(
                 'order_item_id', oi.order_item_id,
@@ -277,6 +278,7 @@ const getOrderByProfileId = async (req, res) => {
     LEFT JOIN order_items oi ON o.order_id = oi.order_id
     LEFT JOIN product_variation pv ON oi.variation_id = pv.variation_id
     LEFT JOIN product pr ON pv.product_id = pr.product_id
+    LEFT JOIN shipping s ON o.shipping_id = s.shipping_id
     WHERE p.id = $1
     GROUP BY 
         o.order_id, 
@@ -284,7 +286,8 @@ const getOrderByProfileId = async (req, res) => {
         pm.method_name, 
         ps.status_name, 
         p.first_name, 
-        p.last_name
+        p.last_name,
+        s.tracking_number
     ORDER BY o.order_id;
     `,
       [profile_id],
