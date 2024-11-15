@@ -7,7 +7,7 @@ import {
 import { ClipLoader } from "react-spinners";
 import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 import Modal from "../modal/Modal"; // Adjust the import path as needed
-import PaymentStatusBadge from "../shared/PaymentStatusBadge"; // Import the PaymentStatusBadge component
+import PaymentStatusBadge from "../shared/StatusBadge"; // Import the PaymentStatusBadge component
 
 const OrderVerification = () => {
   const [orders, setOrders] = useState([]);

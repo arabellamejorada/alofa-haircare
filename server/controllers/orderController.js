@@ -303,7 +303,8 @@ const getAllOrdersWithOrderItems = async (req, res) => {
         pm.method_name AS payment_method_name,
         ps.status_name AS payment_status_name,
         p.first_name AS profile_first_name,
-        p.last_name AS profile_last_name
+        p.last_name AS profile_last_name,
+        s.tracking_number -- Fetch tracking_number from shippingtable
       FROM orders o
       JOIN order_items oi ON o.order_id = oi.order_id
       LEFT JOIN order_status os ON o.order_status_id = os.status_id
@@ -311,6 +312,7 @@ const getAllOrdersWithOrderItems = async (req, res) => {
       LEFT JOIN payment_status ps ON o.payment_status_id = ps.status_id
       LEFT JOIN customer c ON o.customer_id = c.customer_id
       LEFT JOIN profiles p ON c.profile_id = p.id
+      LEFT JOIN shipping s ON o.shipping_id = s.shipping_id -- Join with shippings table
       ORDER BY o.order_id;
     `);
 
@@ -335,6 +337,7 @@ const getAllOrdersWithOrderItems = async (req, res) => {
           order_date: row.order_date, // Include order_date
           proof_image: row.proof_image,
           shipping_id: row.shipping_id,
+          tracking_number: row.tracking_number, // Include tracking_number
           order_status_id: row.order_status_id,
           payment_method_id: row.payment_method_id,
           payment_status_id: row.payment_status_id,
@@ -388,7 +391,7 @@ const getOrderByOrderId = async (req, res) => {
         sa.region,
         sa.zip_code,
         sa.phone_number,
-        c.email AS customer_email,
+        p.email AS customer_email,
         p.first_name AS profile_first_name,
         p.last_name AS profile_last_name
       FROM orders o
