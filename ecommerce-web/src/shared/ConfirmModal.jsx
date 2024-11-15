@@ -1,6 +1,7 @@
-import React from "react";
+import PropTypes from "prop-types";
 
 const ConfirmModal = ({
+  heading,
   isOpen,
   onClose,
   onConfirm,
@@ -16,12 +17,13 @@ const ConfirmModal = ({
 
       {/* Modal content */}
       <div className="bg-white p-8 rounded-lg shadow-2xl z-10 w-96">
-        <h2 className="text-2xl font-bold text-alofa-pink mb-4">
-          Confirmation
-        </h2>
-
+        
+        {heading && (
+            <h2 className="text-2xl font-bold text-alofa-pink mb-4">{heading}</h2>
+        )}
+        
         {/* Main message */}
-        <p className="text-gray-800 mb-4">{message}</p>
+        <p className="text-gray-800 mb-2">{message}</p>
 
         {/* Additional note */}
         {additionalNote && (
@@ -48,6 +50,15 @@ const ConfirmModal = ({
       </div>
     </div>
   );
+};
+
+ConfirmModal.propTypes = {
+  heading: PropTypes.string.isRequired,
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onConfirm: PropTypes.func.isRequired,
+  message: PropTypes.string.isRequired,
+  additionalNote: PropTypes.string,
 };
 
 export default ConfirmModal;
