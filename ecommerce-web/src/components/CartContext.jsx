@@ -124,6 +124,11 @@ const CartProvider = ({ children }) => {
     }
   }, []);
 
+  useEffect(() => {
+    localStorage.setItem("checkoutCartItems", JSON.stringify(cartItems));
+    console.log("Updated Cart Items:", cartItems);
+  }, [cartItems]);
+
   const addToCart = async (product) => {
     try {
       // Check if cartId exists, if not, determine if we need to fetch or create a cart
@@ -214,6 +219,7 @@ const CartProvider = ({ children }) => {
       return;
     }
 
+    console.log(cartId);
     try {
       const updatedItem = await updateCartItem(
         cartId,
@@ -232,6 +238,7 @@ const CartProvider = ({ children }) => {
             : item,
         );
         calculateSubtotal(updatedCartItems);
+        console.log("updated", updatedCartItems);
         return updatedCartItems;
       });
     } catch (error) {
@@ -303,6 +310,16 @@ const CartProvider = ({ children }) => {
     }
   };
 
+  const handleIncrement = (variation_id, currentQuantity) => {
+    handleQuantityChange(variation_id, currentQuantity + 1);
+  };
+
+  const handleDecrement = (variation_id, currentQuantity) => {
+    if (currentQuantity > 1) {
+      handleQuantityChange(variation_id, currentQuantity - 1);
+    }
+  };
+
   return (
     <div className="relative">
       {loading && (
@@ -320,6 +337,8 @@ const CartProvider = ({ children }) => {
           addToCart,
           handleQuantityChange,
           handleDelete,
+          handleIncrement,
+          handleDecrement,
           subtotal,
           loading,
           resetCart,
