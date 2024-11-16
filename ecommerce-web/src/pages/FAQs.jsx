@@ -2,7 +2,7 @@
 
 const FAQs = () => {
   return (
-    <div className="pt-20 bg-[url('../../public/images/body-bg.png')] bg-cover bg-center h-screen p-8 flex justify-center"></div>
+    <div className="pt-20 bg-[#FFFAF0] bg-cover bg-center h-screen p-8 flex justify-center"></div>
   )
 }
 

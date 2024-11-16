@@ -54,7 +54,7 @@ const CartOverview = () => {
             Cart Overview
           </h1>
           <div className="text-md text-gray-500 mb-4 italic">
-            {cartItems.reduce((total, item) => total + item.quantity, 0)} items
+            {cartItems.reduce((total, item) => total + item.quantity, 0)} {cartItems.reduce((total, item) => total + item.quantity, 0) === 1 ? "item" : "items"}
           </div>
 
           <div className="flex-1 overflow-y-auto mb-4">
