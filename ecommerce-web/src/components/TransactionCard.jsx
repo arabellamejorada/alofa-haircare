@@ -20,9 +20,11 @@ const TransactionCard = ({ activeTab, order }) => {
           </div>
         </div>
         <div
-          className={`font-medium ${
+          className={`font-normal ${
             order.order_status_name === "Completed"
               ? "text-green-600"
+              : order.order_status_name === "Pending"
+              ? "italic text-orange-400"
               : "italic text-gray-600"
           }`}
         >
@@ -102,7 +104,7 @@ const TransactionCard = ({ activeTab, order }) => {
             )}
           </div>
           <div className="flex flex-col items-end">
-            <div className="text-gray-600 text-sm">Total {totalItems} items</div>
+            <div className="text-gray-600 text-sm">Total {totalItems} {totalItems === 1 ? "item" : "items"}</div>
             <div className="text-alofa-pink font-bold text-xl">
               ₱
               {order.total_amount.toLocaleString("en-US", {

@@ -144,22 +144,28 @@ const ProductDetails = () => {
 
                 <button
                   onClick={handleAddToCart}
-                  className="font-extrabold text-white text-lg py-3 px-6 rounded-full 
+                  className="font-extrabold text-white text-lg rounded-full 
                   focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b 
                   from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] 
-                  hover:to-[#FE699F] disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={isAddingToCart} // Disable button during loading
+                  hover:to-[#FE699F] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  style={{ width: '150px', height: '50px' }}
+                  disabled={isAddingToCart}
                 >
                   {isAddingToCart ? (
-                    <ClipLoader
-                      size={20}
-                      color="#FFFFFF"
-                      loading={isAddingToCart}
-                    />
+                    <div className="flex items-center justify-center w-full h-full">
+                      <ClipLoader
+                        size={25}
+                        color="#FFFFFF"
+                        loading={isAddingToCart}
+                      />
+                    </div>
                   ) : (
                     "ADD TO CART"
                   )}
                 </button>
+
+
+
               </div>
             </div>
           </>
