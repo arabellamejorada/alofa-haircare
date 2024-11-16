@@ -11,7 +11,7 @@ const ProfileContent = ({ profileData, setProfileData }) => {
     lastName: profileData?.profiles.last_name || "",
     email: profileData?.profiles.email || "",
     contactNumber: profileData?.profiles.contact_number || "",
-    updated_at: profileData?.updated_at || "",
+    updated_at: profileData?.profiles.updated_at || "",
     // password: "********",
   });
 
@@ -22,7 +22,9 @@ const ProfileContent = ({ profileData, setProfileData }) => {
     password: false,
   });
 
-  const [lastUpdated, setLastUpdated] = useState(profileData?.updated_at);
+  const [lastUpdated, setLastUpdated] = useState(
+    profileData?.profiles.updated_at,
+  );
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -33,7 +35,7 @@ const ProfileContent = ({ profileData, setProfileData }) => {
         lastName: profileData.profiles.last_name || "",
         email: profileData.profiles.email || "",
         contactNumber: profileData.profiles.contact_number || "",
-        updated_at: profileData.updated_at || "",
+        updated_at: profileData.profiles.updated_at || "",
       });
     }
   }, [profileData]);
@@ -62,24 +64,13 @@ const ProfileContent = ({ profileData, setProfileData }) => {
       return;
     }
 
-    setLastUpdated(
-      new Date().toLocaleString("en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true, // This enables 12-hour format with AM/PM
-      }),
-    );
-
     const updatedProfile = {
       first_name: editableProfileData.firstName,
       last_name: editableProfileData.lastName,
       email: editableProfileData.email,
       contact_number: editableProfileData.contactNumber,
       role_id: profileData.profiles.role_id,
-      updated_at: lastUpdated,
+      updated_at: new Date().toISOString(),
     };
 
     try {
@@ -90,9 +81,9 @@ const ProfileContent = ({ profileData, setProfileData }) => {
       await updateCustomerProfile(profileData.customer_id, updatedProfile);
 
       const data = await getCustomerByProfileId(profileData.profiles.id);
-      console.log("Customer profile data:", data);
+      console.log("Updated customer profile data:", data);
       setProfileData(data);
-
+      setLastUpdated(data.profiles.updated_at);
       // Reset the state after saving
       setIsEditing({
         firstName: false,
@@ -128,7 +119,17 @@ const ProfileContent = ({ profileData, setProfileData }) => {
           My Profile
         </h2>
         <p className="text-sm text-gray-500 mb-8">
-          Last updated: {lastUpdated || "N/A"}
+          Last updated:{" "}
+          {lastUpdated
+            ? new Date(lastUpdated).toLocaleString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+                hour: "numeric",
+                minute: "2-digit",
+                hour12: true,
+              })
+            : "N/A"}
         </p>
 
         {/* Profile Form Component */}

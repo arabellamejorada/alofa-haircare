@@ -161,7 +161,7 @@ console.log("profile_id", profile_id)
 // Update customer profile
 const updateCustomer = async (req, res) => {
   const customer_id = parseInt(req.params.id);
-  const { first_name, last_name, email, contact_number, role_id } = req.body;
+  const { first_name, last_name, email, contact_number, role_id, updated_at } = req.body;
 
   try {
     // Step 1: Get the profile ID linked to the customer
@@ -179,7 +179,7 @@ const updateCustomer = async (req, res) => {
     // Step 2: Update the linked profile
     const { data, error } = await supabase
       .from("profiles")
-      .update({ first_name, last_name, email, contact_number, role_id })
+      .update({ first_name, last_name, email, contact_number, role_id, updated_at})
       .eq("id", customerData.profile_id)
       .select();
 
