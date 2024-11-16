@@ -1,14 +1,19 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
+import RefundModal from "./RefundModal";
 
 const TransactionCard = ({ activeTab, order }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const totalItems = order.order_items.reduce((acc, item) => acc + item.quantity, 0);
+  const [isRefundModalOpen, setIsRefundModalOpen] = useState(false);
 
   const toggleExpanded = () => {
     setIsExpanded(!isExpanded);
   };
+
+  const openRefundModal = () => setIsRefundModalOpen(true);
+  const closeRefundModal = () => setIsRefundModalOpen(false);
 
   return (
     <div className="bg-gray-50 border border-gray-200 rounded-lg shadow-lg p-4 mb-6">
@@ -125,12 +130,21 @@ const TransactionCard = ({ activeTab, order }) => {
                 Buy Again
               </button>
             )}
-            <button className="border border-pink-500 hover:bg-gray-100 hover:underline text-gray-700 font-medium py-2 px-4 rounded">
+            <button 
+            onClick={openRefundModal}
+            className="border border-pink-500 hover:bg-gray-100 hover:underline text-gray-700 font-medium py-2 px-4 rounded">
               Request Refund
             </button>
           </div>
         )}
       </div>
+
+      <RefundModal
+        isOpen={isRefundModalOpen}
+        closeModal={closeRefundModal}
+        orderItems={order.order_items}
+        selectedOrder={order}
+      />
     </div>
   );
 };
