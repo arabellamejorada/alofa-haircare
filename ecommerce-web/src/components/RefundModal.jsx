@@ -196,7 +196,7 @@ const RefundModal = ({ isOpen, closeModal, orderItems, selectedOrder }) => {
                 <div className="mt-6 mb-7 pb-5 text-right">
                     <button
                     onClick={handleSubmit}
-                    className="border-0 hover:underline text-gray-600 font-semibold py-2 px-6 rounded-md focus:outline-none focus:ring"
+                    className="border-0 hover:underline text-gray-600 font-semibold py-2 px-6"
                     >
                     Cancel
                     </button>
