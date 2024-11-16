@@ -5,7 +5,7 @@ const Home = () => {
   return (
     <div className="home-container">
       {/* Hero Section */}
-      <section className="hero-section bg-[url('../../public/images/hero-bg.png')] bg-cover bg-center h-screen flex flex-col justify-center items-start pl-10 relative overflow-hidden">
+      <section className="hero-section bg-[url('/images/hero-bg.png')] bg-cover bg-center h-screen flex flex-col justify-center items-start pl-10 relative overflow-hidden">
         <div className="px-56">
           <motion.h1
             className="mb-4 text-8xl font-body font-extrabold text-[#FFFFFF] text-left"

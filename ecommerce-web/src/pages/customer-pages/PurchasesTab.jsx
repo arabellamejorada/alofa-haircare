@@ -3,6 +3,7 @@ import TransactionCard from "../../components/TransactionCard.jsx";
 import { getOrderByProfileId } from "../../api/order.js";
 import { AuthContext } from "../../components/AuthContext";
 import { ClipLoader } from "react-spinners";
+import Search from "../../components/Filter/Search.jsx";
 
 const PurchasesTab = () => {
   const { user } = useContext(AuthContext);
@@ -26,7 +27,6 @@ const PurchasesTab = () => {
   );
 
   useEffect(() => {
-    console.log("user", user);
     const fetchOrderTransactions = async () => {
       if (!user) {
         console.error("user is not defined");
@@ -35,8 +35,6 @@ const PurchasesTab = () => {
       try {
         setLoading(true);
         const orders = await getOrderByProfileId(user.id);
-        console.log("Fetched orders:", orders);
-        // Sort the orders by date_ordered in descending order
         const sortedOrders = orders.sort(
           (a, b) => new Date(b.date_ordered) - new Date(a.date_ordered),
         );
@@ -51,7 +49,6 @@ const PurchasesTab = () => {
   }, [user]);
 
   useEffect(() => {
-    // Set the initial position of the underline when the component first mounts
     const initialTabElement = document.getElementById(`tab-0`);
     if (initialTabElement) {
       setTabUnderlineStyle({
@@ -87,7 +84,6 @@ const PurchasesTab = () => {
 
   const handleTabClick = (tab, index) => {
     setActiveTab(tab);
-    // Calculate the new position for the underline
     const tabElement = document.getElementById(`tab-${index}`);
     if (tabElement) {
       setTabUnderlineStyle({
@@ -97,7 +93,6 @@ const PurchasesTab = () => {
     }
   };
 
-  // Render a fallback if customer_id is not available
   if (!user) {
     return (
       <div className="text-center text-gray-500">
@@ -107,7 +102,7 @@ const PurchasesTab = () => {
   }
 
   return (
-    <div className="relative bg-gray-100 rounded-lg shadow-lg p-6">
+    <div className="relative">
       {loading && (
         <div className="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center z-50 pointer-events-none">
           <ClipLoader size={50} color="#E53E3E" loading={loading} />
@@ -147,15 +142,9 @@ const PurchasesTab = () => {
           />
         </div>
 
-        {/* Search Bar */}
-        <div className="mb-6">
-          <input
-            type="text"
-            placeholder="Search by Order ID or Product name"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-2 border rounded-md"
-          />
+        {/* Search Bar with Search Icon */}
+        <div className="w-full mb-6">
+          <Search searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
         </div>
 
         {/* Transaction Cards - Render filtered transactions */}
