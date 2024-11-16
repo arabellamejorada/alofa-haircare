@@ -6,11 +6,14 @@ import { CartContext } from "../components/CartContext";
 import { AuthContext } from "../components/AuthContext";
 import NavbarBG from "../../../public/static/alofa-navbar-white.png";
 import CartOverview from "./CartOverview";
+import ConfirmModal from "./ConfirmModal";
 
 const Navbar = () => {
   const { resetCart, hovered, setHovered } = useContext(CartContext);
   const location = useLocation();
   const navigate = useNavigate();
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+
 
   const { user, signOut } = useContext(AuthContext);
   const isAuthPage =
@@ -22,13 +25,29 @@ const Navbar = () => {
   const [isLogoutHovered, setIsLogoutHovered] = useState(false); // State for hover effect on logout icon
   const [isUserIconHovered, setIsUserIconHovered] = useState(false); // State for hover effect on user icon
 
-  // Handle logout
-  const handleLogout = async () => {
-    localStorage.removeItem("auth_token");
-    signOut();
-    await resetCart();
-    navigate("/");
-  };
+  // Show confirmation modal before logout
+const handleLogoutClick = () => {
+  setIsConfirmModalOpen(true);
+};
+
+// Confirm and proceed with logout
+const handleConfirmLogout = async () => {
+  try {
+    await signOut();
+    await resetCart(); // Reset the cart after logout
+    navigate("/"); // Redirect to home page
+  } catch (err) {
+    console.error("Failed to log out", err);
+  } finally {
+    setIsConfirmModalOpen(false); // Close the modal after logging out
+  }
+};
+
+// Close the modal without logging out
+const handleCloseModal = () => {
+  setIsConfirmModalOpen(false);
+};
+
 
   // New handler function to toggle cart visibility
   const toggleCartVisibility = () => {
@@ -132,7 +151,7 @@ const Navbar = () => {
 
                   {/* Logout Icon */}
                   <button
-                    onClick={handleLogout}
+                    onClick={handleLogoutClick}
                     onMouseEnter={() => setIsLogoutHovered(true)} // Set hover state on mouse enter
                     onMouseLeave={() => setIsLogoutHovered(false)} // Remove hover state on mouse leave
                     className="hover:text-pink-700 flex items-center gap-2"
@@ -182,6 +201,15 @@ const Navbar = () => {
             </>
           )}
         </div>
+
+        <ConfirmModal
+          isOpen={isConfirmModalOpen}
+          onClose={handleCloseModal}
+          onConfirm={handleConfirmLogout}
+          heading="Log Out"
+          message="Are you sure you want to log out?"
+          additionalNote="You will need to log in again to access your account."
+        />
       </nav>
     </header>
   );

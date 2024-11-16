@@ -20,7 +20,7 @@ const Filter = ({
         <h3 className="text-lg font-medium text-gray-600">Category</h3>
         <div className="flex flex-col ml-6 mt-2">
           {categories.map((category, index) => (
-            <label key={index} className="block text-gray-600 mb-2">
+            <label key={index} className="text-gray-600 mb-2">
               <input
                 type="radio"
                 name="category"

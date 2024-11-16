@@ -71,7 +71,7 @@ const ProductCard = ({ id, image, name, value, price, sku }) => {
           >
             <div className="flex items-center justify-center w-full h-full">
               {isAddingToCart ? (
-                <ClipLoader size={20} color="#FFFFFF" loading={isAddingToCart} />
+                <ClipLoader size={20} color='white' loading={isAddingToCart} />
               ) : (
                 <MdAddShoppingCart size={20} />
               )}

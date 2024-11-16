@@ -83,7 +83,7 @@ const CustomerProfile = () => {
               <div>
                 <p className="text-lg font-medium text-gray-700">
                   Welcome,{" "}
-                  <span className="text-pink-500 font-semibold">
+                  <span className="text-alofa-pink font-semibold">
                     {profileData ? profileData.profiles.first_name : ""}
                   </span>
                   .
@@ -103,11 +103,11 @@ const CustomerProfile = () => {
                     onClick={handleAccountClick}
                     className={`flex items-center space-x-2 font-semibold w-full focus:outline-none p-3 rounded-md hover:bg-gray-100 transition-colors duration-300 ${
                       isAccountOpen
-                        ? "bg-gray-100 text-pink-500"
-                        : "text-pink-500"
+                        ? "bg-gray-100 text-alofa-pink"
+                        : "text-alofa-pink"
                     }`}
                   >
-                    <FaUser className="text-pink-500" />
+                    <FaUser className="text-alofa-pink" />
                     <span>My Account</span>
                   </button>
                   <ul
@@ -120,7 +120,7 @@ const CustomerProfile = () => {
                         to="/profile"
                         className={`text-sm ${
                           location.pathname === "/profile"
-                            ? "text-pink-500"
+                            ? "text-alofa-pink"
                             : "text-gray-500"
                         } focus:outline-none`}
                       >
@@ -132,7 +132,7 @@ const CustomerProfile = () => {
                         to="/profile/address"
                         className={`text-sm ${
                           location.pathname === "/profile/address"
-                            ? "text-pink-500"
+                            ? "text-alofa-pink"
                             : "text-gray-500"
                         } hover:text-pink-500 focus:outline-none`}
                       >
@@ -148,11 +148,11 @@ const CustomerProfile = () => {
                     to="/profile/purchases"
                     className={`flex items-center space-x-2 font-semibold w-full focus:outline-none p-3 rounded-md hover:bg-gray-100 transition-colors duration-300 ${
                       location.pathname === "/profile/purchases"
-                        ? "bg-gray-100 text-pink-500"
-                        : "text-pink-500"
+                        ? "bg-gray-100 text-alofa-pink"
+                        : "text-alofa-pink"
                     }`}
                   >
-                    <FaTags className="text-pink-500" />
+                    <FaTags className="text-alofa-pink" />
                     <span>My Purchases</span>
                   </Link>
                 </li>
