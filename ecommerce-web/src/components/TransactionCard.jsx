@@ -18,9 +18,6 @@ const TransactionCard = ({ activeTab, order }) => {
           <div className="text-gray-500 font-normal mb-0">
             Order placed: {order.date_ordered}
           </div>
-          <div className="text-gray-500 font-normal">
-            Order ID #{order.order_id}
-          </div>
         </div>
         <div
           className={`font-medium ${
@@ -32,13 +29,6 @@ const TransactionCard = ({ activeTab, order }) => {
           {order.order_status_name}
         </div>
       </div>
-
-      {/* Tracking Information */}
-      {(activeTab === "To Receive" || activeTab === "Completed") && (
-        <div className="text-gray-700 font-medium mb-4">
-          Tracking Number: {order.tracking_number} (J&T Express)
-        </div>
-      )}
 
       {/* Order Items */}
       {order.order_items.slice(0, isExpanded ? order.order_items.length : 2).map((product) => {
@@ -100,24 +90,44 @@ const TransactionCard = ({ activeTab, order }) => {
 
       {/* Total Section */}
       <div className="border-t border-gray-200 pt-4">
-        <div className="flex flex-col items-end mb-4">
-          <div className="text-gray-600 text-sm">Total {totalItems} items</div>
-          <div className="text-alofa-pink font-bold text-xl">
-            ₱
-            {order.total_amount.toLocaleString("en-US", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
+        <div className="flex justify-between items-center mb-4">
+          <div className="text-base">
+            <div className="text-gray-500 font-normal mb-1">
+              Order ID #{order.order_id}
+            </div>
+            {(activeTab === "To Receive" || activeTab === "Completed") && (
+              <div className="text-gray-500 font-normal mb-1">
+               Tracking Number: {order.tracking_number} (J&T Express)
+              </div>
+            )}
+          </div>
+          <div className="flex flex-col items-end">
+            <div className="text-gray-600 text-sm">Total {totalItems} items</div>
+            <div className="text-alofa-pink font-bold text-xl">
+              ₱
+              {order.total_amount.toLocaleString("en-US", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </div>
           </div>
         </div>
-        <div className="flex gap-2 justify-end">
-          <button className="bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F] text-white font-semibold py-2 px-4 rounded">
-            Buy Again
-          </button>
-          <button className="border border-pink-500 hover:bg-gray-100 hover:underline text-gray-700 font-medium py-2 px-4 rounded">
-            Request Refund
-          </button>
-        </div>
+        {order.order_status_name !== "Pending" && (
+          <div className="flex gap-2 justify-end">
+            {order.order_status_name === "Shipped" ? (
+              <button className="bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F] text-white font-semibold py-2 px-4 rounded">
+                Order Received
+              </button>
+            ) : (
+              <button className="bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F] text-white font-semibold py-2 px-4 rounded">
+                Buy Again
+              </button>
+            )}
+            <button className="border border-pink-500 hover:bg-gray-100 hover:underline text-gray-700 font-medium py-2 px-4 rounded">
+              Request Refund
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

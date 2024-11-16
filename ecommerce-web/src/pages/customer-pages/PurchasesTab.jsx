@@ -129,7 +129,7 @@ const PurchasesTab = () => {
         </div>
         {/* Underline */}
         <span
-          className="absolute bottom-0 h-1 bg-pink-500 rounded-full transition-all duration-300"
+          className="absolute bottom-0 h-1 bg-alofa-pink rounded-full transition-all duration-300"
           style={{
             width: tabUnderlineStyle.width,
             left: tabUnderlineStyle.left,
