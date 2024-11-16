@@ -2,6 +2,7 @@ import { useState, useEffect, useContext, useMemo } from "react";
 import TransactionCard from "../../components/TransactionCard.jsx";
 import { getOrderByProfileId } from "../../api/order.js";
 import { AuthContext } from "../../components/AuthContext";
+import { ClipLoader } from "react-spinners";
 
 const PurchasesTab = () => {
   const { user } = useContext(AuthContext);
@@ -10,8 +11,8 @@ const PurchasesTab = () => {
   const [tabUnderlineStyle, setTabUnderlineStyle] = useState({});
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  
   const statusMap = useMemo(
     () => ({
       All: null,
@@ -21,7 +22,7 @@ const PurchasesTab = () => {
       Completed: "Completed",
       "For Refund": "For Refund",
     }),
-    []
+    [],
   );
 
   useEffect(() => {
@@ -32,15 +33,18 @@ const PurchasesTab = () => {
         return;
       }
       try {
+        setLoading(true);
         const orders = await getOrderByProfileId(user.id);
         console.log("Fetched orders:", orders);
         // Sort the orders by date_ordered in descending order
         const sortedOrders = orders.sort(
-          (a, b) => new Date(b.date_ordered) - new Date(a.date_ordered)
+          (a, b) => new Date(b.date_ordered) - new Date(a.date_ordered),
         );
         setTransactions(sortedOrders);
       } catch (error) {
         console.error("Error fetching orders:", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchOrderTransactions();
@@ -66,7 +70,7 @@ const PurchasesTab = () => {
         .includes(searchQuery.toLowerCase());
 
       const matchesProductName = transaction.order_items.some((product) =>
-        product.product_name.toLowerCase().includes(searchQuery.toLowerCase())
+        product.product_name.toLowerCase().includes(searchQuery.toLowerCase()),
       );
 
       const requiredStatus = statusMap[activeTab];
@@ -103,64 +107,71 @@ const PurchasesTab = () => {
   }
 
   return (
-    <div className="rounded-lg w-full max-w-7xl mx-auto mb-4">
-      {/* Tabs */}
-      <div className="relative mb-4 border-b border-gray-200">
-        <div className="flex space-x-4">
-          {[
-            "All",
-            "Pending",
-            "To Ship",
-            "To Receive",
-            "Completed",
-            "For Refund",
-          ].map((tab, index) => (
-            <button
-              key={tab}
-              id={`tab-${index}`}
-              onClick={() => handleTabClick(tab, index)}
-              className={`relative px-4 py-2 font-semibold ${
-                activeTab === tab ? "text-black" : "text-gray-500"
-              } focus:outline-none`}
-            >
-              {tab}
-            </button>
-          ))}
+    <div className="relative bg-gray-100 rounded-lg shadow-lg p-6">
+      {loading && (
+        <div className="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center z-50 pointer-events-none">
+          <ClipLoader size={50} color="#E53E3E" loading={loading} />
         </div>
-        {/* Underline */}
-        <span
-          className="absolute bottom-0 h-1 bg-alofa-pink rounded-full transition-all duration-300"
-          style={{
-            width: tabUnderlineStyle.width,
-            left: tabUnderlineStyle.left,
-          }}
-        />
-      </div>
+      )}
+      <div className="rounded-lg w-full max-w-7xl mx-auto mb-4">
+        {/* Tabs */}
+        <div className="relative mb-4 border-b border-gray-200">
+          <div className="flex space-x-4">
+            {[
+              "All",
+              "Pending",
+              "To Ship",
+              "To Receive",
+              "Completed",
+              "For Refund",
+            ].map((tab, index) => (
+              <button
+                key={tab}
+                id={`tab-${index}`}
+                onClick={() => handleTabClick(tab, index)}
+                className={`relative px-4 py-2 font-semibold ${
+                  activeTab === tab ? "text-black" : "text-gray-500"
+                } focus:outline-none`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+          {/* Underline */}
+          <span
+            className="absolute bottom-0 h-1 bg-alofa-pink rounded-full transition-all duration-300"
+            style={{
+              width: tabUnderlineStyle.width,
+              left: tabUnderlineStyle.left,
+            }}
+          />
+        </div>
 
-      {/* Search Bar */}
-      <div className="mb-6">
-        <input
-          type="text"
-          placeholder="Search by Order ID or Product name"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full px-4 py-2 border rounded-md"
-        />
-      </div>
+        {/* Search Bar */}
+        <div className="mb-6">
+          <input
+            type="text"
+            placeholder="Search by Order ID or Product name"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-4 py-2 border rounded-md"
+          />
+        </div>
 
-      {/* Transaction Cards - Render filtered transactions */}
-      <div className="space-y-4">
-        {filteredOrders.length > 0 ? (
-          filteredOrders.map((order) => (
-            <TransactionCard
-              key={order.order_id}
-              activeTab={activeTab}
-              order={order}
-            />
-          ))
-        ) : (
-          <div className="text-center text-gray-500">No orders found.</div>
-        )}
+        {/* Transaction Cards - Render filtered transactions */}
+        <div className="space-y-4">
+          {filteredOrders.length > 0 ? (
+            filteredOrders.map((order) => (
+              <TransactionCard
+                key={order.order_id}
+                activeTab={activeTab}
+                order={order}
+              />
+            ))
+          ) : (
+            <div className="text-center text-gray-500">No orders found.</div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -35,17 +35,6 @@ const ProfileContent = ({ profileData, setProfileData }) => {
         contactNumber: profileData.profiles.contact_number || "",
         updated_at: profileData.updated_at || "",
       });
-
-      setLastUpdated(
-        new Date().toLocaleString("en-GB", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-          hour: "numeric",
-          minute: "2-digit",
-          hour12: true, // This enables 12-hour format with AM/PM
-        }),
-      );
     }
   }, [profileData]);
 
@@ -73,13 +62,24 @@ const ProfileContent = ({ profileData, setProfileData }) => {
       return;
     }
 
+    setLastUpdated(
+      new Date().toLocaleString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true, // This enables 12-hour format with AM/PM
+      }),
+    );
+
     const updatedProfile = {
       first_name: editableProfileData.firstName,
       last_name: editableProfileData.lastName,
       email: editableProfileData.email,
       contact_number: editableProfileData.contactNumber,
       role_id: profileData.profiles.role_id,
-      updated_at: new Date().toISOString(),
+      updated_at: lastUpdated,
     };
 
     try {
