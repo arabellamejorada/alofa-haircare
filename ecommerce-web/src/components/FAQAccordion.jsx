@@ -10,7 +10,7 @@ const Accordion = ({ question, answer }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg p-4 mb-4 shadow-md transition-all ease-in-out duration-300">
+    <div className="bg-white rounded-lg p-6 mb-4 shadow-md transition-all ease-in-out duration-300">
       <div
         onClick={toggleAccordion}
         className="flex justify-between items-center cursor-pointer"
