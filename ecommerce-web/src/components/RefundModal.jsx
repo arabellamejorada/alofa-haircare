@@ -1,12 +1,20 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
-import { Dialog, DialogTitle, DialogPanel, Transition, TransitionChild } from "@headlessui/react";
+import {
+  Dialog,
+  DialogTitle,
+  DialogPanel,
+  Transition,
+  TransitionChild,
+} from "@headlessui/react";
 import { Fragment } from "react";
+import { toast } from "sonner";
+import { createRefundRequest } from "../api/order";
 
 const RefundModal = ({ isOpen, closeModal, orderItems, selectedOrder }) => {
   const [checkedItems, setCheckedItems] = useState({});
   const [reason, setReason] = useState("");
-  const [proof, setProof] = useState(null);
+  const [proofs, setProofs] = useState([]); // Updated to handle multiple files
 
   const handleCheckboxChange = (e, orderItemId) => {
     setCheckedItems((prev) => ({
@@ -20,10 +28,15 @@ const RefundModal = ({ isOpen, closeModal, orderItems, selectedOrder }) => {
   };
 
   const handleFileUpload = (e) => {
-    setProof(e.target.files[0]);
+    const newFiles = Array.from(e.target.files);
+    if (proofs.length + newFiles.length > 5) {
+      alert("You can only upload up to 5 photos.");
+      return;
+    }
+    setProofs((prev) => [...prev, ...newFiles]);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (reason.length < 20) {
       alert("Reason must be at least 20 characters long");
       return;
@@ -32,15 +45,59 @@ const RefundModal = ({ isOpen, closeModal, orderItems, selectedOrder }) => {
       alert("Please select at least one item to refund");
       return;
     }
-    
-    // Handle form submission logic here, e.g. call an API.
-    alert("Refund request submitted");
+
+    try {
+      // Construct `order_items` JSON
+      const orderItemsData = Object.entries(checkedItems)
+        .filter(([_, value]) => value) // Only include selected items
+        .map(([orderItemId]) => {
+          const item = orderItems.find(
+            (item) => item.order_item_id === parseInt(orderItemId, 10),
+          );
+          return {
+            order_item_id: orderItemId,
+            quantity: item.quantity,
+          };
+        });
+
+      // Prepare `FormData` for file uploads
+      const formData = new FormData();
+      formData.append("order_id", selectedOrder.order_id);
+      formData.append("reason", reason);
+      formData.append("order_items", JSON.stringify(orderItemsData)); // JSON string for backend
+      proofs.forEach((file) => {
+        formData.append("refund_proof", file);
+      });
+
+      // Submit to backend
+      const response = await createRefundRequest(formData);
+
+      if (!response.ok) {
+        throw new Error("Failed to submit refund request");
+      }
+
+      toast.success("Refund request submitted successfully");
+      handleClose();
+    } catch (error) {
+      console.error("Error submitting refund request:", error.message);
+      toast.error("Failed to submit refund request. Please try again.");
+    }
+  };
+
+  const handleClose = () => {
+    setCheckedItems({});
+    setReason("");
+    setProofs([]);
     closeModal();
   };
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-10" onClose={closeModal}>
+      <Dialog
+        as="div"
+        className="fixed inset-x-0 top-16 z-10"
+        onClose={handleClose}
+      >
         <TransitionChild
           as={Fragment}
           enter="ease-out duration-300"
@@ -64,7 +121,7 @@ const RefundModal = ({ isOpen, closeModal, orderItems, selectedOrder }) => {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <DialogPanel className="pt-8 w-full max-w-2xl h-[700px] transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+              <DialogPanel className="w-full max-w-2xl max-h-[80vh] transform overflow-y-auto rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                 <DialogTitle
                   as="h3"
                   className="text-3xl font-bold leading-6 gradient-heading mb-4"
@@ -74,7 +131,9 @@ const RefundModal = ({ isOpen, closeModal, orderItems, selectedOrder }) => {
 
                 {/* Order Items Section */}
                 <div className="mt-2">
-                  <h3 className="text-gray-800 font-semibold text-md mb-2">Select item(s) for refund</h3>
+                  <h3 className="text-gray-800 font-semibold text-md mb-2">
+                    Select item(s) for refund
+                  </h3>
                   {orderItems.length > 0 ? (
                     <div className="max-h-40 overflow-y-auto border rounded-md bg-gray-50 shadow-sm">
                       <table className="min-w-full">
@@ -106,8 +165,9 @@ const RefundModal = ({ isOpen, closeModal, orderItems, selectedOrder }) => {
                                   }
                                   className="w-4 h-4 text-alofa-pink rounded border-gray-300"
                                   disabled={
-                                    selectedOrder.order_status_id === 3 ||
-                                    selectedOrder.order_status_id === 4
+                                    selectedOrder.order_status_id === 1 ||
+                                    selectedOrder.order_status_id === 2 ||
+                                    selectedOrder.order_status_id === 3
                                   }
                                 />
                               </td>
@@ -115,16 +175,20 @@ const RefundModal = ({ isOpen, closeModal, orderItems, selectedOrder }) => {
                                 {item.product_name}
                               </td>
                               <td className="px-4 py-2 text-gray-600">
-                                {item.variation_type && item.variation_type !== "N/A"
+                                {item.variation_type &&
+                                item.variation_type !== "N/A"
                                   ? item.variation_type
                                   : item.value && item.value !== "N/A"
-                                  ? item.value
-                                  : ""}
+                                    ? item.value
+                                    : ""}
                               </td>
                               <td className="px-4 py-2 text-right text-gray-800">
                                 {item.quantity > 1 ? (
                                   <select
-                                    value={checkedItems[item.order_item_id]?.quantity || 1}
+                                    value={
+                                      checkedItems[item.order_item_id]
+                                        ?.quantity || 1
+                                    }
                                     onChange={(e) =>
                                       setCheckedItems((prev) => ({
                                         ...prev,
@@ -138,7 +202,7 @@ const RefundModal = ({ isOpen, closeModal, orderItems, selectedOrder }) => {
                                   >
                                     {Array.from(
                                       { length: item.quantity },
-                                      (_, i) => i + 1
+                                      (_, i) => i + 1,
                                     ).map((q) => (
                                       <option key={q} value={q}>
                                         {q}
@@ -155,13 +219,18 @@ const RefundModal = ({ isOpen, closeModal, orderItems, selectedOrder }) => {
                       </table>
                     </div>
                   ) : (
-                    <p className="text-gray-500">No items found for this order.</p>
+                    <p className="text-gray-500">
+                      No items found for this order.
+                    </p>
                   )}
                 </div>
 
                 {/* Reason Section */}
                 <div className="mt-4">
-                  <label htmlFor="reason" className="text-gray-700 block font-semibold mb-1">
+                  <label
+                    htmlFor="reason"
+                    className="text-gray-700 block font-semibold mb-1"
+                  >
                     Reason
                   </label>
                   <textarea
@@ -173,34 +242,57 @@ const RefundModal = ({ isOpen, closeModal, orderItems, selectedOrder }) => {
                     rows={4}
                     className="w-full p-2 border rounded-md resize-none focus:outline-none focus:ring focus:border-pink-300"
                   />
-                  <p className="text-right text-gray-500 text-sm">{reason.length}/300</p>
+                  <p className="text-right text-gray-500 text-sm">
+                    {reason.length}/300
+                  </p>
                 </div>
 
                 {/* Upload Proof Section */}
                 <div className="mt-4">
-                  <label className="text-gray-700 block font-semibold mb-1">Upload Proof</label>
-                  <div className="w-full h-32 border-dashed border-2 flex items-center justify-center rounded-md cursor-pointer hover:bg-gray-50">
+                  <label className="text-gray-700 block font-semibold mb-1">
+                    Upload Proof
+                  </label>
+                  <div className="w-full h-auto border-dashed border-2 flex flex-col items-center justify-center rounded-md cursor-pointer hover:bg-gray-50 p-2">
                     <input
                       type="file"
+                      multiple // Allow multiple uploads
                       onChange={handleFileUpload}
                       className="hidden"
                       id="proof"
                     />
                     <label htmlFor="proof" className="cursor-pointer">
-                      {proof ? proof.name : "Add Photo"}
+                      <span className="text-gray-400">
+                        {" "}
+                        + Add Up to 5 Photos
+                      </span>
                     </label>
+                    <div className="flex flex-wrap gap-4  overflow-y-auto max-h-40 w-full p-2">
+                      {proofs.map((file, index) => (
+                        <img
+                          key={index}
+                          src={URL.createObjectURL(file)}
+                          alt={`Uploaded Proof ${index + 1}`}
+                          className="w-24 h-24 object-cover rounded-md border border-gray-300"
+                        />
+                      ))}
+                    </div>
+                    {proofs.length >= 5 && (
+                      <p className="text-gray-500 text-sm">
+                        Maximum of 5 files only
+                      </p>
+                    )}
                   </div>
                 </div>
 
                 {/* Submit Button */}
                 <div className="mt-6 mb-7 pb-5 text-right">
-                    <button
-                    onClick={handleSubmit}
+                  <button
+                    onClick={handleClose}
                     className="border-0 hover:underline text-gray-600 font-semibold py-2 px-6"
-                    >
+                  >
                     Cancel
-                    </button>
-                  
+                  </button>
+
                   <button
                     onClick={handleSubmit}
                     className="bg-alofa-pink hover:bg-alofa-pink-gradient text-white font-bold py-2 px-6 rounded-md focus:outline-none focus:ring"

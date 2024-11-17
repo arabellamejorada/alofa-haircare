@@ -38,3 +38,34 @@ export const getOrderByProfileId = async (profile_id) => {
     throw error;
   }
 };
+
+export const updateOrderStatus = async (orderId, status) => {
+  try {
+    console.log("Updating order status...", orderId, status);
+    const response = await axios.put(`/order/${orderId}/order-status`, {
+      order_status_id: status,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error updating order status:", error);
+    throw error;
+  }
+};
+
+
+// REFUND
+export const createRefundRequest = async (refundData) => {
+  try {
+    console.log("Creating refund request...", refundData);
+    const response = await axios.post("/refund", refundData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error creating refund request:", error);
+    throw error;
+  }
+}
+
