@@ -74,7 +74,7 @@ const RefundModal = ({ isOpen, closeModal, orderItems, selectedOrder }) => {
 
                 {/* Order Items Section */}
                 <div className="mt-2">
-                  <h3 className="text-gray-800 font-semibold text-md mb-2">Select item(s) to refund</h3>
+                  <h3 className="text-gray-800 font-semibold text-md mb-2">Select item(s) for refund</h3>
                   {orderItems.length > 0 ? (
                     <div className="max-h-40 overflow-y-auto border rounded-md bg-gray-50 shadow-sm">
                       <table className="min-w-full">
