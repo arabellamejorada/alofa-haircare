@@ -1,6 +1,9 @@
 import { useState, useEffect, useContext, useMemo } from "react";
 import TransactionCard from "../../components/TransactionCard.jsx";
-import { getOrderByProfileId } from "../../api/order.js";
+import {
+  getOrderByProfileId,
+  getRefundRequestsByProfileId,
+} from "../../api/order.js";
 import { AuthContext } from "../../components/AuthContext";
 import { ClipLoader } from "react-spinners";
 import Search from "../../components/Filter/Search.jsx";
@@ -12,6 +15,7 @@ const PurchasesTab = () => {
   const [tabUnderlineStyle, setTabUnderlineStyle] = useState({});
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [transactions, setTransactions] = useState([]);
+  const [refundRequests, setRefundRequests] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const statusMap = useMemo(
@@ -34,19 +38,29 @@ const PurchasesTab = () => {
       }
       try {
         setLoading(true);
+
+        const refunds = await getRefundRequestsByProfileId(user.id);
+        setRefundRequests(refunds);
+
         const orders = await getOrderByProfileId(user.id);
-        const sortedOrders = orders.sort(
-          (a, b) => new Date(b.date_ordered) - new Date(a.date_ordered),
-        );
-        setTransactions(sortedOrders);
+        if (orders && Array.isArray(orders)) {
+          const sortedOrders = orders.sort(
+            (a, b) => new Date(b.date_ordered) - new Date(a.date_ordered),
+          );
+          setTransactions(sortedOrders);
+        } else {
+          setTransactions([]);
+        }
       } catch (error) {
-        console.error("Error fetching orders:", error);
+        console.error("Error fetching orders or refunds:", error);
+        setTransactions([]);
+        setRefundRequests([]);
       } finally {
         setLoading(false);
       }
     };
     fetchOrderTransactions();
-  }, [user]);
+  }, [user, activeTab]);
 
   useEffect(() => {
     const initialTabElement = document.getElementById(`tab-0`);
@@ -60,16 +74,24 @@ const PurchasesTab = () => {
 
   useEffect(() => {
     const filtered = transactions.filter((transaction) => {
+      // Convert order ID to string for searching
       const orderIdString = String(transaction.order_id || "");
 
+      // Match order ID
       const matchesOrderId = orderIdString
         .toLowerCase()
         .includes(searchQuery.toLowerCase());
 
-      const matchesProductName = transaction.order_items.some((product) =>
-        product.product_name.toLowerCase().includes(searchQuery.toLowerCase()),
-      );
+      // Match product name, if order_items is present
+      const matchesProductName =
+        Array.isArray(transaction.order_items) &&
+        transaction.order_items.some((product) =>
+          product.product_name
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()),
+        );
 
+      // Determine required status based on activeTab
       const requiredStatus = statusMap[activeTab];
 
       return (
@@ -149,12 +171,28 @@ const PurchasesTab = () => {
 
         {/* Transaction Cards - Render filtered transactions */}
         <div className="space-y-4">
-          {filteredOrders.length > 0 ? (
+          {activeTab === "For Refund" ? (
+            refundRequests.length > 0 ? (
+              refundRequests.map((refundRequest) => (
+                <TransactionCard
+                  key={refundRequest.id}
+                  activeTab={"For Refund"}
+                  order={refundRequest}
+                  isRefund={true}
+                />
+              ))
+            ) : (
+              <div className="text-center text-gray-500">
+                No refund requests found.
+              </div>
+            )
+          ) : filteredOrders.length > 0 ? (
             filteredOrders.map((order) => (
               <TransactionCard
                 key={order.order_id}
                 activeTab={activeTab}
                 order={order}
+                isRefund={false}
               />
             ))
           ) : (

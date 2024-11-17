@@ -3,13 +3,18 @@ import PropTypes from "prop-types";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import RefundModal from "./RefundModal";
 
-const TransactionCard = ({ activeTab, order }) => {
+const TransactionCard = ({ activeTab, order, isRefund }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const totalItems = order.order_items.reduce(
-    (acc, item) => acc + item.quantity,
-    0,
-  );
   const [isRefundModalOpen, setIsRefundModalOpen] = useState(false);
+
+  // Safely calculate the total items
+  const totalItems = isRefund
+    ? Array.isArray(order.items)
+      ? order.items.reduce((acc, item) => acc + item.quantity, 0)
+      : 0
+    : Array.isArray(order.order_items)
+      ? order.order_items.reduce((acc, item) => acc + item.quantity, 0)
+      : 0;
 
   const toggleExpanded = () => {
     setIsExpanded(!isExpanded);
@@ -18,32 +23,46 @@ const TransactionCard = ({ activeTab, order }) => {
   const openRefundModal = () => setIsRefundModalOpen(true);
   const closeRefundModal = () => setIsRefundModalOpen(false);
 
+  // Get items safely
+  const itemsToDisplay = isRefund
+    ? Array.isArray(order.items)
+      ? order.items
+      : []
+    : Array.isArray(order.order_items)
+      ? order.order_items
+      : [];
+
   return (
     <div className="bg-gray-50 border border-gray-200 rounded-lg shadow-lg p-4 mb-6">
-      {/* Order Info Section */}
+      {/* Order/Refund Info Section */}
       <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-300">
         <div>
           <div className="text-gray-500 font-normal mb-0">
-            Order placed: {order.date_ordered}
+            {isRefund
+              ? `Refund requested: ${order.requested_at}`
+              : `Order placed: ${order.date_ordered}`}
           </div>
         </div>
-        <div
-          className={`font-normal ${
-            order.order_status_name === "Completed"
-              ? "text-green-600"
-              : order.order_status_name === "Pending"
-                ? "italic text-orange-400"
-                : "italic text-gray-600"
-          }`}
-        >
-          {order.order_status_name}
-        </div>
+
+        {!isRefund && (
+          <div
+            className={`font-normal ${
+              order.order_status_name === "Completed"
+                ? "text-green-600"
+                : order.order_status_name === "Pending"
+                  ? "italic text-orange-400"
+                  : "italic text-gray-600"
+            }`}
+          >
+            {order.order_status_name}
+          </div>
+        )}
       </div>
 
-      {/* Order Items */}
-      {order.order_items
-        .slice(0, isExpanded ? order.order_items.length : 2)
-        .map((product) => {
+      {/* Order Items or Refund Items */}
+      {itemsToDisplay
+        .slice(0, isExpanded ? itemsToDisplay.length : 2)
+        .map((product, index) => {
           const imageName = product.image
             ? product.image.split("/").pop()
             : null;
@@ -52,7 +71,10 @@ const TransactionCard = ({ activeTab, order }) => {
             : `https://via.placeholder.com/150?text=No+Image+Available`;
 
           return (
-            <div key={product.variation_id} className="flex gap-4 mb-4">
+            <div
+              key={product.variation_id || index}
+              className="flex gap-4 mb-4"
+            >
               <div className="flex w-full">
                 <img
                   src={imageUrl}
@@ -65,15 +87,16 @@ const TransactionCard = ({ activeTab, order }) => {
                   </div>
                   <div className="text-gray-600">
                     x{product.quantity}
-                    {product.value && product.value !== "N/A"
-                      ? ` ${product.value}`
+                    {product.variation_value &&
+                    product.variation_value !== "N/A"
+                      ? ` ${product.variation_value}`
                       : ""}
                   </div>
                 </div>
                 <div className="text-right">
                   <div className="text-gray-800">
                     ₱
-                    {product.item_subtotal.toLocaleString("en-US", {
+                    {parseFloat(product.item_subtotal).toLocaleString("en-US", {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}
@@ -85,7 +108,7 @@ const TransactionCard = ({ activeTab, order }) => {
         })}
 
       {/* View More Button */}
-      {order.order_items.length > 2 && (
+      {itemsToDisplay.length > 2 && (
         <div className="flex justify-center text-center mb-4">
           <button
             onClick={toggleExpanded}
@@ -109,13 +132,16 @@ const TransactionCard = ({ activeTab, order }) => {
         <div className="flex justify-between items-center mb-4">
           <div className="text-base">
             <div className="text-gray-500 font-normal mb-1">
-              Order ID #{order.order_id}
+              {isRefund
+                ? `Refund ID #${order.refund_request_id}`
+                : `Order ID #${order.order_id}`}
             </div>
-            {(activeTab === "To Receive" || activeTab === "Completed") && (
-              <div className="text-gray-500 font-normal mb-1">
-                Tracking Number: {order.tracking_number} (J&T Express)
-              </div>
-            )}
+            {!isRefund &&
+              (activeTab === "To Receive" || activeTab === "Completed") && (
+                <div className="text-gray-500 font-normal mb-1">
+                  Tracking Number: {order.tracking_number} (J&T Express)
+                </div>
+              )}
           </div>
           <div className="flex flex-col items-end">
             <div className="text-gray-600 text-sm">
@@ -123,38 +149,43 @@ const TransactionCard = ({ activeTab, order }) => {
             </div>
             <div className="text-alofa-pink font-bold text-xl">
               ₱
-              {order.total_amount.toLocaleString("en-US", {
+              {parseFloat(
+                isRefund ? order.total_refund_amount : order.total_amount,
+              ).toLocaleString("en-US", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}
             </div>
           </div>
         </div>
-        {order.order_status_name !== "Pending" && (
-          <div className="flex gap-2 justify-end">
-            {order.order_status_name === "Shipped" ? (
-              <button className="bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F] text-white font-semibold py-2 px-4 rounded">
-                Order Received
-              </button>
-            ) : (
-              <button className="bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F] text-white font-semibold py-2 px-4 rounded">
-                Buy Again
-              </button>
-            )}
-            <button
-              onClick={openRefundModal}
-              className="border border-pink-500 hover:bg-gray-100 hover:underline text-gray-700 font-medium py-2 px-4 rounded"
-            >
-              Request Refund
-            </button>
-          </div>
-        )}
+        {!isRefund &&
+          order.order_status_name !== "Pending" &&
+          order.order_status_name !== "Preparing" && (
+            <div className="flex gap-2 justify-end">
+              {order.order_status_name === "Shipped" && (
+                <button
+                  className="bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F] text-white font-semibold py-2 px-4 rounded"
+                  onClick={() => handleOrderReceived(order.order_id)}
+                >
+                  Order Received
+                </button>
+              )}
+              {order.order_status_name === "Completed" && (
+                <button
+                  onClick={openRefundModal}
+                  className="border border-pink-500 hover:bg-gray-100 hover:underline text-gray-700 font-medium py-2 px-4 rounded"
+                >
+                  Request Refund
+                </button>
+              )}
+            </div>
+          )}
       </div>
 
       <RefundModal
         isOpen={isRefundModalOpen}
         closeModal={closeRefundModal}
-        orderItems={order.order_items}
+        orderItems={itemsToDisplay}
         selectedOrder={order}
       />
     </div>
@@ -164,10 +195,10 @@ const TransactionCard = ({ activeTab, order }) => {
 TransactionCard.propTypes = {
   activeTab: PropTypes.string.isRequired,
   order: PropTypes.shape({
-    order_id: PropTypes.number.isRequired,
-    date_ordered: PropTypes.string.isRequired,
+    order_id: PropTypes.number,
+    date_ordered: PropTypes.string,
     tracking_number: PropTypes.string,
-    order_status_name: PropTypes.string.isRequired,
+    order_status_name: PropTypes.string,
     order_items: PropTypes.arrayOf(
       PropTypes.shape({
         variation_id: PropTypes.number.isRequired,
@@ -176,12 +207,28 @@ TransactionCard.propTypes = {
         unit_price: PropTypes.number,
         item_subtotal: PropTypes.number,
         image: PropTypes.string,
-        value: PropTypes.string,
+        variation_value: PropTypes.string,
         sku: PropTypes.string,
       }),
-    ).isRequired,
-    total_amount: PropTypes.number.isRequired,
+    ),
+    items: PropTypes.arrayOf(
+      PropTypes.shape({
+        variation_id: PropTypes.number.isRequired,
+        product_name: PropTypes.string,
+        quantity: PropTypes.number.isRequired,
+        unit_price: PropTypes.number,
+        item_subtotal: PropTypes.number,
+        image: PropTypes.string,
+        variation_value: PropTypes.string,
+        sku: PropTypes.string,
+      }),
+    ),
+    total_amount: PropTypes.number,
+    total_refund_amount: PropTypes.number,
+    refund_request_id: PropTypes.number,
+    requested_at: PropTypes.string,
   }).isRequired,
+  isRefund: PropTypes.bool.isRequired,
 };
 
 export default TransactionCard;

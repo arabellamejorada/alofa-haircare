@@ -17,7 +17,6 @@ export const createOrder = async (formData) => {
 
 export const getOrderByProfileId = async (profile_id) => {
   try {
-    console.log("Fetching orders by customer profile ID...", profile_id);
     const response = await axios.get(`/order/customer/${profile_id}`);
 
     const formattedTransactions = response.data.map((transaction) => ({
@@ -70,8 +69,8 @@ export const createRefundRequest = async (formData) => {
 
 export const getRefundRequestsByProfileId = async (profile_id) => {
   try {
-    console.log("Fetching refund requests for profile_id:", profile_id);
     const response = await axios.get(`/refund/requests/${profile_id}`);
+    console.log("Refund requests:", response.data.data);
     return response.data.data;
   } catch (error) {
     console.error("Error fetching refund requests:", error);
