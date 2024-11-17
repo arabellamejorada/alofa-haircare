@@ -54,18 +54,27 @@ export const updateOrderStatus = async (orderId, status) => {
 
 
 // REFUND
-export const createRefundRequest = async (refundData) => {
+export const createRefundRequest = async (formData) => {
   try {
-    console.log("Creating refund request...", refundData);
-    const response = await axios.post("/refund", refundData, {
+    const response = await axios.post("/refund", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
     });
     return response.data;
   } catch (error) {
-    console.error("Error creating refund request:", error);
+    console.error("Error in createRefundRequest:", error);
     throw error;
   }
-}
+};
 
+export const getRefundRequestsByProfileId = async (profile_id) => {
+  try {
+    console.log("Fetching refund requests for profile_id:", profile_id);
+    const response = await axios.get(`/refund/requests/${profile_id}`);
+    return response.data.data;
+  } catch (error) {
+    console.error("Error fetching refund requests:", error);
+    throw error;
+  }
+};

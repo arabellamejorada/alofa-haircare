@@ -14,7 +14,14 @@ import { createRefundRequest } from "../api/order";
 const RefundModal = ({ isOpen, closeModal, orderItems, selectedOrder }) => {
   const [checkedItems, setCheckedItems] = useState({});
   const [reason, setReason] = useState("");
-  const [proofs, setProofs] = useState([]); // Updated to handle multiple files
+  const [proofs, setProofs] = useState([]);
+  const [refundData, setRefundData] = useState({
+    order_id: selectedOrder.order_id,
+    customer_id: selectedOrder.customer_id,
+    reason: "",
+    proofs: [],
+    refund_items: [],
+  });
 
   const handleCheckboxChange = (e, orderItemId) => {
     setCheckedItems((prev) => ({
@@ -24,63 +31,81 @@ const RefundModal = ({ isOpen, closeModal, orderItems, selectedOrder }) => {
   };
 
   const handleReasonChange = (e) => {
-    setReason(e.target.value);
+    const updatedReason = e.target.value;
+    setReason(updatedReason);
+    setRefundData((prev) => ({
+      ...prev,
+      reason: updatedReason,
+    }));
   };
 
   const handleFileUpload = (e) => {
     const newFiles = Array.from(e.target.files);
     if (proofs.length + newFiles.length > 5) {
-      alert("You can only upload up to 5 photos.");
+      toast.error("You can only upload up to 5 photos.");
       return;
     }
     setProofs((prev) => [...prev, ...newFiles]);
+    setRefundData((prev) => ({
+      ...prev,
+      proofs: [...prev.proofs, ...newFiles],
+    }));
   };
 
   const handleSubmit = async () => {
     if (reason.length < 20) {
-      alert("Reason must be at least 20 characters long");
+      toast.error("Reason must be at least 20 characters long.");
       return;
     }
+
     if (!Object.values(checkedItems).some((value) => value)) {
-      alert("Please select at least one item to refund");
+      toast.error("Please select at least one item to refund.");
       return;
     }
 
-    try {
-      // Construct `order_items` JSON
-      const orderItemsData = Object.entries(checkedItems)
-        .filter(([_, value]) => value) // Only include selected items
-        .map(([orderItemId]) => {
-          const item = orderItems.find(
-            (item) => item.order_item_id === parseInt(orderItemId, 10),
-          );
-          return {
-            order_item_id: orderItemId,
-            quantity: item.quantity,
-          };
-        });
+    if (proofs.length === 0) {
+      toast.error("Please upload at least one proof image.");
+      return;
+    }
 
-      // Prepare `FormData` for file uploads
-      const formData = new FormData();
-      formData.append("order_id", selectedOrder.order_id);
-      formData.append("reason", reason);
-      formData.append("order_items", JSON.stringify(orderItemsData)); // JSON string for backend
-      proofs.forEach((file) => {
-        formData.append("refund_proof", file);
+    const selectedItems = Object.entries(checkedItems)
+      .filter(([_, isChecked]) => isChecked)
+      .map(([orderItemId]) => {
+        const item = orderItems.find(
+          (i) => i.order_item_id === parseInt(orderItemId, 10),
+        );
+        return {
+          order_item_id: item.order_item_id,
+          variation_id: item.variation_id,
+          quantity: checkedItems[orderItemId]?.quantity || 1,
+          item_subtotal:
+            orderItemId.unit_price * checkedItems[orderItemId]?.quantity || 1,
+        };
       });
 
-      // Submit to backend
+    // Prepare FormData
+    const formData = new FormData();
+    formData.append("order_id", selectedOrder.order_id);
+    formData.append("customer_id", selectedOrder.customer_id);
+    formData.append("reason", reason);
+    formData.append("refund_items", JSON.stringify(selectedItems));
+    proofs.forEach((file) => {
+      formData.append("refund_proof", file);
+    });
+
+    try {
       const response = await createRefundRequest(formData);
-
-      if (!response.ok) {
-        throw new Error("Failed to submit refund request");
+      if (response.success) {
+        toast.success(
+          response.message || "Refund request submitted successfully.",
+        );
+        handleClose();
+      } else {
+        toast.error(response.message || "Failed to submit refund request.");
       }
-
-      toast.success("Refund request submitted successfully");
-      handleClose();
     } catch (error) {
-      console.error("Error submitting refund request:", error.message);
-      toast.error("Failed to submit refund request. Please try again.");
+      console.error("Error submitting refund request:", error);
+      toast.error("An error occurred while submitting the refund request.");
     }
   };
 

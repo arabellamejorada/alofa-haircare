@@ -46,7 +46,7 @@ const PurchasesTab = () => {
       }
     };
     fetchOrderTransactions();
-  }, [user, activeTab]);
+  }, [user]);
 
   useEffect(() => {
     const initialTabElement = document.getElementById(`tab-0`);

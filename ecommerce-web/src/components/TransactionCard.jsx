@@ -2,8 +2,6 @@ import { useState } from "react";
 import PropTypes from "prop-types";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import RefundModal from "./RefundModal";
-import { updateOrderStatus } from "../api/order";
-import { toast } from "sonner";
 
 const TransactionCard = ({ activeTab, order }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -18,25 +16,7 @@ const TransactionCard = ({ activeTab, order }) => {
   };
 
   const openRefundModal = () => setIsRefundModalOpen(true);
-  const closeRefundModal = () => {
-    setIsRefundModalOpen(false);
-    // Reset refund input fields
-    setRefundReason("");
-    setRefundAmount("");
-  };
-
-  const handleOrderReceived = async (orderId) => {
-    console.log(
-      `Order ${orderId} received with status ${order.order_status_name}`,
-    );
-    try {
-      await updateOrderStatus(orderId, "4");
-      toast.success("Order received successfully!");
-    } catch (error) {
-      console.error("Error updating order status:", error);
-      toast.error("Failed to update order status. Please try again.");
-    }
-  };
+  const closeRefundModal = () => setIsRefundModalOpen(false);
 
   return (
     <div className="bg-gray-50 border border-gray-200 rounded-lg shadow-lg p-4 mb-6">
@@ -150,27 +130,25 @@ const TransactionCard = ({ activeTab, order }) => {
             </div>
           </div>
         </div>
-        {order.order_status_name !== "Pending" &&
-          order.order_status_name !== "Preparing" && (
-            <div className="flex gap-2 justify-end">
-              {order.order_status_name === "Shipped" && (
-                <button
-                  className="bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F] text-white font-semibold py-2 px-4 rounded"
-                  onClick={() => handleOrderReceived(order.order_id)}
-                >
-                  Order Received
-                </button>
-              )}
-              {order.order_status_name === "Completed" && (
-                <button
-                  onClick={openRefundModal}
-                  className="border border-pink-500 hover:bg-gray-100 hover:underline text-gray-700 font-medium py-2 px-4 rounded"
-                >
-                  Request Refund
-                </button>
-              )}
-            </div>
-          )}
+        {order.order_status_name !== "Pending" && (
+          <div className="flex gap-2 justify-end">
+            {order.order_status_name === "Shipped" ? (
+              <button className="bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F] text-white font-semibold py-2 px-4 rounded">
+                Order Received
+              </button>
+            ) : (
+              <button className="bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F] text-white font-semibold py-2 px-4 rounded">
+                Buy Again
+              </button>
+            )}
+            <button
+              onClick={openRefundModal}
+              className="border border-pink-500 hover:bg-gray-100 hover:underline text-gray-700 font-medium py-2 px-4 rounded"
+            >
+              Request Refund
+            </button>
+          </div>
+        )}
       </div>
 
       <RefundModal
