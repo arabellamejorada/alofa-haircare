@@ -157,7 +157,7 @@ const PurchasesTab = () => {
 
         {/* Search Bar with Search Icon */}
         <div className="w-full mb-6">
-          <Search searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+          <Search placeholder="Search by Order ID or products..."searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
         </div>
 
         {/* Transaction Cards - Render filtered transactions */}
