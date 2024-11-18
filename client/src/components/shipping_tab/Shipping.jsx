@@ -2,11 +2,11 @@ import React, { useState, Fragment } from "react";
 import OrdersTab from "./tabs/OrdersTab";
 
 const Shipping = () => {
-  const [currentTab, setCurrentTab] = useState("View All-Orders");
+  const [currentTab, setCurrentTab] = useState("View All Orders");
 
   const renderCurrentTab = () => {
     switch (currentTab) {
-      case "View All-Orders":
+      case "View All Orders":
         return <OrdersTab statusFilter="All" />;
       case "Prepared Orders":
         return <OrdersTab statusFilter="Preparing" />;
@@ -27,7 +27,7 @@ const Shipping = () => {
         {/* Tabs */}
         <div className="border-b border-gray-300 mb-4">
           {[
-            "View All-Orders",
+            "View All Orders",
             "Prepared Orders",
             "Shipped Orders",
             "Completed Orders",
@@ -41,11 +41,7 @@ const Shipping = () => {
               }`}
               onClick={() => setCurrentTab(tab)}
             >
-              {tab
-                .replace("-", " ")
-                .split(" ")
-                .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                .join(" ")}{" "}
+              {tab}
             </button>
           ))}
         </div>

@@ -16,18 +16,24 @@ import { useAuth } from "../../AuthContext";
 
 const OrdersTab = ({ statusFilter }) => {
   const { employeeId } = useAuth();
-  console.log("Employee ID from useAuth:", employeeId);
 
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [error, setError] = useState(null);
 
+  // Sorting states
   const [sortField, setSortField] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
 
+  // Pagination states
   const rowsPerPage = 10;
   const [currentPage, setCurrentPage] = useState(1);
+
+  // Filter states
+  const [search, setSearch] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -37,8 +43,6 @@ const OrdersTab = ({ statusFilter }) => {
   const [checkedItems, setCheckedItems] = useState({});
 
   const openModal = async (order) => {
-    console.log("Opening modal for order:", order);
-
     setSelectedOrder(order);
     setTrackingNumber(order.tracking_number || "");
 
@@ -154,8 +158,6 @@ const OrdersTab = ({ statusFilter }) => {
       return;
     }
 
-    console.log("Employee ID:", employeeId);
-
     // Prepare data with the current date and dynamic reason based on order ID
     const stockOutDate = new Date().toISOString();
     const stockOutProducts = orderItems.map((item) => ({
@@ -168,10 +170,8 @@ const OrdersTab = ({ statusFilter }) => {
       stock_out_date: stockOutDate,
       order_id: selectedOrder.order_id,
       employee_id: employeeId,
-      stockOutProducts, // Correct field name
+      stockOutProducts,
     };
-
-    console.log("Preparing to create stock out with data:", stockOutData);
 
     try {
       await createStockOut(stockOutData);
@@ -260,8 +260,10 @@ const OrdersTab = ({ statusFilter }) => {
 
   useEffect(() => {
     fetchOrders();
+    setCurrentPage(1); // Reset to first page when filters change
   }, [statusFilter]);
 
+  // Handle sorting
   const handleSort = (field) => {
     const newSortOrder =
       sortField === field && sortOrder === "asc" ? "desc" : "asc";
@@ -280,10 +282,50 @@ const OrdersTab = ({ statusFilter }) => {
     setOrders(sortedData);
   };
 
-  const totalPages = Math.ceil(orders.length / rowsPerPage);
+  // Filtered orders based on search and date filters
+  const filteredOrders = orders.filter((order) => {
+    const orderId = order.order_id.toString();
+    const customerName = order.customer_name?.toLowerCase() || "";
+    const searchLower = search.toLowerCase();
+
+    // Filter by search terms
+    const matchesSearch =
+      orderId.includes(searchLower) || customerName.includes(searchLower);
+
+    // Filter by date
+    let withinDateRange = true;
+
+    if (startDate || endDate) {
+      const orderDateStr = order.order_date;
+      if (!orderDateStr) {
+        withinDateRange = false; // If order date is missing, exclude it
+      } else {
+        const orderDate = new Date(orderDateStr);
+        const orderDateTime = orderDate.getTime();
+
+        let startDateTime = startDate
+          ? new Date(startDate).setHours(0, 0, 0, 0)
+          : null;
+        let endDateTime = endDate
+          ? new Date(endDate).setHours(23, 59, 59, 999)
+          : null;
+
+        if (startDateTime && orderDateTime < startDateTime) {
+          withinDateRange = false;
+        }
+        if (endDateTime && orderDateTime > endDateTime) {
+          withinDateRange = false;
+        }
+      }
+    }
+
+    return matchesSearch && withinDateRange;
+  });
+
+  const totalPages = Math.ceil(filteredOrders.length / rowsPerPage);
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-  const paginatedData = orders.slice(indexOfFirstRow, indexOfLastRow);
+  const paginatedData = filteredOrders.slice(indexOfFirstRow, indexOfLastRow);
 
   const handleNextPage = () => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
@@ -315,89 +357,153 @@ const OrdersTab = ({ statusFilter }) => {
     );
   }
 
-  if (orders.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <p className="text-lg font-semibold text-gray-600">
-            No data available
-          </p>
-          <p className="text-sm text-gray-500 mt-2">
-            There are currently no records to display.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <>
       <div className="relative">
-        {/* Table */}
-        <table className="min-w-full bg-white mt-4 shadow-md rounded-lg overflow-hidden">
-          <thead>
-            <tr>
-              {columns.map((column) => (
-                <th
-                  key={column.key}
-                  className="px-5 py-3 border-b-2 border-gray-200 bg-alofa-pink text-white text-left text-sm font-semibold cursor-pointer"
-                  onClick={() => handleSort(column.key)}
-                >
-                  {column.header}
-                  {sortField === column.key &&
-                    (sortOrder === "asc" ? (
-                      <FaArrowUp className="inline ml-2" />
-                    ) : (
-                      <FaArrowDown className="inline ml-2" />
-                    ))}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedData.map((order) => (
-              <tr key={order.order_id}>
-                <td className="px-5 py-3 border-b">{order.order_id}</td>
-                <td className="px-5 py-3 border-b">{order.customer_name}</td>
-                <td className="px-5 py-3 border-b">
-                  <PaymentStatusBadge status={order.order_status_name} />
-                </td>
-                <td className="px-5 py-3 border-b">{order.order_date}</td>
-                <td className="px-5 py-3 border-b">
-                  <button
-                    onClick={() => openModal(order)}
-                    className="px-3 py-1 bg-alofa-pink text-white rounded hover:bg-alofa-dark"
-                  >
-                    Update Status
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {/* Pagination */}
-        <div className="flex justify-between items-center p-4">
-          <button
-            className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50"
-            onClick={handlePreviousPage}
-            disabled={currentPage === 1}
-          >
-            Previous
-          </button>
-
-          <span className="text-sm text-gray-700">
-            Page {currentPage} of {totalPages}
-          </span>
-
-          <button
-            className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50"
-            onClick={handleNextPage}
-            disabled={currentPage === totalPages}
-          >
-            Next
-          </button>
+        {/* Filters Section */}
+        <div className="flex flex-row flex-wrap items-center gap-4">
+          <input
+            type="text"
+            className="w-full max-w-md h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+            placeholder="Search by Order ID or Customer Name..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="text-sm ml-2 text-alofa-pink hover:text-alofa-dark"
+            >
+              Clear
+            </button>
+          )}
+          {/* Date Filters */}
+          <div className="flex items-center">
+            <label className="mr-2 text-sm font-medium text-gray-700">
+              Start Date:
+            </label>
+            <input
+              type="date"
+              className="h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+          </div>
+          <div className="flex items-center">
+            <label className="mr-2 text-sm font-medium text-gray-700">
+              End Date:
+            </label>
+            <input
+              type="date"
+              className="h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+          </div>
+          {(startDate || endDate) && (
+            <button
+              onClick={() => {
+                setStartDate("");
+                setEndDate("");
+              }}
+              className="text-sm ml-2 text-alofa-pink hover:text-alofa-dark"
+            >
+              Clear Dates
+            </button>
+          )}
         </div>
+
+        {/* Table */}
+        {filteredOrders.length === 0 ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <p className="text-lg font-semibold text-gray-600">
+                No data available
+              </p>
+              <p className="text-sm text-gray-500 mt-2">
+                There are currently no records to display.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <>
+            <table className="min-w-full bg-white mt-4 shadow-md rounded-lg overflow-hidden">
+              <thead>
+                <tr>
+                  {columns.map((column) => (
+                    <th
+                      key={column.key}
+                      className="px-5 py-3 border-b-2 border-gray-200 bg-alofa-pink text-white text-left text-sm font-semibold cursor-pointer"
+                      onClick={() => handleSort(column.key)}
+                    >
+                      {column.header}
+                      {sortField === column.key &&
+                        (sortOrder === "asc" ? (
+                          <FaArrowUp className="inline ml-2" />
+                        ) : (
+                          <FaArrowDown className="inline ml-2" />
+                        ))}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedData.map((order) => (
+                  <tr key={order.order_id}>
+                    <td className="px-5 py-3 border-b">{order.order_id}</td>
+                    <td className="px-5 py-3 border-b">
+                      {order.customer_name}
+                    </td>
+                    <td className="px-5 py-3 border-b">
+                      <PaymentStatusBadge status={order.order_status_name} />
+                    </td>
+                    <td className="px-5 py-3 border-b">
+                      {(() => {
+                        const dateValue = order.order_date;
+                        if (!dateValue) return "Date not available";
+                        const date = new Date(dateValue);
+                        return !isNaN(date.getTime())
+                          ? date.toLocaleString()
+                          : "Date not available";
+                      })()}
+                    </td>
+                    <td className="px-5 py-3 border-b">
+                      <button
+                        onClick={() => openModal(order)}
+                        className="px-3 py-1 bg-alofa-pink text-white rounded hover:bg-alofa-dark"
+                      >
+                        Update Status
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* Pagination */}
+            <div className="flex justify-between items-center p-4">
+              <button
+                className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50"
+                onClick={handlePreviousPage}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </button>
+
+              <span className="text-sm text-gray-700">
+                Page {currentPage} of {totalPages}
+              </span>
+
+              <button
+                className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50"
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </button>
+            </div>
+          </>
+        )}
 
         {/* Loading Overlay */}
         {updatingStatus && (
