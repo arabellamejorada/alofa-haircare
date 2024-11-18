@@ -29,9 +29,9 @@ const FAQs = () => {
         />
       </div>
 
-      <div className="p-14 flex flex-col items-center">
+      <div className="p-10 flex flex-col items-center">
         <div className="max-w-6xl w-full h-auto text-center mb-16">
-          <h1 className="text-8xl font-bold font-heading gradient-heading line-clamp-5 mb-4">Frequently Asked Questions</h1>
+          <h1 className="text-8xl font-bold font-heading gradient-heading line-clamp-5 mb-5">Frequently Asked Questions</h1>
           <p className="text-gray-500 mt-2">Here are some of the most common questions we get from our customers. If you can&apos;t find the answer you&apos;re looking for, feel free to contact us.</p>
         </div>
 

@@ -7,14 +7,14 @@
 
 @font-face {
   font-family: "Yeseva One";
-  src: url("/fonts/YesevaOne-Regular.ttf") format("truetype");
+  src: url("") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 
 @font-face {
   font-family: "Calgary";
-  src: url("/fonts/calgary.ttf") format("truetype");
+  src: url("/fonts/Calgary.ttf") format("truetype");
   font-display: swap; /* Optional: Adds more consistent behavior when loading fonts */
   font-weight: 400; /* Instead of 'normal', specify numerical weight */
   font-style: normal;
@@ -22,9 +22,8 @@
 
 @font-face {
   font-family: "Kaftan";
-  src: url("/fonts/kaftan.otf") format("opentype");
+  src: url("/fonts/Kaftan.otf") format("opentype");
   font-display: swap;
-  font-weight: 400; 
+  font-weight: normal;
   font-style: normal;
 }
-

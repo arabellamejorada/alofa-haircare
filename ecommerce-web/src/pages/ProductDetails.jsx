@@ -90,7 +90,7 @@ const ProductDetails = () => {
             <div className="w-full lg:w-1/2 flex flex-col justify-between relative p-0">
               {/* White Container with Product Details */}
               <div className="bg-white shadow-lg p-12 rounded-3xl h-[450px] flex flex-col">
-                <h2 className="gradient-heading text-5xl font-bold font-title mb-2">
+                <h2 className="gradient-heading text-5xl font-bold font-heading mb-2">
                   {variation.product_name}
                 </h2>
                 <p className="text-gray-600 italic text-lg mb-6">
