@@ -1,12 +1,16 @@
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ClipLoader } from "react-spinners";
+import {PropTypes} from "prop-types";
+import { toast } from "sonner";
 import SelectAddressModal from "./SelectAddressModal.jsx";
+import { FaSignInAlt } from "react-icons/fa";
 import GCashLogo from "../../../../public/static/gcash-logo.svg";
 import BPILogo from "../../../../public/static/bpi-logo.svg";
 import GCashQR from "../../../../public/static/gcash-qr.jpg";
 import { FaRegAddressCard } from "react-icons/fa";
-import { render } from "react-dom";
+
 
 const ShippingAddress = ({
   profileData,
@@ -29,6 +33,7 @@ const ShippingAddress = ({
   const [regions, setRegions] = useState([]);
   const [provinces, setProvinces] = useState([]);
   const [cities, setCities] = useState([]);
+  const navigate = useNavigate();
 
   const handleInputChange = async (e) => {
     const { name, value } = e.target;
@@ -338,14 +343,25 @@ const ShippingAddress = ({
           <h2 className="text-xl font-semibold mb-4 text-gray-500 flex items-center">
             Shipping Information
           </h2>
-          <button
-            className="ml-4 bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b 
-                    hover:from-[#F8587A] hover:to-[#FE699F] text-white font-normal py-1 px-3 rounded-md 
-                    focus:outline-none flex items-center"
-            onClick={handleOpenAddressModal}
-          >
-            <FaRegAddressCard className="mr-2" /> Select Address
-          </button>
+          {profileData?.profiles ? (
+            <button
+              className="ml-4 bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b 
+                          hover:from-[#F8587A] hover:to-[#FE699F] text-white font-normal py-1 px-3 rounded-md 
+                          focus:outline-none flex items-center"
+              onClick={handleOpenAddressModal}
+            >
+              <FaRegAddressCard className="mr-2" /> Select Address
+            </button>
+          ) : (
+            <button
+              className="ml-4 bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b 
+                          hover:from-[#F8587A] hover:to-[#FE699F] text-white font-normal py-1 px-3 rounded-md 
+                          focus:outline-none flex items-center"
+              onClick={() => navigate('/login')}
+            >
+              <FaSignInAlt className="mr-2" /> Login
+            </button>
+          )}
 
           {/* Render the modal conditionally */}
           {isAddressModalOpen && (
@@ -770,6 +786,50 @@ const ShippingAddress = ({
       </div>
     </div>
   );
+};
+
+// Adding prop validation using PropTypes
+ShippingAddress.propTypes = {
+  profileData: PropTypes.object,
+  loading: PropTypes.bool.isRequired,
+  setLoading: PropTypes.func.isRequired,
+  barangays: PropTypes.array.isRequired,
+  setBarangays: PropTypes.func.isRequired,
+  formDetails: PropTypes.shape({
+    email: PropTypes.string.isRequired,
+    firstName: PropTypes.string.isRequired,
+    lastName: PropTypes.string.isRequired,
+    street: PropTypes.string.isRequired,
+    region: PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      code: PropTypes.string.isRequired,
+    }).isRequired,
+    province: PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      code: PropTypes.string.isRequired,
+    }).isRequired,
+    city: PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      code: PropTypes.string.isRequired,
+    }).isRequired,
+    barangay: PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      code: PropTypes.string.isRequired,
+    }).isRequired,
+    phoneNumber: PropTypes.string.isRequired,
+    postalCode: PropTypes.string.isRequired,
+    paymentMethod: PropTypes.string.isRequired,
+    shipping_address_id: PropTypes.number,
+  }).isRequired,
+  setFormDetails: PropTypes.func.isRequired,
+  uploadedPaymentMethod: PropTypes.string,
+  setUploadedPaymentMethod: PropTypes.func.isRequired,
+  handleCompleteOrder: PropTypes.func.isRequired,
+  receiptFile: PropTypes.string,
+  setReceiptFile: PropTypes.func.isRequired,
+  setReceiptFileName: PropTypes.func.isRequired,
+  errors: PropTypes.object.isRequired,
+  setErrors: PropTypes.func.isRequired,
 };
 
 export default ShippingAddress;
