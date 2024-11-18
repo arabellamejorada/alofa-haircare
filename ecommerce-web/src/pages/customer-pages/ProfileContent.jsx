@@ -115,7 +115,7 @@ const ProfileContent = ({ profileData, setProfileData }) => {
         </div>
       )}
       <div className="px-8 py-5 lg:px-8">
-        <h2 className="bg-gradient-to-b from-alofa-pink via-alofa-pink to-alofa-light-pink bg-clip-text text-transparent font-extrabold text-4xl mb-2">
+        <h2 className="font-body font-black gradient-heading text-4xl mb-0">
           My Profile
         </h2>
         <p className="text-sm text-gray-500 mb-8">
@@ -310,8 +310,8 @@ ProfileContent.propTypes = {
       email: PropTypes.string,
       contact_number: PropTypes.string,
       role_id: PropTypes.number,
+      updated_at: PropTypes.string,  // Moved inside 'profiles' object
     }),
-    updated_at: PropTypes.string,
     customer_id: PropTypes.number,
   }),
   setProfileData: PropTypes.func.isRequired,

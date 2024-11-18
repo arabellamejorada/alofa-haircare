@@ -82,7 +82,7 @@ const CustomerProfile = () => {
               />
               <div>
                 <p className="text-lg font-medium text-gray-700">
-                  Welcome,{" "}
+                  Hello,{" "}
                   <span className="text-alofa-pink font-semibold">
                     {profileData ? profileData.profiles.first_name : ""}
                   </span>
