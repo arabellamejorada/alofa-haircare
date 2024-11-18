@@ -41,7 +41,7 @@ const ConfirmModal = ({
 
           {/* Confirm button */}
           <button
-            className="px-4 py-2 bg-alofa-pink text-white rounded-md hover:bg-alofa-pink transition-colors"
+            className="px-4 py-2 bg-alofa-pink text-white rounded-md hover:bg-alofa-pink-gradient transition-colors"
             onClick={onConfirm}
           >
             Confirm
@@ -53,7 +53,7 @@ const ConfirmModal = ({
 };
 
 ConfirmModal.propTypes = {
-  heading: PropTypes.string.isRequired,
+  heading: PropTypes.string,
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   onConfirm: PropTypes.func.isRequired,

@@ -265,6 +265,7 @@ const AddressTab = ({ profileData }) => {
         onClose={handleConfirmClose}
         onConfirm={handleConfirm}
         message={confirmMessage}
+        heading="Delete Address"
       />
     </Fragment>
   );
