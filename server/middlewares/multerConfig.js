@@ -3,26 +3,25 @@ const path = require('path');
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    // Check if this is a proof image upload
-    if (file.fieldname === 'proof_image') {
-      cb(null, 'public/uploads/payment/'); // Set directory for proof images
+    if (file.fieldname === "refund_proof") {
+      cb(null, "public/uploads/refund/"); // Directory for refund proofs
+    } else if (file.fieldname === "proof_image") {
+      cb(null, "public/uploads/payment/"); // Directory for payment proofs
     } else {
-      cb(null, 'public/uploads/'); // Default directory for other files
+      cb(null, "public/uploads/"); // Default directory for other files
     }
   },
-  filename: function (req, file, cb) {
-    // Generate a filename based on product name and variation value or use a generic name
-    const productName = (req.body.name || 'untitled').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
-    const variationValue = (req.body.variations?.[0]?.value || 'default').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
-    
-    // Unique timestamp suffix for filename
-    const extname = path.extname(file.originalname);
-    const uniqueSuffix = Math.round(Math.random() * 1E3);
-    
-    // Check if this is a proof image and set a simpler filename
-    const filename = file.fieldname === 'proof_image'
-      ? `proof-${Date.now()}-${uniqueSuffix}${extname}`
-      : `${productName}-${variationValue}-${uniqueSuffix}${extname}`;
+filename: function (req, file, cb) {
+    const orderId = req.body.order_id || 'unknown'; // Use order_id for filenames
+    const extname = path.extname(file.originalname); // Get the file extension
+    const uniqueSuffix = Date.now(); // Ensure unique filenames
+
+    // Generate filenames based on fieldname
+    const filename = file.fieldname === 'refund_proof'
+      ? `${orderId}-refund-${uniqueSuffix}${extname}` // For refund proofs
+      : file.fieldname === 'proof_image'
+      ? `proof-${Date.now()}-${uniqueSuffix}${extname}` // For proof images
+      : `file-${uniqueSuffix}${extname}`; // Default fallback
 
     cb(null, filename);
   }

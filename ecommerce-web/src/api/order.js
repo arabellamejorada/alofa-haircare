@@ -70,10 +70,20 @@ export const createRefundRequest = async (formData) => {
 export const getRefundRequestsByProfileId = async (profile_id) => {
   try {
     const response = await axios.get(`/refund/requests/${profile_id}`);
-    console.log("Refund requests:", response.data.data);
-    return response.data.data;
+
+    const formattedTransactions = response.data.map((transaction) => ({
+      ...transaction,
+      total_refund_amount: Number(transaction.total_amount),
+      refund_items: transaction.refund_items.map((item) => ({
+        ...item,
+        item_subtotal: Number(item.item_subtotal),
+        unit_price: Number(item.unit_price)
+      })),
+    }));
+
+    return formattedTransactions;
   } catch (error) {
-    console.error("Error fetching refund requests:", error);
+    console.error("Error fetching orders by  profile ID:", error);
     throw error;
   }
 };

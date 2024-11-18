@@ -15,13 +15,6 @@ const RefundModal = ({ isOpen, closeModal, orderItems, selectedOrder }) => {
   const [checkedItems, setCheckedItems] = useState({});
   const [reason, setReason] = useState("");
   const [proofs, setProofs] = useState([]);
-  const [refundData, setRefundData] = useState({
-    order_id: selectedOrder.order_id,
-    customer_id: selectedOrder.customer_id,
-    reason: "",
-    proofs: [],
-    refund_items: [],
-  });
 
   const handleCheckboxChange = (e, orderItemId) => {
     setCheckedItems((prev) => ({
@@ -33,10 +26,6 @@ const RefundModal = ({ isOpen, closeModal, orderItems, selectedOrder }) => {
   const handleReasonChange = (e) => {
     const updatedReason = e.target.value;
     setReason(updatedReason);
-    setRefundData((prev) => ({
-      ...prev,
-      reason: updatedReason,
-    }));
   };
 
   const handleFileUpload = (e) => {
@@ -46,10 +35,6 @@ const RefundModal = ({ isOpen, closeModal, orderItems, selectedOrder }) => {
       return;
     }
     setProofs((prev) => [...prev, ...newFiles]);
-    setRefundData((prev) => ({
-      ...prev,
-      proofs: [...prev.proofs, ...newFiles],
-    }));
   };
 
   const handleSubmit = async () => {
@@ -78,8 +63,9 @@ const RefundModal = ({ isOpen, closeModal, orderItems, selectedOrder }) => {
           order_item_id: item.order_item_id,
           variation_id: item.variation_id,
           quantity: checkedItems[orderItemId]?.quantity || 1,
+          unit_price: item.unit_price,
           item_subtotal:
-            orderItemId.unit_price * checkedItems[orderItemId]?.quantity || 1,
+            item.unit_price * (checkedItems[orderItemId]?.quantity || 1),
         };
       });
 
