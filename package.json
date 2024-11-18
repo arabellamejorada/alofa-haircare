@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@headlessui/react": "^2.2.0",
     "@material-tailwind/react": "^2.1.10",
     "@radix-ui/colors": "^3.0.0",
     "@radix-ui/react-checkbox": "^1.1.2",
@@ -19,6 +20,7 @@
     "bcrypt": "5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
+    "framer-motion": "^11.11.17",
     "localforage": "^1.10.0",
     "match-sorter": "^7.0.0",
     "multer": "1.4.5-lts.1",

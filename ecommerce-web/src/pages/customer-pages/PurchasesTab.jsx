@@ -1,6 +1,9 @@
 import { useState, useEffect, useContext, useMemo } from "react";
 import TransactionCard from "../../components/TransactionCard.jsx";
-import { getOrderByProfileId } from "../../api/order.js";
+import {
+  getOrderByProfileId,
+  getRefundRequestsByProfileId,
+} from "../../api/order.js";
 import { AuthContext } from "../../components/AuthContext";
 import { ClipLoader } from "react-spinners";
 import Search from "../../components/Filter/Search.jsx";
@@ -11,6 +14,7 @@ const PurchasesTab = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [tabUnderlineStyle, setTabUnderlineStyle] = useState({});
   const [filteredOrders, setFilteredOrders] = useState([]);
+  const [refundRequests, setRefundRequests] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -39,6 +43,15 @@ const PurchasesTab = () => {
           (a, b) => new Date(b.date_ordered) - new Date(a.date_ordered),
         );
         setTransactions(sortedOrders);
+
+        const refunds = await getRefundRequestsByProfileId(user.id);
+        const sortedRefunds = refunds.sort(
+          (a, b) => new Date(b.requested_at) - new Date(a.requested_at),
+        );
+        setRefundRequests(sortedRefunds);
+
+        console.log("Orders fetched:", sortedOrders);
+        console.log("Refunds fetched:", sortedRefunds);
       } catch (error) {
         console.error("Error fetching orders:", error);
       } finally {
@@ -144,7 +157,7 @@ const PurchasesTab = () => {
 
         {/* Search Bar with Search Icon */}
         <div className="w-full mb-6">
-          <Search searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+          <Search placeholder="Search by Order ID or products..."searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
         </div>
 
         {/* Transaction Cards - Render filtered transactions */}
