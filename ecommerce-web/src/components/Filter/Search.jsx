@@ -1,12 +1,12 @@
 import PropTypes from "prop-types";
 import { FaTimes, FaSearch } from "react-icons/fa";
 
-const Search = ({ searchQuery, setSearchQuery }) => {
+const Search = ({ searchQuery, setSearchQuery, placeholder }) => {
   return (
     <div className="relative w-full">
       <input
         type="text"
-        placeholder="Search products..."
+        placeholder={placeholder || "Search product..."}
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
         className="bg-white p-2 border border-gray-300 rounded-lg w-full pr-10 h-10 focus:outline-none focus:ring-2 focus:ring-alofa-pink"
@@ -27,6 +27,7 @@ const Search = ({ searchQuery, setSearchQuery }) => {
 };
 
 Search.propTypes = {
+  placeholder: PropTypes.string,
   searchQuery: PropTypes.string.isRequired,
   setSearchQuery: PropTypes.func.isRequired,
 };

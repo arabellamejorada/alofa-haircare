@@ -37,7 +37,7 @@ const Home = () => {
       <section className="about-us-section bg-[#FFFAF0] h-screen flex flex-col justify-center items-center">
         <div className="text-center px-4">
           <motion.h2 
-            className="text-8xl font-heading1 font-bold gradient-heading mb-4 max-w-3xl mx-auto"
+            className="text-8xl font-heading font-bold gradient-heading mb-2 max-w-3xl mx-auto"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, ease: 'easeInOut' }}

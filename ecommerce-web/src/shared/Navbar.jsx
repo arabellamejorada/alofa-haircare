@@ -177,14 +177,14 @@ const handleCloseModal = () => {
                 <>
                   <Link
                     to="/login"
-                    className="hover:text-pink-700 flex items-center gap-2"
+                    className="hover:text-pink-700 flex items-center gap-1"
                   >
                     Login
                   </Link>
-                  <p>|</p>
+                  <p className="text-gray-400 font-light">or</p>
                   <Link
                     to="/signup"
-                    className="hover:text-pink-700 flex items-center gap-2"
+                    className="hover:text-pink-700 flex items-center gap-1"
                   >
                     Sign Up
                   </Link>
