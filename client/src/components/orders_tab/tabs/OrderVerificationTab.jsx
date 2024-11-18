@@ -11,7 +11,7 @@ import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 import Modal from "../../modal/Modal";
 import PaymentStatusBadge from "../../shared/StatusBadge";
 import { toast } from "sonner";
-import { FaInfoCircle, FaCheckCircle } from "react-icons/fa";
+import SendEmail from "../../shared/SendEmail";
 
 const OrderVerificationTab = ({ statusFilter }) => {
   const [orders, setOrders] = useState([]);
@@ -185,15 +185,50 @@ const OrderVerificationTab = ({ statusFilter }) => {
 
   const handleVerifyPayment = async () => {
     if (!selectedOrder) return;
+
+    console.log("Selected Order:", selectedOrder);
+
+    if (!selectedOrder.customer_email || !selectedOrder.customer_name) {
+      toast.error("Customer email or name is missing. Cannot send email.");
+      return;
+    }
+
+    setLoading(true);
     try {
-      setLoading(true);
-      // Step 1: Update payment status to "Verified" (ID: 2)
-      await updateOrderPaymentStatus(selectedOrder.order_id, 2); // Assuming 2 is 'Verified'
+      // Step 1: Send an email notification to the customer
+      const subject = `Payment Verified for Order #${selectedOrder.order_id}`;
+      const textContent = `Hi ${selectedOrder.customer_name},\n\nYour payment for Order #${selectedOrder.order_id} has been successfully verified. Thank you for shopping with us!`;
+      const htmlContent = `
+        <h1>Payment Verified</h1>
+        <p>Hi ${selectedOrder.customer_name},</p>
+        <p>Your payment for <strong>Order #${selectedOrder.order_id}</strong> has been successfully verified.</p>
+        <p>Log in to view your purchases shipping update: <a href="http://localhost:5173/profile/purchases.">My Purchases</a></p>
+        <p>Thank you for shopping with us!</p>
+      `;
 
-      // Step 2: Update order status to "Preparing" (ID: 2)
-      await updateOrderStatus(selectedOrder.order_id, 2); // Assuming 2 is 'Preparing'
+      console.log("Sending email with data:", {
+        to: selectedOrder.customer_email,
+        from: "Alofa Haircare <mailgun@sandbox1463264fb2744256b74af8ebe920ea0c.mailgun.org>", // Replace with verified sender email
+        subject,
+        text: textContent,
+        html: htmlContent,
+      });
 
-      // Update the local state to reflect both status changes
+      await SendEmail(
+        selectedOrder.customer_email,
+        "Alofa Haircare <mailgun@sandbox1463264fb2744256b74af8ebe920ea0c.mailgun.org>", // Replace with your sender email
+        subject,
+        textContent,
+        htmlContent,
+      );
+
+      // Step 2: Update payment status to "Verified" (ID: 2)
+      await updateOrderPaymentStatus(selectedOrder.order_id, 2);
+
+      // Step 3: Update order status to "Preparing" (ID: 2)
+      await updateOrderStatus(selectedOrder.order_id, 2);
+
+      // Step 4: Update the local state to reflect status changes
       setOrders((prevOrders) =>
         prevOrders.map((order) =>
           order.order_id === selectedOrder.order_id
@@ -208,15 +243,12 @@ const OrderVerificationTab = ({ statusFilter }) => {
         ),
       );
 
-      toast.success("Payment verified and order status updated.");
+      toast.success("Payment verified, order updated, and email sent.");
       closeModal();
     } catch (error) {
-      console.error(
-        "Error verifying payment and updating order status:",
-        error,
-      );
-      setError("Failed to verify payment and update order status");
-      toast.error("An error occurred while verifying payment.");
+      console.error("Error verifying payment or sending email:", error);
+      toast.error("Failed to verify payment. Email was not sent.");
+      setError("Failed to verify payment and update order status.");
     } finally {
       setLoading(false);
     }
