@@ -69,7 +69,7 @@ const CustomerProfile = () => {
         </div>
       )}
 
-      <div className="flex flex-col lg:flex-row items-start justify-center pt-28 px-4 gap-10 max-w-6xl mx-auto overflow-hidden">
+      <div className="flex flex-col lg:flex-row items-start justify-center pt-28 px-4 gap-6 max-w-6xl mx-auto overflow-hidden">
         {/* Sidebar */}
         <aside className="w-full lg:w-1/4 mb-8 lg:mb-0 flex-shrink-0">
           {/* User Info */}
@@ -96,12 +96,12 @@ const CustomerProfile = () => {
 
             {/* Sidebar Links */}
             <nav className="mt-8">
-              <ul className="space-y-1">
+              <ul className="-space-y-0">
                 {/* My Account Toggle */}
                 <li>
                   <button
                     onClick={handleAccountClick}
-                    className={`flex items-center space-x-2 font-semibold w-full focus:outline-none p-3 rounded-md hover:bg-gray-100 transition-colors duration-300 ${
+                    className={`flex items-center space-x-1 font-semibold w-full focus:outline-none p-3 rounded-md hover:bg-gray-100 transition-colors duration-300 ${
                       isAccountOpen
                         ? "bg-gray-100 text-alofa-pink"
                         : "text-alofa-pink"
@@ -146,7 +146,7 @@ const CustomerProfile = () => {
                 <li>
                   <Link
                     to="/profile/purchases"
-                    className={`flex items-center space-x-2 font-semibold w-full focus:outline-none p-3 rounded-md hover:bg-gray-100 transition-colors duration-300 ${
+                    className={`flex items-center space-x-1 font-semibold w-full focus:outline-none p-3 rounded-md hover:bg-gray-100 transition-colors duration-300 ${
                       location.pathname === "/profile/purchases"
                         ? "bg-gray-100 text-alofa-pink"
                         : "text-alofa-pink"
