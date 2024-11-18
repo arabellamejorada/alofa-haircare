@@ -12,9 +12,12 @@ const CartOverview = () => {
     handleDelete,
     handleIncrement,
     handleDecrement,
+    handleRedirectToLogInPage,
     subtotal,
     hovered,
     setHovered,
+    user,
+    loading,
   } = useContext(CartContext);
 
   const closeCart = () => {
@@ -54,7 +57,10 @@ const CartOverview = () => {
             Cart Overview
           </h1>
           <div className="text-md text-gray-500 mb-4 italic">
-            {cartItems.reduce((total, item) => total + item.quantity, 0)} {cartItems.reduce((total, item) => total + item.quantity, 0) === 1 ? "item" : "items"}
+            {cartItems.reduce((total, item) => total + item.quantity, 0)}{" "}
+            {cartItems.reduce((total, item) => total + item.quantity, 0) === 1
+              ? "item"
+              : "items"}
           </div>
 
           <div className="flex-1 overflow-y-auto mb-4">
@@ -161,12 +167,21 @@ const CartOverview = () => {
                 View Cart
               </button>
             </Link>
-            <Link to="/checkout" className="w-1/2">
-              <button className="w-full font-extrabold flex items-center justify-center gap-2 text-white py-2 px-4 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]">
-                <MdOutlineShoppingCartCheckout />
-                Check Out
-              </button>
-            </Link>
+            {user !== null ? (
+              <Link to="/checkout" className="w-1/2">
+                <button className="w-full font-extrabold flex items-center justify-center gap-2 text-white py-2 px-4 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]">
+                  <MdOutlineShoppingCartCheckout />
+                  Check Out
+                </button>
+              </Link>
+            ) : (
+              <Link to="/login" className="w-1/2">
+                <button className="w-full font-extrabold flex items-center justify-center gap-2 text-white py-2 px-4 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]">
+                  <MdOutlineShoppingCartCheckout />
+                  Check Out
+                </button>
+              </Link>
+            )}
           </div>
         </div>
       </div>

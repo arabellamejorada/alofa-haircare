@@ -12,6 +12,7 @@ const ShoppingCart = () => {
     handleIncrement,
     subtotal,
     loading,
+    user,
   } = useContext(CartContext);
 
   const total = subtotal; // can modify if included ang tax and all
@@ -42,11 +43,12 @@ const ShoppingCart = () => {
             handleDelete={handleDelete}
             handleDecrement={handleDecrement}
             handleIncrement={handleIncrement}
+            user={user}
           />
         </div>
         <div className="w-3/4">
           {/* Pass subtotal and total to CartSummary */}
-          <CartSummary subtotal={subtotal} total={total} />
+          <CartSummary subtotal={subtotal} total={total} user={user} />
         </div>
       </div>
     </div>
