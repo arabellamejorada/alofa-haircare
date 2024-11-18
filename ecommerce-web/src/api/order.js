@@ -72,7 +72,7 @@ export const getRefundRequestsByProfileId = async (profile_id) => {
 
     const formattedTransactions = response.data.map((transaction) => ({
       ...transaction,
-      total_refund_amount: Number(transaction.total_amount),
+      total_refund_amount: Number(transaction.total_refund_amount),
       refund_items: transaction.refund_items.map((item) => ({
         ...item,
         item_subtotal: Number(item.item_subtotal),

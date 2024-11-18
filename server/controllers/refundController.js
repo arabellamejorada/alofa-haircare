@@ -94,53 +94,53 @@ const getRefundRequestsByProfileId = async (req, res) => {
   const { profile_id } = req.params;
 
   try {
-   const refundResult = await pool.query(
-      `SELECT 
-            rr.*,
-            rr.id as refund_request_id,
-            p.first_name AS profile_first_name,
-            p.last_name AS profile_last_name,
-            o.order_status_id,
-            os.status_name AS order_status_name,
-            JSON_AGG(
-              JSON_BUILD_OBJECT(
-                'refund_item_id', ri.id,
-                'order_item_id', ri.order_item_id,
-                'variation_id', ri.variation_id,
-                'quantity', ri.quantity,
-                'item_subtotal', ri.item_subtotal,
-                'value', pv.value,
-                'image', pv.image,
-                'product_name', pr.name,
-                'sku', pv.sku
-              ) 
-            ) AS refund_items
-        FROM 
-            refund_request rr
-        LEFT JOIN refund_items ri ON rr.id = ri.refund_request_id
-        LEFT JOIN product_variation pv ON ri.variation_id = pv.variation_id
-        LEFT JOIN product pr ON pv.product_id = pr.product_id
-        LEFT JOIN orders o ON rr.order_id = o.order_id
-        LEFT JOIN customer c ON o.customer_id = c.customer_id
-        LEFT JOIN profiles p ON c.profile_id = p.id
-        LEFT JOIN order_status os ON o.order_status_id = os.status_id
-        WHERE p.id = $1
-        GROUP BY
-            rr.id,
-            ri.id,
-            pv.value,
-            pv.image,
-            pr.name,
-            pv.sku,
-            p.first_name,
-            p.last_name,
-            o.order_status_id,
-            os.status_name
-        ORDER BY rr.requested_at DESC
-      `,
-      [profile_id]
-    );
-
+      const refundResult = await pool.query(
+        `SELECT 
+              rr.id as refund_request_id,
+              rr.order_id,
+              rr.customer_id,
+              rr.reason,
+              rr.proofs,
+              rr.total_refund_amount,
+              to_char(rr.requested_at, 'MM-DD-YYYY, HH:MI AM') AS requested_at,
+              to_char(rr.updated_at, 'MM-DD-YYYY, HH:MI AM') AS updated_at,
+              p.first_name AS profile_first_name,
+              p.last_name AS profile_last_name,
+              o.order_status_id,
+              os.status_name AS order_status_name,
+              JSON_AGG(
+                JSON_BUILD_OBJECT(
+                  'refund_item_id', ri.id,
+                  'order_item_id', ri.order_item_id,
+                  'variation_id', ri.variation_id,
+                  'quantity', ri.quantity,
+                  'item_subtotal', ri.item_subtotal,
+                  'value', pv.value,
+                  'image', pv.image,
+                  'product_name', pr.name,
+                  'sku', pv.sku
+                ) ORDER BY ri.id ASC
+              ) AS refund_items
+          FROM 
+              refund_request rr
+          LEFT JOIN refund_items ri ON rr.id = ri.refund_request_id
+          LEFT JOIN product_variation pv ON ri.variation_id = pv.variation_id
+          LEFT JOIN product pr ON pv.product_id = pr.product_id
+          LEFT JOIN orders o ON rr.order_id = o.order_id
+          LEFT JOIN customer c ON o.customer_id = c.customer_id
+          LEFT JOIN profiles p ON c.profile_id = p.id
+          LEFT JOIN order_status os ON o.order_status_id = os.status_id
+          WHERE p.id = $1
+          GROUP BY
+              rr.id,
+              p.first_name,
+              p.last_name,
+              o.order_status_id,
+              os.status_name
+          ORDER BY rr.requested_at DESC
+        `,
+        [profile_id]
+      );
 
       if (refundResult.rowCount === 0) {
       return res
