@@ -28,7 +28,7 @@ const Footer = () => {
                     <FaInstagram className="mr-2" /> <a href="https://www.instagram.com/alofahaircare/" target="_blank" rel="noopener noreferrer">Instagram</a>
                   </li>
                   <li className="flex items-center">
-                    <FaTiktok className="mr-2" /> Tiktok
+                    <FaTiktok className="mr-2" /> <a href="">Tiktok</a>
                   </li>
                 </ul>
               </div>
@@ -49,7 +49,7 @@ const Footer = () => {
           </div>
 
           {/* Copyright Section */}
-          <div className="text-center mt-8 pt-4">
+          <div className="text-center mt-4 pt-4">
             <p>© 2022 Alofa, All Rights Reserved</p>
           </div>
         </div>

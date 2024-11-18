@@ -54,7 +54,7 @@ const RefundModal = ({ isOpen, closeModal, orderItems, selectedOrder }) => {
         </TransitionChild>
 
         <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4 text-center">
+          <div className="flex min-h-full items-center justify-center p-8 text-center">
             <TransitionChild
               as={Fragment}
               enter="ease-out duration-300"
@@ -64,10 +64,10 @@ const RefundModal = ({ isOpen, closeModal, orderItems, selectedOrder }) => {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <DialogPanel className="pt-8 w-full max-w-2xl h-[700px] transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+              <DialogPanel className="pt-7 px-8 py-10 w-full max-w-2xl h-[700px] transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                 <DialogTitle
                   as="h3"
-                  className="text-3xl font-bold leading-6 gradient-heading mb-4"
+                  className="text-3xl font-bold leading-normal gradient-heading mb-4"
                 >
                   Request Refund
                 </DialogTitle>
@@ -193,10 +193,10 @@ const RefundModal = ({ isOpen, closeModal, orderItems, selectedOrder }) => {
                 </div>
 
                 {/* Submit Button */}
-                <div className="mt-6 mb-7 pb-5 text-right">
+                <div className="mt-6 mb-7 pb-5 flex justify-end space-x-4">
                     <button
                     onClick={handleSubmit}
-                    className="border-0 hover:underline text-gray-600 font-semibold py-2 px-6"
+                    className="border-0 hover:underline text-gray-600 font-semibold py-2 px-4"
                     >
                     Cancel
                     </button>
