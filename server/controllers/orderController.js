@@ -548,12 +548,19 @@ const updateOrderPaymentStatus = async (req, res) => {
 const updateOrderStatus = async (req, res) => {
   const { order_id } = req.params;
   const { order_status_id } = req.body;
-
+  console.log("received", order_id, order_status_id)
   try {
     await pool.query(
       `UPDATE orders SET order_status_id = $1 WHERE order_id = $2`,
       [order_status_id, order_id],
     );
+
+    if(order_status_id === 4) {
+      await pool.query(
+        `UPDATE orders SET date_delivered = NOW() WHERE order_id = $1`,
+        [order_id],
+      );
+    }
 
     res.status(200).json({ message: "Order status updated successfully" });
   } catch (error) {
