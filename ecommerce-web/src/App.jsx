@@ -5,6 +5,7 @@ import {
   Navigate,
   useLocation,
 } from "react-router-dom";
+import './assets/fonts.css';
 import PropTypes from "prop-types";
 import { useContext } from "react";
 import { CartProvider } from "./components/CartContext";
