@@ -202,7 +202,7 @@ const OrderVerificationTab = ({ statusFilter }) => {
         <h1>Payment Verified</h1>
         <p>Hi ${selectedOrder.customer_name},</p>
         <p>Your payment for <strong>Order #${selectedOrder.order_id}</strong> has been successfully verified.</p>
-        <p>Log in to view your purchases shipping update: <a href="http://localhost:5173/profile/purchases.">My Purchases</a></p>
+        <p>Log in to view your purchases shipping update: <a href="http://localhost:5173/profile/purchases">My Purchases</a></p>
         <p>Thank you for shopping with us!</p>
       `;
 
@@ -228,27 +228,68 @@ const OrderVerificationTab = ({ statusFilter }) => {
       // Step 3: Update order status to "Preparing" (ID: 2)
       await updateOrderStatus(selectedOrder.order_id, 2);
 
-      // Step 4: Update the local state to reflect status changes
-      setOrders((prevOrders) =>
-        prevOrders.map((order) =>
-          order.order_id === selectedOrder.order_id
-            ? {
-                ...order,
-                payment_status_id: 2,
-                payment_status_name: "Verified",
-                order_status_id: 2,
-                order_status_name: "Preparing",
-              }
-            : order,
-        ),
-      );
-
       toast.success("Payment verified, order updated, and email sent.");
+
+      await fetchOrders();
       closeModal();
     } catch (error) {
       console.error("Error verifying payment or sending email:", error);
       toast.error("Failed to verify payment. Email was not sent.");
       setError("Failed to verify payment and update order status.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInvalidPayment = async () => {
+    if (!selectedOrder) return;
+
+    // Validate customer email
+    if (!selectedOrder.customer_email || !selectedOrder.customer_name) {
+      toast.error("Customer email or name is missing. Cannot send email.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      // Send an email with a link to the refunds page
+
+      const subject = `Refund for Order #${selectedOrder.order_id} due to Invalid Payment`;
+      const textContent = `Hi ${selectedOrder.customer_name},\n\nWe have processed a refund for Order #${selectedOrder.order_id}. Please view your account to verify the refunded amount. If there are any issue, you can send us an email. Thank you.`;
+      const htmlContent = `
+        <h1>Refund Process</h1>
+        <p>Hi ${selectedOrder.customer_name},</p>
+        <p>We have processed a refund for <strong>Order #${selectedOrder.order_id}</strong>.</p>
+        <p>Please view your account to verify the refunded amount. If there are any issues, you can send us an email.</p>
+        <p>Thank you.</p>
+      `;
+
+      console.log("Sending email with data:", {
+        to: selectedOrder.customer_email,
+        from: "Alofa Haircare <mailgun@sandbox1463264fb2744256b74af8ebe920ea0c.mailgun.org>", // Replace with your verified sender email
+        subject,
+        text: textContent,
+        html: htmlContent,
+      });
+
+      await SendEmail(
+        selectedOrder.customer_email,
+        "Alofa Haircare <mailgun@sandbox1463264fb2744256b74af8ebe920ea0c.mailgun.org>", // Replace with your verified sender email
+        subject,
+        textContent,
+        htmlContent,
+      );
+
+      // Update payment status to "Refunded" (ID: 3)
+      await updateOrderPaymentStatus(selectedOrder.order_id, 3);
+
+      toast.success("Payment status updated to 'Refunded' and email sent.");
+      await fetchOrders();
+      closeModal();
+    } catch (error) {
+      console.error("Error processing refund:", error);
+      toast.error("Failed to process refund.");
     } finally {
       setLoading(false);
     }
@@ -317,34 +358,6 @@ const OrderVerificationTab = ({ statusFilter }) => {
             >
               Clear Dates
             </button>
-          )}
-          {/* Payment Status Filter */}
-          {statusFilter === "All" && (
-            <>
-              <div className="flex items-center">
-                <label className="mr-2 text-sm font-medium text-gray-700">
-                  Payment Status:
-                </label>
-                <select
-                  className="h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
-                  value={paymentStatusFilter}
-                  onChange={(e) => setPaymentStatusFilter(e.target.value)}
-                >
-                  <option value="">All</option>
-                  <option value="Pending">Pending</option>
-                  <option value="Verified">Verified</option>
-                  <option value="Failed">Failed</option>
-                </select>
-              </div>
-              {paymentStatusFilter && (
-                <button
-                  onClick={() => setPaymentStatusFilter("")}
-                  className="text-sm ml-2 text-alofa-pink hover:text-alofa-dark"
-                >
-                  Clear Payment Status
-                </button>
-              )}
-            </>
           )}
         </div>
 
@@ -512,7 +525,7 @@ const OrderVerificationTab = ({ statusFilter }) => {
                   {/* Proof Image Section */}
                   {selectedOrder.proof_image ? (
                     <div>
-                      <strong className="font-bold mb-2">
+                      <strong className="text-sm font-bold text-gray-500">
                         Proof of Payment:
                       </strong>
                       <img
@@ -547,14 +560,22 @@ const OrderVerificationTab = ({ statusFilter }) => {
                 </div>
               </div>
               {/* Action Button */}
-              <div className="mt-8 flex justify-end">
+              <div className="mt-8 flex justify-end space-x-4">
                 {selectedOrder.payment_status_name !== "Verified" && (
-                  <button
-                    onClick={handleVerifyPayment}
-                    className="px-5 py-2 bg-green-600 text-white rounded-lg shadow-lg hover:bg-green-700 transition duration-200"
-                  >
-                    Verify Payment
-                  </button>
+                  <>
+                    <button
+                      onClick={handleVerifyPayment}
+                      className="px-5 py-2 bg-green-600 text-white rounded-lg shadow-lg hover:bg-green-700 transition duration-200"
+                    >
+                      Verify Payment
+                    </button>
+                    <button
+                      onClick={handleInvalidPayment}
+                      className="px-5 py-2 bg-red-600 text-white rounded-lg shadow-lg hover:bg-red-700 transition duration-200"
+                    >
+                      Invalid Payment
+                    </button>
+                  </>
                 )}
               </div>
             </div>
