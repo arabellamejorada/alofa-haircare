@@ -1,20 +1,14 @@
-// src/components/tabs/OrderVerificationTab.jsx
+// src/components/tabs/RefundTab.jsx
 
 import React, { useState, useEffect, Fragment } from "react";
-import {
-  getAllOrdersWithItems,
-  updateOrderPaymentStatus,
-  updateOrderStatus,
-} from "../../../api/orders";
+import { getAllRefundRequests } from "../../../api/orders";
 import { ClipLoader } from "react-spinners";
 import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 import Modal from "../../modal/Modal";
-import PaymentStatusBadge from "../../shared/StatusBadge";
-import { toast } from "sonner";
-import SendEmail from "../../shared/SendEmail";
+import StatusBadge from "../../shared/StatusBadge";
 
-const OrderVerificationTab = ({ statusFilter }) => {
-  const [orders, setOrders] = useState([]);
+const RefundTab = ({ statusFilter }) => {
+  const [refunds, setRefunds] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -26,7 +20,6 @@ const OrderVerificationTab = ({ statusFilter }) => {
   const [search, setSearch] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [paymentStatusFilter, setPaymentStatusFilter] = useState("");
 
   // Sorting states
   const [sortField, setSortField] = useState("");
@@ -34,7 +27,7 @@ const OrderVerificationTab = ({ statusFilter }) => {
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [selectedRefund, setSelectedRefund] = useState(null);
 
   const [isFullScreen, setIsFullScreen] = useState(false);
 
@@ -46,34 +39,23 @@ const OrderVerificationTab = ({ statusFilter }) => {
     setIsFullScreen(false);
   };
 
-  const fetchOrders = async () => {
+  const fetchRefunds = async () => {
     try {
       setLoading(true);
-      const response = await getAllOrdersWithItems();
-      if (response && response.orders) {
-        let filteredOrders;
-        if (statusFilter === "All") {
-          filteredOrders = response.orders;
-        } else {
-          filteredOrders = response.orders.filter(
-            (order) => order.payment_status_name === statusFilter,
-          );
-        }
-        setOrders(filteredOrders);
-      } else {
-        console.error("No orders data found.");
-      }
+      const data = await getAllRefundRequests();
+      setRefunds(data);
     } catch (err) {
-      setError("Failed to fetch orders");
-      console.error("Error fetching orders:", err);
+      setError("Failed to fetch refund requests");
+      console.error("Error fetching refunds:", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchOrders();
-    setCurrentPage(1); // Reset to first page when statusFilter changes
+    console.log("Current status filter:", statusFilter);
+    fetchRefunds();
+    setCurrentPage(1);
   }, [statusFilter]);
 
   // Handle sorting
@@ -82,12 +64,12 @@ const OrderVerificationTab = ({ statusFilter }) => {
       sortField === field && sortOrder === "asc" ? "desc" : "asc";
     setSortField(field);
     setSortOrder(newSortOrder);
-    setOrders((prevData) =>
+    setRefunds((prevData) =>
       [...prevData].sort((a, b) => {
         const aField =
-          field === "total_amount" ? parseFloat(a[field]) : a[field];
+          field === "total_refund_amount" ? parseFloat(a[field]) : a[field];
         const bField =
-          field === "total_amount" ? parseFloat(b[field]) : b[field];
+          field === "total_refund_amount" ? parseFloat(b[field]) : b[field];
 
         if (aField < bField) return newSortOrder === "asc" ? -1 : 1;
         if (aField > bField) return newSortOrder === "asc" ? 1 : -1;
@@ -97,50 +79,68 @@ const OrderVerificationTab = ({ statusFilter }) => {
   };
 
   // Calculate filtered and paginated data
-  const filteredOrders = orders.filter((order) => {
-    const orderId = order.order_id.toString();
-    const customerName = order.customer_name?.toLowerCase() || "";
-    const paymentStatus = order.payment_status_name || "";
+  const normalizeStatusFilter = (statusFilter) => {
+    switch (statusFilter) {
+      case "Pending":
+      case "Pending Refunds":
+        return "Processing";
+      case "Processed":
+      case "Processed Refunds":
+        return "Completed";
+      default:
+        return "All";
+    }
+  };
+
+  const normalizedStatusFilter = normalizeStatusFilter(statusFilter);
+
+  const filteredRefunds = refunds.filter((refund) => {
+    const refundId = refund.refund_request_id.toString();
+    const customerName = refund.customer_name?.toLowerCase() || "";
     const searchLower = search.toLowerCase();
 
-    // Filter by search terms
+    // Match refund status
+    const matchesStatus =
+      normalizedStatusFilter === "All" ||
+      refund.refund_status_name === normalizedStatusFilter;
+
+    // Match search term
     const matchesSearch =
-      orderId.includes(searchLower) || customerName.includes(searchLower);
+      refundId.includes(searchLower) || customerName.includes(searchLower);
 
-    // Filter by date
+    // Filter by date range
     let withinDateRange = true;
-
     if (startDate || endDate) {
-      const orderDateStr = order.order_date;
-      if (!orderDateStr) {
-        withinDateRange = false; // If order date is missing, exclude it
+      const requestedAtStr = refund.requested_at;
+      if (!requestedAtStr) {
+        withinDateRange = false; // Exclude if no date
       } else {
-        const orderDate = new Date(orderDateStr);
-        const orderDateTime = orderDate.getTime();
+        const requestedAt = new Date(requestedAtStr);
+        const requestedAtTime = requestedAt.getTime();
 
-        let startDateTime = startDate
+        const startDateTime = startDate
           ? new Date(startDate).setHours(0, 0, 0, 0)
           : null;
-        let endDateTime = endDate
+        const endDateTime = endDate
           ? new Date(endDate).setHours(23, 59, 59, 999)
           : null;
 
-        if (startDateTime && orderDateTime < startDateTime) {
+        if (startDateTime && requestedAtTime < startDateTime) {
           withinDateRange = false;
         }
-        if (endDateTime && orderDateTime > endDateTime) {
+        if (endDateTime && requestedAtTime > endDateTime) {
           withinDateRange = false;
         }
       }
     }
 
-    return matchesSearch && withinDateRange;
+    return matchesStatus && matchesSearch && withinDateRange;
   });
 
-  const totalPages = Math.ceil(filteredOrders.length / rowsPerPage);
+  const totalPages = Math.ceil(filteredRefunds.length / rowsPerPage);
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-  const currentData = filteredOrders.slice(indexOfFirstRow, indexOfLastRow);
+  const currentData = filteredRefunds.slice(indexOfFirstRow, indexOfLastRow);
 
   const handleNextPage = () => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
@@ -150,13 +150,14 @@ const OrderVerificationTab = ({ statusFilter }) => {
     if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
 
-  // Define columns for orders table, using PaymentStatusBadge for payment status
+  // Define columns for refunds table
   const columns = [
+    { key: "refund_request_id", header: "Refund ID" },
     { key: "order_id", header: "Order ID" },
     { key: "customer_name", header: "Customer Name" },
     {
-      key: "total_amount",
-      header: "Total Amount",
+      key: "total_refund_amount",
+      header: "Total Refund Amount",
       align: "right",
       render: (amount) =>
         `₱${Number(amount).toLocaleString(undefined, {
@@ -165,134 +166,22 @@ const OrderVerificationTab = ({ statusFilter }) => {
         })}`,
     },
     {
-      key: "payment_status_name",
-      header: "Payment Status",
-      render: (status) => <PaymentStatusBadge status={status} />,
+      key: "refund_status_name",
+      header: "Refund Status",
+      render: (status) => <StatusBadge status={status} />,
     },
-    { key: "order_date", header: "Date Ordered" },
+    { key: "requested_at", header: "Requested At" },
     { key: "action", header: "Action" },
   ];
 
-  const openModal = (order) => {
-    setSelectedOrder(order);
+  const openModal = (refund) => {
+    setSelectedRefund(refund);
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
-    setSelectedOrder(null);
+    setSelectedRefund(null);
     setIsModalOpen(false);
-  };
-
-  const handleVerifyPayment = async () => {
-    if (!selectedOrder) return;
-
-    console.log("Selected Order:", selectedOrder);
-
-    if (!selectedOrder.customer_email || !selectedOrder.customer_name) {
-      toast.error("Customer email or name is missing. Cannot send email.");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // Step 1: Send an email notification to the customer
-      const subject = `Payment Verified for Order #${selectedOrder.order_id}`;
-      const textContent = `Hi ${selectedOrder.customer_name},\n\nYour payment for Order #${selectedOrder.order_id} has been successfully verified. Thank you for shopping with us!`;
-      const htmlContent = `
-        <h1>Payment Verified</h1>
-        <p>Hi ${selectedOrder.customer_name},</p>
-        <p>Your payment for <strong>Order #${selectedOrder.order_id}</strong> has been successfully verified.</p>
-        <p>Log in to view your purchases shipping update: <a href="http://localhost:5173/profile/purchases">My Purchases</a></p>
-        <p>Thank you for shopping with us!</p>
-      `;
-
-      console.log("Sending email with data:", {
-        to: selectedOrder.customer_email,
-        from: "Alofa Haircare <mailgun@sandbox1463264fb2744256b74af8ebe920ea0c.mailgun.org>", // Replace with verified sender email
-        subject,
-        text: textContent,
-        html: htmlContent,
-      });
-
-      await SendEmail(
-        selectedOrder.customer_email,
-        "Alofa Haircare <mailgun@sandbox1463264fb2744256b74af8ebe920ea0c.mailgun.org>", // Replace with your sender email
-        subject,
-        textContent,
-        htmlContent,
-      );
-
-      // Step 2: Update payment status to "Verified" (ID: 2)
-      await updateOrderPaymentStatus(selectedOrder.order_id, 2);
-
-      // Step 3: Update order status to "Preparing" (ID: 2)
-      await updateOrderStatus(selectedOrder.order_id, 2);
-
-      toast.success("Payment verified, order updated, and email sent.");
-
-      await fetchOrders();
-      closeModal();
-    } catch (error) {
-      console.error("Error verifying payment or sending email:", error);
-      toast.error("Failed to verify payment. Email was not sent.");
-      setError("Failed to verify payment and update order status.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleInvalidPayment = async () => {
-    if (!selectedOrder) return;
-
-    // Validate customer email
-    if (!selectedOrder.customer_email || !selectedOrder.customer_name) {
-      toast.error("Customer email or name is missing. Cannot send email.");
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      // Send an email with a link to the refunds page
-
-      const subject = `Refund for Order #${selectedOrder.order_id} due to Invalid Payment`;
-      const textContent = `Hi ${selectedOrder.customer_name},\n\nWe have processed a refund for Order #${selectedOrder.order_id}. Please view your account to verify the refunded amount. If there are any issue, you can send us an email. Thank you.`;
-      const htmlContent = `
-        <h1>Refund Process</h1>
-        <p>Hi ${selectedOrder.customer_name},</p>
-        <p>We have processed a refund for <strong>Order #${selectedOrder.order_id}</strong>.</p>
-        <p>Please view your account to verify the refunded amount. If there are any issues, you can send us an email.</p>
-        <p>Thank you.</p>
-      `;
-
-      console.log("Sending email with data:", {
-        to: selectedOrder.customer_email,
-        from: "Alofa Haircare <mailgun@sandbox1463264fb2744256b74af8ebe920ea0c.mailgun.org>", // Replace with your verified sender email
-        subject,
-        text: textContent,
-        html: htmlContent,
-      });
-
-      await SendEmail(
-        selectedOrder.customer_email,
-        "Alofa Haircare <mailgun@sandbox1463264fb2744256b74af8ebe920ea0c.mailgun.org>", // Replace with your verified sender email
-        subject,
-        textContent,
-        htmlContent,
-      );
-
-      // Update payment status to "Refunded" (ID: 3)
-      await updateOrderPaymentStatus(selectedOrder.order_id, 3);
-
-      toast.success("Payment status updated to 'Refunded' and email sent.");
-      await fetchOrders();
-      closeModal();
-    } catch (error) {
-      console.error("Error processing refund:", error);
-      toast.error("Failed to process refund.");
-    } finally {
-      setLoading(false);
-    }
   };
 
   if (error) return <div className="text-red-500">{error}</div>;
@@ -313,7 +202,7 @@ const OrderVerificationTab = ({ statusFilter }) => {
           <input
             type="text"
             className="w-full max-w-md h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
-            placeholder="Search by Order ID or Customer Name..."
+            placeholder="Search by Refund ID or Customer Name..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -361,7 +250,7 @@ const OrderVerificationTab = ({ statusFilter }) => {
           )}
         </div>
 
-        {filteredOrders.length === 0 ? (
+        {filteredRefunds.length === 0 ? (
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <p className="text-lg font-semibold text-gray-600">
@@ -374,7 +263,7 @@ const OrderVerificationTab = ({ statusFilter }) => {
           </div>
         ) : (
           <>
-            {/* Orders Table */}
+            {/* Refunds Table */}
             <table className="min-w-full bg-white mt-4 shadow-md rounded-lg overflow-hidden">
               <thead>
                 <tr>
@@ -398,8 +287,8 @@ const OrderVerificationTab = ({ statusFilter }) => {
                 </tr>
               </thead>
               <tbody>
-                {currentData.map((order) => (
-                  <tr key={order.order_id}>
+                {currentData.map((refund) => (
+                  <tr key={refund.refund_request_id}>
                     {columns.slice(0, -1).map((column) => (
                       <td
                         key={column.key}
@@ -408,16 +297,16 @@ const OrderVerificationTab = ({ statusFilter }) => {
                         }`}
                       >
                         {column.render
-                          ? column.render(order[column.key])
-                          : order[column.key]}
+                          ? column.render(refund[column.key])
+                          : refund[column.key]}
                       </td>
                     ))}
                     <td className="text-left border-b">
                       <button
-                        onClick={() => openModal(order)}
+                        onClick={() => openModal(refund)}
                         className="px-3 py-1 bg-alofa-pink text-white rounded hover:bg-alofa-dark w-fit"
                       >
-                        Review Payment
+                        View Details
                       </button>
                     </td>
                   </tr>
@@ -450,12 +339,12 @@ const OrderVerificationTab = ({ statusFilter }) => {
           </>
         )}
 
-        {/* Order Details Modal */}
-        {isModalOpen && selectedOrder && (
+        {/* Refund Details Modal */}
+        {isModalOpen && selectedRefund && (
           <Modal isVisible={isModalOpen} onClose={closeModal} size="large">
             <div className="p-6 max-h-[80vh] overflow-y-auto flex flex-col bg-white rounded-lg ">
               <h2 className="text-4xl font-bold mb-6 text-alofa-pink">
-                Order Details
+                Refund Details
               </h2>
 
               <div className="flex flex-row">
@@ -467,75 +356,68 @@ const OrderVerificationTab = ({ statusFilter }) => {
                           Customer Name
                         </dt>
                         <dd className="mt-1 text-base text-gray-900">
-                          {selectedOrder.customer_name}
+                          {selectedRefund.customer_name}
                         </dd>
                       </div>
                       <div className="py-3">
                         <dt className="text-sm font-medium text-gray-500">
-                          Total Amount
+                          Total Refund Amount
                         </dt>
                         <dd className="mt-1 text-base text-gray-900">
                           ₱
-                          {Number(selectedOrder.total_amount).toLocaleString(
-                            undefined,
-                            {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            },
-                          )}
+                          {Number(
+                            selectedRefund.total_refund_amount,
+                          ).toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
                         </dd>
                       </div>
                       <div className="py-3">
                         <dt className="text-sm font-medium text-gray-500">
-                          Payment Status
+                          Refund Status
                         </dt>
                         <dd className="mt-1 text-base text-gray-900">
-                          <PaymentStatusBadge
-                            status={selectedOrder.payment_status_name}
-                          />
+                          {selectedRefund.refund_status_name}
                         </dd>
                       </div>
                       <div className="py-3">
                         <dt className="text-sm font-medium text-gray-500">
-                          Order Status
+                          Requested At
                         </dt>
                         <dd className="mt-1 text-base text-gray-900">
-                          {selectedOrder.order_status_name}
+                          {selectedRefund.requested_at}
                         </dd>
                       </div>
                       <div className="py-3">
                         <dt className="text-sm font-medium text-gray-500">
-                          Date Ordered
+                          Reason
                         </dt>
                         <dd className="mt-1 text-base text-gray-900">
-                          {(() => {
-                            const dateValue = selectedOrder.order_date;
-                            if (!dateValue) return "Date not available";
-                            const date = new Date(dateValue);
-                            return !isNaN(date.getTime())
-                              ? date.toLocaleString()
-                              : "Date not available";
-                          })()}
+                          {selectedRefund.reason}
                         </dd>
                       </div>
                     </dl>
                   </div>
                 </div>
                 <div>
-                  {/* Proof Image Section */}
-                  {selectedOrder.proof_image ? (
+                  {/* Proof Images Section */}
+                  {selectedRefund.proofs && selectedRefund.proofs.length > 0 ? (
                     <div>
                       <strong className="text-sm font-bold text-gray-500">
-                        Proof of Payment:
+                        Proofs:
                       </strong>
-                      <img
-                        src={`http://localhost:3001/${selectedOrder.proof_image.substring(
-                          7,
-                        )}`}
-                        alt="Payment Proof"
-                        className="mt-2 max-w-xs h-[30rem] mx-auto border rounded-lg shadow-md transform transition-transform duration-300 hover:scale-105 cursor-pointer"
-                        onClick={handleImageClick}
-                      />
+                      <div className="flex flex-wrap mt-2">
+                        {selectedRefund.proofs.map((proof, index) => (
+                          <img
+                            key={index}
+                            src={`http://localhost:3001/${proof.substring(1)}`}
+                            alt={`Proof ${index + 1}`}
+                            className="max-w-xs h-40 mx-auto border rounded-lg shadow-md transform transition-transform duration-300 hover:scale-105 cursor-pointer m-2"
+                            onClick={handleImageClick}
+                          />
+                        ))}
+                      </div>
                       {/* Full-Screen Image Modal */}
                       {isFullScreen && (
                         <div
@@ -543,10 +425,10 @@ const OrderVerificationTab = ({ statusFilter }) => {
                           onClick={closeFullScreen}
                         >
                           <img
-                            src={`http://localhost:3001/${selectedOrder.proof_image.substring(
-                              7,
+                            src={`http://localhost:3001/${selectedRefund.proofs[0].substring(
+                              1,
                             )}`}
-                            alt="Full-Sized Payment Proof"
+                            alt="Full-Sized Proof"
                             className="max-w-full max-h-full rounded-lg shadow-lg"
                           />
                         </div>
@@ -554,30 +436,58 @@ const OrderVerificationTab = ({ statusFilter }) => {
                     </div>
                   ) : (
                     <div className="mt-4 text-red-500 font-semibold">
-                      No payment proof image available.
+                      No proof images available.
                     </div>
                   )}
                 </div>
               </div>
-              {/* Action Button */}
-              <div className="mt-8 flex justify-end space-x-4">
-                {selectedOrder.payment_status_name !== "Verified" && (
-                  <>
-                    <button
-                      onClick={handleVerifyPayment}
-                      className="px-5 py-2 bg-green-600 text-white rounded-lg shadow-lg hover:bg-green-700 transition duration-200"
-                    >
-                      Verify Payment
-                    </button>
-                    <button
-                      onClick={handleInvalidPayment}
-                      className="px-5 py-2 bg-red-600 text-white rounded-lg shadow-lg hover:bg-red-700 transition duration-200"
-                    >
-                      Invalid Payment
-                    </button>
-                  </>
-                )}
+
+              {/* Refund Items Table */}
+              <div className="mt-6">
+                <h3 className="text-2xl font-semibold mb-4">Refund Items</h3>
+                <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+                  <thead>
+                    <tr>
+                      <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-sm font-semibold">
+                        Product Name
+                      </th>
+                      <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-sm font-semibold">
+                        Variation
+                      </th>
+                      <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-sm font-semibold">
+                        Quantity
+                      </th>
+                      <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-right text-sm font-semibold">
+                        Item Subtotal
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedRefund.refund_items.map((item, index) => (
+                      <tr key={index}>
+                        <td className="px-5 py-2 border-b">
+                          {item.product_name}
+                        </td>
+                        <td className="px-5 py-2 border-b">{item.value}</td>
+                        <td className="px-5 py-2 border-b">{item.quantity}</td>
+                        <td className="px-5 py-2 border-b text-right">
+                          ₱
+                          {Number(item.item_subtotal).toLocaleString(
+                            undefined,
+                            {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            },
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
+
+              {/* Action Buttons (Optional) */}
+              {/* You can add buttons here to approve or reject the refund request */}
             </div>
           </Modal>
         )}
@@ -586,4 +496,4 @@ const OrderVerificationTab = ({ statusFilter }) => {
   );
 };
 
-export default OrderVerificationTab;
+export default RefundTab;

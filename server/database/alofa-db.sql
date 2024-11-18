@@ -383,3 +383,13 @@ CREATE TABLE vouchers (
     -- Expiration date of the voucher
     created_at TIMESTAMP DEFAULT NOW() -- Date the voucher was created
 );
+
+CREATE TABLE refund_status (
+    status_id SERIAL PRIMARY KEY,
+    status_name VARCHAR(50) NOT NULL
+);
+
+INSERT INTO refund_status (status_id, status_name)
+VALUES
+    (1, 'Processing'),
+    (2, 'Completed');

@@ -11,6 +11,8 @@ const StatusBadge = ({ status }) => {
     Preparing: "bg-gray-200 text-gray-800",
     Shipped: "bg-yellow-200 text-yellow-800",
     Completed: "bg-green-200 text-green-800",
+
+    Processing: "bg-yellow-200 text-yellow-800",
   };
 
   // Apply default color if status doesn't match any predefined type

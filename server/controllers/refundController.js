@@ -1,6 +1,8 @@
-// note: nasa orderRoutes and routes for refund
+// src/controllers/RefundController.jsx
+
 const pool = require("../db.js");
 
+// Modify createRefundRequest to include refund_status_id
 const createRefundRequest = async (req, res) => {
   const { order_id, customer_id, reason, refund_items } = req.body; // Extract fields
   const files = req.files || []; // Extract uploaded files
@@ -20,7 +22,7 @@ const createRefundRequest = async (req, res) => {
     // Check if a refund request already exists for the order
     const existingRefund = await pool.query(
       `SELECT id FROM refund_request WHERE order_id = $1`,
-      [order_id]
+      [order_id],
     );
     if (existingRefund.rows.length > 0) {
       return res.status(400).json({
@@ -31,11 +33,13 @@ const createRefundRequest = async (req, res) => {
 
     // Calculate total_refund_amount
     const parsedRefundItems =
-      typeof refund_items === "string" ? JSON.parse(refund_items) : refund_items;
+      typeof refund_items === "string"
+        ? JSON.parse(refund_items)
+        : refund_items;
 
     const totalRefundAmount = parsedRefundItems.reduce(
       (total, item) => total + item.unit_price * item.quantity,
-      0
+      0,
     );
 
     console.log("Total refund amt:", totalRefundAmount);
@@ -44,10 +48,10 @@ const createRefundRequest = async (req, res) => {
 
     // Insert refund request into the database
     const refundResult = await pool.query(
-      `INSERT INTO refund_request (order_id, customer_id, reason, proofs, total_refund_amount, requested_at, updated_at)
-       VALUES ($1, $2, $3, $4::TEXT[], $5, NOW(), NOW())
+      `INSERT INTO refund_request (order_id, customer_id, reason, proofs, total_refund_amount, refund_status_id, requested_at, updated_at)
+       VALUES ($1, $2, $3, $4::TEXT[], $5, $6, NOW(), NOW())
        RETURNING id`,
-      [order_id, customer_id, reason, proofs, totalRefundAmount]
+      [order_id, customer_id, reason, proofs, totalRefundAmount, 1], // 1 corresponds to "Processing" status
     );
 
     const refundRequestId = refundResult.rows[0].id;
@@ -63,7 +67,7 @@ const createRefundRequest = async (req, res) => {
           item.variation_id,
           item.quantity,
           item.unit_price * item.quantity,
-        ]
+        ],
       );
     });
     await Promise.all(refundItemsInsertQueries);
@@ -90,66 +94,74 @@ const createRefundRequest = async (req, res) => {
   }
 };
 
+// Modify getRefundRequestsByProfileId to include refund_status
 const getRefundRequestsByProfileId = async (req, res) => {
   const { profile_id } = req.params;
 
   try {
-      const refundResult = await pool.query(
-        `SELECT 
-              rr.id as refund_request_id,
-              rr.order_id,
-              rr.customer_id,
-              rr.reason,
-              rr.proofs,
-              rr.total_refund_amount,
-              to_char(rr.requested_at, 'MM-DD-YYYY, HH:MI AM') AS requested_at,
-              to_char(rr.updated_at, 'MM-DD-YYYY, HH:MI AM') AS updated_at,
-              p.first_name AS profile_first_name,
-              p.last_name AS profile_last_name,
-              o.order_status_id,
-              os.status_name AS order_status_name,
-              JSON_AGG(
-                JSON_BUILD_OBJECT(
-                  'refund_item_id', ri.id,
-                  'order_item_id', ri.order_item_id,
-                  'variation_id', ri.variation_id,
-                  'quantity', ri.quantity,
-                  'item_subtotal', ri.item_subtotal,
-                  'value', pv.value,
-                  'image', pv.image,
-                  'product_name', pr.name,
-                  'sku', pv.sku
-                ) ORDER BY ri.id ASC
-              ) AS refund_items
-          FROM 
-              refund_request rr
-          LEFT JOIN refund_items ri ON rr.id = ri.refund_request_id
-          LEFT JOIN product_variation pv ON ri.variation_id = pv.variation_id
-          LEFT JOIN product pr ON pv.product_id = pr.product_id
-          LEFT JOIN orders o ON rr.order_id = o.order_id
-          LEFT JOIN customer c ON o.customer_id = c.customer_id
-          LEFT JOIN profiles p ON c.profile_id = p.id
-          LEFT JOIN order_status os ON o.order_status_id = os.status_id
-          WHERE p.id = $1
-          GROUP BY
-              rr.id,
-              p.first_name,
-              p.last_name,
-              o.order_status_id,
-              os.status_name
-          ORDER BY rr.requested_at DESC
-        `,
-        [profile_id]
-      );
+    const refundResult = await pool.query(
+      `SELECT 
+            rr.id as refund_request_id,
+            rr.order_id,
+            rr.customer_id,
+            rr.reason,
+            rr.proofs,
+            rr.total_refund_amount,
+            to_char(rr.requested_at, 'MM-DD-YYYY, HH:MI AM') AS requested_at,
+            to_char(rr.updated_at, 'MM-DD-YYYY, HH:MI AM') AS updated_at,
+            rr.refund_status_id,
+            rs.status_name AS refund_status_name,
+            p.first_name AS profile_first_name,
+            p.last_name AS profile_last_name,
+            o.order_status_id,
+            os.status_name AS order_status_name,
+            JSON_AGG(
+              JSON_BUILD_OBJECT(
+                'refund_item_id', ri.id,
+                'order_item_id', ri.order_item_id,
+                'variation_id', ri.variation_id,
+                'quantity', ri.quantity,
+                'item_subtotal', ri.item_subtotal,
+                'value', pv.value,
+                'image', pv.image,
+                'product_name', pr.name,
+                'sku', pv.sku
+              ) ORDER BY ri.id ASC
+            ) AS refund_items
+        FROM 
+            refund_request rr
+        LEFT JOIN refund_items ri ON rr.id = ri.refund_request_id
+        LEFT JOIN product_variation pv ON ri.variation_id = pv.variation_id
+        LEFT JOIN product pr ON pv.product_id = pr.product_id
+        LEFT JOIN orders o ON rr.order_id = o.order_id
+        LEFT JOIN customer c ON o.customer_id = c.customer_id
+        LEFT JOIN profiles p ON c.profile_id = p.id
+        LEFT JOIN order_status os ON o.order_status_id = os.status_id
+        LEFT JOIN refund_status rs ON rr.refund_status_id = rs.status_id
+        WHERE p.id = $1
+        GROUP BY
+            rr.id,
+            rr.refund_status_id,
+            rs.status_name,
+            p.first_name,
+            p.last_name,
+            o.order_status_id,
+            os.status_name
+        ORDER BY rr.requested_at DESC
+      `,
+      [profile_id],
+    );
 
-      if (refundResult.rowCount === 0) {
+    if (refundResult.rowCount === 0) {
       return res
         .status(404)
         .json({ error: "No refund requests found for this customer" });
     }
 
-     const refunds = refundResult.rows.map((refund) => {
-      refund.customer_name = `${refund.profile_first_name || ""} ${refund.profile_last_name || ""}`;
+    const refunds = refundResult.rows.map((refund) => {
+      refund.customer_name = `${
+        refund.profile_first_name || ""
+      } ${refund.profile_last_name || ""}`;
       delete refund.profile_first_name;
       delete refund.profile_last_name;
       return refund;
@@ -164,9 +176,91 @@ const getRefundRequestsByProfileId = async (req, res) => {
       error: error.message,
     });
   }
-}
+};
+
+// Modify getAllRefundRequests to include refund_status
+const getAllRefundRequests = async (req, res) => {
+  try {
+    const refundResult = await pool.query(
+      `SELECT 
+            rr.id as refund_request_id,
+            rr.order_id,
+            rr.customer_id,
+            rr.reason,
+            rr.proofs,
+            rr.total_refund_amount,
+            to_char(rr.requested_at, 'MM-DD-YYYY, HH:MI AM') AS requested_at,
+            to_char(rr.updated_at, 'MM-DD-YYYY, HH:MI AM') AS updated_at,
+            rr.refund_status_id,
+            rs.status_name AS refund_status_name,
+            p.first_name AS profile_first_name,
+            p.last_name AS profile_last_name,
+            o.order_status_id,
+            os.status_name AS order_status_name,
+            ps.status_name AS payment_status_name,
+            JSON_AGG(
+              JSON_BUILD_OBJECT(
+                'refund_item_id', ri.id,
+                'order_item_id', ri.order_item_id,
+                'variation_id', ri.variation_id,
+                'quantity', ri.quantity,
+                'item_subtotal', ri.item_subtotal,
+                'value', pv.value,
+                'image', pv.image,
+                'product_name', pr.name,
+                'sku', pv.sku
+              ) ORDER BY ri.id ASC
+            ) AS refund_items
+        FROM 
+            refund_request rr
+        LEFT JOIN refund_items ri ON rr.id = ri.refund_request_id
+        LEFT JOIN product_variation pv ON ri.variation_id = pv.variation_id
+        LEFT JOIN product pr ON pv.product_id = pr.product_id
+        LEFT JOIN orders o ON rr.order_id = o.order_id
+        LEFT JOIN customer c ON o.customer_id = c.customer_id
+        LEFT JOIN profiles p ON c.profile_id = p.id
+        LEFT JOIN order_status os ON o.order_status_id = os.status_id
+        LEFT JOIN payment_status ps ON o.payment_status_id = ps.status_id
+        LEFT JOIN refund_status rs ON rr.refund_status_id = rs.status_id
+        GROUP BY
+            rr.id,
+            rr.refund_status_id,
+            rs.status_name,
+            p.first_name,
+            p.last_name,
+            o.order_status_id,
+            os.status_name,
+            ps.status_name
+        ORDER BY rr.requested_at DESC
+      `,
+    );
+
+    if (refundResult.rowCount === 0) {
+      return res.status(404).json({ error: "No refund requests found" });
+    }
+
+    const refunds = refundResult.rows.map((refund) => {
+      refund.customer_name = `${
+        refund.profile_first_name || ""
+      } ${refund.profile_last_name || ""}`;
+      delete refund.profile_first_name;
+      delete refund.profile_last_name;
+      return refund;
+    });
+
+    res.status(200).json(refunds);
+  } catch (error) {
+    console.error("Error fetching all refund requests:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch refund requests",
+      error: error.message,
+    });
+  }
+};
 
 module.exports = {
   createRefundRequest,
   getRefundRequestsByProfileId,
+  getAllRefundRequests,
 };

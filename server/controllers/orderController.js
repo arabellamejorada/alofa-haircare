@@ -329,7 +329,8 @@ const getAllOrdersWithOrderItems = async (req, res) => {
         ps.status_name AS payment_status_name,
         p.first_name AS profile_first_name,
         p.last_name AS profile_last_name,
-        s.tracking_number -- Fetch tracking_number from shippingtable
+        p.email AS profile_email, -- Fetch email from profiles table
+        s.tracking_number -- Fetch tracking_number from shipping table
       FROM orders o
       JOIN order_items oi ON o.order_id = oi.order_id
       LEFT JOIN order_status os ON o.order_status_id = os.status_id
@@ -342,7 +343,7 @@ const getAllOrdersWithOrderItems = async (req, res) => {
     `);
 
     if (ordersResult.rowCount === 0) {
-      return res.status(200).json({ orders: [] }); // Changed to 200 with empty array
+      return res.status(200).json({ orders: [] }); // Return an empty array if no results
     }
 
     const orders = {};
@@ -354,15 +355,16 @@ const getAllOrdersWithOrderItems = async (req, res) => {
           order_id: row.order_id,
           customer_id: row.customer_id,
           customer_name: `${row.profile_first_name || ""} ${row.profile_last_name || ""}`,
+          customer_email: row.profile_email || "", // Include customer email
           subtotal: row.subtotal,
           total_discount: row.total_discount,
           total_amount: row.total_amount,
           voucher_id: row.voucher_id,
           date_ordered: row.date_ordered,
-          order_date: row.order_date, // Include order_date
+          order_date: row.order_date, // Include formatted order date
           proof_image: row.proof_image,
           shipping_id: row.shipping_id,
-          tracking_number: row.tracking_number, // Include tracking_number
+          tracking_number: row.tracking_number, // Include tracking number
           order_status_id: row.order_status_id,
           payment_method_id: row.payment_method_id,
           payment_status_id: row.payment_status_id,

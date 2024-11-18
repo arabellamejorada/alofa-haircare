@@ -23,5 +23,6 @@ router.put('/shipping/:shipping_id/status', orderController.updateShippingStatus
 // Refund routes
 router.post('/refund', upload.array('refund_proof', 5), refundController.createRefundRequest);
 router.get('/refund/requests/:profile_id', refundController.getRefundRequestsByProfileId);
+router.get('/requests', refundController.getAllRefundRequests);
 
 module.exports = router;

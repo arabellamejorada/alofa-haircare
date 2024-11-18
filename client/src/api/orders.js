@@ -115,3 +115,59 @@ export const updateShippingStatusAndTrackingNumber = async (
     throw error;
   }
 };
+
+// REFUND
+export const createRefundRequest = async (formData) => {
+  try {
+    const response = await axios.post("/refund", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error in createRefundRequest:", error);
+    throw error;
+  }
+};
+
+export const getRefundRequestsByProfileId = async (profile_id) => {
+  try {
+    const response = await axios.get(`/refund/requests/${profile_id}`);
+
+    const formattedTransactions = response.data.map((transaction) => ({
+      ...transaction,
+      total_refund_amount: Number(transaction.total_refund_amount),
+      refund_items: transaction.refund_items.map((item) => ({
+        ...item,
+        item_subtotal: Number(item.item_subtotal),
+        unit_price: Number(item.unit_price),
+      })),
+    }));
+
+    return formattedTransactions;
+  } catch (error) {
+    console.error("Error fetching orders by  profile ID:", error);
+    throw error;
+  }
+};
+
+export const getAllRefundRequests = async () => {
+  try {
+    const response = await axios.get("/requests");
+
+    const formattedRefunds = response.data.map((refund) => ({
+      ...refund,
+      total_refund_amount: Number(refund.total_refund_amount),
+      refund_items: refund.refund_items.map((item) => ({
+        ...item,
+        item_subtotal: Number(item.item_subtotal),
+      })),
+    }));
+
+    return formattedRefunds;
+  } catch (error) {
+    console.error("Error fetching all refund requests:", error);
+    throw error;
+  }
+};
