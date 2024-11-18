@@ -19,6 +19,7 @@ const Login = () => {
     password_input: "",
   });
 
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -83,9 +84,12 @@ const Login = () => {
                   </div>
                 )}
 
-                <p className="text-gray-600">Email:</p>
+                <label className="text-gray-600 " htmlFor="emailAddress">
+                  Email:
+                </label>
                 <Input
                   type="email"
+                  id="emailAddress"
                   name="emailAddress"
                   placeholder="Email Address"
                   className="mb-4 p-3 w-full h-[2rem] border border-gray-300 rounded-md"
@@ -93,20 +97,32 @@ const Login = () => {
                   required
                 />
 
-                <p className="text-gray-600">Password:</p>
-                <Input
-                  type="password"
-                  name="password_input"
-                  placeholder="Password"
-                  className="mb-4 p-3 w-full h-[2rem] border border-gray-300 rounded-md"
-                  onChange={handleChange}
-                  required
-                />
+                <label className="text-gray-600 " htmlFor="password_input">
+                  Password:
+                </label>
+                <div className="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    id="password_input"
+                    name="password_input"
+                    placeholder="Password"
+                    className="p-3 w-full h-[2rem] border border-gray-300 rounded-md"
+                    onChange={handleChange}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 flex items-center px-3 text-sm text-gray-500 hover:text-gray-700 focus:outline-none"
+                  >
+                    {showPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
 
-                <div className="flex flex-col items-center gap-2">
+                <div className="flex flex-col items-center gap-2 mt-6">
                   <Button
                     type="submit"
-                    className="w-full font-extrabold font-sans text-white my-1 py-2 px-4 rounded-md focus:outline-none bg-gradient-to-b from-[#FE699F] to-[#F8587A]"
+                    className="w-full font-extrabold font-sans text-white py-2 px-4 rounded-md focus:outline-none bg-gradient-to-b from-[#FE699F] to-[#F8587A]"
                   >
                     CONTINUE
                   </Button>
