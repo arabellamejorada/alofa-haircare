@@ -18,7 +18,6 @@ export const createOrder = async (formData) => {
 export const getOrderByProfileId = async (profile_id) => {
   try {
     const response = await axios.get(`/order/customer/${profile_id}`);
-
     const formattedTransactions = response.data.map((transaction) => ({
       ...transaction,
       total_amount: Number(transaction.total_amount),
