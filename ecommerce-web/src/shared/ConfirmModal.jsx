@@ -30,7 +30,7 @@ const ConfirmModal = ({
           <p className="text-sm text-gray-600 mb-6">{additionalNote}</p>
         )}
 
-        <div className="flex justify-end gap-4">
+        <div className="flex justify-end gap-4 pt-4">
           {/* Cancel button */}
           <button
             className="px-4 py-2 text-alofa-pink border border-alofa-pink rounded-md hover:bg-pink-100 transition-colors"
