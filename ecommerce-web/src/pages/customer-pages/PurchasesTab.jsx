@@ -91,7 +91,6 @@ const PurchasesTab = () => {
         (searchQuery === "" || matchesOrderId || matchesProductName)
       );
     });
-
     setFilteredOrders(filtered);
   }, [activeTab, searchQuery, transactions, statusMap]);
 
@@ -164,22 +163,44 @@ const PurchasesTab = () => {
           />
         </div>
 
-        {/* Transaction Cards - Render filtered transactions */}
         <div className="space-y-4">
-          {filteredOrders.length > 0 ? (
-            filteredOrders.map((order) => (
-              <TransactionCard
-                key={order.order_id}
-                activeTab={activeTab}
-                order={order}
-                loading={loading}
-                setLoading={setLoading}
-                setTransactions={setTransactions}
-              />
-            ))
-          ) : (
-            <div className="text-center text-gray-500">No orders found.</div>
-          )}
+          {/* For Orders */}
+          {activeTab !== "For Refund" ? (
+            filteredOrders.length > 0 ? (
+              filteredOrders.map((order) => (
+                <TransactionCard
+                  key={order.order_id}
+                  activeTab={activeTab}
+                  order={order}
+                  loading={loading}
+                  setLoading={setLoading}
+                  setTransactions={setTransactions}
+                />
+              ))
+            ) : (
+              <div className="text-center text-gray-500">No orders found.</div>
+            )
+          ) : null}
+
+          {/* For Refunds */}
+          {activeTab === "For Refund" ? (
+            refundRequests.length > 0 ? (
+              refundRequests.map((refund) => (
+                <TransactionCard
+                  key={refund.refund_id}
+                  activeTab={activeTab}
+                  refund={refund}
+                  loading={loading}
+                  setLoading={setLoading}
+                  setTransactions={setTransactions}
+                />
+              ))
+            ) : (
+              <div className="text-center text-gray-500">
+                No refund requests.
+              </div>
+            )
+          ) : null}
         </div>
       </div>
     </div>

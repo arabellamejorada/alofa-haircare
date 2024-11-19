@@ -125,7 +125,8 @@ const getRefundRequestsByProfileId = async (req, res) => {
                 'value', pv.value,
                 'image', pv.image,
                 'product_name', pr.name,
-                'sku', pv.sku
+                'sku', pv.sku,
+                'unit_price', oi.price
               ) ORDER BY ri.id ASC
             ) AS refund_items
         FROM 
@@ -138,6 +139,7 @@ const getRefundRequestsByProfileId = async (req, res) => {
         LEFT JOIN profiles p ON c.profile_id = p.id
         LEFT JOIN order_status os ON o.order_status_id = os.status_id
         LEFT JOIN refund_status rs ON rr.refund_status_id = rs.status_id
+        LEFT JOIN order_items oi ON ri.order_item_id = oi.order_item_id
         WHERE p.id = $1
         GROUP BY
             rr.id,
@@ -247,7 +249,7 @@ const getAllRefundRequests = async (req, res) => {
       delete refund.profile_last_name;
       return refund;
     });
-
+    
     res.status(200).json(refunds);
   } catch (error) {
     console.error("Error fetching all refund requests:", error);

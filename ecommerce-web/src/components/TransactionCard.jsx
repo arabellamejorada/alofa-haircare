@@ -5,14 +5,24 @@ import RefundModal from "./RefundModal";
 import { updateOrderStatus } from "../api/order";
 import { toast } from "sonner";
 
-const TransactionCard = ({ activeTab, order, setLoading, setTransactions }) => {
+const TransactionCard = ({
+  activeTab,
+  order,
+  setLoading,
+  setTransactions,
+  refund,
+}) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isRefundModalOpen, setIsRefundModalOpen] = useState(false);
 
-  const totalItems = order.order_items.reduce(
-    (acc, item) => acc + item.quantity,
-    0,
-  );
+  const totalItems =
+    activeTab !== "For Refund"
+      ? order.order_items.reduce((acc, item) => acc + item.quantity, 0)
+      : refund.refund_items.reduce((acc, item) => acc + item.quantity, 0);
+
+  if (activeTab === "For Refund") {
+    order = refund;
+  }
 
   const toggleExpanded = () => {
     setIsExpanded(!isExpanded);
@@ -56,25 +66,47 @@ const TransactionCard = ({ activeTab, order, setLoading, setTransactions }) => {
       <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-300">
         <div>
           <div className="text-gray-500 font-normal mb-0">
-            Order placed: {order.date_ordered}
+            {activeTab === "For Refund" ? "Refund placed: " : "Order placed: "}
+            {activeTab === "For Refund"
+              ? refund.requested_at
+              : order.date_ordered}
           </div>
         </div>
         <div
           className={`font-normal ${
-            order.order_status_name === "Completed"
-              ? "text-green-600"
-              : order.order_status_name === "Pending"
-                ? "italic text-orange-400"
-                : "italic text-gray-600"
+            activeTab === "For Refund"
+              ? refund.refund_status_name === "Completed"
+                ? "text-green-600"
+                : refund.refund_status_name === "Pending"
+                  ? "italic text-orange-400"
+                  : refund.refund_status_name === "Cancelled"
+                    ? "text-red-600"
+                    : "italic text-gray-600"
+              : order.order_status_name === "Completed"
+                ? "text-green-600"
+                : order.order_status_name === "Pending"
+                  ? "italic text-orange-400"
+                  : order.order_status_name === "Cancelled"
+                    ? "text-red-600"
+                    : "italic text-gray-600"
           }`}
         >
-          {order.order_status_name}
+          {activeTab === "For Refund"
+            ? refund.refund_status_name
+            : order.order_status_name}
         </div>
       </div>
 
       {/* Order Items */}
-      {order.order_items
-        .slice(0, isExpanded ? order.order_items.length : 2)
+      {(activeTab === "For Refund" ? refund.refund_items : order.order_items)
+        .slice(
+          0,
+          isExpanded
+            ? activeTab === "For Refund"
+              ? refund.refund_items.length
+              : order.order_items.length
+            : 2,
+        )
         .map((product) => {
           const imageName = product.image
             ? product.image.split("/").pop()
@@ -117,7 +149,8 @@ const TransactionCard = ({ activeTab, order, setLoading, setTransactions }) => {
         })}
 
       {/* View More Button */}
-      {order.order_items.length > 2 && (
+      {(activeTab === "For Refund" ? refund.refund_items : order.order_items)
+        .length > 2 && (
         <div className="flex justify-center text-center mb-4">
           <button
             onClick={toggleExpanded}
@@ -141,7 +174,10 @@ const TransactionCard = ({ activeTab, order, setLoading, setTransactions }) => {
         <div className="flex justify-between items-center mb-4">
           <div className="text-base">
             <div className="text-gray-500 font-normal mb-1">
-              Order ID #{order.order_id}
+              {activeTab === "For Refund" ? "Refund ID #" : "Order ID #"}
+              {activeTab === "For Refund"
+                ? refund.refund_request_id
+                : order.order_id}
             </div>
             {(activeTab === "To Receive" || activeTab === "Completed") && (
               <div className="text-gray-500 font-normal mb-1">
@@ -155,7 +191,10 @@ const TransactionCard = ({ activeTab, order, setLoading, setTransactions }) => {
             </div>
             <div className="text-alofa-pink font-bold text-xl">
               ₱
-              {order.total_amount.toLocaleString("en-US", {
+              {(activeTab === "For Refund"
+                ? refund.total_refund_amount
+                : order.total_amount
+              ).toLocaleString("en-US", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}
@@ -185,12 +224,15 @@ const TransactionCard = ({ activeTab, order, setLoading, setTransactions }) => {
         </div>
       </div>
 
-      <RefundModal
-        isOpen={isRefundModalOpen}
-        closeModal={closeRefundModal}
-        orderItems={order.order_items}
-        selectedOrder={order}
-      />
+      {/* Refund Modal */}
+      {activeTab !== "For Refund" && (
+        <RefundModal
+          isOpen={isRefundModalOpen}
+          closeModal={closeRefundModal}
+          orderItems={order?.order_items || []} // Safeguard against undefined
+          selectedOrder={order}
+        />
+      )}
     </div>
   );
 };
