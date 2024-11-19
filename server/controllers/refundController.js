@@ -195,6 +195,7 @@ const getAllRefundRequests = async (req, res) => {
             rs.status_name AS refund_status_name,
             p.first_name AS profile_first_name,
             p.last_name AS profile_last_name,
+            p.email AS profile_email, -- Include email here
             o.order_status_id,
             os.status_name AS order_status_name,
             ps.status_name AS payment_status_name,
@@ -228,6 +229,7 @@ const getAllRefundRequests = async (req, res) => {
             rs.status_name,
             p.first_name,
             p.last_name,
+            p.email, -- Add email to GROUP BY
             o.order_status_id,
             os.status_name,
             ps.status_name
@@ -243,8 +245,10 @@ const getAllRefundRequests = async (req, res) => {
       refund.customer_name = `${
         refund.profile_first_name || ""
       } ${refund.profile_last_name || ""}`;
+      refund.customer_email = refund.profile_email; // Map the email
       delete refund.profile_first_name;
       delete refund.profile_last_name;
+      delete refund.profile_email; // Optional: Remove raw email field
       return refund;
     });
 

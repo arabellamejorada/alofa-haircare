@@ -1,5 +1,3 @@
-// src/components/ShippingTabs/OrdersTab.jsx
-
 import React, { useState, useEffect } from "react";
 import {
   getAllOrdersWithItems,
@@ -13,6 +11,7 @@ import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 import PaymentStatusBadge from "../../shared/StatusBadge";
 import { toast } from "sonner";
 import { useAuth } from "../../AuthContext";
+import SendEmail from "../../shared/SendEmail";
 
 const OrdersTab = ({ statusFilter }) => {
   const { employeeId } = useAuth();
@@ -122,6 +121,56 @@ const OrdersTab = ({ statusFilter }) => {
         return;
       }
 
+      // Email notification logic
+      if (selectedOrder.customer_email && selectedOrder.customer_name) {
+        let subject;
+        let textContent;
+        let htmlContent;
+
+        if (nextStatusName === "Shipped") {
+          subject = `Your Order #${selectedOrder.order_id} Has Been Shipped`;
+          textContent = `Hi ${selectedOrder.customer_name},\n\nYour order #${selectedOrder.order_id} has been shipped. Here is your tracking number: ${trackingNumber}. Thank you for shopping with us!`;
+          htmlContent = `
+            <h1>Order Shipped</h1>
+            <p>Hi ${selectedOrder.customer_name},</p>
+            <p>Your order <strong>#${selectedOrder.order_id}</strong> has been shipped.</p>
+            <p>Here is your tracking number: <strong>${trackingNumber}</strong>.</p>
+            <p>Log in to track your shipping status: <a href="http://localhost:5173/profile/purchases">My Purchases</a></p>
+            <p>Thank you for shopping with us!</p>
+          `;
+        } else if (nextStatusName === "Completed") {
+          subject = `Your Order #${selectedOrder.order_id} Is Complete`;
+          textContent = `Hi ${selectedOrder.customer_name},\n\nYour order #${selectedOrder.order_id} has been marked as completed. Thank you for shopping with us!`;
+          htmlContent = `
+            <h1>Order Completed</h1>
+            <p>Hi ${selectedOrder.customer_name},</p>
+            <p>Your order <strong>#${selectedOrder.order_id}</strong> has been marked as completed.</p>
+            <p>We hope you enjoy your purchase!</p>
+            <p>Thank you for shopping with us!</p>
+          `;
+        }
+
+        // Try to send email before proceeding
+        try {
+          await SendEmail(
+            selectedOrder.customer_email,
+            "Alofa Haircare <mailgun@sandbox1463264fb2744256b74af8ebe920ea0c.mailgun.org>", // Replace with your sender email
+            subject,
+            textContent,
+            htmlContent,
+          );
+        } catch (emailError) {
+          console.error("Error sending email:", emailError);
+          toast.error("Failed to send email. Status will not be updated.");
+          return; // Exit the function if email sending fails
+        }
+      } else {
+        toast.error(
+          "Customer email or name is missing. Unable to send notification.",
+        );
+        return; // Exit the function if customer data is invalid
+      }
+
       // Only handle stock out when status changes to "Shipped"
       if (nextStatusName === "Shipped") {
         await handleStockOutOnShipping();
@@ -135,12 +184,12 @@ const OrdersTab = ({ statusFilter }) => {
       );
 
       toast.success("Shipping status updated successfully.");
-
       closeModal();
       await fetchOrders();
     } catch (error) {
       console.error("Error updating shipping status:", error);
       setError("Failed to update shipping status");
+      toast.error("Failed to update shipping status.");
     } finally {
       setUpdatingStatus(false);
     }
@@ -192,12 +241,49 @@ const OrdersTab = ({ statusFilter }) => {
       const revertStatusId = 2;
       const revertStatusName = "Preparing";
 
+      // Check if customer email and name are available
+      if (selectedOrder.customer_email && selectedOrder.customer_name) {
+        const subject = `Shipping for Order #${selectedOrder.order_id} Has Been Cancelled`;
+        const textContent = `Hi ${selectedOrder.customer_name},\n\nWe regret to inform you that the shipping for Order #${selectedOrder.order_id} has been cancelled. Please contact us for further details or assistance.\n\nThank you.`;
+        const htmlContent = `
+          <h1>Shipping Cancelled</h1>
+          <p>Hi ${selectedOrder.customer_name},</p>
+          <p>We regret to inform you that the shipping for <strong>Order #${selectedOrder.order_id}</strong> has been cancelled.</p>
+          <p>Please contact us for further details or assistance.</p>
+          <p>Thank you for your understanding.</p>
+        `;
+
+        try {
+          // Attempt to send email
+          await SendEmail(
+            selectedOrder.customer_email,
+            "Alofa Haircare <mailgun@sandbox1463264fb2744256b74af8ebe920ea0c.mailgun.org>", // Replace with your sender email
+            subject,
+            textContent,
+            htmlContent,
+          );
+        } catch (emailError) {
+          console.error("Error sending cancellation email:", emailError);
+          toast.error(
+            "Failed to send cancellation email. Shipping status will not be updated.",
+          );
+          return; // Exit function if email fails
+        }
+      } else {
+        toast.error(
+          "Customer email or name is missing. Cannot send cancellation email.",
+        );
+        return; // Exit function if customer data is invalid
+      }
+
+      // Update the shipping status and tracking number
       await updateShippingStatusAndTrackingNumber(
         selectedOrder.shipping_id,
         revertStatusId,
         null,
       );
 
+      // Update the local state
       setOrders((prevOrders) =>
         prevOrders.map((order) =>
           order.order_id === selectedOrder.order_id
@@ -225,6 +311,7 @@ const OrdersTab = ({ statusFilter }) => {
     } catch (error) {
       console.error("Error canceling shipping:", error);
       setError("Failed to cancel shipping");
+      toast.error("Failed to cancel shipping.");
     } finally {
       setUpdatingStatus(false);
     }
@@ -611,7 +698,7 @@ const OrdersTab = ({ statusFilter }) => {
                   </p>
                 )}
               </div>
-              <div className="mt-8 flex justify-end">
+              <div className="mt-8 flex justify-end gap-2">
                 {selectedOrder.order_status_id !== 4 && (
                   <button
                     onClick={handleUpdateShippingStatus}

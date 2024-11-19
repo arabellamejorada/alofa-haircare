@@ -8,6 +8,7 @@ import Modal from "../../modal/Modal";
 import StatusBadge from "../../shared/StatusBadge";
 import { toast } from "sonner";
 import ConfirmModal from "../../shared/ConfirmModal";
+import SendEmail from "../../shared/SendEmail";
 
 const RefundTab = ({ statusFilter }) => {
   const [refunds, setRefunds] = useState([]);
@@ -59,7 +60,8 @@ const RefundTab = ({ statusFilter }) => {
     try {
       setLoading(true);
       const data = await getAllRefundRequests();
-      setRefunds(data);
+      setRefunds(data); // Ensure email is included in `data`
+      console.log(data);
     } catch (err) {
       setError("Failed to fetch refund requests");
       console.error("Error fetching refunds:", err);
@@ -204,6 +206,67 @@ const RefundTab = ({ statusFilter }) => {
 
   const handleRefundStatusChange = async (refundRequestId, newStatusId) => {
     try {
+      const refund = refunds.find(
+        (r) => r.refund_request_id === refundRequestId,
+      );
+
+      if (!refund) {
+        toast.error("Refund request not found.");
+        return;
+      }
+
+      if (!refund.customer_email || !refund.customer_name) {
+        toast.error("Customer email or name is missing. Cannot send email.");
+        return;
+      }
+
+      let subject, textContent, htmlContent;
+
+      if (newStatusId === 2) {
+        // Refund marked as complete
+        subject = `Refund Processed for Request #${refundRequestId}`;
+        textContent = `Hi ${refund.customer_name},\n\nYour refund request #${refundRequestId} has been successfully processed. The refund amount has been credited back to your payment method. Thank you.`;
+        htmlContent = `
+          <h1>Refund Processed</h1>
+          <p>Hi ${refund.customer_name},</p>
+          <p>Your refund request <strong>#${refundRequestId}</strong> has been successfully processed.</p>
+          <p>The refund amount has been credited back to your payment method.</p>
+          <p>Thank you for shopping with us.</p>
+        `;
+      } else if (newStatusId === 3) {
+        // Refund cancelled
+        subject = `Refund Request #${refundRequestId} Has Been Cancelled`;
+        textContent = `Hi ${refund.customer_name},\n\nWe regret to inform you that your refund request #${refundRequestId} has been cancelled. Please contact us for further details.`;
+        htmlContent = `
+          <h1>Refund Request Cancelled</h1>
+          <p>Hi ${refund.customer_name},</p>
+          <p>Your refund request <strong>#${refundRequestId}</strong> has been cancelled.</p>
+          <p>Please contact us for further details.</p>
+          <p>Thank you for your understanding.</p>
+        `;
+      } else {
+        toast.error("Invalid status change.");
+        return;
+      }
+
+      // Send email notification
+      try {
+        await SendEmail(
+          refund.customer_email,
+          "Alofa Haircare <mailgun@sandbox1463264fb2744256b74af8ebe920ea0c.mailgun.org>", // Replace with your sender email
+          subject,
+          textContent,
+          htmlContent,
+        );
+
+        toast.success(`Email sent to ${refund.customer_email}.`);
+      } catch (emailError) {
+        console.error("Error sending email:", emailError);
+        toast.error("Failed to send email. Refund status will not be updated.");
+        return; // Exit if email fails
+      }
+
+      // Update refund status if email is successful
       const response = await updateRefundStatus(refundRequestId, newStatusId);
 
       if (response.success) {
