@@ -88,6 +88,7 @@ const RefundTab = ({ statusFilter }) => {
       case "Processed":
       case "Processed Refunds":
         return "Completed";
+      case "Cancelled":
       case "Cancelled Refunds":
         return "Cancelled";
       default:
