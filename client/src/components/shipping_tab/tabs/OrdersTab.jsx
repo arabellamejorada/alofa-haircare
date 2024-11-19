@@ -246,7 +246,14 @@ const OrdersTab = ({ statusFilter }) => {
           );
         }
 
-        setOrders(filteredOrders);
+        // Sort orders by 'order_date' in descending order
+        const sortedOrders = filteredOrders.sort((a, b) => {
+          const dateA = new Date(a.order_date);
+          const dateB = new Date(b.order_date);
+          return dateB - dateA; // Most recent orders first
+        });
+
+        setOrders(sortedOrders);
       } else {
         console.error("No orders data found.");
       }
@@ -608,7 +615,7 @@ const OrdersTab = ({ statusFilter }) => {
                 {selectedOrder.order_status_id !== 4 && (
                   <button
                     onClick={handleUpdateShippingStatus}
-                    className="px-5 py-2 bg-green-600 text-white rounded-lg shadow-lg hover:bg-green-700 transition duration-200"
+                    className="px-6 py-2 bg-alofa-pink text-white font-semibold rounded-lg hover:bg-alofa-dark transition"
                   >
                     {selectedOrder.order_status_id === 2
                       ? "Order Shipped"
@@ -622,7 +629,7 @@ const OrdersTab = ({ statusFilter }) => {
                 {selectedOrder.order_status_id !== 2 && (
                   <button
                     onClick={handleCancelShipping}
-                    className="ml-4 px-5 py-2 bg-red-600 text-white rounded-lg shadow-lg hover:bg-red-700 transition duration-200"
+                    className="px-6 py-2 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400 transition"
                   >
                     Cancel Shipping
                   </button>

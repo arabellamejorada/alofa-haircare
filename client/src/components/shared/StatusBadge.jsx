@@ -13,6 +13,7 @@ const StatusBadge = ({ status }) => {
     Completed: "bg-green-200 text-green-800",
 
     Processing: "bg-yellow-200 text-yellow-800",
+    Cancelled: "bg-red-200 text-red-800",
   };
 
   // Apply default color if status doesn't match any predefined type

@@ -12,6 +12,8 @@ const Refund = () => {
         return <RefundTab statusFilter="Pending" />;
       case "Processed Refunds":
         return <RefundTab statusFilter="Processed" />;
+      case "Cancelled Refunds":
+        return <RefundTab statusFilter="Cancelled" />;
       default:
         return null;
     }
@@ -26,7 +28,12 @@ const Refund = () => {
 
         {/* Tabs */}
         <div className="border-b border-gray-300 mb-2">
-          {["All Refunds", "Pending Refunds", "Processed Refunds"].map((tab) => (
+          {[
+            "All Refunds",
+            "Pending Refunds",
+            "Processed Refunds",
+            "Cancelled Refunds",
+          ].map((tab) => (
             <button
               key={tab}
               className={`px-4 py-2 ${

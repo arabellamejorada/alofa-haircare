@@ -37,13 +37,16 @@ const OrderVerificationTab = ({ statusFilter }) => {
   const [selectedOrder, setSelectedOrder] = useState(null);
 
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [fullScreenImage, setFullScreenImage] = useState(null);
 
-  const handleImageClick = () => {
+  const handleImageClick = (imageSrc) => {
+    setFullScreenImage(imageSrc);
     setIsFullScreen(true);
   };
 
   const closeFullScreen = () => {
     setIsFullScreen(false);
+    setFullScreenImage(null);
   };
 
   const fetchOrders = async () => {
@@ -59,7 +62,15 @@ const OrderVerificationTab = ({ statusFilter }) => {
             (order) => order.payment_status_name === statusFilter,
           );
         }
-        setOrders(filteredOrders);
+
+        // Sort orders by 'order_date' in descending order
+        const sortedOrders = filteredOrders.sort((a, b) => {
+          const dateA = new Date(a.order_date);
+          const dateB = new Date(b.order_date);
+          return dateB - dateA; // Most recent first
+        });
+
+        setOrders(sortedOrders);
       } else {
         console.error("No orders data found.");
       }
@@ -529,23 +540,23 @@ const OrderVerificationTab = ({ statusFilter }) => {
                         Proof of Payment:
                       </strong>
                       <img
-                        src={`http://localhost:3001/${selectedOrder.proof_image.substring(
-                          7,
-                        )}`}
+                        src={`http://localhost:3001/${selectedOrder.proof_image.substring(7)}`}
                         alt="Payment Proof"
-                        className="mt-2 max-w-xs h-[30rem] mx-auto border rounded-lg shadow-md transform transition-transform duration-300 hover:scale-105 cursor-pointer"
-                        onClick={handleImageClick}
+                        className="mt-2 max-w-xs h-[30rem] mx-auto border rounded-lg shadow-md transform transition-transform duration-300 hover:scale-105 hover:shadow-lg hover:border-alofa-pink cursor-pointer"
+                        onClick={() =>
+                          handleImageClick(
+                            `http://localhost:3001/${selectedOrder.proof_image.substring(7)}`,
+                          )
+                        }
                       />
                       {/* Full-Screen Image Modal */}
-                      {isFullScreen && (
+                      {isFullScreen && fullScreenImage && (
                         <div
                           className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80"
                           onClick={closeFullScreen}
                         >
                           <img
-                            src={`http://localhost:3001/${selectedOrder.proof_image.substring(
-                              7,
-                            )}`}
+                            src={fullScreenImage}
                             alt="Full-Sized Payment Proof"
                             className="max-w-full max-h-full rounded-lg shadow-lg"
                           />
@@ -565,13 +576,13 @@ const OrderVerificationTab = ({ statusFilter }) => {
                   <>
                     <button
                       onClick={handleVerifyPayment}
-                      className="px-5 py-2 bg-green-600 text-white rounded-lg shadow-lg hover:bg-green-700 transition duration-200"
+                      className="px-6 py-2 bg-alofa-pink text-white font-semibold rounded-lg hover:bg-alofa-dark transition"
                     >
                       Verify Payment
                     </button>
                     <button
                       onClick={handleInvalidPayment}
-                      className="px-5 py-2 bg-red-600 text-white rounded-lg shadow-lg hover:bg-red-700 transition duration-200"
+                      className="px-6 py-2 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400 transition"
                     >
                       Invalid Payment
                     </button>
