@@ -1,11 +1,12 @@
 // src/components/tabs/RefundTab.jsx
 
 import React, { useState, useEffect, Fragment } from "react";
-import { getAllRefundRequests } from "../../../api/orders";
+import { getAllRefundRequests, updateRefundStatus } from "../../../api/orders";
 import { ClipLoader } from "react-spinners";
 import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 import Modal from "../../modal/Modal";
 import StatusBadge from "../../shared/StatusBadge";
+import { toast } from "sonner";
 
 const RefundTab = ({ statusFilter }) => {
   const [refunds, setRefunds] = useState([]);
@@ -87,6 +88,8 @@ const RefundTab = ({ statusFilter }) => {
       case "Processed":
       case "Processed Refunds":
         return "Completed";
+      case "Cancelled Refunds":
+        return "Cancelled";
       default:
         return "All";
     }
@@ -152,7 +155,6 @@ const RefundTab = ({ statusFilter }) => {
 
   // Define columns for refunds table
   const columns = [
-    { key: "refund_request_id", header: "Refund ID" },
     { key: "order_id", header: "Order ID" },
     { key: "customer_name", header: "Customer Name" },
     {
@@ -182,6 +184,27 @@ const RefundTab = ({ statusFilter }) => {
   const closeModal = () => {
     setSelectedRefund(null);
     setIsModalOpen(false);
+  };
+
+  const handleRefundStatusChange = async (refundRequestId, newStatusId) => {
+    try {
+      const response = await updateRefundStatus(refundRequestId, newStatusId);
+
+      if (response.success) {
+        const statusMessage =
+          newStatusId === 2
+            ? "Refund marked as Complete!"
+            : "Refund Cancelled!";
+        toast.success(statusMessage);
+        closeModal();
+        fetchRefunds(); // Refresh refund list
+      } else {
+        toast.error("Failed to update refund status");
+      }
+    } catch (error) {
+      console.error("Error updating refund status:", error);
+      toast.error("An error occurred while updating refund status");
+    }
   };
 
   if (error) return <div className="text-red-500">{error}</div>;
@@ -249,7 +272,6 @@ const RefundTab = ({ statusFilter }) => {
             </button>
           )}
         </div>
-
         {filteredRefunds.length === 0 ? (
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
@@ -338,11 +360,10 @@ const RefundTab = ({ statusFilter }) => {
             </div>
           </>
         )}
-
         {/* Refund Details Modal */}
         {isModalOpen && selectedRefund && (
           <Modal isVisible={isModalOpen} onClose={closeModal} size="large">
-            <div className="p-6 max-h-[80vh] overflow-y-auto flex flex-col bg-white rounded-lg ">
+            <div className="p-6 max-h-[80vh] overflow-y-auto flex flex-col bg-white rounded-lg">
               <h2 className="text-4xl font-bold mb-6 text-alofa-pink">
                 Refund Details
               </h2>
@@ -407,32 +428,16 @@ const RefundTab = ({ statusFilter }) => {
                       <strong className="text-sm font-bold text-gray-500">
                         Proofs:
                       </strong>
-                      <div className="flex flex-wrap mt-2">
+                      <div className="flex flex-wrap mt-2 gap-2">
                         {selectedRefund.proofs.map((proof, index) => (
                           <img
                             key={index}
                             src={`http://localhost:3001/${proof.substring(1)}`}
                             alt={`Proof ${index + 1}`}
-                            className="max-w-xs h-40 mx-auto border rounded-lg shadow-md transform transition-transform duration-300 hover:scale-105 cursor-pointer m-2"
-                            onClick={handleImageClick}
+                            className="w-40 h-40 object-cover border rounded-lg shadow-md"
                           />
                         ))}
                       </div>
-                      {/* Full-Screen Image Modal */}
-                      {isFullScreen && (
-                        <div
-                          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80"
-                          onClick={closeFullScreen}
-                        >
-                          <img
-                            src={`http://localhost:3001/${selectedRefund.proofs[0].substring(
-                              1,
-                            )}`}
-                            alt="Full-Sized Proof"
-                            className="max-w-full max-h-full rounded-lg shadow-lg"
-                          />
-                        </div>
-                      )}
                     </div>
                   ) : (
                     <div className="mt-4 text-red-500 font-semibold">
@@ -445,49 +450,76 @@ const RefundTab = ({ statusFilter }) => {
               {/* Refund Items Table */}
               <div className="mt-6">
                 <h3 className="text-2xl font-semibold mb-4">Refund Items</h3>
-                <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-                  <thead>
-                    <tr>
-                      <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-sm font-semibold">
-                        Product Name
-                      </th>
-                      <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-sm font-semibold">
-                        Variation
-                      </th>
-                      <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-sm font-semibold">
-                        Quantity
-                      </th>
-                      <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-right text-sm font-semibold">
-                        Item Subtotal
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selectedRefund.refund_items.map((item, index) => (
-                      <tr key={index}>
-                        <td className="px-5 py-2 border-b">
-                          {item.product_name}
-                        </td>
-                        <td className="px-5 py-2 border-b">{item.value}</td>
-                        <td className="px-5 py-2 border-b">{item.quantity}</td>
-                        <td className="px-5 py-2 border-b text-right">
-                          ₱
-                          {Number(item.item_subtotal).toLocaleString(
-                            undefined,
-                            {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            },
-                          )}
-                        </td>
+                <div className="max-h-40 overflow-y-auto">
+                  <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+                    <thead>
+                      <tr>
+                        <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-sm font-semibold">
+                          Product Name
+                        </th>
+                        <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-sm font-semibold">
+                          Variation
+                        </th>
+                        <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-sm font-semibold">
+                          Quantity
+                        </th>
+                        <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-right text-sm font-semibold">
+                          Item Subtotal
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {selectedRefund.refund_items.map((item, index) => (
+                        <tr key={index}>
+                          <td className="px-5 py-2 border-b">
+                            {item.product_name}
+                          </td>
+                          <td className="px-5 py-2 border-b">{item.value}</td>
+                          <td className="px-5 py-2 border-b">
+                            {item.quantity}
+                          </td>
+                          <td className="px-5 py-2 border-b text-right">
+                            ₱
+                            {Number(item.item_subtotal).toLocaleString(
+                              undefined,
+                              {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              },
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
 
-              {/* Action Buttons (Optional) */}
-              {/* You can add buttons here to approve or reject the refund request */}
+              {/* Action Buttons */}
+              <div className="mt-6 flex justify-end gap-4">
+                <button
+                  onClick={() =>
+                    handleRefundStatusChange(
+                      selectedRefund.refund_request_id,
+                      2,
+                    )
+                  }
+                  className="px-6 py-2 bg-alofa-pink text-white font-semibold rounded-lg hover:bg-alofa-dark transition"
+                >
+                  Mark as Complete
+                </button>
+                <button
+                  onClick={() =>
+                    handleRefundStatusChange(
+                      selectedRefund.refund_request_id,
+                      3,
+                    )
+                  }
+                  className="px-6 py-2 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400 transition"
+                >
+                  Cancel Refund
+                </button>
+              </div>
             </div>
           </Modal>
         )}

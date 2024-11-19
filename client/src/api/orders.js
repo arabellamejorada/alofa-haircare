@@ -171,3 +171,16 @@ export const getAllRefundRequests = async () => {
     throw error;
   }
 };
+
+export const updateRefundStatus = async (refundRequestId, statusId) => {
+  try {
+    const response = await axios.put(`/refunds/${refundRequestId}/status`, {
+      status_id: statusId,
+    });
+    console.log("Refund status updated: ", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating refund status: ", error);
+    throw error;
+  }
+};

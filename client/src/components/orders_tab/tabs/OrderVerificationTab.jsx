@@ -59,7 +59,15 @@ const OrderVerificationTab = ({ statusFilter }) => {
             (order) => order.payment_status_name === statusFilter,
           );
         }
-        setOrders(filteredOrders);
+
+        // Sort orders by 'order_date' in descending order
+        const sortedOrders = filteredOrders.sort((a, b) => {
+          const dateA = new Date(a.order_date);
+          const dateB = new Date(b.order_date);
+          return dateB - dateA; // Most recent first
+        });
+
+        setOrders(sortedOrders);
       } else {
         console.error("No orders data found.");
       }
@@ -70,7 +78,7 @@ const OrderVerificationTab = ({ statusFilter }) => {
       setLoading(false);
     }
   };
-
+  
   useEffect(() => {
     fetchOrders();
     setCurrentPage(1); // Reset to first page when statusFilter changes
@@ -565,13 +573,13 @@ const OrderVerificationTab = ({ statusFilter }) => {
                   <>
                     <button
                       onClick={handleVerifyPayment}
-                      className="px-5 py-2 bg-green-600 text-white rounded-lg shadow-lg hover:bg-green-700 transition duration-200"
+                      className="px-6 py-2 bg-alofa-pink text-white font-semibold rounded-lg hover:bg-alofa-dark transition"
                     >
                       Verify Payment
                     </button>
                     <button
                       onClick={handleInvalidPayment}
-                      className="px-5 py-2 bg-red-600 text-white rounded-lg shadow-lg hover:bg-red-700 transition duration-200"
+                      className="px-6 py-2 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400 transition"
                     >
                       Invalid Payment
                     </button>

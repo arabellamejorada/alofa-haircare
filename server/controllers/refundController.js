@@ -259,8 +259,45 @@ const getAllRefundRequests = async (req, res) => {
   }
 };
 
+const updateRefundStatus = async (req, res) => {
+  const { refund_request_id } = req.params;
+  const { status_id } = req.body;
+
+  try {
+    // Update refund status in the database
+    const result = await pool.query(
+      `UPDATE refund_request 
+       SET refund_status_id = $1, updated_at = NOW()
+       WHERE id = $2
+       RETURNING *`,
+      [status_id, refund_request_id],
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Refund request not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Refund status updated successfully",
+      data: result.rows[0],
+    });
+  } catch (error) {
+    console.error("Error updating refund status:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update refund status",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   createRefundRequest,
   getRefundRequestsByProfileId,
   getAllRefundRequests,
+  updateRefundStatus,
 };
