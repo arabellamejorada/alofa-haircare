@@ -119,10 +119,12 @@ const ProductDetails = () => {
 
               {/* Quantity Selector and Add to Cart Button */}
               <div className="flex items-center space-x-6 mt-1 justify-end">
-                <div className="flex items-center bg-white rounded-lg px-2 py-2 shadow-md">
+                <div className="flex items-center bg-white rounded-full px-3 py-2">
                   <button
                     onClick={() => setQuantity(Math.max(quantity - 1, 1))}
-                    className="text-alofa-pink bg-gray-200 hover:bg-gray-300 font-bold text-2xl px-3 py-1 rounded-md"
+                    className="text-white bg-gray-200 hover:bg-gray-300 font-bold text-base px-3 py-1 rounded-full
+                    focus:outline-none shadow-md bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b 
+                    hover:from-[#F8587A] hover:to-[#FE699F]"
                     disabled={quantity <= 1}
                   >
                     -
@@ -131,12 +133,14 @@ const ProductDetails = () => {
                     type="number"
                     value={quantity}
                     onChange={handleQuantityChange}
-                    className="text-gray-700 font-semibold text-2xl w-16 text-center border-none outline-none bg-white mx-3"
+                    className="text-gray-700 font-semibold text-2xl w-10 text-center border-slate-400 outline-none mx-3"
                     min="1"
                   />
                   <button
                     onClick={() => setQuantity(quantity + 1)}
-                    className="text-alofa-pink bg-gray-200 hover:bg-gray-300 font-bold text-2xl px-3 py-1 rounded-md"
+                    className="text-white bg-gray-200 hover:bg-gray-300 font-bold text-base px-3 py-1 rounded-full
+                    focus:outline-none shadow-md bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b 
+                    hover:from-[#F8587A] hover:to-[#FE699F]"
                   >
                     +
                   </button>

@@ -85,7 +85,7 @@ const Login = () => {
                 )}
 
                 <label className="text-gray-600 " htmlFor="emailAddress">
-                  Email:
+                  Email
                 </label>
                 <Input
                   type="email"
@@ -98,7 +98,7 @@ const Login = () => {
                 />
 
                 <label className="text-gray-600 " htmlFor="password_input">
-                  Password:
+                  Password
                 </label>
                 <div className="relative">
                   <Input
