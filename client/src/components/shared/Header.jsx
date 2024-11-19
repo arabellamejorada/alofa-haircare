@@ -1,18 +1,24 @@
 // Header.jsx
 import React, { useEffect, useState } from "react";
 import { HiMenu } from "react-icons/hi";
-import { FaUserAlt } from "react-icons/fa";
+import { FaUserAlt, FaUserCircle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../supabaseClient";
-import { FaUserCircle } from "react-icons/fa";
 
 import Modal from "../modal/Modal"; // Adjust the import path as necessary
 
 export default function Header({ onMenuClick }) {
   const navigate = useNavigate();
-  // const [userName, setUserName] = useState("");
   const [userMetadata, setUserMetadata] = useState(null);
   const [isModalVisible, setModalVisible] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    password: "",
+  });
+  const [sessionUser, setSessionUser] = useState(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -30,6 +36,7 @@ export default function Header({ onMenuClick }) {
 
       if (session && session.user) {
         const user = session.user;
+        setSessionUser(user); // Store the session user for later use
 
         // Fetch additional profile data
         const { data: profile, error: profileError } = await supabase
@@ -41,8 +48,13 @@ export default function Header({ onMenuClick }) {
         if (profileError) {
           console.error("Error fetching user profile:", profileError);
         } else {
-          // setUserName(profile.first_name);
           setUserMetadata(profile);
+          setFormData({
+            first_name: profile.first_name,
+            last_name: profile.last_name,
+            email: profile.email,
+            password: "",
+          });
         }
       } else {
         // If no user is logged in, navigate to the login page or handle accordingly
@@ -61,6 +73,82 @@ export default function Header({ onMenuClick }) {
   // Function to handle closing the modal
   const handleCloseModal = () => {
     setModalVisible(false);
+    setIsEditing(false); // Reset editing state when closing the modal
+  };
+
+  const handleSave = async () => {
+    try {
+      if (!sessionUser) throw new Error("User not authenticated");
+
+      const user = sessionUser;
+      const display_name =
+        `${formData.first_name} ${formData.last_name}`.trim();
+      const additionalMetadata = {
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        // Add more fields as needed
+      };
+
+      // Update the user's email and/or password in Supabase Auth
+      const updates = {
+        data: { display_name, additionalMetadata }, // Include display_name in user_metadata
+      };
+      if (formData.email !== user.email) {
+        updates.email = formData.email;
+      }
+      if (formData.password) {
+        updates.password = formData.password;
+      }
+
+      if (Object.keys(updates).length > 0) {
+        const { data, error: authUpdateError } =
+          await supabase.auth.updateUser(updates);
+        if (authUpdateError) {
+          throw authUpdateError;
+        } else {
+          // Update the sessionUser with the new data
+          setSessionUser(data.user);
+        }
+      }
+
+      // Update the profiles table
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          email: formData.email,
+        })
+        .eq("id", user.id);
+
+      if (updateError) throw updateError;
+
+      // Fetch the updated profile data
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("first_name, last_name, email, role_id")
+        .eq("id", user.id)
+        .single();
+
+      if (profileError) throw profileError;
+
+      setUserMetadata(profile);
+      setIsEditing(false);
+      alert("Profile updated successfully");
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      alert("Error updating profile: " + error.message);
+    }
+  };
+
+  const handleCancel = () => {
+    setFormData({
+      first_name: userMetadata.first_name,
+      last_name: userMetadata.last_name,
+      email: userMetadata.email,
+      password: "",
+    });
+    setIsEditing(false);
   };
 
   return (
@@ -98,37 +186,140 @@ export default function Header({ onMenuClick }) {
               </div>
             </div>
 
-            <div className="flex flex-col gap-1 w-[rem]">
-              {/* <div className="text-gray-400 font-semibold text-lg">
-                User Information
-              </div> */}
-              <div className="flex gap-[4rem]">
-                <div className="flex flex-col gap-2">
-                  <div>
-                    <div className="font-semibold text-gray-600">Name:</div>{" "}
-                  </div>
-                  <div>
-                    <div className="font-semibold text-gray-600">Email:</div>{" "}
-                  </div>
-                  <div>
-                    <div className="font-semibold text-gray-600">Position:</div>{" "}
-                  </div>
+            <div className="flex flex-col gap-6">
+              {/* Profile Fields */}
+              <div className="grid items-center gap-4 grid-cols-[0.5fr_1fr]">
+                <div className="font-semibold text-gray-600 w-[15rem]">
+                  First Name:
                 </div>
-                <div className="flex flex-col gap-2">
-                  <div className="flex justify-end text-gray-400 font-light">
-                    {userMetadata.first_name} {userMetadata.last_name}{" "}
-                  </div>
-                  <div className="flex justify-end text-gray-400 font-light">
-                    {userMetadata.email}{" "}
-                  </div>
-                  <div className="flex justify-end text-gray-400 font-light">
+                <div className="flex justify-end">
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={formData.first_name}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          first_name: e.target.value,
+                        })
+                      }
+                      placeholder="First Name"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-200"
+                    />
+                  ) : (
+                    <span className="text-gray-800">
+                      {userMetadata.first_name}
+                    </span>
+                  )}
+                </div>
+
+                <div className="font-semibold text-gray-600 w-[15rem]">
+                  Last Name:
+                </div>
+                <div className="flex justify-end">
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={formData.last_name}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          last_name: e.target.value,
+                        })
+                      }
+                      placeholder="Last Name"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-200"
+                    />
+                  ) : (
+                    <span className="text-gray-800">
+                      {userMetadata.last_name}
+                    </span>
+                  )}
+                </div>
+
+                <div className="font-semibold text-gray-600 w-[15rem]">
+                  Email:
+                </div>
+                <div className="flex justify-end">
+                  {isEditing ? (
+                    <input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          email: e.target.value,
+                        })
+                      }
+                      placeholder="Email"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-200"
+                    />
+                  ) : (
+                    <span className="text-gray-800">{userMetadata.email}</span>
+                  )}
+                </div>
+
+                <div className="font-semibold text-gray-600 w-[15rem]">
+                  Position:
+                </div>
+                <div className="flex justify-end">
+                  <span className="text-gray-800">
                     {userMetadata.role_id === 2
                       ? "Admin"
                       : userMetadata.role_id === 3
                         ? "Employee"
                         : "User"}
-                  </div>
+                  </span>
                 </div>
+
+                {isEditing && (
+                  <>
+                    <div className="font-semibold text-gray-600 w-[15rem]">
+                      Password:
+                    </div>
+                    <div className="flex justify-end">
+                      <input
+                        type="password"
+                        value={formData.password}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            password: e.target.value,
+                          })
+                        }
+                        placeholder="New Password"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-200"
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Edit and Save/Cancel Buttons */}
+              <div className="flex justify-end gap-4">
+                {!isEditing ? (
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="px-4 py-2 text-gray-500 hover:text-alofa-pink "
+                  >
+                    Edit
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={handleSave}
+                      className="px-4 py-2 bg-alofa-pink text-white font-semibold rounded-lg hover:bg-alofa-dark transition"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={handleCancel}
+                      className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition duration-200"
+                    >
+                      Cancel
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
