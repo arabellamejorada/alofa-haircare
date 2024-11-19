@@ -8,7 +8,7 @@ const FAQs = () => {
 
   useEffect(() => {
     const fetchFaqs = async () => {
-      const response = await getAllFaqs(); // Use the getAllFaqs function from faqs.js
+      const response = await getAllFaqs();
       if (response.error) {
         console.error('Error fetching FAQs:', response.error);
       } else {

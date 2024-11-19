@@ -1,9 +1,10 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 import { FaTrashAlt, FaPlus, FaMinus, FaTimes } from "react-icons/fa";
 import { AiOutlineShoppingCart } from "react-icons/ai";
 import { MdOutlineShoppingCartCheckout } from "react-icons/md";
 import { CartContext } from "../components/CartContext";
+import ConfirmModal from "./ConfirmModal";
 
 const CartOverview = () => {
   const {
@@ -12,16 +13,24 @@ const CartOverview = () => {
     handleDelete,
     handleIncrement,
     handleDecrement,
-    handleRedirectToLogInPage,
     subtotal,
     hovered,
     setHovered,
     user,
-    loading,
   } = useContext(CartContext);
 
   const closeCart = () => {
     setHovered(false);
+  };
+  
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleEmptyCartCheckout = () => {
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
   };
 
   return (
@@ -160,31 +169,58 @@ const CartOverview = () => {
             </div>
           </div>
 
-          <div className="flex justify-between gap-4">
-            <Link to="/shoppingcart" className="w-1/2">
-              <button className="w-full font-extrabold flex items-center justify-center gap-2 text-white py-2 px-4 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]">
+          <div className="flex justify-between gap-2">
+            <Link to="/shoppingcart" className="flex-1">
+              <button className="w-full font-extrabold flex items-center justify-center gap-1 text-white py-2.5 px-3 rounded-full
+                focus:outline-none shadow-md bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b 
+                hover:from-[#F8587A] hover:to-[#FE699F]">
                 <AiOutlineShoppingCart />
                 View Cart
               </button>
             </Link>
             {user !== null ? (
-              <Link to="/checkout" className="w-1/2">
-                <button className="w-full font-extrabold flex items-center justify-center gap-2 text-white py-2 px-4 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]">
+              cartItems.length > 0 ? (
+                <Link to="/checkout" className="flex-1">
+                  <button className="w-full font-extrabold flex items-center justify-center gap-1 text-white py-2.5 px-3 rounded-full
+                    focus:outline-none shadow-md bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b 
+                    hover:from-[#F8587A] hover:to-[#FE699F]">
+                    <MdOutlineShoppingCartCheckout />
+                    Check Out
+                  </button>
+                </Link>
+              ) : (
+                <button
+                  className="flex-1 w-full font-extrabold flex items-center justify-center gap-1 text-white py-2.5 px-3 rounded-full
+                    focus:outline-none shadow-md bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b 
+                    hover:from-[#F8587A] hover:to-[#FE699F]"
+                  onClick={handleEmptyCartCheckout}
+                >
                   <MdOutlineShoppingCartCheckout />
                   Check Out
                 </button>
-              </Link>
+              )
             ) : (
-              <Link to="/login" className="w-1/2">
-                <button className="w-full font-extrabold flex items-center justify-center gap-2 text-white py-2 px-4 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F]">
+              <Link to="/login" className="flex-1">
+                <button className="w-full font-extrabold flex items-center justify-center gap-1 text-white py-2.5 px-3 rounded-full
+                  focus:outline-none shadow-md bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b 
+                  hover:from-[#F8587A] hover:to-[#FE699F]">
                   <MdOutlineShoppingCartCheckout />
                   Check Out
                 </button>
               </Link>
             )}
           </div>
+
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        onConfirm={() => (window.location.href = "/products")}
+        heading="Empty Cart"
+        message="Your cart is empty. Head to products page to shop!"
+      />
     </>
   );
 };

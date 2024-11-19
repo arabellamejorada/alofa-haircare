@@ -1,11 +1,9 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ClipLoader } from "react-spinners";
 import {PropTypes} from "prop-types";
 import { toast } from "sonner";
 import SelectAddressModal from "./SelectAddressModal.jsx";
-import { FaSignInAlt } from "react-icons/fa";
 import GCashLogo from "../../../../public/static/gcash-logo.svg";
 import BPILogo from "../../../../public/static/bpi-logo.svg";
 import GCashQR from "../../../../public/static/gcash-qr.jpg";
@@ -33,7 +31,6 @@ const ShippingAddress = ({
   const [regions, setRegions] = useState([]);
   const [provinces, setProvinces] = useState([]);
   const [cities, setCities] = useState([]);
-  const navigate = useNavigate();
 
   const handleInputChange = async (e) => {
     const { name, value } = e.target;
@@ -343,7 +340,7 @@ const ShippingAddress = ({
           <h2 className="text-xl font-semibold mb-4 text-gray-500 flex items-center">
             Shipping Information
           </h2>
-          {profileData?.profiles ? (
+          {profileData?.profiles && (
             <button
               className="ml-4 bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b 
                           hover:from-[#F8587A] hover:to-[#FE699F] text-white font-normal py-1 px-3 rounded-md 
@@ -351,15 +348,6 @@ const ShippingAddress = ({
               onClick={handleOpenAddressModal}
             >
               <FaRegAddressCard className="mr-2" /> Select Address
-            </button>
-          ) : (
-            <button
-              className="ml-4 bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b 
-                          hover:from-[#F8587A] hover:to-[#FE699F] text-white font-normal py-1 px-3 rounded-md 
-                          focus:outline-none flex items-center"
-              onClick={() => navigate('/login')}
-            >
-              <FaSignInAlt className="mr-2" /> Login
             </button>
           )}
 
