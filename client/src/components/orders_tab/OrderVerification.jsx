@@ -14,6 +14,8 @@ const OrderVerification = () => {
         return <OrderVerificationTab statusFilter="Pending" />;
       case "Verified Payment":
         return <OrderVerificationTab statusFilter="Verified" />;
+      case "Refunded Payment":
+        return <OrderVerificationTab statusFilter="Refunded" />;
       default:
         return null;
     }
@@ -28,7 +30,12 @@ const OrderVerification = () => {
 
         {/* Tabs */}
         <div className="border-b border-gray-300 mb-2">
-          {["All Orders", "Pending Payment", "Verified Payment"].map((tab) => (
+          {[
+            "All Orders",
+            "Pending Payment",
+            "Verified Payment",
+            "Refunded Payment",
+          ].map((tab) => (
             <button
               key={tab}
               className={`px-4 py-2 ${
