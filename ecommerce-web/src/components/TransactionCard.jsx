@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import PropTypes from "prop-types";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import RefundModal from "./RefundModal";
+import { updateOrderStatus } from "../api/order";
+import { toast } from "sonner";
 
-const TransactionCard = ({ activeTab, order }) => {
+const TransactionCard = ({ activeTab, order, setLoading, setTransactions }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isRefundModalOpen, setIsRefundModalOpen] = useState(false);
 
@@ -18,6 +20,35 @@ const TransactionCard = ({ activeTab, order }) => {
 
   const openRefundModal = () => setIsRefundModalOpen(true);
   const closeRefundModal = () => setIsRefundModalOpen(false);
+
+  const handleOrderReceived = async (orderId) => {
+    try {
+      setLoading(true);
+      await updateOrderStatus(orderId, 4);
+      toast.success("Order has been received!");
+      setTransactions((prevTransactions) =>
+        prevTransactions.map((transaction) =>
+          transaction.order_id === orderId
+            ? { ...transaction, order_status_name: "Completed" }
+            : transaction,
+        ),
+      );
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      toast.error("Failed to update order status. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const isRefundEligible = useMemo(() => {
+    if (!order.date_delivered) return false;
+    const currentDate = new Date();
+    const deliveredDate = new Date(order.date_delivered);
+    const differenceInTime = currentDate - deliveredDate;
+    const differenceInDays = differenceInTime / (1000 * 60 * 60 * 24);
+    return differenceInDays <= 7; // within 7 days
+  }, [order.date_delivered]);
 
   return (
     <div className="bg-gray-50 border border-gray-200 rounded-lg shadow-lg p-4 mb-6">
@@ -143,7 +174,7 @@ const TransactionCard = ({ activeTab, order }) => {
                 Order Received
               </button>
             )}
-          {activeTab === "Completed" && (
+          {activeTab === "Completed" && isRefundEligible && (
             <button
               onClick={openRefundModal}
               className="border border-pink-500 hover:bg-gray-100 hover:underline text-gray-700 font-medium py-2 px-4 rounded"

@@ -347,6 +347,7 @@ const CartProvider = ({ children }) => {
           updateCartContext,
           hovered,
           setHovered,
+          user,
         }}
       >
         {!loading && children} {/* Render children only after loading */}
