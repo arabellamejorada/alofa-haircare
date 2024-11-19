@@ -102,15 +102,15 @@ const ProductDetails = () => {
 
                 {/* Stock Quantity and Price */}
                 <div className="mt-auto flex items-center justify-between text-gray-600 text-lg">
-                  <span className="font-semibold">
-                    In Stock:{" "}
-                    <span className="text-black">
+                  <span className="font-medium">
+                    In Stock {" "}
+                    <span className="text-black font-semibold">
                       {variation.stock_quantity}
                     </span>
                   </span>
-                  <span className="font-semibold">
-                    Price:{" "}
-                    <span className="text-black text-2xl font-bold">
+                  <span className="font-medium">
+                    Price {" "}
+                    <span className="text-alofa-pink-gradient text-2xl font-extrabold">
                       ₱{variation.unit_price}
                     </span>
                   </span>
