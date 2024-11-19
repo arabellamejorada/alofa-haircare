@@ -37,13 +37,16 @@ const OrderVerificationTab = ({ statusFilter }) => {
   const [selectedOrder, setSelectedOrder] = useState(null);
 
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [fullScreenImage, setFullScreenImage] = useState(null);
 
-  const handleImageClick = () => {
+  const handleImageClick = (imageSrc) => {
+    setFullScreenImage(imageSrc);
     setIsFullScreen(true);
   };
 
   const closeFullScreen = () => {
     setIsFullScreen(false);
+    setFullScreenImage(null);
   };
 
   const fetchOrders = async () => {
@@ -78,7 +81,7 @@ const OrderVerificationTab = ({ statusFilter }) => {
       setLoading(false);
     }
   };
-  
+
   useEffect(() => {
     fetchOrders();
     setCurrentPage(1); // Reset to first page when statusFilter changes
@@ -537,23 +540,23 @@ const OrderVerificationTab = ({ statusFilter }) => {
                         Proof of Payment:
                       </strong>
                       <img
-                        src={`http://localhost:3001/${selectedOrder.proof_image.substring(
-                          7,
-                        )}`}
+                        src={`http://localhost:3001/${selectedOrder.proof_image.substring(7)}`}
                         alt="Payment Proof"
-                        className="mt-2 max-w-xs h-[30rem] mx-auto border rounded-lg shadow-md transform transition-transform duration-300 hover:scale-105 cursor-pointer"
-                        onClick={handleImageClick}
+                        className="mt-2 max-w-xs h-[30rem] mx-auto border rounded-lg shadow-md transform transition-transform duration-300 hover:scale-105 hover:shadow-lg hover:border-alofa-pink cursor-pointer"
+                        onClick={() =>
+                          handleImageClick(
+                            `http://localhost:3001/${selectedOrder.proof_image.substring(7)}`,
+                          )
+                        }
                       />
                       {/* Full-Screen Image Modal */}
-                      {isFullScreen && (
+                      {isFullScreen && fullScreenImage && (
                         <div
                           className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80"
                           onClick={closeFullScreen}
                         >
                           <img
-                            src={`http://localhost:3001/${selectedOrder.proof_image.substring(
-                              7,
-                            )}`}
+                            src={fullScreenImage}
                             alt="Full-Sized Payment Proof"
                             className="max-w-full max-h-full rounded-lg shadow-lg"
                           />

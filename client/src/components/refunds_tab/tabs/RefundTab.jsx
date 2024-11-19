@@ -7,6 +7,7 @@ import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 import Modal from "../../modal/Modal";
 import StatusBadge from "../../shared/StatusBadge";
 import { toast } from "sonner";
+import ConfirmModal from "../../shared/ConfirmModal";
 
 const RefundTab = ({ statusFilter }) => {
   const [refunds, setRefunds] = useState([]);
@@ -31,13 +32,27 @@ const RefundTab = ({ statusFilter }) => {
   const [selectedRefund, setSelectedRefund] = useState(null);
 
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [fullScreenImage, setFullScreenImage] = useState(null);
 
-  const handleImageClick = () => {
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(() => {});
+
+  const [confirmMessage, setConfirmMessage] = useState("");
+
+  const openConfirmModal = (action, message) => {
+    setConfirmAction(() => action);
+    setConfirmMessage(message); // Set the dynamic message
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleImageClick = (imageSrc) => {
+    setFullScreenImage(imageSrc);
     setIsFullScreen(true);
   };
 
   const closeFullScreen = () => {
     setIsFullScreen(false);
+    setFullScreenImage(null);
   };
 
   const fetchRefunds = async () => {
@@ -423,7 +438,6 @@ const RefundTab = ({ statusFilter }) => {
                   </div>
                 </div>
                 <div>
-                  {/* Proof Images Section */}
                   {selectedRefund.proofs && selectedRefund.proofs.length > 0 ? (
                     <div>
                       <strong className="text-sm font-bold text-gray-500">
@@ -435,7 +449,12 @@ const RefundTab = ({ statusFilter }) => {
                             key={index}
                             src={`http://localhost:3001/${proof.substring(1)}`}
                             alt={`Proof ${index + 1}`}
-                            className="w-40 h-40 object-cover border rounded-lg shadow-md"
+                            className="w-40 h-40 object-cover border rounded-lg shadow-md cursor-pointer transform transition-transform duration-300 hover:scale-105 hover:shadow-lg hover:border-alofa-pink"
+                            onClick={() =>
+                              handleImageClick(
+                                `http://localhost:3001/${proof.substring(1)}`,
+                              )
+                            }
                           />
                         ))}
                       </div>
@@ -443,6 +462,19 @@ const RefundTab = ({ statusFilter }) => {
                   ) : (
                     <div className="mt-4 text-red-500 font-semibold">
                       No proof images available.
+                    </div>
+                  )}
+
+                  {isFullScreen && fullScreenImage && (
+                    <div
+                      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80"
+                      onClick={closeFullScreen}
+                    >
+                      <img
+                        src={fullScreenImage}
+                        alt="Full-Sized Proof"
+                        className="max-w-full max-h-full rounded-lg shadow-lg"
+                      />
                     </div>
                   )}
                 </div>
@@ -498,30 +530,86 @@ const RefundTab = ({ statusFilter }) => {
 
               {/* Action Buttons */}
               <div className="mt-6 flex justify-end gap-4">
-                <button
-                  onClick={() =>
-                    handleRefundStatusChange(
-                      selectedRefund.refund_request_id,
-                      2,
-                    )
-                  }
-                  className="px-6 py-2 bg-alofa-pink text-white font-semibold rounded-lg hover:bg-alofa-dark transition"
-                >
-                  Mark as Complete
-                </button>
-                <button
-                  onClick={() =>
-                    handleRefundStatusChange(
-                      selectedRefund.refund_request_id,
-                      3,
-                    )
-                  }
-                  className="px-6 py-2 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400 transition"
-                >
-                  Cancel Refund
-                </button>
+                {selectedRefund.refund_status_id === 2 ? (
+                  // If refund is Complete, show only Cancel Refund button
+                  <button
+                    onClick={() =>
+                      openConfirmModal(
+                        () =>
+                          handleRefundStatusChange(
+                            selectedRefund.refund_request_id,
+                            3,
+                          ),
+                        "Are you sure you want to cancel this refund?",
+                      )
+                    }
+                    className="px-6 py-2 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400 transition"
+                  >
+                    Cancel Refund
+                  </button>
+                ) : selectedRefund.refund_status_id === 3 ? (
+                  // If refund is Cancelled, show only Mark as Complete button
+                  <button
+                    onClick={() =>
+                      openConfirmModal(
+                        () =>
+                          handleRefundStatusChange(
+                            selectedRefund.refund_request_id,
+                            2,
+                          ),
+                        "Are you sure you want to mark this refund as complete?",
+                      )
+                    }
+                    className="px-6 py-2 bg-alofa-pink text-white font-semibold rounded-lg hover:bg-alofa-dark transition"
+                  >
+                    Mark as Complete
+                  </button>
+                ) : (
+                  // Default case, show both Mark as Complete and Cancel Refund buttons
+                  <>
+                    <button
+                      onClick={() =>
+                        openConfirmModal(
+                          () =>
+                            handleRefundStatusChange(
+                              selectedRefund.refund_request_id,
+                              2,
+                            ),
+                          "Are you sure you want to mark this refund as complete?",
+                        )
+                      }
+                      className="px-6 py-2 bg-alofa-pink text-white font-semibold rounded-lg hover:bg-alofa-dark transition"
+                    >
+                      Mark as Complete
+                    </button>
+                    <button
+                      onClick={() =>
+                        openConfirmModal(
+                          () =>
+                            handleRefundStatusChange(
+                              selectedRefund.refund_request_id,
+                              3,
+                            ),
+                          "Are you sure you want to cancel this refund?",
+                        )
+                      }
+                      className="px-6 py-2 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400 transition"
+                    >
+                      Cancel Refund
+                    </button>
+                  </>
+                )}
               </div>
             </div>
+            <ConfirmModal
+              isOpen={isConfirmModalOpen}
+              onClose={() => setIsConfirmModalOpen(false)}
+              onConfirm={() => {
+                confirmAction();
+                setIsConfirmModalOpen(false);
+              }}
+              message={confirmMessage} // Use the dynamic message here
+            />
           </Modal>
         )}
       </div>
