@@ -4,6 +4,7 @@ import { ClipLoader } from "react-spinners";
 import { updateCustomerProfile } from "../../api/customer";
 import { toast } from "sonner";
 import { getCustomerByProfileId } from "../../api/customer";
+import { supabase } from "../../supabaseClient";
 
 const ProfileContent = ({ profileData, setProfileData }) => {
   const [editableProfileData, setEditableProfileData] = useState({
@@ -12,7 +13,7 @@ const ProfileContent = ({ profileData, setProfileData }) => {
     email: profileData?.profiles.email || "",
     contactNumber: profileData?.profiles.contact_number || "",
     updated_at: profileData?.profiles.updated_at || "",
-    // password: "********",
+    password: "",
   });
 
   const [isEditing, setIsEditing] = useState({
@@ -20,6 +21,7 @@ const ProfileContent = ({ profileData, setProfileData }) => {
     lastName: false,
     contactNumber: false,
     password: false,
+    email: false,
   });
 
   const [lastUpdated, setLastUpdated] = useState(
@@ -36,6 +38,7 @@ const ProfileContent = ({ profileData, setProfileData }) => {
         email: profileData.profiles.email || "",
         contactNumber: profileData.profiles.contact_number || "",
         updated_at: profileData.profiles.updated_at || "",
+        password: "",
       });
     }
   }, [profileData]);
@@ -59,44 +62,78 @@ const ProfileContent = ({ profileData, setProfileData }) => {
     e.preventDefault();
 
     if (!profileData.customer_id) {
-      console.log(profileData);
       console.error("Customer ID is undefined. Cannot update profile.");
       return;
     }
 
-    const updatedProfile = {
-      first_name: editableProfileData.firstName,
-      last_name: editableProfileData.lastName,
-      email: editableProfileData.email,
-      contact_number: editableProfileData.contactNumber,
-      role_id: profileData.profiles.role_id,
-      updated_at: new Date().toISOString(),
-    };
+    setLoading(true);
 
     try {
-      console.log("Profile data:", profileData);
-      setLoading(true);
-      console.log("Saving profile data:", updatedProfile);
-      console.log("Customer ID:", profileData.customer_id);
+      // Get the current user
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
+      if (error) {
+        throw error;
+      }
+
+      // Concatenate first name and last name to create display_name
+      const display_name = `${editableProfileData.firstName} ${editableProfileData.lastName}`;
+
+      // Prepare updates for Supabase Auth
+      const updates = {
+        data: { display_name }, // Include display_name in user_metadata
+      };
+      if (editableProfileData.email !== user.email) {
+        updates.email = editableProfileData.email;
+      }
+      if (isEditing.password && editableProfileData.password) {
+        updates.password = editableProfileData.password;
+      }
+
+      // Update Supabase Auth user
+      if (Object.keys(updates).length > 0) {
+        const { data: updatedUser, error: updateError } =
+          await supabase.auth.updateUser(updates);
+        if (updateError) {
+          throw updateError;
+        } else {
+          // Optionally, update user in state if necessary
+        }
+      }
+
+      // Prepare updated profile data
+      const updatedProfile = {
+        first_name: editableProfileData.firstName,
+        last_name: editableProfileData.lastName,
+        email: editableProfileData.email,
+        contact_number: editableProfileData.contactNumber,
+        role_id: profileData.profiles.role_id,
+        updated_at: new Date().toISOString(),
+      };
+
+      // Update customer profile in your database
       await updateCustomerProfile(profileData.customer_id, updatedProfile);
 
+      // Fetch the updated profile data
       const data = await getCustomerByProfileId(profileData.profiles.id);
-      console.log("Updated customer profile data:", data);
       setProfileData(data);
       setLastUpdated(data.profiles.updated_at);
+
       // Reset the state after saving
       setIsEditing({
         firstName: false,
         lastName: false,
         contactNumber: false,
         password: false,
+        email: false,
       });
 
-      console.log("Profile data saved:", updatedProfile);
       toast.success("Profile updated successfully.");
     } catch (error) {
       console.error("Error saving profile data:", error);
-      toast.error("Failed to save profile. Please try again.");
+      toast.error("Failed to save profile: " + error.message);
     } finally {
       setLoading(false);
     }
@@ -195,6 +232,7 @@ const ProfileContent = ({ profileData, setProfileData }) => {
                 type="email"
                 placeholder="Email Address"
                 value={editableProfileData.email}
+                onChange={handleInputChange}
                 readOnly={!isEditing.email}
                 className={`p-3 border rounded-md w-full ${
                   isEditing.email
@@ -205,7 +243,7 @@ const ProfileContent = ({ profileData, setProfileData }) => {
             </div>
             <button
               type="button"
-              onClick={() => handleEditToggle({ email: false })}
+              onClick={() => handleEditToggle({ email: true })}
               className="text-pink-500 hover:underline ml-2"
             >
               Edit
@@ -258,6 +296,7 @@ const ProfileContent = ({ profileData, setProfileData }) => {
                 id="password"
                 name="password"
                 type={showPassword ? "text" : "password"}
+                placeholder="Enter new password"
                 value={editableProfileData.password}
                 onChange={handleInputChange}
                 readOnly={!isEditing.password}
@@ -310,7 +349,7 @@ ProfileContent.propTypes = {
       email: PropTypes.string,
       contact_number: PropTypes.string,
       role_id: PropTypes.number,
-      updated_at: PropTypes.string,  // Moved inside 'profiles' object
+      updated_at: PropTypes.string,
     }),
     customer_id: PropTypes.number,
   }),

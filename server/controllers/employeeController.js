@@ -130,7 +130,6 @@ const getEmployeeById = async (req, res) => {
       `SELECT 
                 e.employee_id,
                 e.status_id,
-                p.username,
                 p.first_name,
                 p.last_name,
                 p.email,
@@ -177,6 +176,26 @@ const updateEmployee = async (req, res) => {
     }
 
     const profile_id = employeeResult.rows[0].profile_id;
+
+    // Update Supabase Authentication
+    const { error: authError } = await supabase.auth.admin.updateUserById(
+      profile_id,
+      {
+        email, // Update email in Supabase authentication
+      },
+    );
+
+    if (authError) {
+      await client.query("ROLLBACK");
+      console.error(
+        "Error updating Supabase authentication:",
+        authError.message,
+      );
+      return res.status(400).json({
+        message: "Error updating Supabase authentication",
+        error: authError.message,
+      });
+    }
 
     // Update profiles table
     await client.query(

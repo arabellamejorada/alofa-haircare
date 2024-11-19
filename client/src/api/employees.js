@@ -22,6 +22,16 @@ export const getEmployeeIdByProfileId = async (profile_id) => {
   }
 };
 
+export const getEmployeeById = async (employee_id) => {
+  try {
+    const response = await axios.get(`/employees/${employee_id}`);
+    return response.data; // Includes detailed employee data
+  } catch (error) {
+    console.error("Error fetching employee by ID:", error);
+    throw error;
+  }
+};
+
 export const createEmployee = async (employee) => {
   try {
     const response = await axios.post("/employees", employee);
