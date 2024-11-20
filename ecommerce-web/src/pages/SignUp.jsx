@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import { Link } from "react-router-dom";
@@ -51,7 +51,7 @@ const SignUp = () => {
       if (!userId) throw new Error("User ID not found after sign-up.");
 
       // Step 2: Insert user data into the profiles table using the user's UUID
-      const { data: profileData, error: profileError } = await supabase
+      const { error: profileError } = await supabase
         .from("profiles")
         .insert([
           {
@@ -71,7 +71,7 @@ const SignUp = () => {
       }
 
       // Step 3: Insert the profile ID into the customer table
-      const { data: customerData, error: customerError } = await supabase
+      const {  error: customerError } = await supabase
         .from("customer")
         .insert([{ profile_id: userId }]);
 
@@ -116,7 +116,7 @@ const SignUp = () => {
 
               <div className="flex gap-2">
                 <div className="flex flex-col">
-                  <p className="text-gray-600">First Name:</p>
+                  <p className="text-gray-600">First Name</p>
                   <Input
                     name="firstName"
                     placeholder="First Name"
@@ -126,7 +126,7 @@ const SignUp = () => {
                 </div>
 
                 <div className="flex flex-col">
-                  <p className="text-gray-600">Last Name:</p>
+                  <p className="text-gray-600">Last Name</p>
                   <Input
                     name="lastName"
                     placeholder="Last Name"
@@ -136,7 +136,7 @@ const SignUp = () => {
                 </div>
               </div>
 
-              <p className="text-gray-600">Email:</p>
+              <p className="text-gray-600">Email</p>
               <Input
                 type="email"
                 name="emailAddress"
@@ -145,7 +145,7 @@ const SignUp = () => {
                 onChange={handleChange}
               />
 
-              <p className="text-gray-600">Contact Number:</p>
+              <p className="text-gray-600">Contact Number</p>
               <Input
                 name="contactNumber"
                 placeholder="Contact #"
@@ -153,7 +153,7 @@ const SignUp = () => {
                 onChange={handleChange}
               />
 
-              <p className="text-gray-600">Password:</p>
+              <p className="text-gray-600">Password</p>
               <Input
                 type="password"
                 name="password_input"
