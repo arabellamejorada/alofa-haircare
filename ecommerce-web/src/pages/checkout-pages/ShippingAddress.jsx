@@ -1,14 +1,13 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import axios from "axios";
 import { ClipLoader } from "react-spinners";
-import {PropTypes} from "prop-types";
+import { PropTypes } from "prop-types";
 import { toast } from "sonner";
 import SelectAddressModal from "./SelectAddressModal.jsx";
 import GCashLogo from "../../../../public/static/gcash-logo.svg";
 import BPILogo from "../../../../public/static/bpi-logo.svg";
 import GCashQR from "../../../../public/static/gcash-qr.jpg";
 import { FaRegAddressCard } from "react-icons/fa";
-
 
 const ShippingAddress = ({
   profileData,
@@ -46,10 +45,12 @@ const ShippingAddress = ({
 
       if (name === "region") {
         const selectedRegion = regions.find((r) => r.code === value);
+        const shippingFee = shippingFeeByRegion[selectedRegion?.name] || 0;
         updatedData.region = {
           name: selectedRegion ? selectedRegion.name : "",
           code: value,
         };
+        updatedData.shipping_fee = shippingFee;
         updatedData.province = { name: "", code: "" };
         updatedData.city = { name: "", code: "" };
         updatedData.barangay = { name: "", code: "" };
@@ -172,6 +173,7 @@ const ShippingAddress = ({
         },
         phoneNumber: address.phone_number,
         postalCode: address.zip_code,
+        shipping_fee: address.shipping_fee,
       }));
 
       if (address.region?.code) {
@@ -221,6 +223,29 @@ const ShippingAddress = ({
       "National Capital Region (NCR)": "NCR",
       "Cordillera Administrative Region (CAR)": "CAR",
       "Bangsamoro Autonomous Region in Muslim Mindanao (BARMM)": "BARMM",
+    }),
+    [],
+  );
+
+  const shippingFeeByRegion = useMemo(
+    () => ({
+      "Region 1": 105,
+      "Region 2": 105,
+      "Region 3": 105,
+      "Region 4-A": 105,
+      "Region 4-B": 115,
+      "Region 5": 105,
+      "Region 6": 105,
+      "Region 7": 105,
+      "Region 8": 105,
+      "Region 9": 85,
+      "Region 10": 85,
+      "Region 11": 85,
+      "Region 12": 85,
+      "Region 13": 85,
+      NCR: 105,
+      CAR: 105,
+      BARMM: 85,
     }),
     [],
   );
@@ -357,6 +382,8 @@ const ShippingAddress = ({
               profileData={profileData}
               onClose={handleCloseAddressModal}
               onSave={handleSaveAddress}
+              shippingFeeByRegion={shippingFeeByRegion}
+              formDetails={formDetails}
             />
           )}
         </div>

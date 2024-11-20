@@ -4,7 +4,13 @@ import { getShippingAddressesByCustomerId } from "../../api/customer.js";
 import { ClipLoader } from "react-spinners";
 import { toast } from "sonner";
 
-const SelectAddressModal = ({ profileData, onClose, onSave }) => {
+const SelectAddressModal = ({
+  profileData,
+  onClose,
+  onSave,
+  shippingFeeByRegion,
+  formDetails,
+}) => {
   const [loading, setLoading] = useState(false);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [addresses, setAddresses] = useState([]);
@@ -51,8 +57,11 @@ const SelectAddressModal = ({ profileData, onClose, onSave }) => {
       const selectedAddress = addresses.find(
         (address) => address.shipping_address_id === selectedAddressId,
       );
-      onSave(selectedAddress);
-      onClose();
+
+      const shippingFee = shippingFeeByRegion[selectedAddress.region.name] || 0;
+
+      console.log("selectedAddress", selectedAddress.region.name);
+      onSave({ ...selectedAddress, shipping_fee: shippingFee });
     } else {
       toast.error("Please select an address.");
     }
