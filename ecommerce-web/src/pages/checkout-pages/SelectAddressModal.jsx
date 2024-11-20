@@ -40,7 +40,7 @@ const SelectAddressModal = ({ profileData, onClose, onSave }) => {
       }
     };
     fetchAddresses();
-  }, []);
+  }, [profileData.customer_id]);
 
   const handleSelectAddress = (addressId) => {
     setSelectedAddressId(addressId);
@@ -133,6 +133,9 @@ const SelectAddressModal = ({ profileData, onClose, onSave }) => {
 SelectAddressModal.propTypes = {
   onClose: PropTypes.func.isRequired,
   onSave: PropTypes.func.isRequired,
+  profileData: PropTypes.shape({
+    customer_id: PropTypes.number.isRequired,
+  }).isRequired,
 };
 
 export default SelectAddressModal;
