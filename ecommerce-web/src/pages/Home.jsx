@@ -39,16 +39,23 @@ const Home = () => {
           <motion.h2 
             className="text-8xl font-heading font-bold gradient-heading mb-2 max-w-3xl mx-auto"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            whileInView={{ opacity: 1 }}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
-            >
-              About Us
-            </motion.h2>
-          <p className="text-gray-700 text-lg leading-relaxed max-w-5xl">
+            viewport={{ once: true }}
+          >
+            About Us
+          </motion.h2>
+          <motion.p 
+            className="text-gray-700 text-lg leading-relaxed max-w-5xl"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 0.2, ease: 'easeInOut' }}
+            viewport={{ once: true }}
+          >
             Alofa Haircare is an all-natural haircare brand based and made locally in Davao City, Philippines. They started with one product: <b className="gradient-heading">All Natural Hair Oil,</b> which aims to heal hair back to health and promote hair growth with natural ingredients.
             Their main ingredient is Rosemary oil, which is known to stimulate the scalp and promote hair growth. Along with 7 other natural oils, they would like to create the image of self-care through haircare. Additionally, they have other hair products,
             including hair clips and hair brushes.
-          </p>
+          </motion.p>
         </div>
       </section>
     </div>
