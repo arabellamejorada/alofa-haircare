@@ -24,13 +24,19 @@ const CartOverview = () => {
   };
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoginConfirmModalOpen, setIsLoginConfirmModalOpen] = useState(false);
 
   const handleEmptyCartCheckout = () => {
     setIsModalOpen(true);
   };
 
+  const handleLoggedOutCheckout = () => {
+    setIsLoginConfirmModalOpen(true);
+  };
+
   const closeModal = () => {
     setIsModalOpen(false);
+    setIsLoginConfirmModalOpen(false);
   };
 
   return (
@@ -184,7 +190,7 @@ const CartOverview = () => {
               user !== null ? (
                 <Link to="/checkout" className="flex-1">
                   <button
-                    className="w-full font-extrabold flex items-center justify-center gap-1 text-white py-2.5 px-3 rounded-full
+                    className="flex-1 w-full font-extrabold flex items-center justify-center gap-1 text-white py-2.5 px-3 rounded-full
                     focus:outline-none shadow-md bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b 
                     hover:from-[#F8587A] hover:to-[#FE699F]"
                   >
@@ -193,16 +199,15 @@ const CartOverview = () => {
                   </button>
                 </Link>
               ) : (
-                <Link to="/login" className="flex-1">
-                  <button
-                    className="w-full font-extrabold flex items-center justify-center gap-1 text-white py-2.5 px-3 rounded-full
-                  focus:outline-none shadow-md bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b 
-                  hover:from-[#F8587A] hover:to-[#FE699F]"
-                  >
-                    <MdOutlineShoppingCartCheckout />
-                    Check Out
-                  </button>
-                </Link>
+                <button
+                  onClick={handleLoggedOutCheckout}
+                  className="flex-1 w-full font-extrabold flex items-center justify-center gap-1 text-white py-2.5 px-3 rounded-full
+                    focus:outline-none shadow-md bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b 
+                    hover:from-[#F8587A] hover:to-[#FE699F]"
+                >
+                  <MdOutlineShoppingCartCheckout />
+                  Check Out
+                </button>
               )
             ) : (
               <button
@@ -225,6 +230,14 @@ const CartOverview = () => {
         onConfirm={() => (window.location.href = "/products")}
         heading="Empty Cart"
         message="Your cart is empty. Head to products page to shop!"
+      />
+
+      <ConfirmModal
+        isOpen={isLoginConfirmModalOpen}
+        onClose={closeModal}
+        onConfirm={() => (window.location.href = "/login")}
+        heading="Login Required"
+        message="You need to log in to proceed to checkout. Would you like to log in now?"
       />
     </>
   );
