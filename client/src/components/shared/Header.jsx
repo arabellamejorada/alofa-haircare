@@ -4,7 +4,7 @@ import { HiMenu } from "react-icons/hi";
 import { FaUserAlt, FaUserCircle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../supabaseClient";
-
+import { ClipLoader } from "react-spinners";
 import Modal from "../modal/Modal"; // Adjust the import path as necessary
 
 export default function Header({ onMenuClick }) {
@@ -19,46 +19,55 @@ export default function Header({ onMenuClick }) {
     password: "",
   });
   const [sessionUser, setSessionUser] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
-      // Get the current session
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabase.auth.getSession();
+      try {
+        setLoading(true); // Start loading
 
-      if (sessionError) {
-        console.error("Error getting session:", sessionError);
-        navigate("/login");
-        return;
-      }
+        // Get the current session
+        const {
+          data: { session },
+          error: sessionError,
+        } = await supabase.auth.getSession();
 
-      if (session && session.user) {
-        const user = session.user;
-        setSessionUser(user); // Store the session user for later use
-
-        // Fetch additional profile data
-        const { data: profile, error: profileError } = await supabase
-          .from("profiles") // Replace "profiles" with your table name
-          .select("first_name, last_name, email, role_id") // Add any additional fields you want
-          .eq("id", user.id)
-          .single();
-
-        if (profileError) {
-          console.error("Error fetching user profile:", profileError);
-        } else {
-          setUserMetadata(profile);
-          setFormData({
-            first_name: profile.first_name,
-            last_name: profile.last_name,
-            email: profile.email,
-            password: "",
-          });
+        if (sessionError) {
+          console.error("Error getting session:", sessionError);
+          navigate("/login");
+          return;
         }
-      } else {
-        // If no user is logged in, navigate to the login page or handle accordingly
-        navigate("/login");
+
+        if (session && session.user) {
+          const user = session.user;
+          setSessionUser(user); // Store the session user for later use
+
+          // Fetch additional profile data
+          const { data: profile, error: profileError } = await supabase
+            .from("profiles") // Replace "profiles" with your table name
+            .select("first_name, last_name, email, role_id") // Add any additional fields you want
+            .eq("id", user.id)
+            .single();
+
+          if (profileError) {
+            console.error("Error fetching user profile:", profileError);
+          } else {
+            setUserMetadata(profile);
+            setFormData({
+              first_name: profile.first_name,
+              last_name: profile.last_name,
+              email: profile.email,
+              password: "",
+            });
+          }
+        } else {
+          // If no user is logged in, navigate to the login page or handle accordingly
+          navigate("/login");
+        }
+      } catch (error) {
+        console.error("Unexpected error fetching user data:", error);
+      } finally {
+        setLoading(false); // End loading
       }
     };
 
@@ -171,13 +180,16 @@ export default function Header({ onMenuClick }) {
           />
         </div>
       </div>
-      {/* Modal */}
       <Modal
         isVisible={isModalVisible}
         onClose={handleCloseModal}
         backdropClassName="bg-black bg-opacity-20 backdrop-blur-sm drop-shadow-md"
       >
-        {userMetadata ? (
+        {loading ? (
+          <div className="flex items-center justify-center p-20">
+            <ClipLoader size={50} color={"#E53E3E"} loading={true} />
+          </div>
+        ) : userMetadata ? (
           <div className="p-4">
             <div className="flex flex-col font-heading text-alofa-pink text-[3rem] mb-6">
               <div className="mb-6">Profile</div>
