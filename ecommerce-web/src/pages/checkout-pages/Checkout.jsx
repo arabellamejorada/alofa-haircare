@@ -60,6 +60,7 @@ const Checkout = () => {
           postalCode: "",
           paymentMethod: "",
           shipping_address_id: null,
+          shipping_fee: 0,
         };
   });
 
@@ -191,7 +192,7 @@ const Checkout = () => {
         total_amount: subtotal + 200 - voucherDiscount,
         shipping_address_id: formDetails.shipping_address_id,
         paymentMethod: formDetails.paymentMethod,
-        shipping_fee: 200,
+        shipping_fee: formDetails.shipping_fee,
       };
 
       formData.append("orderDetails", JSON.stringify(orderDetails));
@@ -514,7 +515,7 @@ const Checkout = () => {
             </p>
             <p className="flex justify-between mb-2 text-gray-500">
               <span>Shipping Fee</span>₱
-              {(200).toLocaleString("en-US", {
+              {(formDetails.shipping_fee || 0).toLocaleString("en-US", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}{" "}
@@ -545,7 +546,11 @@ const Checkout = () => {
               <span>Total</span>
               <span>
                 ₱
-                {(subtotal + 200 - voucherDiscount).toLocaleString("en-US", {
+                {(
+                  subtotal +
+                  (formDetails.shipping_fee || 0) -
+                  voucherDiscount
+                ).toLocaleString("en-US", {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
                 })}
