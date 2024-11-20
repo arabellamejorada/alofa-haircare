@@ -1,10 +1,12 @@
-import { useEffect } from "react";
+import { useEffect, useContext } from "react";
+import { CartContext } from "../../components/CartContext"
 import Receipt from "../../components/Receipt";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const OrderConfirmation = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { setHovered } = useContext(CartContext);
 
   // Extract order, order_items, and formDetails from location.state
   const {
@@ -15,10 +17,13 @@ const OrderConfirmation = () => {
 
   // If location.state is undefined or missing order data, redirect to home
   useEffect(() => {
+
+    setHovered(false);
+
     if (!location.state || !order.order_id) {
       navigate("/", { replace: true });
     }
-  }, [location.state, navigate, order.order_id]);
+  }, [location.state, navigate, order.order_id, setHovered]);
 
   console.log("OrderConfirmation state:", location.state);
 
