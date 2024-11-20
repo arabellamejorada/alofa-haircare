@@ -17,11 +17,6 @@ const Dashboard = () => {
   });
   const [loading, setLoading] = useState(true);
 
-  const handleOpenModal = (order) => {
-    console.log("Opening modal for order:", order);
-    // Implement modal logic here
-  };
-
   useEffect(() => {
     const fetchDashboardStats = async () => {
       try {
@@ -86,14 +81,6 @@ const Dashboard = () => {
       minimumFractionDigits: 2,
     }).format(amount);
   };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full mt-[5%]">
-        <ClipLoader size={50} color={"#E53E3E"} loading={true} />
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-col gap-6">
