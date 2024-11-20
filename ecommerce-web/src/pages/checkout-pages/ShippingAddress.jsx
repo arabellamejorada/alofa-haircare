@@ -753,7 +753,7 @@ const ShippingAddress = ({
                   <p className="text-sm">
                     Account Number: <b>1234-5678-9012</b>
                   </p>
-                  <p className="text-sm">Account Name: Alofa Haircare</p>
+                  <p className="text-sm mb-4">Account Name: Alofa Haircare</p>
                   <label className="bg-gray-600 hover:bg-gray-800 text-white py-2 px-4 rounded w-40 whitespace-normal text-center inline-block">
                     Upload receipt
                     <input
