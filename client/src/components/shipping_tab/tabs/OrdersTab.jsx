@@ -93,8 +93,10 @@ const OrdersTab = ({ statusFilter }) => {
   const handleUpdateShippingStatus = async () => {
     if (!selectedOrder) return;
 
-    if (!trackingNumber) {
-      toast.error("Please enter a tracking number.");
+    // Validate Tracking Number
+    const trackingNumberPattern = /^\d{12}$/; // 12-digit number regex
+    if (!trackingNumber.match(trackingNumberPattern)) {
+      toast.error("Tracking number must be a 12-digit number.");
       return;
     }
 
@@ -150,11 +152,10 @@ const OrdersTab = ({ statusFilter }) => {
           `;
         }
 
-        // Try to send email before proceeding
         try {
           await SendEmail(
             selectedOrder.customer_email,
-            "Alofa Haircare <mailgun@sandbox1463264fb2744256b74af8ebe920ea0c.mailgun.org>", // Replace with your sender email
+            "Alofa Haircare <mailgun@sandbox1463264fb2744256b74af8ebe920ea0c.mailgun.org>",
             subject,
             textContent,
             htmlContent,
@@ -171,12 +172,10 @@ const OrdersTab = ({ statusFilter }) => {
         return; // Exit the function if customer data is invalid
       }
 
-      // Only handle stock out when status changes to "Shipped"
       if (nextStatusName === "Shipped") {
         await handleStockOutOnShipping();
       }
 
-      // Update the shipping status and tracking number
       await updateShippingStatusAndTrackingNumber(
         selectedOrder.shipping_id,
         nextStatusId,

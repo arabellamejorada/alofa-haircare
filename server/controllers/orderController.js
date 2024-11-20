@@ -325,6 +325,7 @@ const getAllOrdersWithOrderItems = async (req, res) => {
         ps.status_name AS payment_status_name,
         p.first_name AS profile_first_name,
         p.last_name AS profile_last_name,
+        p.email AS customer_email, -- Include customer email
         s.tracking_number,
         JSON_AGG(
           JSON_BUILD_OBJECT(
@@ -355,6 +356,7 @@ const getAllOrdersWithOrderItems = async (req, res) => {
         ps.status_name, 
         p.first_name, 
         p.last_name, 
+        p.email, -- Add customer email to GROUP BY
         s.tracking_number
       ORDER BY o.order_id;
     `);
