@@ -1,5 +1,3 @@
-// src/components/tabs/OrderVerificationTab.jsx
-
 import React, { useState, useEffect, Fragment } from "react";
 import {
   getAllOrdersWithItems,
@@ -239,7 +237,7 @@ const OrderVerificationTab = ({ statusFilter }) => {
       // Step 3: Update order status to "Preparing" (ID: 2)
       await updateOrderStatus(selectedOrder.order_id, 2);
 
-      toast.success("Payment verified, order updated, and email sent.");
+      toast.success("Payment verified and notification sent to customer.");
 
       await fetchOrders();
       closeModal();
@@ -260,10 +258,8 @@ const OrderVerificationTab = ({ statusFilter }) => {
       toast.error("Customer email or name is missing. Cannot send email.");
       return;
     }
-
+    setLoading(true);
     try {
-      setLoading(true);
-
       // Send an email with a link to the refunds page
 
       const subject = `Refund for Order #${selectedOrder.order_id} due to Invalid Payment`;

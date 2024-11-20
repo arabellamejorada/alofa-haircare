@@ -125,7 +125,8 @@ const getRefundRequestsByProfileId = async (req, res) => {
                 'value', pv.value,
                 'image', pv.image,
                 'product_name', pr.name,
-                'sku', pv.sku
+                'sku', pv.sku,
+                'unit_price', oi.price
               ) ORDER BY ri.id ASC
             ) AS refund_items
         FROM 
@@ -138,6 +139,7 @@ const getRefundRequestsByProfileId = async (req, res) => {
         LEFT JOIN profiles p ON c.profile_id = p.id
         LEFT JOIN order_status os ON o.order_status_id = os.status_id
         LEFT JOIN refund_status rs ON rr.refund_status_id = rs.status_id
+        LEFT JOIN order_items oi ON ri.order_item_id = oi.order_item_id
         WHERE p.id = $1
         GROUP BY
             rr.id,
@@ -195,6 +197,7 @@ const getAllRefundRequests = async (req, res) => {
             rs.status_name AS refund_status_name,
             p.first_name AS profile_first_name,
             p.last_name AS profile_last_name,
+            p.email AS profile_email, -- Include email here
             o.order_status_id,
             os.status_name AS order_status_name,
             ps.status_name AS payment_status_name,
@@ -228,6 +231,7 @@ const getAllRefundRequests = async (req, res) => {
             rs.status_name,
             p.first_name,
             p.last_name,
+            p.email, -- Add email to GROUP BY
             o.order_status_id,
             os.status_name,
             ps.status_name
@@ -243,11 +247,13 @@ const getAllRefundRequests = async (req, res) => {
       refund.customer_name = `${
         refund.profile_first_name || ""
       } ${refund.profile_last_name || ""}`;
+      refund.customer_email = refund.profile_email; // Map the email
       delete refund.profile_first_name;
       delete refund.profile_last_name;
+      delete refund.profile_email; // Optional: Remove raw email field
       return refund;
     });
-
+    
     res.status(200).json(refunds);
   } catch (error) {
     console.error("Error fetching all refund requests:", error);

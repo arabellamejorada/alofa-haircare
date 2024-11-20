@@ -56,7 +56,7 @@ const RefundModal = ({ isOpen, closeModal, orderItems, selectedOrder }) => {
     }
 
     const selectedItems = Object.entries(checkedItems)
-      .filter(([ isChecked]) => isChecked)
+      .filter(([isChecked]) => isChecked)
       .map(([orderItemId]) => {
         const item = orderItems.find(
           (i) => i.order_item_id === parseInt(orderItemId, 10),
@@ -310,10 +310,10 @@ const RefundModal = ({ isOpen, closeModal, orderItems, selectedOrder }) => {
                   </div>
 
                 {/* Submit Button */}
-                <div className=" mt-6 mb-3 pb-3 flex justify-end space-x-1">
+                <div className="mt-6 mb-3 pb-3 flex justify-end space-x-1">
                     <button
-                    onClick={handleClose}
-                    className="border-0 hover:underline text-gray-600 font-semibold py-2 px-4"
+                      onClick={handleClose}
+                      className="border-0 hover:underline text-gray-600 font-semibold py-2 px-4"
                     >
                       Cancel
                     </button>
