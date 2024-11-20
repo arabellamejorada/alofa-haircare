@@ -48,7 +48,12 @@ const ShoppingCart = () => {
         </div>
         <div className="w-3/4">
           {/* Pass subtotal and total to CartSummary */}
-          <CartSummary subtotal={subtotal} total={total} user={user} />
+          <CartSummary
+            cartItems={processedCartItems}
+            subtotal={subtotal}
+            total={total}
+            user={user}
+          />
         </div>
       </div>
     </div>

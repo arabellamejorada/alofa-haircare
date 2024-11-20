@@ -17,11 +17,10 @@ const ConfirmModal = ({
 
       {/* Modal content */}
       <div className="bg-white p-8 rounded-lg shadow-2xl z-10 w-96">
-        
         {heading && (
-            <h2 className="text-2xl font-bold text-alofa-pink mb-4">{heading}</h2>
+          <h2 className="text-2xl font-bold text-alofa-pink mb-4">{heading}</h2>
         )}
-        
+
         {/* Main message */}
         <p className="text-gray-800 mb-2">{message}</p>
 
