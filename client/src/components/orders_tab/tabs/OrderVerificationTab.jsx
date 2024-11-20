@@ -10,6 +10,8 @@ import Modal from "../../modal/Modal";
 import PaymentStatusBadge from "../../shared/StatusBadge";
 import { toast } from "sonner";
 import SendEmail from "../../shared/SendEmail";
+import ConfirmModal from "../../shared/ConfirmModal";
+import ReasonModal from "../../modal/ReasonModal";
 
 const OrderVerificationTab = ({ statusFilter }) => {
   const [orders, setOrders] = useState([]);
@@ -36,6 +38,19 @@ const OrderVerificationTab = ({ statusFilter }) => {
 
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [fullScreenImage, setFullScreenImage] = useState(null);
+
+  // Confirmation Modal States
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(() => {});
+  const [confirmMessage, setConfirmMessage] = useState("");
+
+  const [isReasonModalOpen, setIsReasonModalOpen] = useState(false);
+
+  const openConfirmModal = (action, message) => {
+    setConfirmAction(() => action);
+    setConfirmMessage(message);
+    setIsConfirmModalOpen(true);
+  };
 
   const handleImageClick = (imageSrc) => {
     setFullScreenImage(imageSrc);
@@ -250,7 +265,7 @@ const OrderVerificationTab = ({ statusFilter }) => {
     }
   };
 
-  const handleInvalidPayment = async () => {
+  const handleInvalidPayment = async (reason) => {
     if (!selectedOrder) return;
 
     // Validate customer email
@@ -263,11 +278,11 @@ const OrderVerificationTab = ({ statusFilter }) => {
       // Send an email with a link to the refunds page
 
       const subject = `Refund for Order #${selectedOrder.order_id} due to Invalid Payment`;
-      const textContent = `Hi ${selectedOrder.customer_name},\n\nWe have processed a refund for Order #${selectedOrder.order_id}. Please view your account to verify the refunded amount. If there are any issue, you can send us an email. Thank you.`;
+      const textContent = `Hi ${selectedOrder.customer_name},\n\nWe have processed a refund for Order #${selectedOrder.order_id} due to the following reason: "${reason}". Please view your account to verify the refunded amount. If there are any issues, you can send us an email. Thank you.`;
       const htmlContent = `
-        <h1>Refund Process</h1>
+        <h1>Order Refunded</h1>
         <p>Hi ${selectedOrder.customer_name},</p>
-        <p>We have processed a refund for <strong>Order #${selectedOrder.order_id}</strong>.</p>
+        <p>We have processed a refund for <strong>Order #${selectedOrder.order_id}</strong> due to the following reason: "<em>${reason}</em>".</p>
         <p>Please view your account to verify the refunded amount. If there are any issues, you can send us an email.</p>
         <p>Thank you.</p>
       `;
@@ -300,6 +315,65 @@ const OrderVerificationTab = ({ statusFilter }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleInsufficientPayment = async () => {
+    if (!selectedOrder) return;
+
+    // Validate customer email
+    if (!selectedOrder.customer_email || !selectedOrder.customer_name) {
+      toast.error("Customer email or name is missing. Cannot send email.");
+      return;
+    }
+    setLoading(true);
+    try {
+      // Send an email with a link to the refunds page
+
+      const subject = `Insufficient Payment for Order #${selectedOrder.order_id}`;
+      const textContent = `Hi ${selectedOrder.customer_name},\n\nYour payment for your Order #${selectedOrder.order_id} is insufficient. Please settle the remaining balance within 24 hours after this email is sent and send the receipt by replying to this thread. Thank you.`;
+      const htmlContent = `
+        <h1>Insufficient Payment</h1>
+        <p>Hi ${selectedOrder.customer_name},</p>
+        <p>Your payment for your Order #${selectedOrder.order_id}.</p>
+        <p>Please settle the remaining balance within 24 hours after this email is sent and send proof by replying to this thread.</p>
+        <p>Thank you.</p>
+      `;
+
+      console.log("Sending email with data:", {
+        to: selectedOrder.customer_email,
+        from: "Alofa Haircare <mailgun@sandbox1463264fb2744256b74af8ebe920ea0c.mailgun.org>", // Replace with your verified sender email
+        subject,
+        text: textContent,
+        html: htmlContent,
+      });
+
+      await SendEmail(
+        selectedOrder.customer_email,
+        "Alofa Haircare <mailgun@sandbox1463264fb2744256b74af8ebe920ea0c.mailgun.org>", // Replace with your verified sender email
+        subject,
+        textContent,
+        htmlContent,
+      );
+
+      toast.success("Email sent to customer regarding insufficient payment.");
+      await fetchOrders();
+      closeModal();
+    } catch (error) {
+      console.error("Error sending email:", error);
+      toast.error("Failed to send email.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReasonSubmit = (reason) => {
+    // Open the ConfirmModal with the handleInvalidPayment action and a dynamic message including the reason
+    openConfirmModal(
+      () => handleInvalidPayment(reason),
+      `Are you sure you want to mark this payment as invalid for the following reason?\n\n"${reason}"`,
+    );
+    // Close the ReasonModal
+    setIsReasonModalOpen(false);
   };
 
   if (error) return <div className="text-red-500">{error}</div>;
@@ -566,26 +640,56 @@ const OrderVerificationTab = ({ statusFilter }) => {
                   )}
                 </div>
               </div>
-              {/* Action Button */}
-              <div className="mt-8 flex justify-end space-x-4">
-                {selectedOrder.payment_status_name !== "Verified" && (
-                  <>
-                    <button
-                      onClick={handleVerifyPayment}
-                      className="px-6 py-2 bg-alofa-pink text-white font-semibold rounded-lg hover:bg-alofa-dark transition"
-                    >
-                      Verify Payment
-                    </button>
-                    <button
-                      onClick={handleInvalidPayment}
-                      className="px-6 py-2 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400 transition"
-                    >
-                      Invalid Payment
-                    </button>
-                  </>
-                )}
+              <div className="flex flex-col gap-2 mt-2">
+                {selectedOrder.payment_status_name !== "Verified" &&
+                  selectedOrder.payment_status_name !== "Refunded" && (
+                    <>
+                      <button
+                        onClick={() =>
+                          openConfirmModal(
+                            handleVerifyPayment,
+                            "Are you sure you want to verify this payment?",
+                          )
+                        }
+                        className="px-6 py-2 bg-alofa-pink text-white font-semibold rounded-lg hover:bg-alofa-dark transition"
+                      >
+                        Verify Payment
+                      </button>
+                      <button
+                        onClick={() => setIsReasonModalOpen(true)}
+                        className="px-6 py-2 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400 transition"
+                      >
+                        Invalid Payment
+                      </button>
+                      <button
+                        onClick={() =>
+                          openConfirmModal(
+                            handleInsufficientPayment,
+                            "Are you sure you want to mark this payment as insufficient?",
+                          )
+                        }
+                        className="px-6 py-2 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400 transition"
+                      >
+                        Insufficient Payment
+                      </button>
+                    </>
+                  )}
               </div>
             </div>
+            <ConfirmModal
+              isOpen={isConfirmModalOpen}
+              onClose={() => setIsConfirmModalOpen(false)}
+              onConfirm={() => {
+                confirmAction();
+                setIsConfirmModalOpen(false);
+              }}
+              message={confirmMessage}
+            />
+            <ReasonModal
+              isOpen={isReasonModalOpen}
+              onClose={() => setIsReasonModalOpen(false)}
+              onSubmit={handleReasonSubmit}
+            />
           </Modal>
         )}
       </div>
