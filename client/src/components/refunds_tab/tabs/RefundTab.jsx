@@ -447,7 +447,7 @@ const RefundTab = ({ statusFilter }) => {
                 Refund Details
               </h2>
 
-              <div className="flex flex-row">
+              <div className="flex flex-row gap-4">
                 <div className="flex-1">
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <dl className="divide-y divide-gray-200">
@@ -506,21 +506,40 @@ const RefundTab = ({ statusFilter }) => {
                       <strong className="text-sm font-bold text-gray-500">
                         Proofs:
                       </strong>
-                      <div className="flex flex-wrap mt-2 gap-2">
-                        {selectedRefund.proofs.map((proof, index) => (
-                          <img
-                            key={index}
-                            src={`http://localhost:3001/${proof.substring(1)}`}
-                            alt={`Proof ${index + 1}`}
-                            className="w-40 h-40 object-cover border rounded-lg shadow-md cursor-pointer transform transition-transform duration-300 hover:scale-105 hover:shadow-lg hover:border-alofa-pink"
-                            onClick={() =>
-                              handleImageClick(
-                                `http://localhost:3001/${proof.substring(1)}`,
-                              )
-                            }
-                          />
-                        ))}
+                      <div
+                        className={`mt-2 ${
+                          selectedRefund.proofs.length === 1
+                            ? "flex justify-center items-center"
+                            : selectedRefund.proofs.length === 5
+                              ? "grid grid-cols-3 gap-4"
+                              : "grid grid-cols-2 gap-4"
+                        }`}
+                      >
+                        {selectedRefund.proofs
+                          .slice(0, 5)
+                          .map((proof, index) => (
+                            <img
+                              key={index}
+                              src={`http://localhost:3001/${proof.substring(1)}`}
+                              alt={`Proof ${index + 1}`}
+                              className={`${
+                                selectedRefund.proofs.length === 1
+                                  ? "w-60 h-60"
+                                  : "w-40 h-40"
+                              } object-cover border rounded-lg shadow-md cursor-pointer transform transition-transform duration-300 hover:scale-105 hover:shadow-lg hover:border-alofa-pink`}
+                              onClick={() =>
+                                handleImageClick(
+                                  `http://localhost:3001/${proof.substring(1)}`,
+                                )
+                              }
+                            />
+                          ))}
                       </div>
+                      {selectedRefund.proofs.length > 5 && (
+                        <div className="text-sm text-gray-500 mt-2">
+                          Only a maximum of 5 images are allowed.
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="mt-4 text-red-500 font-semibold">
