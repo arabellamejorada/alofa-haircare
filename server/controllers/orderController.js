@@ -159,7 +159,6 @@ const createOrder = async (req, res) => {
               os.status_name AS order_status_name,
               s.shipping_fee,
               s.tracking_number,
-              s.shipping_date,
               p.first_name AS customer_first_name,
               p.last_name AS customer_last_name
        FROM orders o
@@ -319,28 +318,44 @@ const getAllOrdersWithOrderItems = async (req, res) => {
   try {
     const ordersResult = await pool.query(`
       SELECT 
-        o.*, 
+        o.*,
         to_char(o.date_ordered, 'MM-DD-YYYY, HH:MI AM') AS order_date,
-        oi.order_item_id, 
-        oi.variation_id, 
-        oi.quantity, 
-        oi.price,
         os.status_name AS order_status_name,
         pm.method_name AS payment_method_name,
         ps.status_name AS payment_status_name,
         p.first_name AS profile_first_name,
         p.last_name AS profile_last_name,
-        p.email AS profile_email, -- Fetch email from profiles table
-        s.tracking_number, -- Fetch tracking_number from shipping table
-        to_char(s.shipping_date, 'MM-DD-YYYY') AS shipping_date
+        s.tracking_number,
+        JSON_AGG(
+          JSON_BUILD_OBJECT(
+            'order_item_id', oi.order_item_id,
+            'variation_id', oi.variation_id,
+            'quantity', oi.quantity,
+            'price', oi.price,
+            'product_name', pr.name,
+            'variation_type', pv.type,
+            'variation_value', pv.value,
+            'image', pv.image
+          )
+        ) AS items
       FROM orders o
       JOIN order_items oi ON o.order_id = oi.order_id
+      LEFT JOIN product_variation pv ON oi.variation_id = pv.variation_id
+      LEFT JOIN product pr ON pv.product_id = pr.product_id
       LEFT JOIN order_status os ON o.order_status_id = os.status_id
       LEFT JOIN payment_method pm ON o.payment_method_id = pm.method_id
       LEFT JOIN payment_status ps ON o.payment_status_id = ps.status_id
       LEFT JOIN customer c ON o.customer_id = c.customer_id
       LEFT JOIN profiles p ON c.profile_id = p.id
-      LEFT JOIN shipping s ON o.shipping_id = s.shipping_id -- Join with shippings table
+      LEFT JOIN shipping s ON o.shipping_id = s.shipping_id
+      GROUP BY 
+        o.order_id, 
+        os.status_name, 
+        pm.method_name, 
+        ps.status_name, 
+        p.first_name, 
+        p.last_name, 
+        s.tracking_number
       ORDER BY o.order_id;
     `);
 
@@ -348,49 +363,15 @@ const getAllOrdersWithOrderItems = async (req, res) => {
       return res.status(200).json({ orders: [] }); // Return an empty array if no results
     }
 
-    const orders = {};
-
-    // Group order items by order ID
-    ordersResult.rows.forEach((row) => {
-      if (!orders[row.order_id]) {
-        orders[row.order_id] = {
-          order_id: row.order_id,
-          customer_id: row.customer_id,
-          customer_name: `${row.profile_first_name || ""} ${row.profile_last_name || ""}`,
-          customer_email: row.profile_email || "", // Include customer email
-          subtotal: row.subtotal,
-          total_discount: row.total_discount,
-          total_amount: row.total_amount,
-          voucher_id: row.voucher_id,
-          date_ordered: row.date_ordered,
-          order_date: row.order_date, // Include formatted order date
-          proof_image: row.proof_image,
-          shipping_id: row.shipping_id,
-          shipping_date: row.shipping_date,
-          tracking_number: row.tracking_number, // Include tracking number
-          order_status_id: row.order_status_id,
-          payment_method_id: row.payment_method_id,
-          payment_status_id: row.payment_status_id,
-          order_status_name: row.order_status_name,
-          payment_method_name: row.payment_method_name,
-          payment_status_name: row.payment_status_name,
-          items: [],
-        };
-      }
-
-      if (row.order_item_id) {
-        // Ensure order_item_id exists
-        orders[row.order_id].items.push({
-          order_item_id: row.order_item_id,
-          variation_id: row.variation_id,
-          quantity: row.quantity,
-          price: row.price,
-        });
-      }
+    // Map orders to include customer_name for convenience
+    const orders = ordersResult.rows.map((order) => {
+      order.customer_name = `${order.profile_first_name || ""} ${order.profile_last_name || ""}`;
+      delete order.profile_first_name;
+      delete order.profile_last_name;
+      return order;
     });
 
-    // Convert the orders object into an array
-    res.status(200).json({ orders: Object.values(orders) });
+    res.status(200).json({ orders });
   } catch (error) {
     console.error("Error fetching all orders with items:", error);
     res.status(500).json({ error: "Failed to fetch orders with items" });
@@ -551,14 +532,14 @@ const updateOrderPaymentStatus = async (req, res) => {
 const updateOrderStatus = async (req, res) => {
   const { order_id } = req.params;
   const { order_status_id } = req.body;
-  console.log("received", order_id, order_status_id)
+  console.log("received", order_id, order_status_id);
   try {
     await pool.query(
       `UPDATE orders SET order_status_id = $1 WHERE order_id = $2`,
       [order_status_id, order_id],
     );
 
-    if(order_status_id === 4) {
+    if (order_status_id === 4) {
       await pool.query(
         `UPDATE orders SET date_delivered = NOW() WHERE order_id = $1`,
         [order_id],

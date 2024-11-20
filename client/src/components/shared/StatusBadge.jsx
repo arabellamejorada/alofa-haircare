@@ -1,4 +1,3 @@
-// PaymentStatusBadge.js
 import React from "react";
 
 const StatusBadge = ({ status }) => {
@@ -21,7 +20,7 @@ const StatusBadge = ({ status }) => {
 
   return (
     <span
-      className={`px-3 py-1 rounded-lg text-sm font-semibold ${colorClass}`}
+      className={`inline-block w-24 px-3 py-1 text-center rounded-md text-sm font-semibold ${colorClass}`}
     >
       {status}
     </span>
