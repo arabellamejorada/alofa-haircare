@@ -159,6 +159,7 @@ const createOrder = async (req, res) => {
               os.status_name AS order_status_name,
               s.shipping_fee,
               s.tracking_number,
+              s.shipping_date,
               p.first_name AS customer_first_name,
               p.last_name AS customer_last_name
        FROM orders o
@@ -330,7 +331,8 @@ const getAllOrdersWithOrderItems = async (req, res) => {
         p.first_name AS profile_first_name,
         p.last_name AS profile_last_name,
         p.email AS profile_email, -- Fetch email from profiles table
-        s.tracking_number -- Fetch tracking_number from shipping table
+        s.tracking_number, -- Fetch tracking_number from shipping table
+        to_char(s.shipping_date, 'MM-DD-YYYY') AS shipping_date
       FROM orders o
       JOIN order_items oi ON o.order_id = oi.order_id
       LEFT JOIN order_status os ON o.order_status_id = os.status_id
@@ -364,6 +366,7 @@ const getAllOrdersWithOrderItems = async (req, res) => {
           order_date: row.order_date, // Include formatted order date
           proof_image: row.proof_image,
           shipping_id: row.shipping_id,
+          shipping_date: row.shipping_date,
           tracking_number: row.tracking_number, // Include tracking number
           order_status_id: row.order_status_id,
           payment_method_id: row.payment_method_id,

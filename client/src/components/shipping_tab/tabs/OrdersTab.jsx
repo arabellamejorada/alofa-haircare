@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   getAllOrdersWithItems,
   updateShippingStatusAndTrackingNumber,
@@ -317,7 +317,7 @@ const OrdersTab = ({ statusFilter }) => {
     }
   };
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       setLoading(true);
       const response = await getAllOrdersWithItems();
@@ -350,13 +350,13 @@ const OrdersTab = ({ statusFilter }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [statusFilter]);
 
   useEffect(() => {
     fetchOrders();
     console.log("statusFilter changed:", statusFilter);
     setCurrentPage(1); // Reset to first page when filters change
-  }, [statusFilter]);
+  }, [fetchOrders, statusFilter]);
 
   // Handle sorting
   const handleSort = (field) => {
@@ -444,7 +444,11 @@ const OrdersTab = ({ statusFilter }) => {
     ...(statusFilter === "Shipped"
       ? [{ key: "tracking_number", header: "Tracking Number" }]
       : []),
+    ...(statusFilter === "Shipped"
+      ? [{ key: "shipping_date", header: "Shipment Date" }]
+      : []),
     { key: "order_date", header: "Date Ordered" },
+
     { key: "actions", header: "Actions" },
   ];
 
@@ -563,22 +567,23 @@ const OrdersTab = ({ statusFilter }) => {
                       <PaymentStatusBadge status={order.order_status_name} />
                     </td>
                     {statusFilter === "Shipped" && (
-                      <td>
-                        <div className="px-5 py-3 border-b">
-                          {order.tracking_number || "N/A"}
-                        </div>
-                      </td>
+                      <>
+                        <td>
+                          <div className="px-5 py-3 border-b">
+                            {order.tracking_number || "N/A"}
+                          </div>
+                        </td>
+                        <td className="px-5 py-3 border-b">
+                          {order.shipping_date || "N/A"}
+                        </td>
+                      </>
                     )}
                     <td className="px-5 py-3 border-b">
-                      {(() => {
-                        const dateValue = order.order_date;
-                        if (!dateValue) return "Date not available";
-                        const date = new Date(dateValue);
-                        return !isNaN(date.getTime())
-                          ? date.toLocaleString()
-                          : "Date not available";
-                      })()}
+                      {order.order_date
+                        ? order.order_date
+                        : "Date not available"}
                     </td>
+
                     <td className="px-5 py-3 border-b">
                       <button
                         onClick={() => openModal(order)}
