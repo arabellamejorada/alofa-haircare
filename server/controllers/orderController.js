@@ -256,6 +256,7 @@ const getOrderByProfileId = async (req, res) => {
         p.first_name AS profile_first_name,
         p.last_name AS profile_last_name,
         s.tracking_number,
+        to_char(s.shipping_date, 'MM-DD-YYYY') AS shipping_date,
         JSON_AGG(
             JSON_BUILD_OBJECT(
                 'order_item_id', oi.order_item_id,
@@ -287,7 +288,8 @@ const getOrderByProfileId = async (req, res) => {
         ps.status_name, 
         p.first_name, 
         p.last_name,
-        s.tracking_number
+        s.tracking_number,
+        s.shipping_date
     ORDER BY o.order_id;
     `,
       [profile_id],
@@ -327,6 +329,7 @@ const getAllOrdersWithOrderItems = async (req, res) => {
         p.last_name AS profile_last_name,
         p.email AS customer_email, -- Include customer email
         s.tracking_number,
+        to_char(s.shipping_date, 'MM-DD-YYYY') AS shipping_date,
         JSON_AGG(
           JSON_BUILD_OBJECT(
             'order_item_id', oi.order_item_id,
@@ -357,7 +360,8 @@ const getAllOrdersWithOrderItems = async (req, res) => {
         p.first_name, 
         p.last_name, 
         p.email, -- Add customer email to GROUP BY
-        s.tracking_number
+        s.tracking_number,
+        s.shipping_date
       ORDER BY o.order_id;
     `);
 
