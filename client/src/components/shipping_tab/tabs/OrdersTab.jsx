@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   getAllOrdersWithItems,
   updateShippingStatusAndTrackingNumber,
@@ -316,7 +316,7 @@ const OrdersTab = ({ statusFilter }) => {
     }
   };
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       setLoading(true);
       const response = await getAllOrdersWithItems();
@@ -349,12 +349,13 @@ const OrdersTab = ({ statusFilter }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [statusFilter]);
 
   useEffect(() => {
     fetchOrders();
+    console.log("statusFilter changed:", statusFilter);
     setCurrentPage(1); // Reset to first page when filters change
-  }, [statusFilter]);
+  }, [fetchOrders, statusFilter]);
 
   // Handle sorting
   const handleSort = (field) => {
@@ -379,11 +380,14 @@ const OrdersTab = ({ statusFilter }) => {
   const filteredOrders = orders.filter((order) => {
     const orderId = order.order_id.toString();
     const customerName = order.customer_name?.toLowerCase() || "";
+    const trackingNumber = order.tracking_number?.toLowerCase() || "";
     const searchLower = search.toLowerCase();
 
     // Filter by search terms
     const matchesSearch =
-      orderId.includes(searchLower) || customerName.includes(searchLower);
+      orderId.includes(searchLower) ||
+      customerName.includes(searchLower) ||
+      trackingNumber.includes(searchLower);
 
     // Filter by date
     let withinDateRange = true;
@@ -436,7 +440,14 @@ const OrdersTab = ({ statusFilter }) => {
       header: "Order Status",
       render: (status) => <PaymentStatusBadge status={status} />,
     },
+    ...(statusFilter === "Shipped"
+      ? [{ key: "tracking_number", header: "Tracking Number" }]
+      : []),
+    ...(statusFilter === "Shipped"
+      ? [{ key: "shipping_date", header: "Shipment Date" }]
+      : []),
     { key: "order_date", header: "Date Ordered" },
+
     { key: "actions", header: "Actions" },
   ];
 
@@ -458,7 +469,11 @@ const OrdersTab = ({ statusFilter }) => {
           <input
             type="text"
             className="w-full max-w-md h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
-            placeholder="Search by Order ID or Customer Name..."
+            placeholder={
+              statusFilter === "Shipped"
+                ? "Search by Tracking Number or Customer Name..."
+                : "Search by Order ID or Customer Name..."
+            }
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -550,16 +565,24 @@ const OrdersTab = ({ statusFilter }) => {
                     <td className="px-5 py-3 border-b">
                       <PaymentStatusBadge status={order.order_status_name} />
                     </td>
+                    {statusFilter === "Shipped" && (
+                      <>
+                        <td>
+                          <div className="px-5 py-3 border-b">
+                            {order.tracking_number || "N/A"}
+                          </div>
+                        </td>
+                        <td className="px-5 py-3 border-b">
+                          {order.shipping_date || "N/A"}
+                        </td>
+                      </>
+                    )}
                     <td className="px-5 py-3 border-b">
-                      {(() => {
-                        const dateValue = order.order_date;
-                        if (!dateValue) return "Date not available";
-                        const date = new Date(dateValue);
-                        return !isNaN(date.getTime())
-                          ? date.toLocaleString()
-                          : "Date not available";
-                      })()}
+                      {order.order_date
+                        ? order.order_date
+                        : "Date not available"}
                     </td>
+
                     <td className="px-5 py-3 border-b">
                       <button
                         onClick={() => openModal(order)}
