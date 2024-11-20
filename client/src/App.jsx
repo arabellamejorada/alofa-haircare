@@ -8,7 +8,7 @@ import {
 } from "react-router-dom";
 import { Toaster } from "sonner";
 import Layout from "./components/shared/Layout";
-import Dashboard from "./components/Dashboard";
+import Dashboard from "./components/dashboard/Dashboard";
 import Products from "./components/products_tab/Products";
 import Inventory from "./components/inventory_tab/Inventory";
 import Employees from "./components/employee_tab/Employees";
