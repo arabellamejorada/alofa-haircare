@@ -39,6 +39,7 @@ router.get(
   refundController.getRefundRequestsByProfileId,
 );
 router.get("/requests", refundController.getAllRefundRequests);
+router.get("/refund/order/:orderId", refundController.checkIfOrderIdExists);
 router.put("/refunds/:refund_request_id/status", refundController.updateRefundStatus);
 
 module.exports = router;
