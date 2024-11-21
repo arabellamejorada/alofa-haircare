@@ -1,7 +1,22 @@
-// src/controllers/RefundController.jsx
-
 const pool = require("../db.js");
 
+const formatDate = (date, options = {}) => {
+  if (!date) return null;
+
+  const defaultOptions = {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "Asia/Manila",
+  };
+
+  const formatOptions = { ...defaultOptions, ...options };
+
+  return new Date(date).toLocaleString("en-PH", formatOptions).replace(",", "");
+};
 // Modify createRefundRequest to include refund_status_id
 const createRefundRequest = async (req, res) => {
   const { order_id, customer_id, reason, refund_items } = req.body; // Extract fields
@@ -119,8 +134,8 @@ const getRefundRequestsByProfileId = async (req, res) => {
             rr.reason,
             rr.proofs,
             rr.total_refund_amount,
-            to_char(rr.requested_at, 'MM-DD-YYYY, HH:MI AM') AS requested_at,
-            to_char(rr.updated_at, 'MM-DD-YYYY, HH:MI AM') AS updated_at,
+            rr.requested_at,
+            rr.updated_at,
             rr.refund_status_id,
             rs.status_name AS refund_status_name,
             p.first_name AS profile_first_name,
@@ -176,6 +191,8 @@ const getRefundRequestsByProfileId = async (req, res) => {
       refund.customer_name = `${
         refund.profile_first_name || ""
       } ${refund.profile_last_name || ""}`;
+      refund.requested_at = formatDate(refund.requested_at),
+      refund.updated_at = formatDate(refund.updated_at),
       delete refund.profile_first_name;
       delete refund.profile_last_name;
       return refund;
@@ -203,8 +220,8 @@ const getAllRefundRequests = async (req, res) => {
             rr.reason,
             rr.proofs,
             rr.total_refund_amount,
-            to_char(rr.requested_at, 'MM-DD-YYYY, HH:MI AM') AS requested_at,
-            to_char(rr.updated_at, 'MM-DD-YYYY, HH:MI AM') AS updated_at,
+            rr.requested_at,
+            rr.updated_at,
             rr.refund_status_id,
             rs.status_name AS refund_status_name,
             p.first_name AS profile_first_name,
@@ -260,6 +277,8 @@ const getAllRefundRequests = async (req, res) => {
         refund.profile_first_name || ""
       } ${refund.profile_last_name || ""}`;
       refund.customer_email = refund.profile_email; // Map the email
+      refund.requested_at = formatDate(refund.requested_at);
+      refund.updated_at = formatDate(refund.updated_at);
       delete refund.profile_first_name;
       delete refund.profile_last_name;
       delete refund.profile_email; // Optional: Remove raw email field

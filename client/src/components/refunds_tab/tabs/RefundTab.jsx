@@ -60,7 +60,7 @@ const RefundTab = ({ statusFilter }) => {
     try {
       setLoading(true);
       const data = await getAllRefundRequests();
-      setRefunds(data); // Ensure email is included in `data`
+      setRefunds(data);
       console.log(data);
     } catch (err) {
       setError("Failed to fetch refund requests");
@@ -173,6 +173,7 @@ const RefundTab = ({ statusFilter }) => {
 
   // Define columns for refunds table
   const columns = [
+    { key: "refund_request_id", header: "Refund ID" },
     { key: "order_id", header: "Order ID" },
     { key: "customer_name", header: "Customer Name" },
     {
@@ -351,6 +352,7 @@ const RefundTab = ({ statusFilter }) => {
             </button>
           )}
         </div>
+
         {filteredRefunds.length === 0 ? (
           <div className="flex items-center justify-center h-64">
             <div className="text-center">

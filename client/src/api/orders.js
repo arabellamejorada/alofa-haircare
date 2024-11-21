@@ -10,7 +10,7 @@ export const createOrder = async (formData) => {
         "Content-Type": "multipart/form-data",
       },
     });
-    console.log("Order created: ", response.data);
+    // console.log("Order created: ", response.data);
     return response.data;
   } catch (error) {
     console.error("Error creating order: ", error);
@@ -34,7 +34,7 @@ export const getAllOrdersWithItems = async () => {
 export const getOrdersByCustomerId = async (customerId) => {
   try {
     const response = await axios.get(`/order/customer/${customerId}`);
-    console.log("Orders fetched for customer: ", response.data);
+    // console.log("Orders fetched for customer: ", response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching orders for customer: ", error);
@@ -46,7 +46,7 @@ export const getOrdersByCustomerId = async (customerId) => {
 export const getOrderById = async (orderId) => {
   try {
     const response = await axios.get(`/order/${orderId}`);
-    console.log("Order fetched: ", response.data);
+    // console.log("Order fetched: ", response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching order: ", error);
@@ -58,7 +58,7 @@ export const getOrderById = async (orderId) => {
 export const getOrderItemsByOrderId = async (orderId) => {
   try {
     const response = await axios.get(`/order/${orderId}/items`);
-    console.log("Order items fetched: ", response.data);
+    // console.log("Order items fetched: ", response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching order items: ", error);
@@ -72,7 +72,7 @@ export const updateOrderPaymentStatus = async (orderId, paymentStatusId) => {
     const response = await axios.put(`/order/${orderId}/payment-status`, {
       payment_status_id: paymentStatusId,
     });
-    console.log("Order payment status updated: ", response.data);
+    // console.log("Order payment status updated: ", response.data);
     return response.data;
   } catch (error) {
     console.error("Error updating order payment status: ", error);
@@ -90,7 +90,7 @@ export const updateOrderStatus = async (
       order_status_id: orderStatusId,
       tracking_number: trackingNumber,
     });
-    console.log("Order status and tracking number updated:", response.data);
+    // console.log("Order status and tracking number updated:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error updating order status and tracking number:", error);
@@ -108,7 +108,7 @@ export const updateShippingStatusAndTrackingNumber = async (
       order_status_id: orderStatusId, // Use order_status_id instead of shipping_status_id
       tracking_number: trackingNumber,
     });
-    console.log("Order status and tracking number updated:", response.data);
+    // console.log("Order status and tracking number updated:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error updating order status and tracking number:", error);
@@ -177,7 +177,7 @@ export const updateRefundStatus = async (refundRequestId, statusId) => {
     const response = await axios.put(`/refunds/${refundRequestId}/status`, {
       status_id: statusId,
     });
-    console.log("Refund status updated: ", response.data);
+    // console.log("Refund status updated: ", response.data);
     return response.data;
   } catch (error) {
     console.error("Error updating refund status: ", error);

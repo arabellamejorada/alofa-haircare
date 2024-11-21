@@ -91,6 +91,14 @@ const PurchasesTab = () => {
         (searchQuery === "" || matchesOrderId || matchesProductName)
       );
     });
+
+    // If the active tab is "Completed", sort by date_delivered
+    if (activeTab === "Completed") {
+      filtered.sort(
+        (a, b) => new Date(b.date_delivered) - new Date(a.date_delivered),
+      );
+    }
+
     setFilteredOrders(filtered);
   }, [activeTab, searchQuery, transactions, statusMap]);
 

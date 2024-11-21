@@ -88,7 +88,14 @@ const TransactionCard = ({
       <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-300">
         <div>
           <div className="text-gray-500 font-normal mb-0">
-            {activeTab === "For Refund" ? "Refund placed: " : "Order placed: "}
+            {activeTab === "Completed" ? (
+              <>Order Completed: {order.date_delivered}</>
+            ) : (
+              ""
+            )}
+          </div>
+          <div className="text-gray-500 font-normal mb-0">
+            {activeTab === "For Refund" ? "Refund Placed: " : "Order Placed: "}
             {activeTab === "For Refund"
               ? refund.requested_at
               : order.date_ordered}
