@@ -9,6 +9,7 @@ const ProductTable = ({
   handleColumnSort,
   sortField,
   sortOrder,
+  isEmployee, // Add this prop
 }) => {
   const renderHeader = (key, label) => (
     <div
@@ -43,6 +44,7 @@ const ProductTable = ({
       columns={columns}
       onEdit={onEdit}
       onArchive={onArchive}
+      isEmployee={isEmployee} // Pass role-specific flag here
     />
   );
 };
