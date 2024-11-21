@@ -4,14 +4,21 @@ import { CartContext } from "./CartContext.jsx";
 import { useNavigate } from "react-router-dom";
 import { MdAddShoppingCart } from "react-icons/md";
 import { ClipLoader } from "react-spinners"; // Import the spinner component
+import { toast } from 'sonner';
 
-const ProductCard = ({ id, image, name, value, price, sku }) => {
+const ProductCard = ({ id, image, name, value, price, sku, stock_quantity }) => {
   const { addToCart } = useContext(CartContext);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const navigate = useNavigate();
 
   const handleAddToCart = (e) => {
     e.stopPropagation();
+
+    if (stock_quantity <= 0) {
+      toast.error("This product cannot be added to the cart because it's out of stock.");
+      return;
+    }
+
     setIsAddingToCart(true);
     // Simulate a delay to show loading effect (you can remove this if unnecessary)
     setTimeout(() => {
@@ -90,6 +97,7 @@ ProductCard.propTypes = {
   value: PropTypes.string,
   price: PropTypes.number.isRequired,
   sku: PropTypes.string,
+  stock_quantity: PropTypes.number.isRequired,
 };
 
 export default ProductCard;

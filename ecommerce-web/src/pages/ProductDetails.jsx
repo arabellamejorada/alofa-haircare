@@ -3,6 +3,7 @@ import { useEffect, useState, useContext } from "react";
 import { CartContext } from "../components/CartContext";
 import { getProductVariationById } from "../api/product.js";
 import { ClipLoader } from "react-spinners";
+import { toast } from 'sonner';
 
 const ProductDetails = () => {
   const { productId } = useParams();
@@ -34,6 +35,11 @@ const ProductDetails = () => {
 
     if (!variation.variation_id) {
       console.error("Variation ID is missing.");
+      return;
+    }
+
+    if (variation.stock_quantity <= 0) {
+      toast.error("This product cannot be added to the cart because it's out of stock.");
       return;
     }
 
