@@ -283,7 +283,7 @@ const Inventory = () => {
                                       {history.employee_name || "-"}
                                     </td>
                                     <td className="px-3 py-2 border-b">
-                                      {new Date(history.date).toLocaleString()}
+                                      {history.date}
                                     </td>
                                   </tr>
                                 ))}

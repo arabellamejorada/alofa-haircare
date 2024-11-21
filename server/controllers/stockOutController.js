@@ -1,5 +1,23 @@
 const pool = require("../db.js");
 
+const formatDate = (date, options = {}) => {
+  if (!date) return null;
+
+  const defaultOptions = {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "Asia/Manila",
+  };
+
+  const formatOptions = { ...defaultOptions, ...options };
+
+  return new Date(date).toLocaleString("en-PH", formatOptions).replace(",", "");
+};
+
 const createStockOut = async (req, res) => {
   const client = await pool.connect();
   const { stockOutProducts, order_id, employee_id, stock_out_date } = req.body;
@@ -109,12 +127,12 @@ const getAllStockOut = async (req, res) => {
   const client = await pool.connect();
 
   try {
-    const stockInResult = await client.query(`
+    const stockOutResult = await client.query(`
       SELECT 
           so.stock_out_id, 
           so.reference_number, 
           so.employee_id,
-          to_char(so.stock_out_date, 'MM-DD-YYYY, HH:MI AM') AS stock_out_date,
+          so.stock_out_date,
           soi.variation_id,
           soi.quantity,
           soi.reason,
@@ -140,8 +158,12 @@ const getAllStockOut = async (req, res) => {
           so.stock_out_date DESC
     `);
 
-    res.status(200).json(stockInResult.rows);
-  } catch (error) {
+const formattedResult = stockOutResult.rows.map(row => {
+           row.stock_out_date =formatDate(row.stock_out_date);
+        return row;
+        });
+
+        res.json(formattedResult);  } catch (error) {
     console.error("Error during get all stock out:", error);
     res.status(500).json({
       message: "Error during get all stock out",

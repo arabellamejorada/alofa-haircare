@@ -76,10 +76,10 @@ const OrderVerificationTab = ({ statusFilter }) => {
           );
         }
 
-        // Sort orders by 'order_date' in descending order
+        // Sort orders by 'date_ordered' in descending order
         const sortedOrders = filteredOrders.sort((a, b) => {
-          const dateA = new Date(a.order_date);
-          const dateB = new Date(b.order_date);
+          const dateA = new Date(a.date_ordered);
+          const dateB = new Date(b.date_ordered);
           return dateB - dateA; // Most recent first
         });
 
@@ -135,7 +135,7 @@ const OrderVerificationTab = ({ statusFilter }) => {
     let withinDateRange = true;
 
     if (startDate || endDate) {
-      const orderDateStr = order.order_date;
+      const orderDateStr = order.date_ordered;
       if (!orderDateStr) {
         withinDateRange = false; // If order date is missing, exclude it
       } else {
@@ -193,7 +193,7 @@ const OrderVerificationTab = ({ statusFilter }) => {
       header: "Payment Status",
       render: (status) => <PaymentStatusBadge status={status} />,
     },
-    { key: "order_date", header: "Date Ordered" },
+    { key: "date_ordered", header: "Date Ordered" },
     { key: "action", header: "Action" },
   ];
 
@@ -590,7 +590,7 @@ const OrderVerificationTab = ({ statusFilter }) => {
                         </dt>
                         <dd className="mt-1 text-base text-gray-900">
                           {(() => {
-                            const dateValue = selectedOrder.order_date;
+                            const dateValue = selectedOrder.date_ordered;
                             if (!dateValue) return "Date not available";
                             const date = new Date(dateValue);
                             return !isNaN(date.getTime())

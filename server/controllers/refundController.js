@@ -1,7 +1,22 @@
-// src/controllers/RefundController.jsx
-
 const pool = require("../db.js");
 
+const formatDate = (date, options = {}) => {
+  if (!date) return null;
+
+  const defaultOptions = {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "Asia/Manila",
+  };
+
+  const formatOptions = { ...defaultOptions, ...options };
+
+  return new Date(date).toLocaleString("en-PH", formatOptions).replace(",", "");
+};
 // Modify createRefundRequest to include refund_status_id
 const createRefundRequest = async (req, res) => {
   const { order_id, customer_id, reason, refund_items } = req.body; // Extract fields
@@ -10,16 +25,23 @@ const createRefundRequest = async (req, res) => {
   console.log("Request body:", req.body);
   console.log("Files:", files);
   try {
-    // Validate required fields
-    if (!order_id || !reason || !refund_items || files.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Missing required fields: order_id, reason, refund_items, or proofs.",
-      });
-    }
+   // Validate required fields
+   const missingFields = [];
+if (!order_id) missingFields.push("order_id");
+if (!reason) missingFields.push("reason");
+if (!refund_items) missingFields.push("refund_items");
+if (files.length === 0) missingFields.push("proof files");
 
-    // Check if a refund request already exists for the order
+if (missingFields.length > 0) {
+  return res.status(400).json({
+    success: false,
+    message: `Missing or invalid fields: ${missingFields.join(", ")}`,
+  });
+}
+
+
+
+   // Check if a refund request already exists for the order
     const existingRefund = await pool.query(
       `SELECT id FROM refund_request WHERE order_id = $1`,
       [order_id],
@@ -31,11 +53,16 @@ const createRefundRequest = async (req, res) => {
       });
     }
 
-    // Calculate total_refund_amount
-    const parsedRefundItems =
-      typeof refund_items === "string"
-        ? JSON.parse(refund_items)
-        : refund_items;
+    const parsedRefundItems = typeof refund_items === "string"
+    ? JSON.parse(refund_items)
+    : refund_items;
+
+    if (!Array.isArray(parsedRefundItems) || parsedRefundItems.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or missing refund_items.",
+      });
+    }
 
     const totalRefundAmount = parsedRefundItems.reduce(
       (total, item) => total + item.unit_price * item.quantity,
@@ -107,8 +134,8 @@ const getRefundRequestsByProfileId = async (req, res) => {
             rr.reason,
             rr.proofs,
             rr.total_refund_amount,
-            to_char(rr.requested_at, 'MM-DD-YYYY, HH:MI AM') AS requested_at,
-            to_char(rr.updated_at, 'MM-DD-YYYY, HH:MI AM') AS updated_at,
+            rr.requested_at,
+            rr.updated_at,
             rr.refund_status_id,
             rs.status_name AS refund_status_name,
             p.first_name AS profile_first_name,
@@ -164,6 +191,8 @@ const getRefundRequestsByProfileId = async (req, res) => {
       refund.customer_name = `${
         refund.profile_first_name || ""
       } ${refund.profile_last_name || ""}`;
+      refund.requested_at = formatDate(refund.requested_at),
+      refund.updated_at = formatDate(refund.updated_at),
       delete refund.profile_first_name;
       delete refund.profile_last_name;
       return refund;
@@ -191,8 +220,8 @@ const getAllRefundRequests = async (req, res) => {
             rr.reason,
             rr.proofs,
             rr.total_refund_amount,
-            to_char(rr.requested_at, 'MM-DD-YYYY, HH:MI AM') AS requested_at,
-            to_char(rr.updated_at, 'MM-DD-YYYY, HH:MI AM') AS updated_at,
+            rr.requested_at,
+            rr.updated_at,
             rr.refund_status_id,
             rs.status_name AS refund_status_name,
             p.first_name AS profile_first_name,
@@ -248,6 +277,8 @@ const getAllRefundRequests = async (req, res) => {
         refund.profile_first_name || ""
       } ${refund.profile_last_name || ""}`;
       refund.customer_email = refund.profile_email; // Map the email
+      refund.requested_at = formatDate(refund.requested_at);
+      refund.updated_at = formatDate(refund.updated_at);
       delete refund.profile_first_name;
       delete refund.profile_last_name;
       delete refund.profile_email; // Optional: Remove raw email field
@@ -301,9 +332,25 @@ const updateRefundStatus = async (req, res) => {
   }
 };
 
+const checkIfOrderIdExists = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const result = await pool.query(
+      `SELECT id FROM refund_request WHERE order_id = $1`,
+      [orderId]
+    );
+    const exists = result.rows.length > 0;
+    res.status(200).json({ exists });
+  } catch (error) {
+    console.error("Error checking if order ID exists:", error);
+    res.status(500).json({ error: "Failed to check if order ID exists." });
+  }
+};
+
 module.exports = {
   createRefundRequest,
   getRefundRequestsByProfileId,
   getAllRefundRequests,
   updateRefundStatus,
+  checkIfOrderIdExists
 };

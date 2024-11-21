@@ -19,9 +19,12 @@ const RefundModal = ({ isOpen, closeModal, orderItems, selectedOrder }) => {
   const [loading, setLoading] = useState(false);
 
   const handleCheckboxChange = (e, orderItemId) => {
+    const isChecked = e.target.checked;
     setCheckedItems((prev) => ({
       ...prev,
-      [orderItemId]: e.target.checked,
+      [orderItemId]: isChecked
+        ? { quantity: 1 } // Default quantity when checked
+        : undefined, // Remove when unchecked
     }));
   };
 
@@ -54,20 +57,23 @@ const RefundModal = ({ isOpen, closeModal, orderItems, selectedOrder }) => {
       toast.error("Please upload at least one proof image.");
       return;
     }
+    if (!orderItems || orderItems.length === 0) {
+      toast.error("No items available for a refund.");
+      return;
+    }
 
     const selectedItems = Object.entries(checkedItems)
-      .filter(([isChecked]) => isChecked)
-      .map(([orderItemId]) => {
+      .filter(([_, value]) => value) // Check only if value is truthy
+      .map(([orderItemId, { quantity }]) => {
         const item = orderItems.find(
           (i) => i.order_item_id === parseInt(orderItemId, 10),
         );
         return {
           order_item_id: item.order_item_id,
           variation_id: item.variation_id,
-          quantity: checkedItems[orderItemId]?.quantity || 1,
+          quantity,
           unit_price: item.unit_price,
-          item_subtotal:
-            item.unit_price * (checkedItems[orderItemId]?.quantity || 1),
+          item_subtotal: item.unit_price * quantity,
         };
       });
 
@@ -76,9 +82,9 @@ const RefundModal = ({ isOpen, closeModal, orderItems, selectedOrder }) => {
     formData.append("order_id", selectedOrder.order_id);
     formData.append("customer_id", selectedOrder.customer_id);
     formData.append("reason", reason);
-    formData.append("refund_items", JSON.stringify(selectedItems));
+    formData.append("refund_items", JSON.stringify(selectedItems)); // Already correct
     proofs.forEach((file) => {
-      formData.append("refund_proof", file);
+      formData.append("refund_proof", file); // Matches backend `refund_proof`
     });
 
     try {
@@ -132,24 +138,24 @@ const RefundModal = ({ isOpen, closeModal, orderItems, selectedOrder }) => {
             <div className="fixed inset-0 bg-black bg-opacity-25" />
           </TransitionChild>
 
-        <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-8 text-center">
-            <TransitionChild
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 scale-95"
-              enterTo="opacity-100 scale-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 scale-100"
-              leaveTo="opacity-0 scale-95"
-            >
-              <DialogPanel className="pt-7 px-8 py-3 w-full max-w-2xl h-[700px] transform overflow-visible rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                <DialogTitle
-                  as="h3"
-                  className="text-3xl font-bold leading-normal gradient-heading mb-4"
-                >
-                  Request Refund
-                </DialogTitle>
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-8 text-center">
+              <TransitionChild
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <DialogPanel className="pt-7 px-8 py-3 w-full max-w-2xl h-[700px] transform overflow-visible rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                  <DialogTitle
+                    as="h3"
+                    className="text-3xl font-bold leading-normal gradient-heading mb-4"
+                  >
+                    Request Refund
+                  </DialogTitle>
 
                   {/* Order Items Section */}
                   <div className="mt-2">
@@ -309,8 +315,8 @@ const RefundModal = ({ isOpen, closeModal, orderItems, selectedOrder }) => {
                     </div>
                   </div>
 
-                {/* Submit Button */}
-                <div className="mt-6 mb-3 pb-3 flex justify-end space-x-1">
+                  {/* Submit Button */}
+                  <div className="mt-6 mb-3 pb-3 flex justify-end space-x-1">
                     <button
                       onClick={handleClose}
                       className="border-0 hover:underline text-gray-600 font-semibold py-2 px-4"

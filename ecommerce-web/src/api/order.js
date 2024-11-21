@@ -54,6 +54,10 @@ export const updateOrderStatus = async (orderId, status) => {
 // REFUND
 export const createRefundRequest = async (formData) => {
   try {
+    for (let [key, value] of formData.entries()) {
+  console.log(`${key}: ${value}`);
+}
+
     const response = await axios.post("/refund", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
@@ -83,6 +87,16 @@ export const getRefundRequestsByProfileId = async (profile_id) => {
     return formattedTransactions;
   } catch (error) {
     console.error("Error fetching orders by  profile ID:", error);
+    throw error;
+  }
+};
+
+export const checkIfOrderIdExists = async (orderId) => {
+  try {
+    const response = await axios.get(`/refund/order/${orderId}`);
+    return response.data.exists;
+  } catch (error) {
+    console.error("Error checking if order ID exists:", error);
     throw error;
   }
 };

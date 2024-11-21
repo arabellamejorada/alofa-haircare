@@ -1,8 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import RefundModal from "./RefundModal";
-import { updateOrderStatus } from "../api/order";
+import { updateOrderStatus, checkIfOrderIdExists } from "../api/order";
 import { toast } from "sonner";
 
 const TransactionCard = ({
@@ -14,7 +14,8 @@ const TransactionCard = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isRefundModalOpen, setIsRefundModalOpen] = useState(false);
-
+  const [isRefundEligible, setIsRefundEligible] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const totalItems =
     activeTab !== "For Refund"
       ? order.order_items.reduce((acc, item) => acc + item.quantity, 0)
@@ -23,6 +24,34 @@ const TransactionCard = ({
   if (activeTab === "For Refund") {
     order = refund;
   }
+
+  useEffect(() => {
+    const checkEligibility = async () => {
+      if (!order.date_delivered) {
+        setIsRefundEligible(false);
+        return;
+      }
+      const currentDate = new Date();
+      const deliveredDate = new Date(order.date_delivered);
+      const differenceInTime = currentDate - deliveredDate;
+      const differenceInDays = differenceInTime / (1000 * 60 * 60 * 24);
+
+      if (differenceInDays > 7) {
+        setIsRefundEligible(false);
+        return;
+      }
+
+      try {
+        const refundExists = await checkIfOrderIdExists(order.order_id);
+        setIsRefundEligible(!refundExists);
+      } catch (error) {
+        console.error("Error checking refund eligibility:", error);
+        setIsRefundEligible(false);
+      }
+    };
+
+    checkEligibility();
+  }, [order.date_delivered, order.order_id]);
 
   const toggleExpanded = () => {
     setIsExpanded(!isExpanded);
@@ -33,6 +62,7 @@ const TransactionCard = ({
 
   const handleOrderReceived = async (orderId) => {
     try {
+      setIsUpdating(true);
       setLoading(true);
       await updateOrderStatus(orderId, 4);
       toast.success("Order has been received!");
@@ -48,17 +78,9 @@ const TransactionCard = ({
       toast.error("Failed to update order status. Please try again.");
     } finally {
       setLoading(false);
+      setIsUpdating(false);
     }
   };
-
-  const isRefundEligible = useMemo(() => {
-    if (!order.date_delivered) return false;
-    const currentDate = new Date();
-    const deliveredDate = new Date(order.date_delivered);
-    const differenceInTime = currentDate - deliveredDate;
-    const differenceInDays = differenceInTime / (1000 * 60 * 60 * 24);
-    return differenceInDays <= 7; // within 7 days
-  }, [order.date_delivered]);
 
   return (
     <div className="bg-gray-50 border border-gray-200 rounded-lg shadow-lg p-4 mb-6">
@@ -66,7 +88,14 @@ const TransactionCard = ({
       <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-300">
         <div>
           <div className="text-gray-500 font-normal mb-0">
-            {activeTab === "For Refund" ? "Refund placed: " : "Order placed: "}
+            {activeTab === "Completed" ? (
+              <>Order Completed: {order.date_delivered}</>
+            ) : (
+              ""
+            )}
+          </div>
+          <div className="text-gray-500 font-normal mb-0">
+            {activeTab === "For Refund" ? "Refund Placed: " : "Order Placed: "}
             {activeTab === "For Refund"
               ? refund.requested_at
               : order.date_ordered}
@@ -179,11 +208,12 @@ const TransactionCard = ({
                 ? refund.refund_request_id
                 : order.order_id}
             </div>
-            {(activeTab === "To Receive" || activeTab === "Completed") && (
-              <div className="text-gray-500 font-normal mb-1">
-                Tracking Number: {order.tracking_number} (J&T Express)
-              </div>
-            )}
+            {(activeTab === "To Receive" || activeTab === "Completed") &&
+              order.tracking_number && (
+                <div className="text-gray-500 font-normal mb-1">
+                  Tracking Number: {order.tracking_number} (J&T Express)
+                </div>
+              )}
           </div>
           <div className="flex flex-col items-end">
             <div className="text-gray-600 text-sm">
@@ -209,8 +239,9 @@ const TransactionCard = ({
               <button
                 className="bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F] text-white font-semibold py-2 px-4 rounded"
                 onClick={() => handleOrderReceived(order.order_id)}
+                disabled={isUpdating}
               >
-                Order Received
+                {isUpdating ? "Processing..." : "Order Received"}
               </button>
             )}
           {activeTab === "Completed" && isRefundEligible && (
@@ -229,8 +260,8 @@ const TransactionCard = ({
         <RefundModal
           isOpen={isRefundModalOpen}
           closeModal={closeRefundModal}
-          orderItems={order?.order_items || []} // Safeguard against undefined
-          selectedOrder={order}
+          orderItems={order?.order_items || []}
+          selectedOrder={order || {}}
         />
       )}
     </div>

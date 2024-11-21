@@ -334,8 +334,8 @@ const OrdersTab = ({ statusFilter }) => {
 
         // Sort orders by 'order_date' in descending order
         const sortedOrders = filteredOrders.sort((a, b) => {
-          const dateA = new Date(a.order_date);
-          const dateB = new Date(b.order_date);
+          const dateA = new Date(a.date_ordered);
+          const dateB = new Date(b.date_ordered);
           return dateB - dateA; // Most recent orders first
         });
 
@@ -353,7 +353,7 @@ const OrdersTab = ({ statusFilter }) => {
 
   useEffect(() => {
     fetchOrders();
-    console.log("statusFilter changed:", statusFilter);
+    console.log(orders);
     setCurrentPage(1); // Reset to first page when filters change
   }, [fetchOrders, statusFilter]);
 
@@ -393,7 +393,7 @@ const OrdersTab = ({ statusFilter }) => {
     let withinDateRange = true;
 
     if (startDate || endDate) {
-      const orderDateStr = order.order_date;
+      const orderDateStr = order.date_ordered;
       if (!orderDateStr) {
         withinDateRange = false; // If order date is missing, exclude it
       } else {
@@ -446,8 +446,10 @@ const OrdersTab = ({ statusFilter }) => {
     ...(statusFilter === "Shipped"
       ? [{ key: "shipping_date", header: "Shipment Date" }]
       : []),
-    { key: "order_date", header: "Date Ordered" },
-
+    { key: "date_ordered", header: "Date Ordered" },
+    ...(statusFilter === "Completed"
+      ? [{ key: "date_delivered", header: "Date Delivered" }]
+      : []),
     { key: "actions", header: "Actions" },
   ];
 
@@ -578,10 +580,17 @@ const OrdersTab = ({ statusFilter }) => {
                       </>
                     )}
                     <td className="px-5 py-3 border-b">
-                      {order.order_date
-                        ? order.order_date
+                      {order.date_ordered
+                        ? order.date_ordered
                         : "Date not available"}
                     </td>
+                    {statusFilter === "Completed" && (
+                      <>
+                        <td className="px-5 py-3 border-b">
+                          {order.date_delivered || "N/A"}
+                        </td>
+                      </>
+                    )}
 
                     <td className="px-5 py-3 border-b">
                       <button

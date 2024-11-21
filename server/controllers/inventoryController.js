@@ -1,5 +1,23 @@
 const pool = require('../db.js');
 
+const formatDate = (date, options = {}) => {
+  if (!date) return null;
+
+  const defaultOptions = {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "Asia/Manila",
+  };
+
+  const formatOptions = { ...defaultOptions, ...options };
+
+  return new Date(date).toLocaleString("en-PH", formatOptions).replace(",", "");
+};
+
 // Get all inventories with product name and variation details
 const getAllInventories = async (req, res) => {
     const client = await pool.connect();
@@ -24,25 +42,8 @@ const getAllInventories = async (req, res) => {
         );
 
         const formattedResult = result.rows.map(row => {
-            if (row.last_updated_date) {
-                // Convert timestamp to the desired format
-                const date = new Date(row.last_updated_date);
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                const year = date.getFullYear();
-                let hours = date.getHours();
-                const minutes = String(date.getMinutes()).padStart(2, '0');
-                const ampm = hours >= 12 ? 'PM' : 'AM';
-
-                // Convert hours to 12-hour format
-                hours = hours % 12;
-                hours = hours ? hours : 12; // the hour '0' should be '12'
-                const formattedDate = `${month}-${day}-${year}, ${hours}:${minutes} ${ampm}`;
-
-                // Assign the formatted date back to the row
-                row.last_updated_date = formattedDate;
-            }
-            return row;
+           row.last_updated_date =formatDate(row.last_updated_date);
+        return row;
         });
 
         res.json(formattedResult);
@@ -130,8 +131,15 @@ const getInventoryHistoryByVariationId = async (req, res) => {
             ORDER BY date;
         `;
         const result = await client.query(query, [id]);
-        res.json(result.rows);
-    } catch (err) {
+
+        // Format the date fields
+            const formattedResult = result.rows.map((row) => ({
+            ...row,
+            date: formatDate(row.date),
+            }));
+
+            res.json(formattedResult);   
+ } catch (err) {
         console.error('Error fetching inventory history by id:', err.message);
         res.status(500).json({ message: 'Server error' });
     } finally {
@@ -175,8 +183,17 @@ const getAllInventoryHistory = async (req, res) => {
 
 
     const result = await client.query(query);
-    res.json(result.rows);
-  } catch (err) {
+    console.log(result
+    )
+    // Format the date fields
+    const formattedResult = result.rows.map((row) => ({
+      ...row,
+      date: formatDate(row.date),
+    }));
+    
+    console.log("formatted", formattedResult)
+
+    res.json(formattedResult);  } catch (err) {
     console.error("Error fetching all inventory history:", err.message);
     res.status(500).json({ message: "Server error" });
   } finally {

@@ -1,5 +1,23 @@
 const pool = require('../db.js');
 
+const formatDate = (date, options = {}) => {
+  if (!date) return null;
+
+  const defaultOptions = {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "Asia/Manila",
+  };
+
+  const formatOptions = { ...defaultOptions, ...options };
+
+  return new Date(date).toLocaleString("en-PH", formatOptions).replace(",", "");
+};
+
 const createStockIn = async (req, res) => {
   const client = await pool.connect();
   const { employee_id, supplier_id, stockInProducts, reference_number, stock_in_date } = req.body;
@@ -72,7 +90,7 @@ const getAllStockIn = async (req, res) => {
           si.stock_in_id, 
           si.reference_number,
           si.employee_id,
-          to_char(si.stock_in_date, 'MM-DD-YYYY, HH:MI AM') AS stock_in_date,
+          si.stock_in_date,
           s.supplier_id, 
           s.supplier_name, 
           pv.type, 
@@ -99,7 +117,12 @@ const getAllStockIn = async (req, res) => {
           si.stock_in_date DESC
     `);
 
-    res.status(200).json(stockInResult.rows);
+ const formattedResult = stockInResult.rows.map(row => {
+           row.stock_in_date =formatDate(row.stock_in_date);
+        return row;
+        });
+
+        res.json(formattedResult);
   } catch (error) {
     console.error("Error during get all stock in:", error);
     res.status(500).json({ message: "Error during get all stock in", error: error.message });

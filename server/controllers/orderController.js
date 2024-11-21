@@ -1,5 +1,23 @@
 const pool = require("../db.js");
 
+const formatDate = (date, options = {}) => {
+  if (!date) return null;
+
+  const defaultOptions = {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "Asia/Manila",
+  };
+
+  const formatOptions = { ...defaultOptions, ...options };
+
+  return new Date(date).toLocaleString("en-PH", formatOptions).replace(",", "");
+};
+
 const createOrder = async (req, res) => {
   const orderDetails = JSON.parse(req.body.orderDetails);
   const cartItems = JSON.parse(req.body.cartItems);
@@ -20,11 +38,11 @@ const createOrder = async (req, res) => {
 
     // Step 1: Insert shipping details and get the shipping_id
     const shippingResult = await pool.query(
-      `INSERT INTO shipping (shipping_date, shipping_fee, tracking_number, shipping_method_id, shipping_address_id)
-       VALUES (NOW(), $1, $2, $3, $4)
+      `INSERT INTO shipping (shipping_fee, tracking_number, shipping_method_id, shipping_address_id)
+        VALUES ($1, $2, $3, $4)
        RETURNING *`,
       [
-        orderDetails.shipping_fee || 200, // Default shipping fee
+        orderDetails.shipping_fee, // Default shipping fee
         orderDetails.tracking_number || null,
         orderDetails.shipping_method_id ||
           shippingMethodResult.rows[0].shipping_method_id,
@@ -249,14 +267,13 @@ const getOrderByProfileId = async (req, res) => {
       `
       SELECT 
         o.*,
-        to_char(o.date_ordered, 'MM-DD-YYYY, HH:MI AM') AS date_ordered,
         os.status_name AS order_status_name,
         pm.method_name AS payment_method_name,
         ps.status_name AS payment_status_name,
         p.first_name AS profile_first_name,
         p.last_name AS profile_last_name,
         s.tracking_number,
-        to_char(s.shipping_date, 'MM-DD-YYYY') AS shipping_date,
+        s.shipping_date,
         JSON_AGG(
             JSON_BUILD_OBJECT(
                 'order_item_id', oi.order_item_id,
@@ -302,7 +319,10 @@ const getOrderByProfileId = async (req, res) => {
     }
 
     const orders = ordersResult.rows.map((order) => {
-      order.customer_name = `${order.profile_first_name || ""} ${order.profile_last_name || ""}`;
+      order.customer_name = `${order.profile_first_name || ""} ${order.profile_last_name || ""}`,
+      order.date_ordered = formatDate(order.date_ordered), // Format order_date
+      order.date_delivered = formatDate(order.date_delivered),
+      order.shipping_date= formatDate(order.shipping_date), // Format shipping_date
       delete order.profile_first_name;
       delete order.profile_last_name;
       return order;
@@ -321,7 +341,6 @@ const getAllOrdersWithOrderItems = async (req, res) => {
     const ordersResult = await pool.query(`
       SELECT 
         o.*,
-        to_char(o.date_ordered, 'MM-DD-YYYY, HH:MI AM') AS order_date,
         os.status_name AS order_status_name,
         pm.method_name AS payment_method_name,
         ps.status_name AS payment_status_name,
@@ -329,7 +348,7 @@ const getAllOrdersWithOrderItems = async (req, res) => {
         p.last_name AS profile_last_name,
         p.email AS customer_email, -- Include customer email
         s.tracking_number,
-        to_char(s.shipping_date, 'MM-DD-YYYY') AS shipping_date,
+        s.shipping_date,
         JSON_AGG(
           JSON_BUILD_OBJECT(
             'order_item_id', oi.order_item_id,
@@ -371,7 +390,10 @@ const getAllOrdersWithOrderItems = async (req, res) => {
 
     // Map orders to include customer_name for convenience
     const orders = ordersResult.rows.map((order) => {
-      order.customer_name = `${order.profile_first_name || ""} ${order.profile_last_name || ""}`;
+      order.customer_name = `${order.profile_first_name || ""} ${order.profile_last_name || ""}`,
+      order.date_ordered = formatDate(order.date_ordered), // Format order_date
+      order.date_delivered = formatDate(order.date_delivered),
+      order.shipping_date= formatDate(order.shipping_date), // Format shipping_date
       delete order.profile_first_name;
       delete order.profile_last_name;
       return order;
