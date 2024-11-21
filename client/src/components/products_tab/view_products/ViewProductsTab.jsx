@@ -1,4 +1,4 @@
-import React, { Fragment, useState, useEffect } from "react";
+import React, { Fragment, useState, useEffect, useContext } from "react";
 import ProductTable from "./ProductTable";
 import EditProductModal from "./EditProductModal";
 import ConfirmModal from "../../shared/ConfirmModal";
@@ -20,8 +20,12 @@ import {
   validateStatus,
   validateCategory,
 } from "../../../lib/consts/utils/validationUtils";
+import { AuthContext } from "../../AuthContext"; // Import AuthContext
 
 const ProductsTab = () => {
+  const { role } = useContext(AuthContext); // Access user role from context
+  const isEmployee = role === "employee"; // Check if the user is an employee
+
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [statuses, setStatuses] = useState([]);
@@ -305,15 +309,15 @@ const ProductsTab = () => {
             setSearch={setSearch}
             selectedCategory={selectedCategory}
             setSelectedCategory={setSelectedCategory}
-            handleCategoryChange={handleCategoryChange}
+            handleCategoryChange={(e) => setSelectedCategory(e.target.value)}
             categories={categories}
             selectedStatus={selectedStatus}
             setSelectedStatus={setSelectedStatus}
-            handleStatusChange={handleStatusChange}
+            handleStatusChange={(e) => setSelectedStatus(e.target.value)}
             statuses={statuses}
             showArchived={showArchived}
             setShowArchived={setShowArchived}
-            handleSearchChange={handleSearchChange}
+            handleSearchChange={(e) => setSearch(e.target.value.toLowerCase())}
             isProducts={true}
           />
 
@@ -324,6 +328,7 @@ const ProductsTab = () => {
             handleColumnSort={handleColumnSort}
             sortField={sortField}
             sortOrder={sortOrder}
+            isEmployee={isEmployee} // Pass role-specific flag here
           />
         </div>
 
@@ -344,7 +349,7 @@ const ProductsTab = () => {
         )}
         <ConfirmModal
           isOpen={isConfirmModalOpen}
-          onClose={handleConfirmClose}
+          onClose={() => setIsConfirmModalOpen(false)}
           onConfirm={handleConfirm}
           message={confirmMessage}
           additionalNote={additionalNote}

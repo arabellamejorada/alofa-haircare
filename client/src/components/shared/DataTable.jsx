@@ -108,54 +108,42 @@ const DataTable = ({
                 {!isInventory && (
                   <td className="text-center px-2 py-3 h-12 w-[8%]">
                     <div className="flex justify-center items-center gap-2 h-full">
-                      {isEmployee ? (
-                        // Show only the Edit button if isEmployee is true
-                        <div
-                          className="text-alofa-pink hover:text-alofa-dark"
-                          onClick={() => onEdit(item)}
-                          role="button"
-                          tabIndex={0}
-                          aria-label="Edit"
-                        >
-                          <MdEditDocument fontSize={24} />
-                        </div>
-                      ) : (
-                        <>
-                          {/* Show Edit button */}
+                      {/* Edit Button */}
+                      <div
+                        className="text-alofa-pink hover:text-alofa-dark"
+                        onClick={() => onEdit(item)}
+                        role="button"
+                        tabIndex={0}
+                        aria-label="Edit"
+                      >
+                        <MdEditDocument fontSize={24} />
+                      </div>
+
+                      {/* Show Delete or Archive button based on role and isProductCategory */}
+                      {isProductCategory &&
+                        !isEmployee && ( // Hide Delete button for employees
                           <div
                             className="text-alofa-pink hover:text-alofa-dark"
-                            onClick={() => onEdit(item)}
+                            onClick={() => onDelete(item)} // Trigger delete action
                             role="button"
                             tabIndex={0}
-                            aria-label="Edit"
+                            aria-label="Delete"
                           >
-                            <MdEditDocument fontSize={24} />
+                            <MdDelete fontSize={24} />
                           </div>
-
-                          {/* Show Delete or Archive button based on isProductCategory */}
-                          {isProductCategory ? (
-                            <div
-                              className="text-alofa-pink hover:text-alofa-dark"
-                              onClick={() => onDelete(item)} // Trigger delete action
-                              role="button"
-                              tabIndex={0}
-                              aria-label="Delete"
-                            >
-                              <MdDelete fontSize={24} />
-                            </div>
-                          ) : (
-                            <div
-                              className="text-alofa-pink hover:text-alofa-dark"
-                              onClick={() => onArchive(item)}
-                              role="button"
-                              tabIndex={0}
-                              aria-label="Archive"
-                            >
-                              <IoMdArchive fontSize={24} />
-                            </div>
-                          )}
-                        </>
-                      )}
+                        )}
+                      {!isProductCategory &&
+                        !isEmployee && ( // Hide Archive button for employees
+                          <div
+                            className="text-alofa-pink hover:text-alofa-dark"
+                            onClick={() => onArchive(item)}
+                            role="button"
+                            tabIndex={0}
+                            aria-label="Archive"
+                          >
+                            <IoMdArchive fontSize={24} />
+                          </div>
+                        )}
                     </div>
                   </td>
                 )}

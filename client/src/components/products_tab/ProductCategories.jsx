@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useState } from "react";
+import React, { Fragment, useEffect, useState, useContext } from "react";
 import DataTable from "../shared/DataTable";
 import ConfirmModal from "../shared/ConfirmModal";
 import { MdAddBox } from "react-icons/md";
@@ -12,8 +12,12 @@ import {
   deleteCategory,
 } from "../../api/products";
 import { validateName } from "../../lib/consts/utils/validationUtils"; // Assuming you have a validation utility
+import { AuthContext } from "../AuthContext"; // Import AuthContext
 
 const ProductCategories = () => {
+  const { role } = useContext(AuthContext); // Access user role from context
+  const isEmployee = role === "employee"; // Check if the user is an employee
+
   const [categories, setCategories] = useState([]);
   const [errors, setErrors] = useState({});
   const [search, setSearch] = useState("");
@@ -283,6 +287,7 @@ const ProductCategories = () => {
             onEdit={openModal}
             onDelete={handleDeleteCategory}
             isProductCategory={true}
+            isEmployee={isEmployee} // Pass isEmployee prop here
           />
         </div>
 

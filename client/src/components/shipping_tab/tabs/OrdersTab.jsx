@@ -568,7 +568,7 @@ const OrdersTab = ({ statusFilter }) => {
                     {statusFilter === "Shipped" && (
                       <>
                         <td>
-                          <div className="px-5 py-3 border-b">
+                          <div className="px-5 py-3">
                             {order.tracking_number || "N/A"}
                           </div>
                         </td>

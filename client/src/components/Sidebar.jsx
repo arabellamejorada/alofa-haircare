@@ -89,7 +89,7 @@ function SidebarContent({ onClose }) {
   return (
     <>
       <div className="flex flex-col px-1 py-5 mt-5 items-center justify-center">
-        <span className="text-white text-7xl font-title">Alofa</span>
+        <span className="text-white text-7xl font-title">alofa</span>
         <div className="text-alofa-white font-heading">
           {loading ? "Hello!" : userName ? `Hello, ${userName}!` : "Hello!"}
         </div>
