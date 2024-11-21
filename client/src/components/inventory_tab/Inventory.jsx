@@ -6,6 +6,7 @@ import {
   IoMdArrowDroprightCircle,
 } from "react-icons/io";
 import { FaArrowUp, FaArrowDown } from "react-icons/fa";
+import QuantityBadge from "../shared/QuantityBadge"; // Adjust path as needed
 
 const Inventory = () => {
   const [inventory, setInventory] = useState([]);
@@ -128,7 +129,7 @@ const Inventory = () => {
     { key: "stock_quantity", header: "Stock Quantity", align: "right" },
     { key: "product_status", header: "Status" },
     { key: "last_updated_date", header: "Last Update" },
-    { key: "action", header: "Action" },
+    { key: "action", header: "Action", align: "center" },
   ];
 
   if (error) return <div className="text-red-500">{error}</div>;
@@ -173,7 +174,13 @@ const Inventory = () => {
                 {columns.map((column) => (
                   <th
                     key={column.key}
-                    className={`px-5 py-3 border-b-2 border-gray-200 bg-alofa-pink text-white text-left text-sm font-semibold ${column.align === "right" ? "text-right" : ""}`}
+                    className={`px-5 py-3 border-b-2 border-gray-200 bg-alofa-pink text-white text-sm font-semibold ${
+                      column.key === "stock_quantity"
+                        ? "text-center"
+                        : column.align === "right"
+                          ? "text-right"
+                          : "text-left"
+                    }`}
                     onClick={() => handleSort(column.key)}
                   >
                     {column.header}
@@ -191,32 +198,41 @@ const Inventory = () => {
               {currentData.map((item) => (
                 <Fragment key={item.inventory_id}>
                   <tr>
-                    {columns.slice(0, -1).map((column) => (
+                    {columns.map((column) => (
                       <td
                         key={column.key}
-                        className={`px-5 py-2 border-b ${column.align === "right" ? "text-right" : ""}`}
+                        className={`px-5 py-2 border-b ${
+                          column.key === "stock_quantity"
+                            ? "text-center"
+                            : column.align === "right"
+                              ? "text-right"
+                              : "text-left"
+                        }`}
                       >
-                        {item[column.key]}
+                        {column.key === "stock_quantity" ? (
+                          <QuantityBadge quantity={item[column.key]} />
+                        ) : column.key === "action" ? (
+                          <button
+                            onClick={() => toggleRow(item.variation_id)}
+                            className="focus:outline-none flex justify-center items-center"
+                          >
+                            {expandedRows.includes(item.variation_id) ? (
+                              <IoMdArrowDropdownCircle
+                                fontSize={24}
+                                className="text-alofa-pink hover:text-alofa-dark"
+                              />
+                            ) : (
+                              <IoMdArrowDroprightCircle
+                                fontSize={24}
+                                className="text-alofa-pink hover:text-alofa-dark"
+                              />
+                            )}
+                          </button>
+                        ) : (
+                          item[column.key]
+                        )}
                       </td>
                     ))}
-                    <td className="text-center border-b">
-                      <button
-                        onClick={() => toggleRow(item.variation_id)}
-                        className="focus:outline-none"
-                      >
-                        {expandedRows.includes(item.variation_id) ? (
-                          <IoMdArrowDropdownCircle
-                            fontSize={24}
-                            className="text-alofa-pink hover:text-alofa-dark"
-                          />
-                        ) : (
-                          <IoMdArrowDroprightCircle
-                            fontSize={24}
-                            className="text-alofa-pink hover:text-alofa-dark"
-                          />
-                        )}
-                      </button>
-                    </td>
                   </tr>
 
                   {/* Expanded Content */}
