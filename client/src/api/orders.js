@@ -1,5 +1,3 @@
-// order.js
-
 import axios from "./axios";
 
 // Function to create a new order
@@ -10,7 +8,6 @@ export const createOrder = async (formData) => {
         "Content-Type": "multipart/form-data",
       },
     });
-    // console.log("Order created: ", response.data);
     return response.data;
   } catch (error) {
     console.error("Error creating order: ", error);
@@ -34,7 +31,6 @@ export const getAllOrdersWithItems = async () => {
 export const getOrdersByCustomerId = async (customerId) => {
   try {
     const response = await axios.get(`/order/customer/${customerId}`);
-    // console.log("Orders fetched for customer: ", response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching orders for customer: ", error);
@@ -46,7 +42,6 @@ export const getOrdersByCustomerId = async (customerId) => {
 export const getOrderById = async (orderId) => {
   try {
     const response = await axios.get(`/order/${orderId}`);
-    // console.log("Order fetched: ", response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching order: ", error);
@@ -58,7 +53,6 @@ export const getOrderById = async (orderId) => {
 export const getOrderItemsByOrderId = async (orderId) => {
   try {
     const response = await axios.get(`/order/${orderId}/items`);
-    // console.log("Order items fetched: ", response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching order items: ", error);
@@ -66,13 +60,25 @@ export const getOrderItemsByOrderId = async (orderId) => {
   }
 };
 
-// Functions to update payment and order status (if routes are added)
+// Function to update order remarks
+export const updateOrderRemarks = async (orderId, remarks) => {
+  try {
+    const response = await axios.put(`/order/${orderId}/remarks`, {
+      remarks,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error updating order remarks: ", error);
+    throw error;
+  }
+};
+
+// Function to update payment status of an order
 export const updateOrderPaymentStatus = async (orderId, paymentStatusId) => {
   try {
     const response = await axios.put(`/order/${orderId}/payment-status`, {
       payment_status_id: paymentStatusId,
     });
-    // console.log("Order payment status updated: ", response.data);
     return response.data;
   } catch (error) {
     console.error("Error updating order payment status: ", error);
@@ -80,6 +86,7 @@ export const updateOrderPaymentStatus = async (orderId, paymentStatusId) => {
   }
 };
 
+// Function to update order status
 export const updateOrderStatus = async (
   orderId,
   orderStatusId,
@@ -90,7 +97,6 @@ export const updateOrderStatus = async (
       order_status_id: orderStatusId,
       tracking_number: trackingNumber,
     });
-    // console.log("Order status and tracking number updated:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error updating order status and tracking number:", error);
@@ -98,6 +104,7 @@ export const updateOrderStatus = async (
   }
 };
 
+// Function to update shipping status and tracking number
 export const updateShippingStatusAndTrackingNumber = async (
   shippingId,
   orderStatusId,
@@ -105,18 +112,17 @@ export const updateShippingStatusAndTrackingNumber = async (
 ) => {
   try {
     const response = await axios.put(`/shipping/${shippingId}/status`, {
-      order_status_id: orderStatusId, // Use order_status_id instead of shipping_status_id
+      order_status_id: orderStatusId,
       tracking_number: trackingNumber,
     });
-    // console.log("Order status and tracking number updated:", response.data);
     return response.data;
   } catch (error) {
-    console.error("Error updating order status and tracking number:", error);
+    console.error("Error updating shipping status and tracking number:", error);
     throw error;
   }
 };
 
-// REFUND
+// REFUND FUNCTIONS
 export const createRefundRequest = async (formData) => {
   try {
     const response = await axios.post("/refund", formData, {
@@ -126,7 +132,7 @@ export const createRefundRequest = async (formData) => {
     });
     return response.data;
   } catch (error) {
-    console.error("Error in createRefundRequest:", error);
+    console.error("Error creating refund request: ", error);
     throw error;
   }
 };
@@ -134,7 +140,6 @@ export const createRefundRequest = async (formData) => {
 export const getRefundRequestsByProfileId = async (profile_id) => {
   try {
     const response = await axios.get(`/refund/requests/${profile_id}`);
-
     const formattedTransactions = response.data.map((transaction) => ({
       ...transaction,
       total_refund_amount: Number(transaction.total_refund_amount),
@@ -144,10 +149,9 @@ export const getRefundRequestsByProfileId = async (profile_id) => {
         unit_price: Number(item.unit_price),
       })),
     }));
-
     return formattedTransactions;
   } catch (error) {
-    console.error("Error fetching orders by  profile ID:", error);
+    console.error("Error fetching refund requests by profile ID:", error);
     throw error;
   }
 };
@@ -155,7 +159,6 @@ export const getRefundRequestsByProfileId = async (profile_id) => {
 export const getAllRefundRequests = async () => {
   try {
     const response = await axios.get("/requests");
-
     const formattedRefunds = response.data.map((refund) => ({
       ...refund,
       total_refund_amount: Number(refund.total_refund_amount),
@@ -164,7 +167,6 @@ export const getAllRefundRequests = async () => {
         item_subtotal: Number(item.item_subtotal),
       })),
     }));
-
     return formattedRefunds;
   } catch (error) {
     console.error("Error fetching all refund requests:", error);
@@ -177,7 +179,6 @@ export const updateRefundStatus = async (refundRequestId, statusId) => {
     const response = await axios.put(`/refunds/${refundRequestId}/status`, {
       status_id: statusId,
     });
-    // console.log("Refund status updated: ", response.data);
     return response.data;
   } catch (error) {
     console.error("Error updating refund status: ", error);

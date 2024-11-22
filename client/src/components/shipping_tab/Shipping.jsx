@@ -25,7 +25,7 @@ const Shipping = () => {
         <strong className="text-3xl font-bold text-gray-500">Shipping</strong>
 
         {/* Tabs */}
-        <div className="border-b border-gray-300 mb-4">
+        <div className="border-b border-gray-300 mb-2">
           {[
             "View All Orders",
             "Prepared Orders",

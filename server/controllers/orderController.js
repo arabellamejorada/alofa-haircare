@@ -89,11 +89,11 @@ const createOrder = async (req, res) => {
     // Step 2: Insert order details with the generated shipping_id
     const orderResult = await pool.query(
       `INSERT INTO orders (
-        customer_id, total_amount, date_ordered, proof_image, shipping_id, subtotal, voucher_id, total_discount,
-        order_status_id, payment_method_id, payment_status_id
-      )
-       VALUES ($1, $2, NOW(), $3, $4, $5, $6, $7, $8, $9, $10)
-       RETURNING *`,
+    customer_id, total_amount, date_ordered, proof_image, shipping_id, subtotal, voucher_id, total_discount,
+    order_status_id, payment_method_id, payment_status_id, remarks
+  )
+   VALUES ($1, $2, NOW(), $3, $4, $5, $6, $7, $8, $9, $10, $11)
+   RETURNING *`,
       [
         orderDetails.customer_id, // $1
         orderDetails.total_amount, // $2
@@ -105,6 +105,7 @@ const createOrder = async (req, res) => {
         order_status_id, // $8
         payment_method_id, // $9
         payment_status_id, // $10
+        orderDetails.remarks || null, // $11 (Add remarks from orderDetails)
       ],
     );
 
@@ -319,11 +320,11 @@ const getOrderByProfileId = async (req, res) => {
     }
 
     const orders = ordersResult.rows.map((order) => {
-      order.customer_name = `${order.profile_first_name || ""} ${order.profile_last_name || ""}`,
-      order.date_ordered = formatDate(order.date_ordered), // Format order_date
-      order.date_delivered = formatDate(order.date_delivered),
-      order.shipping_date= formatDate(order.shipping_date), // Format shipping_date
-      delete order.profile_first_name;
+      (order.customer_name = `${order.profile_first_name || ""} ${order.profile_last_name || ""}`),
+        (order.date_ordered = formatDate(order.date_ordered)), // Format order_date
+        (order.date_delivered = formatDate(order.date_delivered)),
+        (order.shipping_date = formatDate(order.shipping_date)), // Format shipping_date
+        delete order.profile_first_name;
       delete order.profile_last_name;
       return order;
     });
@@ -346,9 +347,10 @@ const getAllOrdersWithOrderItems = async (req, res) => {
         ps.status_name AS payment_status_name,
         p.first_name AS profile_first_name,
         p.last_name AS profile_last_name,
-        p.email AS customer_email, -- Include customer email
+        p.email AS customer_email,
         s.tracking_number,
         s.shipping_date,
+        o.remarks, -- Include remarks here
         JSON_AGG(
           JSON_BUILD_OBJECT(
             'order_item_id', oi.order_item_id,
@@ -378,7 +380,7 @@ const getAllOrdersWithOrderItems = async (req, res) => {
         ps.status_name, 
         p.first_name, 
         p.last_name, 
-        p.email, -- Add customer email to GROUP BY
+        p.email, 
         s.tracking_number,
         s.shipping_date
       ORDER BY o.order_id;
@@ -390,11 +392,11 @@ const getAllOrdersWithOrderItems = async (req, res) => {
 
     // Map orders to include customer_name for convenience
     const orders = ordersResult.rows.map((order) => {
-      order.customer_name = `${order.profile_first_name || ""} ${order.profile_last_name || ""}`,
-      order.date_ordered = formatDate(order.date_ordered), // Format order_date
-      order.date_delivered = formatDate(order.date_delivered),
-      order.shipping_date= formatDate(order.shipping_date), // Format shipping_date
-      delete order.profile_first_name;
+      (order.customer_name = `${order.profile_first_name || ""} ${order.profile_last_name || ""}`),
+        (order.date_ordered = formatDate(order.date_ordered)), // Format order_date
+        (order.date_delivered = formatDate(order.date_delivered)),
+        (order.shipping_date = formatDate(order.shipping_date)), // Format shipping_date
+        delete order.profile_first_name;
       delete order.profile_last_name;
       return order;
     });
@@ -432,7 +434,8 @@ const getOrderByOrderId = async (req, res) => {
         sa.phone_number,
         p.email AS customer_email,
         p.first_name AS profile_first_name,
-        p.last_name AS profile_last_name
+        p.last_name AS profile_last_name,
+        o.remarks -- Include remarks here
       FROM orders o
       LEFT JOIN order_status os ON o.order_status_id = os.status_id
       LEFT JOIN payment_method pm ON o.payment_method_id = pm.method_id
@@ -442,7 +445,7 @@ const getOrderByOrderId = async (req, res) => {
       LEFT JOIN customer c ON o.customer_id = c.customer_id
       LEFT JOIN profiles p ON c.profile_id = p.id
       WHERE o.order_id = $1
-    `,
+      `,
       [order_id],
     );
 
@@ -614,6 +617,23 @@ const updateShippingStatusAndTrackingNumber = async (req, res) => {
   }
 };
 
+const updateOrderRemarks = async (req, res) => {
+  const { order_id } = req.params;
+  const { remarks } = req.body;
+
+  try {
+    await pool.query(`UPDATE orders SET remarks = $1 WHERE order_id = $2`, [
+      remarks,
+      order_id,
+    ]);
+
+    res.status(200).json({ message: "Order remarks updated successfully" });
+  } catch (error) {
+    console.error("Error updating order remarks:", error);
+    res.status(500).json({ error: "Failed to update order remarks" });
+  }
+};
+
 module.exports = {
   createOrder,
   getOrderByProfileId,
@@ -623,4 +643,5 @@ module.exports = {
   updateOrderPaymentStatus,
   updateOrderStatus,
   updateShippingStatusAndTrackingNumber,
+  updateOrderRemarks,
 };
