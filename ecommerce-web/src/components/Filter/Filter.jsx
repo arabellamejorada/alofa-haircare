@@ -20,7 +20,12 @@ const Filter = ({
         <h3 className="text-lg font-medium text-gray-600">Category</h3>
         <div className="flex flex-col ml-6 mt-2">
           {categories.map((category, index) => (
-            <label key={index} className="text-gray-600 mb-2">
+            <label
+              key={index}
+              className={`${
+                selectedCategory === category.name ? "text-alofa-pink font-semibold" : "text-gray-600"
+              } mb-2`}
+            >
               <input
                 type="radio"
                 name="category"
@@ -33,7 +38,11 @@ const Filter = ({
             </label>
           ))}
 
-          <label className="block text-gray-600 mb-2">
+          <label 
+            className={`${
+              selectedCategory === "All" ? "text-alofa-pink font-semibold" : "text-gray-600"
+            } block mb-2`}
+          >
             <input
               type="radio"
               name="category"
@@ -51,7 +60,11 @@ const Filter = ({
       <div>
         <h3 className="text-lg font-medium text-gray-600">Price</h3>
         <div className="ml-6 mt-2">
-          <label className="block text-gray-600 mb-2">
+          <label 
+            className={`${
+              selectedSort === "low-to-high" ? "text-alofa-pink font-semibold" : "text-gray-600"
+            } block mb-2`}
+          >
             <input
               type="radio"
               name="sort"
@@ -62,7 +75,11 @@ const Filter = ({
             />
             Lowest to Highest
           </label>
-          <label className="block text-gray-600 mb-2">
+          <label 
+            className={`${
+              selectedSort === "high-to-low" ? "text-alofa-pink font-semibold" : "text-gray-600"
+            } block mb-2`}
+          >
             <input
               type="radio"
               name="sort"
@@ -73,7 +90,11 @@ const Filter = ({
             />
             Highest to Lowest
           </label>
-          <label className="block text-gray-600 mb-2">
+          <label 
+            className={`${
+              selectedSort === "none" ? "text-alofa-pink font-semibold" : "text-gray-600"
+            } block mb-2`}
+          >
             <input
               type="radio"
               name="sort"
