@@ -183,16 +183,13 @@ const getAllInventoryHistory = async (req, res) => {
 
 
     const result = await client.query(query);
-    console.log(result
-    )
+
     // Format the date fields
     const formattedResult = result.rows.map((row) => ({
       ...row,
       date: formatDate(row.date),
     }));
     
-    console.log("formatted", formattedResult)
-
     res.json(formattedResult);  } catch (err) {
     console.error("Error fetching all inventory history:", err.message);
     res.status(500).json({ message: "Server error" });

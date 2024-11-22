@@ -11,9 +11,9 @@ router.post(
 );
 router.get("/order/all", orderController.getAllOrdersWithOrderItems);
 router.get("/order/customer/:profile_id", orderController.getOrderByProfileId);
+router.get("/order/reserved_quantity/:variation_id", orderController.getReservedQuantityByVariationId);
 router.get("/order/:order_id", orderController.getOrderByOrderId);
 router.get("/order/:order_id/items", orderController.getOrderItemsByOrderId);
-
 // Update payment status of an order
 router.put(
   "/order/:order_id/payment-status",
