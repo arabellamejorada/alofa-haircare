@@ -2,29 +2,41 @@ import PropTypes from "prop-types";
 import { useState, useContext } from "react";
 import { CartContext } from "./CartContext.jsx";
 import { useNavigate } from "react-router-dom";
+import { getProductVariationById } from "../api/product.js";
 import { MdAddShoppingCart } from "react-icons/md";
 import { ClipLoader } from "react-spinners"; // Import the spinner component
 import { toast } from 'sonner';
 
-const ProductCard = ({ id, image, name, value, price, sku, stock_quantity }) => {
+const ProductCard = ({ id, image, name, value, price, sku }) => {
   const { addToCart } = useContext(CartContext);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const navigate = useNavigate();
 
-  const handleAddToCart = (e) => {
+  // Mark the function as async to use await inside it
+  const handleAddToCart = async (e) => {
     e.stopPropagation();
 
-    if (stock_quantity <= 0) {
-      toast.error("This product cannot be added to the cart because it's out of stock.");
-      return;
-    }
+    try {
+      // Fetch the latest product details by ID
+      const variationData = await getProductVariationById(id);
+      const latestProduct = variationData[0];
 
-    setIsAddingToCart(true);
-    // Simulate a delay to show loading effect (you can remove this if unnecessary)
-    setTimeout(() => {
-      addToCart({ id, image, name, value, price, sku });
-      setIsAddingToCart(false);
-    }, 500); // Add a delay to simulate server response, if needed
+      // Check if stock quantity is greater than zero
+      if (latestProduct.stock_quantity <= 0) {
+        toast.error("This product cannot be added to the cart because it's out of stock.");
+        return;
+      }
+
+      setIsAddingToCart(true);
+      setTimeout(() => {
+        addToCart({ id, image, name, value, price, sku });
+        setIsAddingToCart(false);
+        toast.success("Product added to cart successfully!");
+      }, 500); // Adjust delay as necessary
+    } catch (error) {
+      console.error("Error fetching product details:", error);
+      toast.error("Unable to add product to cart at this time.");
+    }
   };
 
   const handleCardClick = () => {

@@ -202,6 +202,7 @@ const Products = () => {
                     value={product.value}
                     price={product.price}
                     sku={product.sku}
+                    stock_quantity={product.stock_quantity}
                   />
                 ))}
               </div>

@@ -20,8 +20,8 @@ npm install -D tailwindcss
 npm install react-select
 
 
-products-page frontend:
-cd products-page
+ecommerce-web frontend:
+cd ecommerce-web
 npm install axios
 npm install react-router-dom
 npm install react-query
