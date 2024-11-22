@@ -3,9 +3,10 @@ import { useEffect, useState, useContext } from "react";
 import { CartContext } from "../components/CartContext";
 import { getProductVariationById } from "../api/product.js";
 import { ClipLoader } from "react-spinners";
-import { toast } from 'sonner';
+import { toast } from "sonner";
 
 const ProductDetails = () => {
+  const { cartItems } = useContext(CartContext);
   const { productId } = useParams();
   const [variation, setVariation] = useState(null);
   const [quantity, setQuantity] = useState(1);
@@ -30,17 +31,39 @@ const ProductDetails = () => {
   }, [variation]);
 
   const handleAddToCart = () => {
-    console.log("Adding to cart variation ID:", variation);
-    console.log("Adding to cart with quantity:", quantity); // Debug log for quantity
+    console.log("Adding to cart:", variation);
+    console.log(cartItems);
 
-    if (!variation.variation_id) {
+    if (!variation?.variation_id) {
       console.error("Variation ID is missing.");
+      toast.error("Unable to add this product. Variation ID is missing.");
       return;
     }
 
     if (variation.stock_quantity <= 0) {
-      toast.error("This product cannot be added to the cart because it's out of stock.");
+      toast.error(
+        "This product cannot be added to the cart because it's out of stock.",
+      );
       return;
+    }
+
+    // Find the existing cart item
+    const existingCartItem = cartItems.find(
+      (item) => item.variation_id === variation.variation_id,
+    );
+
+    if (existingCartItem) {
+      const totalQuantity = existingCartItem.quantity + quantity;
+
+      if (totalQuantity > variation.stock_quantity) {
+        toast.error(
+          `Insufficient stock quantity! Available stock is ${variation.stock_quantity}.` +
+            (existingCartItem.quantity > 0
+              ? ` You currently have ${existingCartItem.quantity} ${existingCartItem.name} ${existingCartItem.value} in your cart.`
+              : ""),
+        );
+        return;
+      }
     }
 
     setIsAddingToCart(true);
@@ -48,6 +71,7 @@ const ProductDetails = () => {
       const imageName = variation.image
         ? variation.image.split("/").pop()
         : null;
+
       addToCart({
         id: variation.variation_id,
         image: imageName
@@ -59,13 +83,42 @@ const ProductDetails = () => {
         quantity,
         sku: variation.sku,
       });
+
       setIsAddingToCart(false); // Stop loading
     }, 500); // Adjust delay as necessary
   };
 
   const handleQuantityChange = (e) => {
+    console.log("Quantity Change:", e.target.value);
     const value = parseInt(e.target.value, 10);
-    if (!isNaN(value) && value >= 1) {
+
+    // Find the existing cart item by variation ID
+    const existingCartItem = cartItems?.find(
+      (item) => item.variation_id === variation?.variation_id,
+    );
+
+    // Calculate the total quantity if the item already exists in the cart
+    const totalQuantity = existingCartItem
+      ? existingCartItem.quantity + value
+      : value;
+
+    // Check if the total quantity exceeds stock quantity
+    if (totalQuantity > variation?.stock_quantity) {
+      toast.error(
+        `Insufficient stock! Available stock is ${variation.stock_quantity}.` +
+          (existingCartItem?.quantity > 0
+            ? ` You currently have ${existingCartItem.quantity} ${existingCartItem.name} ${existingCartItem.value} in your cart.`
+            : ""),
+      );
+
+      setQuantity(variation.stock_quantity - (existingCartItem?.quantity || 0)); // Adjust the quantity to the remaining stock
+      return;
+    }
+
+    if (value > variation.stock_quantity) {
+      toast.error("Exceeds available stock!");
+      setQuantity(variation.stock_quantity);
+    } else if (!isNaN(value) && value >= 1) {
       setQuantity(value);
     } else if (e.target.value === "") {
       setQuantity("");
@@ -109,13 +162,13 @@ const ProductDetails = () => {
                 {/* Stock Quantity and Price */}
                 <div className="mt-auto flex items-center justify-between text-gray-600 text-lg">
                   <span className="font-medium">
-                    In Stock {" "}
+                    In Stock{" "}
                     <span className="text-black font-semibold">
                       {variation.stock_quantity}
                     </span>
                   </span>
                   <span className="font-medium">
-                    Price {" "}
+                    Price{" "}
                     <span className="text-alofa-pink-gradient text-2xl font-extrabold">
                       ₱{variation.unit_price}
                     </span>
@@ -143,10 +196,14 @@ const ProductDetails = () => {
                     min="1"
                   />
                   <button
-                    onClick={() => setQuantity(quantity + 1)}
+                    onClick={() => {
+                      const newQuantity = quantity + 1;
+                      handleQuantityChange({ target: { value: newQuantity } });
+                    }}
                     className="text-white bg-gray-200 hover:bg-gray-300 font-bold text-base px-3 py-1 rounded-full
                     focus:outline-none shadow-md bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b 
                     hover:from-[#F8587A] hover:to-[#FE699F]"
+                    disabled={quantity >= variation.stock_quantity}
                   >
                     +
                   </button>
@@ -158,7 +215,7 @@ const ProductDetails = () => {
                   focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b 
                   from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] 
                   hover:to-[#FE699F] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                  style={{ width: '150px', height: '50px' }}
+                  style={{ width: "150px", height: "50px" }}
                   disabled={isAddingToCart}
                 >
                   {isAddingToCart ? (
@@ -173,9 +230,6 @@ const ProductDetails = () => {
                     "ADD TO CART"
                   )}
                 </button>
-
-
-
               </div>
             </div>
           </>

@@ -31,6 +31,26 @@ const createOrder = async (req, res) => {
     // Start a transaction
     await pool.query("BEGIN");
 
+    // Check Stock Availability
+    for (const item of cartItems) {
+      const stockResult = await pool.query(
+        `SELECT stock_quantity FROM inventory WHERE variation_id = $1`,
+        [item.variation_id],
+      );
+
+      if (stockResult.rowCount === 0) {
+        throw new Error(`Stock not found for variation_id ${item.variation_id}`);
+      }
+
+      const stockQuantity = stockResult.rows[0].stock_quantity;
+
+      if (stockQuantity < item.quantity) {
+        throw new Error(
+          `Insufficient stock for variation_id ${item.variation_id}`,
+        );
+      }
+    }
+    
     // Look for J&T Express shipping method
     const shippingMethodResult = await pool.query(
       `SELECT * FROM shipping_method WHERE courier = 'J&T Express'`,
@@ -52,7 +72,6 @@ const createOrder = async (req, res) => {
 
     const shipping = shippingResult.rows[0];
     const shipping_id = shipping.shipping_id;
-    console.log("Generated shipping_id:", shipping_id);
 
     // Get payment_method_id from payment_method table based on method_name
     const paymentMethodResult = await pool.query(

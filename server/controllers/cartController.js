@@ -35,6 +35,19 @@ const addCartItem = async (req, res) => {
     const { customer_id } = req.body; // Allow customer_id to be provided in the body
 
     try {
+        // Check if stock is available
+        const stockResult = await pool.query(
+            `SELECT stock_quantity FROM inventory WHERE variation_id = $1`,
+            [variation_id]
+        );
+
+        if (stockResult.rowCount === 0) {
+            return res.status(404).json({ error: 'Variation not found in inventory' });
+        }
+
+        const availableStock = stockResult.rows[0].stock_quantity;
+        console.log('Available stock:', availableStock);
+
         // If cart_id is not provided, create a new cart (guest user)
         if (!cart_id) {
             const newCart = await createNewCart(customer_id || null); // Create guest or customer cart
@@ -48,6 +61,13 @@ const addCartItem = async (req, res) => {
         );
 
         if (existingItem.rowCount > 0) {
+            // Check if the quantity exceeds the available stock
+            const currentCartQuantity = existingItem.rows[0].quantity;
+            if (currentCartQuantity+1 > availableStock) {
+                console.log('Insufficient stock quantity');
+                return res.status(400).json({ error: 'Insufficient stock quantity' });
+            }
+
             // If item exists, update the quantity
             const updatedItem = await pool.query(
                 `UPDATE cart_items SET quantity = quantity + $1 WHERE cart_id = $2 AND variation_id = $3 RETURNING *`,
@@ -255,36 +275,65 @@ const getCartById = async (req, res) => {
 
 // Update an existing cart item from the cart
 const updateCartItem = async (req, res) => {
-    const { cart_id } = req.params;
-    const { variation_id, quantity } = req.body;
+  const { cart_id } = req.params;
+  const { variation_id, quantity } = req.body;
 
-    console.log('Updating cart item:', cart_id, variation_id, quantity);
-    try {
-        const updatedItem = await pool.query(
-            `UPDATE cart_items 
-            SET quantity = $1 
-            WHERE cart_id = $2 AND variation_id = $3 
-            RETURNING *`,
-            [quantity, cart_id, variation_id]
-        );
+  console.log("Updating cart item:", cart_id, variation_id, quantity);
 
-        if (updatedItem.rowCount === 0) {
-            return res.status(404).json({ error: 'Cart item not found' });
-        }
+  try {
+    // Fetch current stock and cart quantity
+    const stockResult = await pool.query(
+      `SELECT stock_quantity FROM inventory WHERE variation_id = $1`,
+      [variation_id]
+    );
 
-        await pool.query(
-            `UPDATE cart SET last_activity = NOW() WHERE cart_id = $1`,
-            [cart_id]
-        );
-        
-        
-        console.log('Updated item:', updatedItem.rows[0]);
-        res.status(200).json(updatedItem.rows[0]);
-    } catch (error) {
-        console.error('Error updating cart item:', error);
-        res.status(500).json({ error: 'Failed to update cart item' });
+    const cartItemResult = await pool.query(
+      `SELECT quantity FROM cart_items WHERE cart_id = $1 AND variation_id = $2`,
+      [cart_id, variation_id]
+    );
+
+    if (stockResult.rowCount === 0) {
+      return res.status(404).json({ error: "Variation not found in inventory." });
     }
+
+    if (cartItemResult.rowCount === 0) {
+      return res.status(404).json({ error: "Cart item not found." });
+    }
+
+    const availableStock = stockResult.rows[0].stock_quantity;
+    const currentCartQuantity = cartItemResult.rows[0].quantity;
+
+    // Validate stock only when increasing quantity
+    if (quantity > currentCartQuantity && quantity > availableStock) {
+      return res.status(400).json({ error: "Insufficient stock quantity." });
+    }
+
+    // Update the cart item
+    const updatedItem = await pool.query(
+      `UPDATE cart_items 
+       SET quantity = $1 
+       WHERE cart_id = $2 AND variation_id = $3 
+       RETURNING *`,
+      [quantity, cart_id, variation_id]
+    );
+
+    if (updatedItem.rowCount === 0) {
+      return res.status(404).json({ error: "Cart item not found." });
+    }
+
+    await pool.query(
+      `UPDATE cart SET last_activity = NOW() WHERE cart_id = $1`,
+      [cart_id]
+    );
+
+    console.log("Updated item:", updatedItem.rows[0]);
+    res.status(200).json(updatedItem.rows[0]);
+  } catch (error) {
+    console.error("Error updating cart item:", error);
+    res.status(500).json({ error: "Failed to update cart item." });
+  }
 };
+
 
 // Delete a cart item from order by its ID
 const deleteCartItem = async (req, res) => {
