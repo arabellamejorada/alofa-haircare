@@ -7,6 +7,7 @@ import {
 } from "react-icons/io";
 import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 import QuantityBadge from "../shared/QuantityBadge"; // Adjust path as needed
+import RefreshIcon from "../shared/RefreshButton"; // Adjust path as needed
 
 const Inventory = () => {
   const [inventory, setInventory] = useState([]);
@@ -29,32 +30,32 @@ const Inventory = () => {
   const [sortField, setSortField] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const [inventoryData, inventoryHistoryResponse] = await Promise.all([
-          getInventory(),
-          getAllInventoryHistory(),
-        ]);
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [inventoryData, inventoryHistoryResponse] = await Promise.all([
+        getInventory(),
+        getAllInventoryHistory(),
+      ]);
 
-        setInventory(inventoryData);
-        if (
-          inventoryHistoryResponse &&
-          Array.isArray(inventoryHistoryResponse.data)
-        ) {
-          setInventoryHistory(inventoryHistoryResponse.data);
-        } else {
-          console.error("No data in inventory history.");
-        }
-      } catch (err) {
-        setError("Failed to fetch data");
-        console.error("Error fetching inventory history:", err);
-      } finally {
-        setLoading(false);
+      setInventory(inventoryData);
+      if (
+        inventoryHistoryResponse &&
+        Array.isArray(inventoryHistoryResponse.data)
+      ) {
+        setInventoryHistory(inventoryHistoryResponse.data);
+      } else {
+        console.error("No data in inventory history.");
       }
-    };
+    } catch (err) {
+      setError("Failed to fetch data");
+      console.error("Error fetching inventory history:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchData();
   }, []);
 
@@ -65,6 +66,12 @@ const Inventory = () => {
     } else {
       setExpandedRows([variationId]); // Expand the new row and close others
     }
+  };
+
+  const handleRefresh = async () => {
+    setLoading(true);
+    // Simulate a fetch request
+    await fetchData();
   };
 
   // Handle sorting
@@ -149,22 +156,31 @@ const Inventory = () => {
           </strong>
 
           {/* Filters Section */}
-          <div className="flex flex-row flex-wrap items-center gap-4 mt-4">
-            <input
-              type="text"
-              className="w-full max-w-md h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
-              placeholder="Search by SKU, Product, or Variation..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            {search && (
-              <button
-                onClick={() => setSearch("")}
-                className="text-sm ml-2 text-alofa-pink hover:text-alofa-dark"
-              >
-                Clear
-              </button>
-            )}
+          <div className="flex flex-row justify-between mt-4">
+            <div className="flex flex-row flex-wrap items-center gap-4">
+              <input
+                type="text"
+                className="w-[25rem] max-w-md h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+                placeholder="Search by SKU, Product, or Variation..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  className="text-sm ml-2 text-alofa-pink hover:text-alofa-dark"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+            <div className="flex align-bottom">
+              <RefreshIcon
+                onClick={handleRefresh}
+                size={22}
+                colorClass="text-gray-500 hover:text-gray-700"
+              />
+            </div>
           </div>
 
           {/* Inventory Table */}
