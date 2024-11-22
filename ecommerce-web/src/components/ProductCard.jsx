@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { getProductVariationById } from "../api/product.js";
 import { MdAddShoppingCart } from "react-icons/md";
 import { ClipLoader } from "react-spinners"; // Import the spinner component
-import { toast } from 'sonner';
+import { toast } from "sonner";
 
 const ProductCard = ({ id, image, name, value, price, sku }) => {
   const { addToCart } = useContext(CartContext);
@@ -23,7 +23,9 @@ const ProductCard = ({ id, image, name, value, price, sku }) => {
 
       // Check if stock quantity is greater than zero
       if (latestProduct.stock_quantity <= 0) {
-        toast.error("This product cannot be added to the cart because it's out of stock.");
+        toast.error(
+          "This product cannot be added to the cart because it's out of stock.",
+        );
         return;
       }
 
@@ -31,7 +33,6 @@ const ProductCard = ({ id, image, name, value, price, sku }) => {
       setTimeout(() => {
         addToCart({ id, image, name, value, price, sku });
         setIsAddingToCart(false);
-        toast.success("Product added to cart successfully!");
       }, 500); // Adjust delay as necessary
     } catch (error) {
       console.error("Error fetching product details:", error);
@@ -69,7 +70,7 @@ const ProductCard = ({ id, image, name, value, price, sku }) => {
           </h3>
           <p
             className="mb-1 text-md font-light text-gray-700 overflow-hidden text-ellipsis whitespace-nowrap"
-            style={{ lineHeight: "1.2", height: "1.2rem" }}// Reduced height
+            style={{ lineHeight: "1.2", height: "1.2rem" }} // Reduced height
           >
             {value !== "N/A" ? value : ""}
           </p>
@@ -90,7 +91,7 @@ const ProductCard = ({ id, image, name, value, price, sku }) => {
           >
             <div className="flex items-center justify-center w-full h-full">
               {isAddingToCart ? (
-                <ClipLoader size={20} color='white' loading={isAddingToCart} />
+                <ClipLoader size={20} color="white" loading={isAddingToCart} />
               ) : (
                 <MdAddShoppingCart size={20} />
               )}
@@ -109,7 +110,7 @@ ProductCard.propTypes = {
   value: PropTypes.string,
   price: PropTypes.number.isRequired,
   sku: PropTypes.string,
-  stock_quantity: PropTypes.number.isRequired,
+  stock_quantity: PropTypes.number,
 };
 
 export default ProductCard;

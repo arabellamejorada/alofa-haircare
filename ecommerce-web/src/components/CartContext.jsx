@@ -206,7 +206,7 @@ const CartProvider = ({ children }) => {
       }
     } catch (error) {
       console.error("Error adding to cart:", error);
-      toast.error("Failed to add to cart.");
+      toast.error(error.message || "Failed to add to cart.");
     }
   };
 
@@ -243,7 +243,7 @@ const CartProvider = ({ children }) => {
       });
     } catch (error) {
       console.error("Error updating cart item quantity:", error);
-      toast.error("Failed to update item quantity.");
+      toast.error(error.message || "Failed to update item quantity.");
     }
   };
 

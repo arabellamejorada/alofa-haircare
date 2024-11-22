@@ -21,19 +21,19 @@ export const addCartItem = async (cart_id, variation_id, quantity) => {
         return response.data;
     } catch (error) {
         console.error('Error adding item to cart: ', error.message);
-        throw error;
+        throw new Error(error.response?.data?.error || "Failed to update item in cart.");
     }
 };
 
 // UPDATE ITEM IN CART
 export const updateCartItem = async (cart_id, variation_id, quantity) => {
     try {
+      console.log("UPDATING: ", cart_id, variation_id, quantity);
         const response = await axios.put(`/cart/${cart_id}/update`, { variation_id, quantity });
-        console.log('Item updated in cart: ', response.data);
         return response.data;
     } catch (error) {
-        console.error('Error updating item in cart: ', error.message);
-        throw error;
+        console.error("Error updating item in cart:", error.response?.data?.error || error.message);
+        throw new Error(error.response?.data?.error || "Failed to update item in cart.");
     }
 };
 

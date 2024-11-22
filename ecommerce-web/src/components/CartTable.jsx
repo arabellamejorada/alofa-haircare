@@ -14,7 +14,10 @@ const CartTable = ({
       <div className="flex justify-between items-center mb-2">
         <h2 className="gradient-heading text-3xl font-bold">My Cart</h2>
         <p className="italic text-gray-600">
-          {cartItems.reduce((total, item) => total + item.quantity, 0)} {cartItems.reduce((total, item) => total + item.quantity, 0) === 1 ? "item" : "items"} 
+          {cartItems.reduce((total, item) => total + item.quantity, 0)}{" "}
+          {cartItems.reduce((total, item) => total + item.quantity, 0) === 1
+            ? "item"
+            : "items"}
         </p>
       </div>
 
