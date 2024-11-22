@@ -23,6 +23,8 @@ router.put(
 // Update order status of an order
 router.put("/order/:order_id/order-status", orderController.updateOrderStatus);
 
+router.put("/order/:order_id/remarks", orderController.updateOrderRemarks);
+
 router.put(
   "/shipping/:shipping_id/status",
   orderController.updateShippingStatusAndTrackingNumber,
@@ -40,6 +42,9 @@ router.get(
 );
 router.get("/requests", refundController.getAllRefundRequests);
 router.get("/refund/order/:orderId", refundController.checkIfOrderIdExists);
-router.put("/refunds/:refund_request_id/status", refundController.updateRefundStatus);
+router.put(
+  "/refunds/:refund_request_id/status",
+  refundController.updateRefundStatus,
+);
 
 module.exports = router;

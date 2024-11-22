@@ -171,7 +171,7 @@ const CartOverview = () => {
               </span>
             </div>
             <div className="flex justify-between font-light text-gray-500 italic text-sm mb-4">
-              <span>Shipping & taxes calculated at checkout</span>
+              <span>Shipping & discounts calculated at checkout</span>
             </div>
           </div>
 
