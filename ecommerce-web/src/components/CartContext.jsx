@@ -14,7 +14,6 @@ import {
   getCartByCustomerId,
   getCartById,
 } from "../api/cart";
-import { getReservedQuantityByVariationId } from "../api/order";
 import { AuthContext } from "./AuthContext";
 import { toast } from "sonner";
 import { ClipLoader } from "react-spinners";

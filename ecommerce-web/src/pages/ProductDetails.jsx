@@ -40,7 +40,7 @@ const ProductDetails = () => {
       return;
     }
 
-    if (variation.stock_quantity <= 0) {
+    if (variation.available_stock <= 0) {
       toast.error(
         "This product cannot be added to the cart because it's out of stock.",
       );
@@ -55,9 +55,9 @@ const ProductDetails = () => {
     if (existingCartItem) {
       const totalQuantity = existingCartItem.quantity + quantity;
 
-      if (totalQuantity > variation.stock_quantity) {
+      if (totalQuantity > variation.available_stock) {
         toast.error(
-          `Insufficient stock quantity! Available stock is ${variation.stock_quantity}.` +
+          `Insufficient stock quantity! Available stock is ${variation.available_stock}.` +
             (existingCartItem.quantity > 0
               ? ` You currently have ${existingCartItem.quantity} ${existingCartItem.name} ${existingCartItem.value} in your cart.`
               : ""),
@@ -103,21 +103,23 @@ const ProductDetails = () => {
       : value;
 
     // Check if the total quantity exceeds stock quantity
-    if (totalQuantity > variation?.stock_quantity) {
+    if (totalQuantity > variation?.available_stock) {
       toast.error(
-        `Insufficient stock! Available stock is ${variation.stock_quantity}.` +
+        `Insufficient stock! Available stock is ${variation.available_stock}.` +
           (existingCartItem?.quantity > 0
             ? ` You currently have ${existingCartItem.quantity} ${existingCartItem.name} ${existingCartItem.value} in your cart.`
             : ""),
       );
 
-      setQuantity(variation.stock_quantity - (existingCartItem?.quantity || 0)); // Adjust the quantity to the remaining stock
+      setQuantity(
+        variation.available_stock - (existingCartItem?.quantity || 0),
+      ); // Adjust the quantity to the remaining stock
       return;
     }
 
-    if (value > variation.stock_quantity) {
+    if (value > variation.available_stock) {
       toast.error("Exceeds available stock!");
-      setQuantity(variation.stock_quantity);
+      setQuantity(variation.available_stock);
     } else if (!isNaN(value) && value >= 1) {
       setQuantity(value);
     } else if (e.target.value === "") {
@@ -164,7 +166,7 @@ const ProductDetails = () => {
                   <span className="font-medium">
                     In Stock{" "}
                     <span className="text-black font-semibold">
-                      {variation.stock_quantity}
+                      {variation.available_stock}
                     </span>
                   </span>
                   <span className="font-medium">
@@ -203,7 +205,7 @@ const ProductDetails = () => {
                     className="text-white bg-gray-200 hover:bg-gray-300 font-bold text-base px-3 py-1 rounded-full
                     focus:outline-none shadow-md bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b 
                     hover:from-[#F8587A] hover:to-[#FE699F]"
-                    disabled={quantity >= variation.stock_quantity}
+                    disabled={quantity >= variation.available_stock}
                   >
                     +
                   </button>
