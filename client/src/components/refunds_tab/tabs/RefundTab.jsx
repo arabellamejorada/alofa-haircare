@@ -9,6 +9,7 @@ import StatusBadge from "../../shared/StatusBadge";
 import { toast } from "sonner";
 import ConfirmModal from "../../shared/ConfirmModal";
 import SendEmail from "../../shared/SendEmail";
+import RefundEligibility from "../../shared/RefundEligibility";
 
 const RefundTab = ({ statusFilter }) => {
   const [refunds, setRefunds] = useState([]);
@@ -614,58 +615,8 @@ const RefundTab = ({ statusFilter }) => {
 
               {/* Action Buttons */}
               <div className="mt-6 flex justify-end gap-4">
-                {selectedRefund.refund_status_id === 2 ? (
-                  // If refund is Complete, show only Cancel Refund button
-                  <button
-                    onClick={() =>
-                      openConfirmModal(
-                        () =>
-                          handleRefundStatusChange(
-                            selectedRefund.refund_request_id,
-                            3,
-                          ),
-                        "Are you sure you want to cancel this refund?",
-                      )
-                    }
-                    className="px-6 py-2 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400 transition"
-                  >
-                    Cancel Refund
-                  </button>
-                ) : selectedRefund.refund_status_id === 3 ? (
-                  // If refund is Cancelled, show only Mark as Complete button
-                  <button
-                    onClick={() =>
-                      openConfirmModal(
-                        () =>
-                          handleRefundStatusChange(
-                            selectedRefund.refund_request_id,
-                            2,
-                          ),
-                        "Are you sure you want to mark this refund as complete?",
-                      )
-                    }
-                    className="px-6 py-2 bg-alofa-pink text-white font-semibold rounded-lg hover:bg-alofa-dark transition"
-                  >
-                    Mark as Complete
-                  </button>
-                ) : (
-                  // Default case, show both Mark as Complete and Cancel Refund buttons
-                  <>
-                    <button
-                      onClick={() =>
-                        openConfirmModal(
-                          () =>
-                            handleRefundStatusChange(
-                              selectedRefund.refund_request_id,
-                              2,
-                            ),
-                          "Are you sure you want to mark this refund as complete?",
-                        )
-                      }
-                      className="px-6 py-2 bg-alofa-pink text-white font-semibold rounded-lg hover:bg-alofa-dark transition"
-                    >
-                      Mark as Complete
-                    </button>
+                <RefundEligibility requestedAt={selectedRefund.requested_at}>
+                  {selectedRefund.refund_status_id === 2 ? (
                     <button
                       onClick={() =>
                         openConfirmModal(
@@ -681,8 +632,57 @@ const RefundTab = ({ statusFilter }) => {
                     >
                       Cancel Refund
                     </button>
-                  </>
-                )}
+                  ) : selectedRefund.refund_status_id === 3 ? (
+                    <button
+                      onClick={() =>
+                        openConfirmModal(
+                          () =>
+                            handleRefundStatusChange(
+                              selectedRefund.refund_request_id,
+                              2,
+                            ),
+                          "Are you sure you want to mark this refund as complete?",
+                        )
+                      }
+                      className="px-6 py-2 bg-alofa-pink text-white font-semibold rounded-lg hover:bg-alofa-dark transition"
+                    >
+                      Mark as Complete
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() =>
+                          openConfirmModal(
+                            () =>
+                              handleRefundStatusChange(
+                                selectedRefund.refund_request_id,
+                                2,
+                              ),
+                            "Are you sure you want to mark this refund as complete?",
+                          )
+                        }
+                        className="px-6 py-2 bg-alofa-pink text-white font-semibold rounded-lg hover:bg-alofa-dark transition"
+                      >
+                        Refund Complete
+                      </button>
+                      <button
+                        onClick={() =>
+                          openConfirmModal(
+                            () =>
+                              handleRefundStatusChange(
+                                selectedRefund.refund_request_id,
+                                3,
+                              ),
+                            "Are you sure you want to cancel this refund?",
+                          )
+                        }
+                        className="px-6 py-2 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400 transition"
+                      >
+                        Cancel Refund
+                      </button>
+                    </>
+                  )}
+                </RefundEligibility>
               </div>
             </div>
             <ConfirmModal
