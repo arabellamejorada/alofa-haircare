@@ -31,7 +31,6 @@ const ProductCard = ({ id, image, name, value, price, sku }) => {
       setTimeout(() => {
         addToCart({ id, image, name, value, price, sku });
         setIsAddingToCart(false);
-        toast.success("Product added to cart successfully!");
       }, 500); // Adjust delay as necessary
     } catch (error) {
       console.error("Error fetching product details:", error);

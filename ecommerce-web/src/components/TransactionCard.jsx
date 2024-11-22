@@ -87,14 +87,14 @@ const TransactionCard = ({
       {/* Order Info Section */}
       <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-300">
         <div>
-          <div className="text-gray-500 font-normal mb-0">
+          <div className="text-gray-500 font-normal text-xs mb-0">
             {activeTab === "Completed" ? (
-              <>Order Completed: {order.date_delivered}</>
+              <>Order completed: {order.date_delivered}</>
             ) : (
               ""
             )}
           </div>
-          <div className="text-gray-500 font-normal mb-0">
+          <div className="text-gray-500 font-normal text-xs mb-0">
             {activeTab === "For Refund" ? "Refund Placed: " : "Order Placed: "}
             {activeTab === "For Refund"
               ? refund.requested_at
@@ -145,7 +145,7 @@ const TransactionCard = ({
             : `https://via.placeholder.com/150?text=No+Image+Available`;
 
           return (
-            <div key={product.variation_id} className="flex gap-4 mb-4">
+            <div key={product.variation_id} className="flex gap-4 mb-7">
               <div className="flex w-full">
                 <img
                   src={imageUrl}
@@ -180,7 +180,7 @@ const TransactionCard = ({
       {/* View More Button */}
       {(activeTab === "For Refund" ? refund.refund_items : order.order_items)
         .length > 2 && (
-        <div className="flex justify-center text-center mb-4">
+        <div className="flex justify-center text-center mb-8">
           <button
             onClick={toggleExpanded}
             className="text-gray-500 hover:text-gray-600 font-normal flex items-center justify-center"
@@ -199,10 +199,10 @@ const TransactionCard = ({
       )}
 
       {/* Total Section */}
-      <div className="border-t border-gray-200 pt-4">
+      <div className="bg-gray-100 p-4 rounded-b-lg -m-4 border-t-[1px] border-gray-200">
         <div className="flex justify-between items-center mb-4">
           <div className="text-base">
-            <div className="text-gray-500 font-normal mb-1">
+            <div className="font-normal text-sm mb-0">
               {activeTab === "For Refund" ? "Refund ID #" : "Order ID #"}
               {activeTab === "For Refund"
                 ? refund.refund_request_id
@@ -210,7 +210,7 @@ const TransactionCard = ({
             </div>
             {(activeTab === "To Receive" || activeTab === "Completed") &&
               order.tracking_number && (
-                <div className="text-gray-500 font-normal mb-1">
+                <div className="font-normal text-sm mb-0">
                   Tracking Number: {order.tracking_number} (J&T Express)
                 </div>
               )}
@@ -273,6 +273,7 @@ TransactionCard.propTypes = {
   order: PropTypes.shape({
     order_id: PropTypes.number.isRequired,
     date_ordered: PropTypes.string.isRequired,
+    date_delivered: PropTypes.string,
     tracking_number: PropTypes.string,
     order_status_name: PropTypes.string.isRequired,
     order_items: PropTypes.arrayOf(
@@ -285,9 +286,29 @@ TransactionCard.propTypes = {
         image: PropTypes.string,
         value: PropTypes.string,
         sku: PropTypes.string,
-      }),
+      })
     ).isRequired,
     total_amount: PropTypes.number.isRequired,
+  }).isRequired,
+  setLoading: PropTypes.func.isRequired,
+  setTransactions: PropTypes.func.isRequired,
+  refund: PropTypes.shape({
+    refund_items: PropTypes.arrayOf(
+      PropTypes.shape({
+        variation_id: PropTypes.number.isRequired,
+        product_name: PropTypes.string,
+        quantity: PropTypes.number.isRequired,
+        unit_price: PropTypes.number,
+        item_subtotal: PropTypes.number,
+        image: PropTypes.string,
+        value: PropTypes.string,
+        sku: PropTypes.string,
+      })
+    ).isRequired,
+    refund_request_id: PropTypes.number.isRequired,
+    requested_at: PropTypes.string.isRequired,
+    refund_status_name: PropTypes.string.isRequired,
+    total_refund_amount: PropTypes.number.isRequired,
   }).isRequired,
 };
 
