@@ -3,6 +3,7 @@ import {
   getAllOrdersWithItems,
   updateOrderPaymentStatus,
   updateOrderStatus,
+  updateOrderRemarks,
 } from "../../../api/orders";
 import { ClipLoader } from "react-spinners";
 import { FaArrowUp, FaArrowDown } from "react-icons/fa";
@@ -11,7 +12,7 @@ import PaymentStatusBadge from "../../shared/StatusBadge";
 import { toast } from "sonner";
 import SendEmail from "../../shared/SendEmail";
 import ConfirmModal from "../../shared/ConfirmModal";
-import ReasonModal from "../../modal/ReasonModal";
+import DynamicModal from "../../modal/DynamicModal";
 
 const OrderVerificationTab = ({ statusFilter }) => {
   const [orders, setOrders] = useState([]);
@@ -26,7 +27,6 @@ const OrderVerificationTab = ({ statusFilter }) => {
   const [search, setSearch] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [paymentStatusFilter, setPaymentStatusFilter] = useState("");
 
   // Sorting states
   const [sortField, setSortField] = useState("");
@@ -44,7 +44,18 @@ const OrderVerificationTab = ({ statusFilter }) => {
   const [confirmAction, setConfirmAction] = useState(() => {});
   const [confirmMessage, setConfirmMessage] = useState("");
 
+  const [setIsDynamicModalOpen] = useState(false);
+  const [isRemarksModalOpen, setIsRemarksModalOpen] = useState(false);
   const [isReasonModalOpen, setIsReasonModalOpen] = useState(false);
+
+  const openRemarksModal = (order) => {
+    setSelectedOrder(order);
+    setIsRemarksModalOpen(true);
+  };
+
+  const openReasonModal = () => {
+    setIsReasonModalOpen(true);
+  };
 
   const openConfirmModal = (action, message) => {
     setConfirmAction(() => action);
@@ -124,7 +135,6 @@ const OrderVerificationTab = ({ statusFilter }) => {
   const filteredOrders = orders.filter((order) => {
     const orderId = order.order_id.toString();
     const customerName = order.customer_name?.toLowerCase() || "";
-    const paymentStatus = order.payment_status_name || "";
     const searchLower = search.toLowerCase();
 
     // Filter by search terms
@@ -207,25 +217,26 @@ const OrderVerificationTab = ({ statusFilter }) => {
     setIsModalOpen(false);
   };
 
-  const handleVerifyPayment = async () => {
+  const handleVerifyPayment = async (remarks) => {
     if (!selectedOrder) return;
 
-    console.log("Selected Order:", selectedOrder);
-
-    if (!selectedOrder.customer_email || !selectedOrder.customer_name) {
-      toast.error("Customer email or name is missing. Cannot send email.");
-      return;
-    }
-
-    setLoading(true);
     try {
-      // Step 1: Send an email notification to the customer
+      setLoading(true);
+
+      // Log remarks for debugging purposes
+      console.log(`Remarks for Order #${selectedOrder.order_id}:`, remarks);
+
+      // Step 1: Update order remarks in the database
+      await updateOrderRemarks(selectedOrder.order_id, remarks);
+
+      // Step 2: Send an email notification to the customer
       const subject = `Payment Verified for Order #${selectedOrder.order_id}`;
-      const textContent = `Hi ${selectedOrder.customer_name},\n\nYour payment for Order #${selectedOrder.order_id} has been successfully verified. Thank you for shopping with us!`;
+      const textContent = `Hi ${selectedOrder.customer_name},\n\nYour payment for Order #${selectedOrder.order_id} has been successfully verified. Remarks: "${remarks}". Thank you for shopping with us!`;
       const htmlContent = `
         <h1>Payment Verified</h1>
         <p>Hi ${selectedOrder.customer_name},</p>
         <p>Your payment for <strong>Order #${selectedOrder.order_id}</strong> has been successfully verified.</p>
+        <p><strong>Remarks:</strong> ${remarks}</p>
         <p>Log in to view your purchases shipping update: <a href="http://localhost:5173/profile/purchases">My Purchases</a></p>
         <p>Thank you for shopping with us!</p>
       `;
@@ -246,20 +257,23 @@ const OrderVerificationTab = ({ statusFilter }) => {
         htmlContent,
       );
 
-      // Step 2: Update payment status to "Verified" (ID: 2)
+      // Step 3: Update payment status to "Verified" (ID: 2)
       await updateOrderPaymentStatus(selectedOrder.order_id, 2);
 
-      // Step 3: Update order status to "Preparing" (ID: 2)
+      // Step 4: Update order status to "Preparing" (ID: 2)
       await updateOrderStatus(selectedOrder.order_id, 2);
 
-      toast.success("Payment verified and notification sent to customer.");
+      toast.success(
+        "Payment verified with remarks and notification sent to customer!",
+      );
 
+      // Close modal and refresh data
+      setIsRemarksModalOpen(false);
+      setIsModalOpen(false);
       await fetchOrders();
-      closeModal();
     } catch (error) {
-      console.error("Error verifying payment or sending email:", error);
-      toast.error("Failed to verify payment. Email was not sent.");
-      setError("Failed to verify payment and update order status.");
+      console.error("Error verifying payment with remarks:", error);
+      toast.error("Failed to verify payment with remarks.");
     } finally {
       setLoading(false);
     }
@@ -372,8 +386,8 @@ const OrderVerificationTab = ({ statusFilter }) => {
       () => handleInvalidPayment(reason),
       `Are you sure you want to mark this payment as invalid for the following reason?\n\n"${reason}"`,
     );
-    // Close the ReasonModal
-    setIsReasonModalOpen(false);
+    // Close the DynamicModal
+    setIsDynamicModalOpen(false);
   };
 
   if (error) return <div className="text-red-500">{error}</div>;
@@ -645,18 +659,13 @@ const OrderVerificationTab = ({ statusFilter }) => {
                   selectedOrder.payment_status_name !== "Refunded" && (
                     <>
                       <button
-                        onClick={() =>
-                          openConfirmModal(
-                            handleVerifyPayment,
-                            "Are you sure you want to verify this payment?",
-                          )
-                        }
+                        onClick={() => openRemarksModal(selectedOrder)}
                         className="px-6 py-2 bg-alofa-pink text-white font-semibold rounded-lg hover:bg-alofa-dark transition"
                       >
                         Verify Payment
                       </button>
                       <button
-                        onClick={() => setIsReasonModalOpen(true)}
+                        onClick={openReasonModal}
                         className="px-6 py-2 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400 transition"
                       >
                         Invalid Payment
@@ -685,11 +694,26 @@ const OrderVerificationTab = ({ statusFilter }) => {
               }}
               message={confirmMessage}
             />
-            <ReasonModal
-              isOpen={isReasonModalOpen}
-              onClose={() => setIsReasonModalOpen(false)}
-              onSubmit={handleReasonSubmit}
-            />
+            {isRemarksModalOpen && (
+              <DynamicModal
+                isOpen={isRemarksModalOpen}
+                onClose={() => setIsRemarksModalOpen(false)}
+                onSubmit={handleVerifyPayment}
+                title="Add Remarks for Payment Verification"
+                placeholder="Enter remarks..."
+                inputType="textarea"
+              />
+            )}
+            {isReasonModalOpen && (
+              <DynamicModal
+                isOpen={isReasonModalOpen}
+                onClose={() => setIsReasonModalOpen(false)}
+                onSubmit={handleReasonSubmit}
+                title="Reason"
+                placeholder="Enter reason..."
+                inputType="textarea"
+              />
+            )}
           </Modal>
         )}
       </div>
