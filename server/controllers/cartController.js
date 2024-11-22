@@ -1,5 +1,23 @@
 const pool = require('../db.js');
 
+const getReservedQuantityByVariationId = async (variation_id) => {
+  try {
+    const result = await pool.query(
+      `SELECT reserved_quantity FROM inventory WHERE variation_id = $1`,
+      [variation_id]
+    );
+
+    if (result.rowCount === 0) {
+      throw new Error(`Inventory not found for variation_id ${variation_id}`);
+    }
+    console.log("Reserved quantity for variation_id", variation_id, ":", result.rows[0].reserved_quantity);
+    return result.rows[0]; 
+  } catch (error) {
+    console.error("Error checking reserved quantity:", error);
+    throw error;
+  }
+};
+
 // Utility function to create a new cart
 const createNewCart = async (customer_id) => {
     try {
@@ -45,8 +63,17 @@ const addCartItem = async (req, res) => {
             return res.status(404).json({ error: 'Variation not found in inventory' });
         }
 
-        const availableStock = stockResult.rows[0].stock_quantity;
-        console.log('Available stock:', availableStock);
+        // Fetch reserved quantity
+            const reservedResult = await getReservedQuantityByVariationId(variation_id);
+            const reservedQuantity = reservedResult.reserved_quantity; // Correctly access reserved quantity
+            console.log('Reserved quantity:', reservedQuantity);
+
+            // Calculate available stock
+            let availableStock = stockResult.rows[0].stock_quantity; // Correctly access stock quantity
+            console.log('Available stock:', availableStock);
+            availableStock -= reservedQuantity; // Subtract reserved quantity from available stock
+            console.log('Available stock after reservation:', availableStock);
+
 
         // If cart_id is not provided, create a new cart (guest user)
         if (!cart_id) {
@@ -63,6 +90,7 @@ const addCartItem = async (req, res) => {
         if (existingItem.rowCount > 0) {
             // Check if the quantity exceeds the available stock
             const currentCartQuantity = existingItem.rows[0].quantity;
+            console.log('Current cart quantity:', currentCartQuantity);
             if (currentCartQuantity+1 > availableStock) {
                 console.log('Insufficient stock quantity');
                 return res.status(400).json({ error: 'Insufficient stock quantity' });
@@ -82,6 +110,11 @@ const addCartItem = async (req, res) => {
             console.log("Updated Item", updatedItem.rows[0]);
             return res.status(200).json(updatedItem.rows[0]);
         } else {
+            // Check if the quantity exceeds the available stock
+            if (quantity > availableStock) {
+                console.log('Insufficient stock quantity');
+                return res.status(400).json({ error: 'Insufficient stock quantity' });
+            }
             // If item does not exist, add a new cart item
             const newItem = await pool.query(
                 `INSERT INTO cart_items (cart_id, variation_id, quantity) 
@@ -287,6 +320,22 @@ const updateCartItem = async (req, res) => {
       [variation_id]
     );
 
+    if (stockResult.rowCount === 0) {
+      return res.status(404).json({ error: "Variation not found in inventory." });
+    }
+
+    // fetch reserved quantity
+    const reservedResult = await getReservedQuantityByVariationId(variation_id);
+    const reservedQuantity = reservedResult.reserved_quantity;
+
+    // Calculate available stock
+    let availableStock = stockResult.rows[0].stock_quantity;
+    console.log("Stock quantity:", availableStock);
+    console.log("Reserved quantity:", reservedQuantity);
+
+    availableStock -= reservedQuantity; // Subtract reserved quantity
+    console.log("Available stock after reservation:", availableStock);
+    
     const cartItemResult = await pool.query(
       `SELECT quantity FROM cart_items WHERE cart_id = $1 AND variation_id = $2`,
       [cart_id, variation_id]
@@ -300,7 +349,6 @@ const updateCartItem = async (req, res) => {
       return res.status(404).json({ error: "Cart item not found." });
     }
 
-    const availableStock = stockResult.rows[0].stock_quantity;
     const currentCartQuantity = cartItemResult.rows[0].quantity;
 
     // Validate stock only when increasing quantity

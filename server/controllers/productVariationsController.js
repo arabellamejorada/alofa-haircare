@@ -42,7 +42,9 @@ const getProductVariationById = async (req, res) => {
                 product.name AS product_name, 
                 product_status.description AS status_description,
                 product.description AS product_description,
-                inventory.stock_quantity
+                inventory.stock_quantity,
+                inventory.reserved_quantity,
+                (inventory.stock_quantity - inventory.reserved_quantity) as available_stock
             FROM 
                 product_variation
             JOIN 

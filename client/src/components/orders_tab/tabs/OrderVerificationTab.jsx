@@ -45,7 +45,7 @@ const OrderVerificationTab = ({ statusFilter }) => {
   const [confirmAction, setConfirmAction] = useState(() => {});
   const [confirmMessage, setConfirmMessage] = useState("");
 
-  const [setIsDynamicModalOpen] = useState(false);
+  const [isDynamicModalOpen, setIsDynamicModalOpen] = useState(false);
   const [isRemarksModalOpen, setIsRemarksModalOpen] = useState(false);
   const [isReasonModalOpen, setIsReasonModalOpen] = useState(false);
 

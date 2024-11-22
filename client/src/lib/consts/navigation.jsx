@@ -105,7 +105,7 @@ export const INVENTORY_SIDEBAR_LINKS = [
 export const ORDERS_SIDEBAR_LINKS = [
   {
     key: "order_verification",
-    label: "Order Verification",
+    label: "Payment Verification",
     path: "/orderVerification",
     icon: <IoBagCheckOutline />,
   },
@@ -120,7 +120,7 @@ export const ORDERS_SIDEBAR_LINKS = [
     label: "Refund",
     path: "/refund",
     icon: <HiOutlineDocumentText />,
-  }
+  },
 ];
 
 export const EMPLOYEE_SIDEBAR_LINKS = [

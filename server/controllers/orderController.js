@@ -18,6 +18,67 @@ const formatDate = (date, options = {}) => {
   return new Date(date).toLocaleString("en-PH", formatOptions).replace(",", "");
 };
 
+const getReservedQuantityByVariationId = async (variation_id) => {
+  try {
+    const result = await pool.query(
+      `SELECT reserved_quantity FROM inventory WHERE variation_id = $1`,
+      [variation_id]
+    );
+
+    if (result.rowCount === 0) {
+      throw new Error(`Inventory not found for variation_id ${variation_id}`);
+    }
+    console.log("Reserved quantity for variation_id", variation_id, ":", result.rows[0].reserved_quantity);
+    return result.rows[0]; // Return the entire row, not just reserved_quantity
+  } catch (error) {
+    console.error("Error checking reserved quantity:", error);
+    throw error;
+  }
+};
+
+const setReservedQuantity = async (variation_id) => {
+  try {
+    // Query to calculate the total reserved quantity
+    const result = await pool.query(
+      `
+      SELECT 
+        SUM(order_items.quantity) AS total_reserved_quantity
+      FROM 
+        order_items
+      JOIN 
+        orders ON order_items.order_id = orders.order_id
+      WHERE 
+        order_items.variation_id = $1
+        AND (orders.order_status_id = 1 OR orders.order_status_id = 2)
+        AND (orders.order_status_id != 3 OR orders.order_status_id !=4 OR orders.order_status_id != 5)
+      `,
+      [variation_id]
+    );
+
+    // Extract the reserved quantity or set it to 0 if null
+    const totalReservedQuantity = result.rows[0].total_reserved_quantity || 0;
+
+    // Update the reserved_quantity in the inventory table
+    await pool.query(
+      `
+      UPDATE inventory
+      SET reserved_quantity = $1
+      WHERE variation_id = $2
+      `,
+      [totalReservedQuantity, variation_id]
+    );
+
+    console.log(
+      `Reserved quantity updated for variation_id ${variation_id}: ${totalReservedQuantity}`
+    );
+
+    return { variation_id, reserved_quantity: totalReservedQuantity };
+  } catch (error) {
+    console.error("Error setting reserved quantity:", error);
+    throw error;
+  }
+};
+
 const createOrder = async (req, res) => {
   const orderDetails = JSON.parse(req.body.orderDetails);
   const cartItems = JSON.parse(req.body.cartItems);
@@ -33,6 +94,7 @@ const createOrder = async (req, res) => {
 
     // Check Stock Availability
     for (const item of cartItems) {
+      const reservedQuantity = await getReservedQuantityByVariationId(item.variation_id);
       const stockResult = await pool.query(
         `SELECT stock_quantity FROM inventory WHERE variation_id = $1`,
         [item.variation_id],
@@ -44,7 +106,7 @@ const createOrder = async (req, res) => {
 
       const stockQuantity = stockResult.rows[0].stock_quantity;
 
-      if (stockQuantity < item.quantity) {
+      if ((stockQuantity - reservedQuantity.reserved_quantity) < item.quantity) {
         throw new Error(
           `Insufficient stock for variation_id ${item.variation_id}`,
         );
@@ -156,6 +218,11 @@ const createOrder = async (req, res) => {
     const orderItemsWithDetails = await getOrderItemsWithDetails(
       newOrder.order_id,
     );
+
+    // Update Reserved Quantity for Each Variation
+    for (const item of cartItems) {
+      await setReservedQuantity(item.variation_id); // Call after inserting order_items
+    }
 
     // Update current_uses of voucher and set it to inactive if it reached its limit
     if (orderDetails.voucher_id) {
@@ -569,6 +636,23 @@ const updateOrderPaymentStatus = async (req, res) => {
       [payment_status_id, order_id],
     );
 
+    // if payment_status_id = 3(refunded), update order_status_id to 5(cancelled)
+    if (payment_status_id === 3) {
+      await pool.query(
+        `UPDATE orders SET order_status_id = 5 WHERE order_id = $1`,
+        [order_id],
+      );
+    }
+    // Update the reserved_quantity for each variation in the order
+    const orderItems = await pool.query(
+      `SELECT variation_id FROM order_items WHERE order_id = $1`,
+      [order_id],
+    );
+
+    for (const item of orderItems.rows) {
+      await setReservedQuantity(item.variation_id); // Update reserved_quantity
+    }
+    
     res
       .status(200)
       .json({ message: "Order payment status updated successfully" });
@@ -582,7 +666,6 @@ const updateOrderPaymentStatus = async (req, res) => {
 const updateOrderStatus = async (req, res) => {
   const { order_id } = req.params;
   const { order_status_id } = req.body;
-  console.log("received", order_id, order_status_id);
   try {
     await pool.query(
       `UPDATE orders SET order_status_id = $1 WHERE order_id = $2`,
@@ -594,6 +677,16 @@ const updateOrderStatus = async (req, res) => {
         `UPDATE orders SET date_delivered = NOW() WHERE order_id = $1`,
         [order_id],
       );
+    }
+
+     // Fetch all variation_ids from the order to update their reserved_quantity
+    const orderItems = await pool.query(
+      `SELECT variation_id FROM order_items WHERE order_id = $1`,
+      [order_id]
+    );
+
+    for (const item of orderItems.rows) {
+      await setReservedQuantity(item.variation_id); // Update reserved_quantity
     }
 
     res.status(200).json({ message: "Order status updated successfully" });
@@ -622,6 +715,16 @@ const updateShippingStatusAndTrackingNumber = async (req, res) => {
       [tracking_number, shipping_id],
     );
 
+    // Update reserved_quantity for each variation in the order
+    const orderItems = await pool.query(
+      `SELECT variation_id FROM order_items WHERE order_id = (SELECT order_id FROM orders WHERE shipping_id = $1)`,
+      [shipping_id],
+    );
+
+    for (const item of orderItems.rows) {
+      await setReservedQuantity(item.variation_id); // Update reserved_quantity
+    }
+    
     await pool.query("COMMIT");
 
     res.status(200).json({
@@ -654,6 +757,7 @@ const updateOrderRemarks = async (req, res) => {
 };
 
 module.exports = {
+  getReservedQuantityByVariationId,
   createOrder,
   getOrderByProfileId,
   getAllOrdersWithOrderItems,
