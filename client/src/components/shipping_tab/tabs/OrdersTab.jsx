@@ -12,6 +12,7 @@ import PaymentStatusBadge from "../../shared/StatusBadge";
 import { toast } from "sonner";
 import { useAuth } from "../../AuthContext";
 import SendEmail from "../../shared/SendEmail";
+import RefreshIcon from "../../shared/RefreshButton";
 
 const OrdersTab = ({ statusFilter }) => {
   const { employeeId } = useAuth();
@@ -84,6 +85,12 @@ const OrdersTab = ({ statusFilter }) => {
       ...prev,
       [itemId]: e.target.checked,
     }));
+  };
+
+  const handleRefresh = async () => {
+    setLoading(true);
+    // Simulate a fetch request
+    await fetchOrders();
   };
 
   const allItemsChecked = () => {
@@ -467,60 +474,67 @@ const OrdersTab = ({ statusFilter }) => {
     <>
       <div className="relative">
         {/* Filters Section */}
-        <div className="flex flex-row flex-wrap items-center gap-4">
-          <input
-            type="text"
-            className="w-full max-w-md h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
-            placeholder={
-              statusFilter === "Shipped"
-                ? "Search by Tracking Number or Customer Name..."
-                : "Search by Order ID or Customer Name..."
-            }
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+        <div className="flex justify-between">
+          <div className="flex flex-row flex-wrap items-center gap-4">
+            <input
+              type="text"
+              className="w-[20rem] max-w-md h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+              placeholder={
+                statusFilter === "Shipped"
+                  ? "Search by Tracking Number or Customer Name..."
+                  : "Search by Order ID or Customer Name..."
+              }
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            {search && (
+              <button
+                onClick={() => setSearch("")}
+                className="text-sm ml-2 text-alofa-pink hover:text-alofa-dark"
+              >
+                Clear
+              </button>
+            )}
+            {/* Date Filters */}
+            <div className="flex items-center">
+              <label className="mr-2 text-sm font-medium text-gray-700">
+                Start Date:
+              </label>
+              <input
+                type="date"
+                className="h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center">
+              <label className="mr-2 text-sm font-medium text-gray-700">
+                End Date:
+              </label>
+              <input
+                type="date"
+                className="h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+              />
+            </div>
+            {(startDate || endDate) && (
+              <button
+                onClick={() => {
+                  setStartDate("");
+                  setEndDate("");
+                }}
+                className="text-sm ml-2 text-alofa-pink hover:text-alofa-dark"
+              >
+                Clear Dates
+              </button>
+            )}
+          </div>
+          <RefreshIcon
+            onClick={handleRefresh}
+            size={22}
+            colorClass="text-gray-500 hover:text-gray-700"
           />
-          {search && (
-            <button
-              onClick={() => setSearch("")}
-              className="text-sm ml-2 text-alofa-pink hover:text-alofa-dark"
-            >
-              Clear
-            </button>
-          )}
-          {/* Date Filters */}
-          <div className="flex items-center">
-            <label className="mr-2 text-sm font-medium text-gray-700">
-              Start Date:
-            </label>
-            <input
-              type="date"
-              className="h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-            />
-          </div>
-          <div className="flex items-center">
-            <label className="mr-2 text-sm font-medium text-gray-700">
-              End Date:
-            </label>
-            <input
-              type="date"
-              className="h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-            />
-          </div>
-          {(startDate || endDate) && (
-            <button
-              onClick={() => {
-                setStartDate("");
-                setEndDate("");
-              }}
-              className="text-sm ml-2 text-alofa-pink hover:text-alofa-dark"
-            >
-              Clear Dates
-            </button>
-          )}
         </div>
 
         {/* Table */}
