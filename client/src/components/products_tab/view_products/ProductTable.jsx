@@ -10,6 +10,7 @@ const ProductTable = ({
   sortField,
   sortOrder,
   isEmployee, // Add this prop
+  loading, // New prop for loading state
 }) => {
   const renderHeader = (key, label) => (
     <div
@@ -38,6 +39,7 @@ const ProductTable = ({
       header: renderHeader("product_status", "Status"),
     },
   ];
+
   return (
     <DataTable
       data={products}
@@ -45,6 +47,7 @@ const ProductTable = ({
       onEdit={onEdit}
       onArchive={onArchive}
       isEmployee={isEmployee} // Pass role-specific flag here
+      loading={loading} // Pass loading state to DataTable
     />
   );
 };

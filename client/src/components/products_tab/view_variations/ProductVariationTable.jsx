@@ -1,6 +1,7 @@
 import React from "react";
 import DataTable from "../../shared/DataTable";
 import { FaArrowUp, FaArrowDown } from "react-icons/fa";
+import { ClipLoader } from "react-spinners";
 
 const ProductVariationTable = ({
   filteredVariations,
@@ -9,6 +10,7 @@ const ProductVariationTable = ({
   sortField,
   sortOrder,
   handleColumnSort,
+  loading, // Accept loading as a prop
 }) => {
   const renderHeader = (key, label) => (
     <div
@@ -39,6 +41,31 @@ const ProductVariationTable = ({
       header: renderHeader("status_description", "Status"),
     },
   ];
+
+  // Conditional rendering for loading spinner or DataTable
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <ClipLoader size={50} color="#E53E3E" />
+      </div>
+    );
+  }
+
+  if (!loading && filteredVariations.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <p className="text-lg font-semibold text-gray-600">
+            No data available
+          </p>
+          <p className="text-sm text-gray-500 mt-2">
+            There are currently no records to display.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <DataTable
       data={filteredVariations}

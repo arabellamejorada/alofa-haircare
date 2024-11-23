@@ -296,12 +296,6 @@ const ProductsTab = () => {
   return (
     <Fragment>
       <div className="relative">
-        {loading && (
-          <div className="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center z-50">
-            <ClipLoader size={50} color="#E53E3E" loading={loading} />
-          </div>
-        )}
-
         <div className="flex flex-col gap-2">
           {/* Filters Section */}
           <FilterProductsAndVariationsTable
@@ -321,15 +315,34 @@ const ProductsTab = () => {
             isProducts={true}
           />
 
-          <ProductTable
-            products={filteredProducts}
-            onEdit={openModal}
-            onArchive={handleArchiveProduct}
-            handleColumnSort={handleColumnSort}
-            sortField={sortField}
-            sortOrder={sortOrder}
-            isEmployee={isEmployee} // Pass role-specific flag here
-          />
+          {/* Display loading spinner or the ProductTable */}
+          {loading ? (
+            <div className="flex items-center justify-center h-64">
+              <ClipLoader size={50} color="#E53E3E" />
+            </div>
+          ) : filteredProducts.length === 0 ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-center">
+                <p className="text-lg font-semibold text-gray-600">
+                  No data available
+                </p>
+                <p className="text-sm text-gray-500 mt-2">
+                  There are currently no records to display.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <ProductTable
+              products={filteredProducts}
+              onEdit={openModal}
+              onArchive={handleArchiveProduct}
+              handleColumnSort={handleColumnSort}
+              sortField={sortField}
+              sortOrder={sortOrder}
+              isEmployee={isEmployee} // Pass role-specific flag here
+              loading={loading} // Pass loading state
+            />
+          )}
         </div>
 
         {/* Modal for Adding/Editing Product */}
