@@ -455,6 +455,8 @@ const getAllOrdersWithOrderItems = async (req, res) => {
             'price', oi.price,
             'product_name', pr.name, 
             'variation_name', CONCAT(pr.name, ' - ', pv.type, ': ', pv.value),
+            'variation_type', pv.type,
+            'variation_value', pv.value,
             'image', pv.image
           )
         ) AS items
