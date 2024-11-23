@@ -26,8 +26,6 @@ const TransactionCard = ({
   }
 
   useEffect(() => {
-    console.log("Checking refund eligibility...");
-    console.log("Order:", order);
     const checkEligibility = async () => {
       if (!order.date_delivered) {
         setIsRefundEligible(false);
@@ -91,7 +89,7 @@ const TransactionCard = ({
         <div>
           <div className="text-gray-500 font-normal text-xs mb-0">
             {activeTab === "Completed" ? (
-              <>Order Completed: {order.date_delivered}</>
+              <>Order completed: {order.date_delivered}</>
             ) : (
               ""
             )}
