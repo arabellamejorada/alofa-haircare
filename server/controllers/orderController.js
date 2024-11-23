@@ -22,13 +22,18 @@ const getReservedQuantityByVariationId = async (variation_id) => {
   try {
     const result = await pool.query(
       `SELECT reserved_quantity FROM inventory WHERE variation_id = $1`,
-      [variation_id]
+      [variation_id],
     );
 
     if (result.rowCount === 0) {
       throw new Error(`Inventory not found for variation_id ${variation_id}`);
     }
-    console.log("Reserved quantity for variation_id", variation_id, ":", result.rows[0].reserved_quantity);
+    console.log(
+      "Reserved quantity for variation_id",
+      variation_id,
+      ":",
+      result.rows[0].reserved_quantity,
+    );
     return result.rows[0]; // Return the entire row, not just reserved_quantity
   } catch (error) {
     console.error("Error checking reserved quantity:", error);
@@ -52,7 +57,7 @@ const setReservedQuantity = async (variation_id) => {
         AND (orders.order_status_id = 1 OR orders.order_status_id = 2)
         AND (orders.order_status_id != 3 OR orders.order_status_id !=4 OR orders.order_status_id != 5)
       `,
-      [variation_id]
+      [variation_id],
     );
 
     // Extract the reserved quantity or set it to 0 if null
@@ -65,11 +70,11 @@ const setReservedQuantity = async (variation_id) => {
       SET reserved_quantity = $1
       WHERE variation_id = $2
       `,
-      [totalReservedQuantity, variation_id]
+      [totalReservedQuantity, variation_id],
     );
 
     console.log(
-      `Reserved quantity updated for variation_id ${variation_id}: ${totalReservedQuantity}`
+      `Reserved quantity updated for variation_id ${variation_id}: ${totalReservedQuantity}`,
     );
 
     return { variation_id, reserved_quantity: totalReservedQuantity };
@@ -94,25 +99,29 @@ const createOrder = async (req, res) => {
 
     // Check Stock Availability
     for (const item of cartItems) {
-      const reservedQuantity = await getReservedQuantityByVariationId(item.variation_id);
+      const reservedQuantity = await getReservedQuantityByVariationId(
+        item.variation_id,
+      );
       const stockResult = await pool.query(
         `SELECT stock_quantity FROM inventory WHERE variation_id = $1`,
         [item.variation_id],
       );
 
       if (stockResult.rowCount === 0) {
-        throw new Error(`Stock not found for variation_id ${item.variation_id}`);
+        throw new Error(
+          `Stock not found for variation_id ${item.variation_id}`,
+        );
       }
 
       const stockQuantity = stockResult.rows[0].stock_quantity;
 
-      if ((stockQuantity - reservedQuantity.reserved_quantity) < item.quantity) {
+      if (stockQuantity - reservedQuantity.reserved_quantity < item.quantity) {
         throw new Error(
           `Insufficient stock for variation_id ${item.variation_id}`,
         );
       }
     }
-    
+
     // Look for J&T Express shipping method
     const shippingMethodResult = await pool.query(
       `SELECT * FROM shipping_method WHERE courier = 'J&T Express'`,
@@ -422,7 +431,6 @@ const getOrderByProfileId = async (req, res) => {
   }
 };
 
-// Get All Orders with Order Items
 const getAllOrdersWithOrderItems = async (req, res) => {
   try {
     const ordersResult = await pool.query(`
@@ -436,16 +444,17 @@ const getAllOrdersWithOrderItems = async (req, res) => {
         p.email AS customer_email,
         s.tracking_number,
         s.shipping_date,
-        o.remarks, -- Include remarks here
+        s.shipping_fee, 
+        v.code AS voucher_code, -- Include voucher code only
+        o.remarks, 
         JSON_AGG(
           JSON_BUILD_OBJECT(
             'order_item_id', oi.order_item_id,
             'variation_id', oi.variation_id,
             'quantity', oi.quantity,
             'price', oi.price,
-            'product_name', pr.name,
-            'variation_type', pv.type,
-            'variation_value', pv.value,
+            'product_name', pr.name, 
+            'variation_name', CONCAT(pr.name, ' - ', pv.type, ': ', pv.value),
             'image', pv.image
           )
         ) AS items
@@ -459,6 +468,7 @@ const getAllOrdersWithOrderItems = async (req, res) => {
       LEFT JOIN customer c ON o.customer_id = c.customer_id
       LEFT JOIN profiles p ON c.profile_id = p.id
       LEFT JOIN shipping s ON o.shipping_id = s.shipping_id
+      LEFT JOIN vouchers v ON o.voucher_id = v.voucher_id -- Join vouchers table
       GROUP BY 
         o.order_id, 
         os.status_name, 
@@ -468,23 +478,30 @@ const getAllOrdersWithOrderItems = async (req, res) => {
         p.last_name, 
         p.email, 
         s.tracking_number,
-        s.shipping_date
+        s.shipping_date,
+        s.shipping_fee, 
+        v.code -- Add voucher code to GROUP BY
       ORDER BY o.order_id;
     `);
 
     if (ordersResult.rowCount === 0) {
-      return res.status(200).json({ orders: [] }); // Return an empty array if no results
+      return res.status(200).json({ orders: [] });
     }
 
-    // Map orders to include customer_name for convenience
+    // Map orders to include customer_name and voucher details
     const orders = ordersResult.rows.map((order) => {
-      (order.customer_name = `${order.profile_first_name || ""} ${order.profile_last_name || ""}`),
-        (order.date_ordered = formatDate(order.date_ordered)), // Format order_date
-        (order.date_delivered = formatDate(order.date_delivered)),
-        (order.shipping_date = formatDate(order.shipping_date)), // Format shipping_date
-        delete order.profile_first_name;
-      delete order.profile_last_name;
-      return order;
+      return {
+        ...order,
+        customer_name: `${order.profile_first_name || ""} ${
+          order.profile_last_name || ""
+        }`,
+        date_ordered: formatDate(order.date_ordered),
+        date_delivered: formatDate(order.date_delivered),
+        shipping_date: formatDate(order.shipping_date),
+        voucher: order.voucher_code
+          ? { code: order.voucher_code, total_discount: order.total_discount }
+          : null, // Include voucher with total_discount or null if not present
+      };
     });
 
     res.status(200).json({ orders });
@@ -652,7 +669,7 @@ const updateOrderPaymentStatus = async (req, res) => {
     for (const item of orderItems.rows) {
       await setReservedQuantity(item.variation_id); // Update reserved_quantity
     }
-    
+
     res
       .status(200)
       .json({ message: "Order payment status updated successfully" });
@@ -679,10 +696,10 @@ const updateOrderStatus = async (req, res) => {
       );
     }
 
-     // Fetch all variation_ids from the order to update their reserved_quantity
+    // Fetch all variation_ids from the order to update their reserved_quantity
     const orderItems = await pool.query(
       `SELECT variation_id FROM order_items WHERE order_id = $1`,
-      [order_id]
+      [order_id],
     );
 
     for (const item of orderItems.rows) {
@@ -724,7 +741,7 @@ const updateShippingStatusAndTrackingNumber = async (req, res) => {
     for (const item of orderItems.rows) {
       await setReservedQuantity(item.variation_id); // Update reserved_quantity
     }
-    
+
     await pool.query("COMMIT");
 
     res.status(200).json({
