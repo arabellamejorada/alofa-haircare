@@ -25,23 +25,21 @@ const createRefundRequest = async (req, res) => {
   console.log("Request body:", req.body);
   console.log("Files:", files);
   try {
-   // Validate required fields
-   const missingFields = [];
-if (!order_id) missingFields.push("order_id");
-if (!reason) missingFields.push("reason");
-if (!refund_items) missingFields.push("refund_items");
-if (files.length === 0) missingFields.push("proof files");
+    // Validate required fields
+    const missingFields = [];
+    if (!order_id) missingFields.push("order_id");
+    if (!reason) missingFields.push("reason");
+    if (!refund_items) missingFields.push("refund_items");
+    if (files.length === 0) missingFields.push("proof files");
 
-if (missingFields.length > 0) {
-  return res.status(400).json({
-    success: false,
-    message: `Missing or invalid fields: ${missingFields.join(", ")}`,
-  });
-}
+    if (missingFields.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Missing or invalid fields: ${missingFields.join(", ")}`,
+      });
+    }
 
-
-
-   // Check if a refund request already exists for the order
+    // Check if a refund request already exists for the order
     const existingRefund = await pool.query(
       `SELECT id FROM refund_request WHERE order_id = $1`,
       [order_id],
@@ -53,9 +51,10 @@ if (missingFields.length > 0) {
       });
     }
 
-    const parsedRefundItems = typeof refund_items === "string"
-    ? JSON.parse(refund_items)
-    : refund_items;
+    const parsedRefundItems =
+      typeof refund_items === "string"
+        ? JSON.parse(refund_items)
+        : refund_items;
 
     if (!Array.isArray(parsedRefundItems) || parsedRefundItems.length === 0) {
       return res.status(400).json({
@@ -191,9 +190,9 @@ const getRefundRequestsByProfileId = async (req, res) => {
       refund.customer_name = `${
         refund.profile_first_name || ""
       } ${refund.profile_last_name || ""}`;
-      refund.requested_at = formatDate(refund.requested_at),
-      refund.updated_at = formatDate(refund.updated_at),
-      delete refund.profile_first_name;
+      (refund.requested_at = formatDate(refund.requested_at)),
+        (refund.updated_at = formatDate(refund.updated_at)),
+        delete refund.profile_first_name;
       delete refund.profile_last_name;
       return refund;
     });
@@ -269,7 +268,7 @@ const getAllRefundRequests = async (req, res) => {
     );
 
     if (refundResult.rowCount === 0) {
-      return res.status(404).json({ error: "No refund requests found" });
+      return res.status(200).json([]); // Return empty array
     }
 
     const refunds = refundResult.rows.map((refund) => {
@@ -284,7 +283,7 @@ const getAllRefundRequests = async (req, res) => {
       delete refund.profile_email; // Optional: Remove raw email field
       return refund;
     });
-    
+
     res.status(200).json(refunds);
   } catch (error) {
     console.error("Error fetching all refund requests:", error);
@@ -337,7 +336,7 @@ const checkIfOrderIdExists = async (req, res) => {
     const { orderId } = req.params;
     const result = await pool.query(
       `SELECT id FROM refund_request WHERE order_id = $1`,
-      [orderId]
+      [orderId],
     );
     const exists = result.rows.length > 0;
     res.status(200).json({ exists });
@@ -352,5 +351,5 @@ module.exports = {
   getRefundRequestsByProfileId,
   getAllRefundRequests,
   updateRefundStatus,
-  checkIfOrderIdExists
+  checkIfOrderIdExists,
 };
