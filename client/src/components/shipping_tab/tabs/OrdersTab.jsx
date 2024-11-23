@@ -342,13 +342,16 @@ const OrdersTab = ({ statusFilter }) => {
       setLoading(true);
       const response = await getAllOrdersWithItems();
       if (response && response.orders) {
-        let filteredOrders;
+        let filteredOrders = response.orders.filter(
+          (order) => order.order_status_name !== "Cancelled",
+        );
+
         if (statusFilter === "All") {
-          filteredOrders = response.orders.filter(
+          filteredOrders = filteredOrders.filter(
             (order) => order.order_status_name !== "Pending",
           );
         } else {
-          filteredOrders = response.orders.filter(
+          filteredOrders = filteredOrders.filter(
             (order) => order.order_status_name === statusFilter,
           );
         }
