@@ -30,36 +30,40 @@ const PurchasesTab = () => {
     [],
   );
 
-  useEffect(() => {
-    const fetchOrderTransactions = async () => {
-      if (!user) {
-        console.error("user is not defined");
-        return;
-      }
-      try {
-        setLoading(true);
+  const fetchTransactions = async () => {
+    if (!user) {
+      console.error("User is not defined");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      if (activeTab === "For Refund") {
+        // Fetch refund requests for "For Refund" tab
+        const refunds = await getRefundRequestsByProfileId(user.id);
+        const sortedRefunds = refunds.sort(
+          (a, b) => new Date(b.requested_at) - new Date(a.requested_at),
+        );
+        setTransactions(sortedRefunds);
+      } else {
+        // Fetch orders for other tabs
         const orders = await getOrderByProfileId(user.id);
         const sortedOrders = orders.sort(
           (a, b) => new Date(b.date_ordered) - new Date(a.date_ordered),
         );
         setTransactions(sortedOrders);
-
-        const refunds = await getRefundRequestsByProfileId(user.id);
-        const sortedRefunds = refunds.sort(
-          (a, b) => new Date(b.requested_at) - new Date(a.requested_at),
-        );
-        setRefundRequests(sortedRefunds);
-
-        console.log("Orders fetched:", sortedOrders);
-        console.log("Refunds fetched:", sortedRefunds);
-      } catch (error) {
-        console.error("Error fetching orders:", error);
-      } finally {
-        setLoading(false);
       }
-    };
-    fetchOrderTransactions();
-  }, [user]);
+    } catch (error) {
+      console.error("Error fetching transactions:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTransactions();
+  }, [activeTab, user]);
 
   useEffect(() => {
     const initialTabElement = document.getElementById(`tab-0`);
