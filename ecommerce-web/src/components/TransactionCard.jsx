@@ -89,7 +89,7 @@ const TransactionCard = ({
         <div>
           <div className="text-gray-500 font-normal text-xs mb-0">
             {activeTab === "Completed" ? (
-              <>Order completed: {order.date_delivered}</>
+              <>Order Completed: {order.date_delivered}</>
             ) : (
               ""
             )}
@@ -286,7 +286,7 @@ TransactionCard.propTypes = {
         image: PropTypes.string,
         value: PropTypes.string,
         sku: PropTypes.string,
-      })
+      }),
     ).isRequired,
     total_amount: PropTypes.number.isRequired,
   }).isRequired,
@@ -303,7 +303,7 @@ TransactionCard.propTypes = {
         image: PropTypes.string,
         value: PropTypes.string,
         sku: PropTypes.string,
-      })
+      }),
     ).isRequired,
     refund_request_id: PropTypes.number.isRequired,
     requested_at: PropTypes.string.isRequired,

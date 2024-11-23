@@ -73,10 +73,6 @@ const setReservedQuantity = async (variation_id) => {
       [totalReservedQuantity, variation_id],
     );
 
-    console.log(
-      `Reserved quantity updated for variation_id ${variation_id}: ${totalReservedQuantity}`,
-    );
-
     return { variation_id, reserved_quantity: totalReservedQuantity };
   } catch (error) {
     console.error("Error setting reserved quantity:", error);
@@ -89,9 +85,9 @@ const createOrder = async (req, res) => {
   const cartItems = JSON.parse(req.body.cartItems);
   const proofImage = req.file ? req.file.path : null;
 
-  console.log("Order details received:", orderDetails);
-  console.log("Cart items received:", cartItems);
-  console.log("Proof image path:", proofImage);
+  // console.log("Order details received:", orderDetails);
+  // console.log("Cart items received:", cartItems);
+  // console.log("Proof image path:", proofImage);
 
   try {
     // Start a transaction
@@ -200,7 +196,7 @@ const createOrder = async (req, res) => {
     );
 
     const newOrder = orderResult.rows[0];
-    console.log("New order:", newOrder);
+    // console.log("New order:", newOrder);
 
     // Step 3: Insert order items with discounted price if applicable
     const orderItemsValues = cartItems.flatMap((item) => [
@@ -343,7 +339,7 @@ const getOrderItemsWithDetails = async (order_id) => {
 };
 
 const deleteCartItems = async (cart_item_id) => {
-  console.log("Deleting cart item:", cart_item_id);
+  // console.log("Deleting cart item:", cart_item_id);
   try {
     await pool.query(`DELETE FROM cart_items WHERE cart_item_id = $1`, [
       cart_item_id,
@@ -685,17 +681,20 @@ const updateOrderPaymentStatus = async (req, res) => {
 const updateOrderStatus = async (req, res) => {
   const { order_id } = req.params;
   const { order_status_id } = req.body;
+  console.log("Order status update:", order_status_id);
   try {
     await pool.query(
       `UPDATE orders SET order_status_id = $1 WHERE order_id = $2`,
       [order_status_id, order_id],
     );
 
-    if (order_status_id === 4) {
+   if (order_status_id === 4) { //Completed
       await pool.query(
         `UPDATE orders SET date_delivered = NOW() WHERE order_id = $1`,
-        [order_id],
+        [order_id]
       );
+
+      console.log("Order status updated to Completed");
     }
 
     // Fetch all variation_ids from the order to update their reserved_quantity
@@ -728,11 +727,31 @@ const updateShippingStatusAndTrackingNumber = async (req, res) => {
       [order_status_id, shipping_id],
     );
 
-    // Update the tracking number in the shipping table
+   const shippingDate = new Date(); // Use JavaScript to get the current date and time
     await pool.query(
-      `UPDATE shipping SET tracking_number = $1 WHERE shipping_id = $2`,
-      [tracking_number, shipping_id],
+      `UPDATE shipping 
+      SET tracking_number = $1, 
+          shipping_date = $2 
+      WHERE shipping_id = $3`,
+      [tracking_number, shippingDate, shipping_id]
     );
+
+    // Find order_id from shipping_id
+    const orderResult = await pool.query(
+      `SELECT order_id FROM orders WHERE shipping_id = $1`,
+      [shipping_id],
+    );
+
+    const order_id = orderResult.rows[0].order_id;
+
+    if (order_status_id === 4) { //Completed
+      await pool.query(
+        `UPDATE orders SET date_delivered = NOW() WHERE order_id = $1`,
+        [order_id]
+      );
+
+      console.log("Order status updated to Completed");
+    }
 
     // Update reserved_quantity for each variation in the order
     const orderItems = await pool.query(
