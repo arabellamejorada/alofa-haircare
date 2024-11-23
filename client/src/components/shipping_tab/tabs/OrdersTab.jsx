@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { useAuth } from "../../AuthContext";
 import SendEmail from "../../shared/SendEmail";
 import RefreshIcon from "../../shared/RefreshButton";
+import ConfirmModal from "../../shared/ConfirmModal";
 
 const OrdersTab = ({ statusFilter }) => {
   const { employeeId } = useAuth();
@@ -41,6 +42,17 @@ const OrdersTab = ({ statusFilter }) => {
 
   const [orderItems, setOrderItems] = useState([]);
   const [checkedItems, setCheckedItems] = useState({});
+
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(() => {});
+
+  const [confirmMessage, setConfirmMessage] = useState("");
+
+  const openConfirmModal = (action, message) => {
+    setConfirmAction(() => action);
+    setConfirmMessage(message); // Set the dynamic message
+    setIsConfirmModalOpen(true);
+  };
 
   const openModal = async (order) => {
     setSelectedOrder(order);
@@ -103,7 +115,9 @@ const OrdersTab = ({ statusFilter }) => {
     // Validate Tracking Number
     const trackingNumberPattern = /^\d{12}$/; // 12-digit number regex
     if (!trackingNumber.match(trackingNumberPattern)) {
-      toast.error("Tracking number must be a 12-digit number.");
+      toast.error(
+        "Invalid format for tracking number. Must be a 12-digit number.",
+      );
       return;
     }
 
@@ -238,90 +252,90 @@ const OrdersTab = ({ statusFilter }) => {
     }
   };
 
-  const handleCancelShipping = async () => {
-    if (!selectedOrder) return;
+  // const handleCancelShipping = async () => {
+  //   if (!selectedOrder) return;
 
-    try {
-      setUpdatingStatus(true);
+  //   try {
+  //     setUpdatingStatus(true);
 
-      const revertStatusId = 2;
-      const revertStatusName = "Preparing";
+  //     const revertStatusId = 2;
+  //     const revertStatusName = "Preparing";
 
-      // Check if customer email and name are available
-      if (selectedOrder.customer_email && selectedOrder.customer_name) {
-        const subject = `Shipping for Order #${selectedOrder.order_id} Has Been Cancelled`;
-        const textContent = `Hi ${selectedOrder.customer_name},\n\nWe regret to inform you that the shipping for Order #${selectedOrder.order_id} has been cancelled. Please contact us for further details or assistance.\n\nThank you.`;
-        const htmlContent = `
-          <h1>Shipping Cancelled</h1>
-          <p>Hi ${selectedOrder.customer_name},</p>
-          <p>We regret to inform you that the shipping for <strong>Order #${selectedOrder.order_id}</strong> has been cancelled.</p>
-          <p>Please contact us for further details or assistance.</p>
-          <p>Thank you for your understanding.</p>
-        `;
+  //     // Check if customer email and name are available
+  //     if (selectedOrder.customer_email && selectedOrder.customer_name) {
+  //       const subject = `Shipping for Order #${selectedOrder.order_id} Has Been Cancelled`;
+  //       const textContent = `Hi ${selectedOrder.customer_name},\n\nWe regret to inform you that the shipping for Order #${selectedOrder.order_id} has been cancelled. Please contact us for further details or assistance.\n\nThank you.`;
+  //       const htmlContent = `
+  //         <h1>Shipping Cancelled</h1>
+  //         <p>Hi ${selectedOrder.customer_name},</p>
+  //         <p>We regret to inform you that the shipping for <strong>Order #${selectedOrder.order_id}</strong> has been cancelled.</p>
+  //         <p>Please contact us for further details or assistance.</p>
+  //         <p>Thank you for your understanding.</p>
+  //       `;
 
-        try {
-          // Attempt to send email
-          await SendEmail(
-            selectedOrder.customer_email,
-            "Alofa Haircare <mailgun@sandbox1463264fb2744256b74af8ebe920ea0c.mailgun.org>", // Replace with your sender email
-            subject,
-            textContent,
-            htmlContent,
-          );
-        } catch (emailError) {
-          console.error("Error sending cancellation email:", emailError);
-          toast.error(
-            "Failed to send cancellation email. Shipping status will not be updated.",
-          );
-          return; // Exit function if email fails
-        }
-      } else {
-        toast.error(
-          "Customer email or name is missing. Cannot send cancellation email.",
-        );
-        return; // Exit function if customer data is invalid
-      }
+  //       try {
+  //         // Attempt to send email
+  //         await SendEmail(
+  //           selectedOrder.customer_email,
+  //           "Alofa Haircare <mailgun@sandbox1463264fb2744256b74af8ebe920ea0c.mailgun.org>", // Replace with your sender email
+  //           subject,
+  //           textContent,
+  //           htmlContent,
+  //         );
+  //       } catch (emailError) {
+  //         console.error("Error sending cancellation email:", emailError);
+  //         toast.error(
+  //           "Failed to send cancellation email. Shipping status will not be updated.",
+  //         );
+  //         return; // Exit function if email fails
+  //       }
+  //     } else {
+  //       toast.error(
+  //         "Customer email or name is missing. Cannot send cancellation email.",
+  //       );
+  //       return; // Exit function if customer data is invalid
+  //     }
 
-      // Update the shipping status and tracking number
-      await updateShippingStatusAndTrackingNumber(
-        selectedOrder.shipping_id,
-        revertStatusId,
-        null,
-      );
+  //     // Update the shipping status and tracking number
+  //     await updateShippingStatusAndTrackingNumber(
+  //       selectedOrder.shipping_id,
+  //       revertStatusId,
+  //       null,
+  //     );
 
-      // Update the local state
-      setOrders((prevOrders) =>
-        prevOrders.map((order) =>
-          order.order_id === selectedOrder.order_id
-            ? {
-                ...order,
-                order_status_id: revertStatusId,
-                order_status_name: revertStatusName,
-                tracking_number: null,
-              }
-            : order,
-        ),
-      );
+  //     // Update the local state
+  //     setOrders((prevOrders) =>
+  //       prevOrders.map((order) =>
+  //         order.order_id === selectedOrder.order_id
+  //           ? {
+  //               ...order,
+  //               order_status_id: revertStatusId,
+  //               order_status_name: revertStatusName,
+  //               tracking_number: null,
+  //             }
+  //           : order,
+  //       ),
+  //     );
 
-      setSelectedOrder((prevSelectedOrder) => ({
-        ...prevSelectedOrder,
-        order_status_id: revertStatusId,
-        order_status_name: revertStatusName,
-        tracking_number: null,
-      }));
+  //     setSelectedOrder((prevSelectedOrder) => ({
+  //       ...prevSelectedOrder,
+  //       order_status_id: revertStatusId,
+  //       order_status_name: revertStatusName,
+  //       tracking_number: null,
+  //     }));
 
-      setCheckedItems({});
-      toast.success("Shipping cancelled successfully.");
+  //     setCheckedItems({});
+  //     toast.success("Shipping cancelled successfully.");
 
-      closeModal();
-    } catch (error) {
-      console.error("Error canceling shipping:", error);
-      setError("Failed to cancel shipping");
-      toast.error("Failed to cancel shipping.");
-    } finally {
-      setUpdatingStatus(false);
-    }
-  };
+  //     closeModal();
+  //   } catch (error) {
+  //     console.error("Error canceling shipping:", error);
+  //     setError("Failed to cancel shipping");
+  //     toast.error("Failed to cancel shipping.");
+  //   } finally {
+  //     setUpdatingStatus(false);
+  //   }
+  // };
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -746,7 +760,12 @@ const OrdersTab = ({ statusFilter }) => {
               <div className="mt-8 flex justify-end gap-2">
                 {selectedOrder.order_status_id !== 4 && (
                   <button
-                    onClick={handleUpdateShippingStatus}
+                    onClick={() =>
+                      openConfirmModal(
+                        () => handleUpdateShippingStatus(),
+                        "Are you sure you want to update shipping status? This action can't be undone.",
+                      )
+                    }
                     className="px-6 py-2 bg-alofa-pink text-white font-semibold rounded-lg hover:bg-alofa-dark transition"
                   >
                     {selectedOrder.order_status_id === 2
@@ -758,17 +777,26 @@ const OrdersTab = ({ statusFilter }) => {
                           })`}
                   </button>
                 )}
-                {selectedOrder.order_status_id !== 2 && (
+                {/* {selectedOrder.order_status_id !== 2 && (
                   <button
                     onClick={handleCancelShipping}
                     className="px-6 py-2 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400 transition"
                   >
                     Cancel Shipping
                   </button>
-                )}
+                )} */}
               </div>
             </>
           </div>
+          <ConfirmModal
+            isOpen={isConfirmModalOpen}
+            onClose={() => setIsConfirmModalOpen(false)}
+            onConfirm={() => {
+              confirmAction();
+              setIsConfirmModalOpen(false);
+            }}
+            message={confirmMessage} // Use the dynamic message here
+          />
         </Modal>
       )}
     </>
