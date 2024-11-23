@@ -469,7 +469,6 @@ const OrderVerificationTab = ({ statusFilter }) => {
             colorClass="text-gray-500 hover:text-gray-700"
           />
         </div>
-
         {filteredOrders.length === 0 ? (
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
@@ -558,19 +557,20 @@ const OrderVerificationTab = ({ statusFilter }) => {
             </div>
           </>
         )}
-
         {/* Order Details Modal */}
         {isModalOpen && selectedOrder && (
           <Modal isVisible={isModalOpen} onClose={closeModal} size="large">
-            <div className="p-6 max-h-[80vh] overflow-y-auto flex flex-col bg-white rounded-lg ">
+            <div className="p-6 max-h-[80vh] overflow-y-auto flex flex-col bg-white rounded-lg">
               <h2 className="text-4xl font-bold mb-6 text-alofa-pink">
                 Order Details
               </h2>
 
-              <div className="flex flex-row">
+              <div className="flex flex-row gap-4">
+                {/* Left Section */}
                 <div className="flex-1">
-                  <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="bg-gray-50 p-4 rounded-lg h-[30rem] overflow-y-auto">
                     <dl className="divide-y divide-gray-200">
+                      {/* Customer Name */}
                       <div className="py-3">
                         <dt className="text-sm font-medium text-gray-500">
                           Customer Name
@@ -579,39 +579,7 @@ const OrderVerificationTab = ({ statusFilter }) => {
                           {selectedOrder.customer_name}
                         </dd>
                       </div>
-                      <div className="py-3">
-                        <dt className="text-sm font-medium text-gray-500">
-                          Total Amount
-                        </dt>
-                        <dd className="mt-1 text-base text-gray-900">
-                          ₱
-                          {Number(selectedOrder.total_amount).toLocaleString(
-                            undefined,
-                            {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            },
-                          )}
-                        </dd>
-                      </div>
-                      <div className="py-3">
-                        <dt className="text-sm font-medium text-gray-500">
-                          Payment Status
-                        </dt>
-                        <dd className="mt-1 text-base text-gray-900">
-                          <PaymentStatusBadge
-                            status={selectedOrder.payment_status_name}
-                          />
-                        </dd>
-                      </div>
-                      <div className="py-3">
-                        <dt className="text-sm font-medium text-gray-500">
-                          Order Status
-                        </dt>
-                        <dd className="mt-1 text-base text-gray-900">
-                          {selectedOrder.order_status_name}
-                        </dd>
-                      </div>
+                      {/* Date Ordered */}
                       <div className="py-3">
                         <dt className="text-sm font-medium text-gray-500">
                           Date Ordered
@@ -627,78 +595,197 @@ const OrderVerificationTab = ({ statusFilter }) => {
                           })()}
                         </dd>
                       </div>
+
+                      {/* Payment Status */}
+                      <div className="py-3">
+                        <dt className="text-sm font-medium text-gray-500">
+                          Payment Status
+                        </dt>
+                        <dd className="mt-1 text-base text-gray-900">
+                          <PaymentStatusBadge
+                            status={selectedOrder.payment_status_name}
+                          />
+                        </dd>
+                      </div>
+                      {/* Order Status */}
+                      <div className="py-3">
+                        <dt className="text-sm font-medium text-gray-500">
+                          Order Status
+                        </dt>
+                        <dd className="mt-1 text-base text-gray-900">
+                          {selectedOrder.order_status_name}
+                        </dd>
+                      </div>
+                      {/* Total Amount */}
+                      <div className="py-3">
+                        <dt className="text-sm font-medium text-gray-500">
+                          Total Amount
+                        </dt>
+                        <dd className="mt-1 text-base text-gray-900">
+                          ₱
+                          {Number(selectedOrder.total_amount).toLocaleString(
+                            undefined,
+                            {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            },
+                          )}
+                        </dd>
+                      </div>
+
+                      <div className="divide-y divide-gray-200">
+                        {/* Items Section */}
+                        <div className="bg-gray-50 mt-2 rounded-lg">
+                          <h3 className="text-lg font-bold text-gray-700 mb-3">
+                            Items
+                          </h3>
+                          {selectedOrder.items &&
+                          selectedOrder.items.length > 0 ? (
+                            <ul className="">
+                              {selectedOrder.items.map((item, index) => (
+                                <li
+                                  key={index}
+                                  className="py-3 flex justify-between"
+                                >
+                                  <span className="text-sm font-medium text-gray-700">
+                                    {item.name}{" "}
+                                    {item.variation_name &&
+                                      `(${item.variation_name})`}{" "}
+                                    (x
+                                    {item.quantity})
+                                  </span>
+                                  <span className="text-sm font-semibold text-gray-900">
+                                    ₱
+                                    {Number(item.price).toLocaleString(
+                                      undefined,
+                                      {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                      },
+                                    )}
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <div className="text-sm text-gray-500">
+                              No items in this order.
+                            </div>
+                          )}
+                        </div>
+                        <div className="divide-y divide-gray-200">
+                          {/* Shipping Fee */}
+                          <div className="py-3 ">
+                            <dt className="text-sm font-medium text-gray-500">
+                              Shipping Fee
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900 font-semibold">
+                              ₱
+                              {Number(
+                                selectedOrder.shipping_fee,
+                              ).toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                            </dd>
+                          </div>
+                          {selectedOrder.voucher && (
+                            <div className="py-3 ">
+                              <dt className="text-sm font-medium text-gray-500">
+                                Voucher Used
+                              </dt>
+                              <dd className="mt-1 text-sm text-gray-900">
+                                Code: <span>{selectedOrder.voucher.code}</span>
+                              </dd>
+                              <dd className="mt-1 text-sm text-gray-900 ">
+                                Discount: ₱
+                                <span className="font-semibold">
+                                  {Number(
+                                    selectedOrder.voucher.total_discount,
+                                  ).toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })}
+                                </span>
+                              </dd>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </dl>
                   </div>
                 </div>
-                <div>
-                  {/* Proof Image Section */}
+
+                {/* Proof Image Section */}
+                <div className="w-1/3 h-[30rem] flex flex-col  rounded-lg">
                   {selectedOrder.proof_image ? (
-                    <div>
+                    <>
                       <strong className="text-sm font-bold text-gray-500">
                         Proof of Payment:
                       </strong>
                       <img
                         src={`http://localhost:3001/${selectedOrder.proof_image.substring(7)}`}
                         alt="Payment Proof"
-                        className="mt-2 max-w-xs h-[30rem] mx-auto border rounded-lg shadow-md transform transition-transform duration-300 hover:scale-105 hover:shadow-lg hover:border-alofa-pink cursor-pointer"
+                        className="mt-2 w-full max-h-[28rem] object-contain border rounded-lg shadow-md transform transition-transform duration-300 hover:scale-105 hover:shadow-lg hover:border-alofa-pink cursor-pointer"
                         onClick={() =>
                           handleImageClick(
                             `http://localhost:3001/${selectedOrder.proof_image.substring(7)}`,
                           )
                         }
                       />
-                      {/* Full-Screen Image Modal */}
-                      {isFullScreen && fullScreenImage && (
-                        <div
-                          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80"
-                          onClick={closeFullScreen}
-                        >
-                          <img
-                            src={fullScreenImage}
-                            alt="Full-Sized Payment Proof"
-                            className="max-w-full max-h-full rounded-lg shadow-lg"
-                          />
-                        </div>
-                      )}
-                    </div>
+                    </>
                   ) : (
-                    <div className="mt-4 text-red-500 font-semibold">
+                    <div className="text-red-500 font-semibold">
                       No payment proof image available.
                     </div>
                   )}
                 </div>
               </div>
-              <div className="flex flex-col gap-2 mt-2">
-                {selectedOrder.payment_status_name !== "Verified" &&
-                  selectedOrder.payment_status_name !== "Refunded" && (
-                    <>
-                      <button
-                        onClick={() => openRemarksModal(selectedOrder)}
-                        className="px-6 py-2 bg-alofa-pink text-white font-semibold rounded-lg hover:bg-alofa-dark transition"
-                      >
-                        Verify Payment
-                      </button>
-                      <button
-                        onClick={openReasonModal}
-                        className="px-6 py-2 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400 transition"
-                      >
-                        Invalid Payment
-                      </button>
-                      <button
-                        onClick={() =>
-                          openConfirmModal(
-                            handleInsufficientPayment,
-                            "Are you sure you want to mark this payment as insufficient?",
-                          )
-                        }
-                        className="px-6 py-2 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400 transition"
-                      >
-                        Insufficient Payment
-                      </button>
-                    </>
-                  )}
-              </div>
             </div>
+            {isFullScreen && fullScreenImage && (
+              <div
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80"
+                onClick={closeFullScreen}
+              >
+                <img
+                  src={fullScreenImage}
+                  alt="Full-Sized Payment Proof"
+                  className="max-w-full max-h-full rounded-lg shadow-lg"
+                />
+              </div>
+            )}
+
+            <div className="flex flex-col gap-2 mt-2 px-6">
+              {selectedOrder.payment_status_name !== "Verified" &&
+                selectedOrder.payment_status_name !== "Refunded" && (
+                  <>
+                    <button
+                      onClick={() => openRemarksModal(selectedOrder)}
+                      className="px-6 py-2 bg-alofa-pink text-white font-semibold rounded-lg hover:bg-alofa-dark transition"
+                    >
+                      Verify Payment
+                    </button>
+                    <button
+                      onClick={openReasonModal}
+                      className="px-6 py-2 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400 transition"
+                    >
+                      Invalid Payment
+                    </button>
+                    <button
+                      onClick={() =>
+                        openConfirmModal(
+                          handleInsufficientPayment,
+                          "Are you sure you want to mark this payment as insufficient?",
+                        )
+                      }
+                      className="px-6 py-2 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400 transition"
+                    >
+                      Insufficient Payment
+                    </button>
+                  </>
+                )}
+            </div>
+
             <ConfirmModal
               isOpen={isConfirmModalOpen}
               onClose={() => setIsConfirmModalOpen(false)}

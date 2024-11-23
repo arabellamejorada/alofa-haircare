@@ -13,6 +13,7 @@ import {
 } from "react-icons/md";
 import { FiTrendingDown, FiTrendingUp } from "react-icons/fi";
 import { IoBagCheckOutline } from "react-icons/io5";
+import { FaListUl } from "react-icons/fa";
 
 export const DASHBOARD_SIDEBAR_LINKS = [
   {
@@ -103,6 +104,12 @@ export const INVENTORY_SIDEBAR_LINKS = [
 ];
 
 export const ORDERS_SIDEBAR_LINKS = [
+  {
+    key: "orders",
+    label: "Orders",
+    path: "/orders",
+    icon: <FaListUl />,
+  },
   {
     key: "order_verification",
     label: "Payment Verification",

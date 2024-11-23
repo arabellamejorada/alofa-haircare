@@ -24,6 +24,7 @@ import Faqs from "./components/Faqs";
 import OrderVerification from "./components/orders_tab/OrderVerification";
 import Shipping from "./components/shipping_tab/Shipping";
 import Refund from "./components/refunds_tab/Refunds";
+import Orders from "./components/all_orders_tab/Orders";
 
 import { AuthProvider, AuthContext } from "./components/AuthContext";
 
@@ -115,6 +116,10 @@ function App() {
             <Route
               path="refund"
               element={<ProtectedRoute element={<Refund />} />}
+            />
+            <Route
+              path="orders"
+              element={<ProtectedRoute element={<Orders />} />}
             />
           </Route>
           <Route path="login" element={<Login />} />

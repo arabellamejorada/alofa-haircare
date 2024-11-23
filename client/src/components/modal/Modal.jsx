@@ -39,7 +39,11 @@ const Modal = ({ isVisible, onClose, children, backdropClassName, size }) => {
     >
       <div
         className={`${
-          size === "large" ? "w-[600px]" : "w-fit"
+          size === "xlarge"
+            ? "w-[800px]"
+            : size === "large"
+            ? "w-[600px]"
+            : "w-fit"
         } flex flex-col gap-1`}
         onClick={(e) => e.stopPropagation()}
       >
@@ -61,7 +65,7 @@ Modal.propTypes = {
   onClose: PropTypes.func.isRequired,
   children: PropTypes.node.isRequired,
   backdropClassName: PropTypes.string,
-  size: PropTypes.oneOf(["small", "large"]), // New prop for size
+  size: PropTypes.oneOf(["small", "large", "xlarge"]), // New prop for size
 };
 
 export default Modal;
