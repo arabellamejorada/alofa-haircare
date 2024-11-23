@@ -89,7 +89,7 @@ const TransactionCard = ({
         <div>
           <div className="text-gray-500 font-normal text-xs mb-0">
             {activeTab === "Completed" ? (
-              <>Order completed: {order.date_delivered}</>
+              <>Order Completed: {order.date_delivered}</>
             ) : (
               ""
             )}
