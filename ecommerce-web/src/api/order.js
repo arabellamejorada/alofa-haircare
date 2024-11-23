@@ -2,7 +2,7 @@ import axios from './axios';
 
 export const createOrder = async (formData) => {
   try {
-    console.log("Creating order...", formData); 
+    // console.log("Creating order...", formData); 
     const response = await axios.post("/order/checkout", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
@@ -39,7 +39,7 @@ export const getOrderByProfileId = async (profile_id) => {
 
 export const updateOrderStatus = async (orderId, status) => {
   try {
-    console.log("Updating order status...", orderId, status);
+    // console.log("Updating order status...", orderId, status);
     const response = await axios.put(`/order/${orderId}/order-status`, {
       order_status_id: status,
     });
@@ -55,7 +55,7 @@ export const updateOrderStatus = async (orderId, status) => {
 export const createRefundRequest = async (formData) => {
   try {
     for (let [key, value] of formData.entries()) {
-  console.log(`${key}: ${value}`);
+  // console.log(`${key}: ${value}`);
 }
 
     const response = await axios.post("/refund", formData, {

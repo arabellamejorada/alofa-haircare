@@ -126,7 +126,7 @@ const CartProvider = ({ children }) => {
 
   useEffect(() => {
     localStorage.setItem("checkoutCartItems", JSON.stringify(cartItems));
-    console.log("Updated Cart Items:", cartItems);
+    // console.log("Updated Cart Items:", cartItems);
   }, [cartItems]);
 
   const addToCart = async (product) => {
@@ -219,7 +219,7 @@ const CartProvider = ({ children }) => {
       return;
     }
 
-    console.log(cartId);
+    // console.log(cartId);
     try {
       const updatedItem = await updateCartItem(
         cartId,
@@ -238,7 +238,7 @@ const CartProvider = ({ children }) => {
             : item,
         );
         calculateSubtotal(updatedCartItems);
-        console.log("updated", updatedCartItems);
+        // console.log("updated", updatedCartItems);
         return updatedCartItems;
       });
     } catch (error) {

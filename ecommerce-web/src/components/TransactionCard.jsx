@@ -18,40 +18,43 @@ const TransactionCard = ({
   const [isUpdating, setIsUpdating] = useState(false);
   const totalItems =
     activeTab !== "For Refund"
-      ? order.order_items.reduce((acc, item) => acc + item.quantity, 0)
-      : refund.refund_items.reduce((acc, item) => acc + item.quantity, 0);
+      ? (order?.order_items || []).reduce((acc, item) => acc + item.quantity, 0)
+      : (refund?.refund_items || []).reduce(
+          (acc, item) => acc + item.quantity,
+          0,
+        );
 
-  if (activeTab === "For Refund") {
-    order = refund;
-  }
+  // Use defaults if data is missing
+  const items =
+    activeTab === "For Refund"
+      ? refund?.refund_items || []
+      : order?.order_items || [];
 
   useEffect(() => {
-    const checkEligibility = async () => {
-      if (!order.date_delivered) {
-        setIsRefundEligible(false);
-        return;
-      }
-      const currentDate = new Date();
-      const deliveredDate = new Date(order.date_delivered);
-      const differenceInTime = currentDate - deliveredDate;
-      const differenceInDays = differenceInTime / (1000 * 60 * 60 * 24);
+    if (activeTab === "Completed" && order?.date_delivered) {
+      const checkEligibility = async () => {
+        const currentDate = new Date();
+        const deliveredDate = new Date(order.date_delivered);
+        const differenceInTime = currentDate - deliveredDate;
+        const differenceInDays = differenceInTime / (1000 * 60 * 60 * 24);
 
-      if (differenceInDays > 7) {
-        setIsRefundEligible(false);
-        return;
-      }
+        if (differenceInDays > 7) {
+          setIsRefundEligible(false);
+          return;
+        }
 
-      try {
-        const refundExists = await checkIfOrderIdExists(order.order_id);
-        setIsRefundEligible(!refundExists);
-      } catch (error) {
-        console.error("Error checking refund eligibility:", error);
-        setIsRefundEligible(false);
-      }
-    };
+        try {
+          const refundExists = await checkIfOrderIdExists(order.order_id);
+          setIsRefundEligible(!refundExists);
+        } catch (error) {
+          console.error("Error checking refund eligibility:", error);
+          setIsRefundEligible(false);
+        }
+      };
 
-    checkEligibility();
-  }, [order.date_delivered, order.order_id]);
+      checkEligibility();
+    }
+  }, [activeTab, order?.date_delivered, order?.order_id]);
 
   const toggleExpanded = () => {
     setIsExpanded(!isExpanded);
@@ -89,93 +92,89 @@ const TransactionCard = ({
         <div>
           <div className="text-gray-500 font-normal text-xs mb-0">
             {activeTab === "Completed" ? (
-              <>Order Completed: {order.date_delivered}</>
+              <>Order Completed: {order?.date_delivered || "N/A"}</>
             ) : (
               ""
             )}
           </div>
           <div className="text-gray-500 font-normal text-xs mb-0">
-            {activeTab === "For Refund" ? "Refund Placed: " : "Order Placed: "}
             {activeTab === "For Refund"
-              ? refund.requested_at
-              : order.date_ordered}
+              ? "Refund Requested: "
+              : "Order Placed: "}
+            {activeTab === "For Refund"
+              ? refund?.requested_at || "N/A"
+              : order?.date_ordered || "N/A"}
+          </div>
+          <div className="text-gray-500 font-normal text-xs mb-0">
+            {activeTab === "For Refund" &&
+              refund?.refund_status_name === "Completed" &&
+              ("Refund Completed: " + refund?.updated_at || "N/A")}
           </div>
         </div>
         <div
           className={`font-normal ${
             activeTab === "For Refund"
-              ? refund.refund_status_name === "Completed"
+              ? refund?.refund_status_name === "Completed"
                 ? "text-green-600"
-                : refund.refund_status_name === "Pending"
+                : refund?.refund_status_name === "Pending"
                   ? "italic text-orange-400"
-                  : refund.refund_status_name === "Cancelled"
+                  : refund?.refund_status_name === "Cancelled"
                     ? "text-red-600"
                     : "italic text-gray-600"
-              : order.order_status_name === "Completed"
+              : order?.order_status_name === "Completed"
                 ? "text-green-600"
-                : order.order_status_name === "Pending"
+                : order?.order_status_name === "Pending"
                   ? "italic text-orange-400"
-                  : order.order_status_name === "Cancelled"
+                  : order?.order_status_name === "Cancelled"
                     ? "text-red-600"
                     : "italic text-gray-600"
           }`}
         >
           {activeTab === "For Refund"
-            ? refund.refund_status_name
-            : order.order_status_name}
+            ? refund?.refund_status_name || "N/A"
+            : order?.order_status_name || "N/A"}
         </div>
       </div>
 
       {/* Order Items */}
-      {(activeTab === "For Refund" ? refund.refund_items : order.order_items)
-        .slice(
-          0,
-          isExpanded
-            ? activeTab === "For Refund"
-              ? refund.refund_items.length
-              : order.order_items.length
-            : 2,
-        )
-        .map((product) => {
-          const imageName = product.image
-            ? product.image.split("/").pop()
-            : null;
-          const imageUrl = imageName
-            ? `http://localhost:3001/uploads/${imageName}`
-            : `https://via.placeholder.com/150?text=No+Image+Available`;
+      {items.slice(0, isExpanded ? items.length : 2).map((product) => {
+        const imageName = product.image ? product.image.split("/").pop() : null;
+        const imageUrl = imageName
+          ? `http://localhost:3001/uploads/${imageName}`
+          : `https://via.placeholder.com/150?text=No+Image+Available`;
 
-          return (
-            <div key={product.variation_id} className="flex gap-4 mb-7">
-              <div className="flex w-full">
-                <img
-                  src={imageUrl}
-                  alt={product.product_name || "Product Image"}
-                  className="w-16 h-16 object-cover rounded"
-                />
-                <div className="ml-4 flex-grow">
-                  <div className="font-bold text-gray-800">
-                    {product.product_name || "Product Name"}
-                  </div>
-                  <div className="text-gray-600">
-                    x{product.quantity}
-                    {product.value && product.value !== "N/A"
-                      ? ` ${product.value}`
-                      : ""}
-                  </div>
+        return (
+          <div key={product.variation_id} className="flex gap-4 mb-7">
+            <div className="flex w-full">
+              <img
+                src={imageUrl}
+                alt={product.product_name || "Product Image"}
+                className="w-16 h-16 object-cover rounded"
+              />
+              <div className="ml-4 flex-grow">
+                <div className="font-bold text-gray-800">
+                  {product.product_name || "Product Name"}
                 </div>
-                <div className="text-right">
-                  <div className="text-gray-800">
-                    ₱
-                    {product.item_subtotal.toLocaleString("en-US", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </div>
+                <div className="text-gray-600">
+                  x{product.quantity}
+                  {product.value && product.value !== "N/A"
+                    ? ` ${product.value}`
+                    : ""}
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-gray-800">
+                  ₱
+                  {product.item_subtotal?.toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  }) || "0.00"}
                 </div>
               </div>
             </div>
-          );
-        })}
+          </div>
+        );
+      })}
 
       {/* View More Button */}
       {(activeTab === "For Refund" ? refund.refund_items : order.order_items)
@@ -289,7 +288,7 @@ TransactionCard.propTypes = {
       }),
     ).isRequired,
     total_amount: PropTypes.number.isRequired,
-  }).isRequired,
+  }),
   setLoading: PropTypes.func.isRequired,
   setTransactions: PropTypes.func.isRequired,
   refund: PropTypes.shape({
@@ -309,7 +308,7 @@ TransactionCard.propTypes = {
     requested_at: PropTypes.string.isRequired,
     refund_status_name: PropTypes.string.isRequired,
     total_refund_amount: PropTypes.number.isRequired,
-  }).isRequired,
+  }),
 };
 
 export default TransactionCard;

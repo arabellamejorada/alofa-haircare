@@ -205,6 +205,9 @@ const RefundTab = ({ statusFilter }) => {
       render: (status) => <StatusBadge status={status} />,
     },
     { key: "requested_at", header: "Requested At" },
+    ...(statusFilter === "Processed"
+      ? [{ key: "updated_at", header: "Approved At" }]
+      : []),
     { key: "action", header: "Action" },
   ];
 
@@ -511,6 +514,16 @@ const RefundTab = ({ statusFilter }) => {
                           {selectedRefund.requested_at}
                         </dd>
                       </div>
+                      {statusFilter === "Processed" && (
+                        <div className="py-3">
+                          <dt className="text-sm font-medium text-gray-500">
+                            Approved At
+                          </dt>
+                          <dd className="mt-1 text-base text-gray-900">
+                            {selectedRefund.updated_at}
+                          </dd>
+                        </div>
+                      )}
                       <div className="py-3">
                         <dt className="text-sm font-medium text-gray-500">
                           Reason
