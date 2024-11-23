@@ -4,7 +4,7 @@ import axios from './axios';
 export const getAllProductVariations = async () => {
     try {
         const response = await axios.get('/product-variations');
-        console.log('Product variations fetched: ', response.data);
+        // console.log('Product variations fetched: ', response.data);
         return response.data;
     } catch (error) {
         console.error('Error fetching product variations: ', error);
@@ -29,7 +29,7 @@ export const getProductVariationById = async (id) => {
 export const getAllProducts = async () => {
     try {
         const response = await axios.get('/products');
-        console.log('Products fetched: ', response.data);
+        // console.log('Products fetched: ', response.data);
         return response.data;
     } catch (error) {
         console.error('Error fetching products: ', error);
@@ -41,7 +41,7 @@ export const getAllProducts = async () => {
 export const getProductById = async (id) => {
     try {
         const response = await axios.get(`/products/${id}`);
-        console.log('Product fetched: ', response.data);
+        // console.log('Product fetched: ', response.data);
         return response.data;
     } catch (error) {
         console.error('Error fetching product: ', error);
@@ -53,7 +53,6 @@ export const getProductById = async (id) => {
 export const getAllCategories = async () => {
     try {
         const response = await axios.get('/product-category');
-        console.log('Categories fetched: ', response.data);
         return response.data;
     } catch (error) {
         console.error('Error fetching categories: ', error);

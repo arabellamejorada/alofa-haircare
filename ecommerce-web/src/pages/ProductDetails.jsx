@@ -14,7 +14,7 @@ const ProductDetails = () => {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   useEffect(() => {
-    console.log("Product ID:", productId);
+    // console.log("Product ID:", productId);
     const fetchProductAndVariation = async () => {
       try {
         const variationData = await getProductVariationById(productId);
@@ -27,12 +27,12 @@ const ProductDetails = () => {
   }, [productId]);
 
   useEffect(() => {
-    console.log("Product Variation Updated:", variation);
+    // console.log("Product Variation Updated:", variation);
   }, [variation]);
 
   const handleAddToCart = () => {
-    console.log("Adding to cart:", variation);
-    console.log(cartItems);
+    // console.log("Adding to cart:", variation);
+    // console.log(cartItems);
 
     if (!variation?.variation_id) {
       console.error("Variation ID is missing.");
@@ -89,7 +89,7 @@ const ProductDetails = () => {
   };
 
   const handleQuantityChange = (e) => {
-    console.log("Quantity Change:", e.target.value);
+    // console.log("Quantity Change:", e.target.value);
     const value = parseInt(e.target.value, 10);
 
     // Find the existing cart item by variation ID

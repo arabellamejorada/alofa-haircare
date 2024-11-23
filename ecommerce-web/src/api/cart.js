@@ -28,7 +28,7 @@ export const addCartItem = async (cart_id, variation_id, quantity) => {
 // UPDATE ITEM IN CART
 export const updateCartItem = async (cart_id, variation_id, quantity) => {
     try {
-      console.log("UPDATING: ", cart_id, variation_id, quantity);
+      // console.log("UPDATING: ", cart_id, variation_id, quantity);
         const response = await axios.put(`/cart/${cart_id}/update`, { variation_id, quantity });
         return response.data;
     } catch (error) {
@@ -41,7 +41,7 @@ export const updateCartItem = async (cart_id, variation_id, quantity) => {
 export const deleteCartItem = async (cart_id, variation_id) => {
     try {
         const response = await axios.delete(`/cart/${cart_id}/item/${variation_id}`);
-        console.log('Item deleted from cart: ', response.data);
+        // console.log('Item deleted from cart: ', response.data);
         return response.data;
     } catch (error) {
         console.error('Error deleting item from cart: ', error.message);
@@ -73,7 +73,7 @@ export const getCartById = async (cart_id) => {
       items: updatedItems,
     };
 
-    console.log("GetCartById Cart Fetched: ", updatedCartData);
+    // console.log("GetCartById Cart Fetched: ", updatedCartData);
     return updatedCartData;
   } catch (error) {
     console.error("Error retrieving cart: ", error.message);
@@ -106,7 +106,7 @@ export const getCartByCustomerId = async (profile_id) => {
       items: updatedItems,
     };
 
-    console.log("Updated Cart Data by customerid: ", updatedCartData);
+    // console.log("Updated Cart Data by customerid: ", updatedCartData);
     return updatedCartData;
   } catch (error) {
     console.error("Error retrieving cart: ", error.message);
@@ -118,7 +118,7 @@ export const getCartByCustomerId = async (profile_id) => {
 export const mergeCarts = async (guest_cart_id, profile_id) => {
     try {
         const response = await axios.post(`/cart/merge`, { guest_cart_id, profile_id });
-        console.log('Carts merged: ', response.data);
+        // console.log('Carts merged: ', response.data);
         return response.data;
     } catch (error) {
         console.error('Error merging carts: ', error.message);
@@ -128,7 +128,7 @@ export const mergeCarts = async (guest_cart_id, profile_id) => {
 
 export const applyVoucher = async (code, subtotal, customer_id, cartItems) => {
     try {
-        console.log("Voucher code received: ", code, subtotal, customer_id, cartItems);
+        // console.log("Voucher code received: ", code, subtotal, customer_id, cartItems);
         const response = await axios.post('/voucher/apply', { code, subtotal, customer_id, cartItems });
         return response.data;
     } catch (error) {

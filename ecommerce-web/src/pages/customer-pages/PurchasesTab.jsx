@@ -45,7 +45,8 @@ const PurchasesTab = () => {
         const sortedRefunds = refunds.sort(
           (a, b) => new Date(b.requested_at) - new Date(a.requested_at),
         );
-        setTransactions(sortedRefunds);
+        setRefundRequests(sortedRefunds);
+        // console.log("Refunds:", refunds);
       } else {
         // Fetch orders for other tabs
         const orders = await getOrderByProfileId(user.id);
@@ -53,6 +54,7 @@ const PurchasesTab = () => {
           (a, b) => new Date(b.date_ordered) - new Date(a.date_ordered),
         );
         setTransactions(sortedOrders);
+        // console.log("Orders:", orders);
       }
     } catch (error) {
       console.error("Error fetching transactions:", error);
@@ -79,24 +81,41 @@ const PurchasesTab = () => {
     const filtered = transactions.filter((transaction) => {
       const orderIdString = String(transaction.order_id || "");
 
+      // Ensure order_items and refund_items exist
+      const orderItems = transaction.order_items || [];
+      const refundItems = transaction.refund_items || [];
+
+      // Check if search query matches order ID, product name in orders, or product name in refunds
       const matchesOrderId = orderIdString
         .toLowerCase()
         .includes(searchQuery.toLowerCase());
 
-      const matchesProductName = transaction.order_items.some((product) =>
-        product.product_name.toLowerCase().includes(searchQuery.toLowerCase()),
+      const matchesProductName = orderItems.some((product) =>
+        product.product_name?.toLowerCase().includes(searchQuery.toLowerCase()),
+      );
+
+      const matchesRefundItems = refundItems.some((product) =>
+        product.product_name?.toLowerCase().includes(searchQuery.toLowerCase()),
       );
 
       const requiredStatus = statusMap[activeTab];
 
-      return (
-        (activeTab === "All" ||
-          transaction.order_status_name === requiredStatus) &&
-        (searchQuery === "" || matchesOrderId || matchesProductName)
-      );
+      // Ensure the transaction matches the active tab and search query
+      const matchesTab =
+        activeTab === "All" ||
+        transaction.order_status_name === requiredStatus ||
+        transaction.refund_status_name === requiredStatus;
+
+      const matchesSearch =
+        searchQuery === "" ||
+        matchesOrderId ||
+        matchesProductName ||
+        matchesRefundItems;
+
+      return matchesTab && matchesSearch;
     });
 
-    // If the active tab is "Completed", sort by date_delivered
+    // Sort "Completed" tab by `date_delivered`
     if (activeTab === "Completed") {
       filtered.sort(
         (a, b) => new Date(b.date_delivered) - new Date(a.date_delivered),
@@ -199,7 +218,7 @@ const PurchasesTab = () => {
             refundRequests.length > 0 ? (
               refundRequests.map((refund) => (
                 <TransactionCard
-                  key={refund.refund_id}
+                  key={refund.refund_request_id}
                   activeTab={activeTab}
                   refund={refund}
                   loading={loading}

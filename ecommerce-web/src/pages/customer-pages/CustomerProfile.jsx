@@ -27,7 +27,7 @@ const CustomerProfile = () => {
     const fetchProfileData = async () => {
       try {
         const data = await getCustomerByProfileId(user.id);
-        console.log("Customer profile data:", data);
+        // console.log("Customer profile data:", data);
         setProfileData(data);
       } catch (error) {
         console.error("Failed to fetch customer profile", error);
