@@ -306,11 +306,6 @@ const VariationsTab = () => {
   return (
     <Fragment>
       <div className="relative">
-        {loading && (
-          <div className="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center z-50">
-            <ClipLoader size={50} color="#E53E3E" loading={loading} />
-          </div>
-        )}
         <div className="flex flex-col gap-2">
           <div className="flex flex-row items-center justify-between"></div>
           {/* Filters Section */}
@@ -326,14 +321,21 @@ const VariationsTab = () => {
             handleSearchChange={handleSearchChange}
           />
 
-          <ProductVariationTable
-            filteredVariations={filteredVariations}
-            onEdit={handleEdit}
-            onArchive={handleArchive}
-            sortField={sortField}
-            sortOrder={sortOrder}
-            handleColumnSort={handleColumnSort}
-          />
+          {/* Display loading spinner or table */}
+          {loading ? (
+            <div className="flex items-center justify-center h-64">
+              <ClipLoader size={50} color="#E53E3E" />
+            </div>
+          ) : (
+            <ProductVariationTable
+              filteredVariations={filteredVariations}
+              onEdit={handleEdit}
+              onArchive={handleArchive}
+              sortField={sortField}
+              sortOrder={sortOrder}
+              handleColumnSort={handleColumnSort}
+            />
+          )}
 
           {/* Edit Modal */}
           <EditProductVariationModal

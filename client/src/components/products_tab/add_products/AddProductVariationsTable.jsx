@@ -167,7 +167,7 @@ const AddProductVariationsTable = ({
       <p className="text-sm text-gray-500 mt-2">
         *SKU is auto-generated but you can also provide your own
       </p>
-      <div className="w-full bg-white shadow-md rounded-lg overflow-hidden mt-4">
+      <div className="w-full bg-white shadow-md rounded-lg overflow-hidden mt-2">
         <table className="w-full leading-normal">
           <thead className="w-full">
             <tr>

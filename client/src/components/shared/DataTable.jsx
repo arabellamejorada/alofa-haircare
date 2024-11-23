@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { IoMdArchive } from "react-icons/io";
 import { MdEditDocument, MdDelete } from "react-icons/md";
+import { ClipLoader } from "react-spinners";
 
 const formatColumnName = (columnName) => {
   if (columnName.toLowerCase() === "id") {
@@ -20,10 +21,38 @@ const DataTable = ({
   isInventory,
   isProductCategory,
   isEmployee,
+  loading, // New prop to indicate loading state
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 10;
 
+  const totalPages = Math.ceil((data || []).length / rowsPerPage);
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentData = (data || []).slice(indexOfFirstRow, indexOfLastRow);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage((prevPage) => prevPage + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage((prevPage) => prevPage - 1);
+    }
+  };
+
+  // Render loading spinner if loading is true
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <ClipLoader size={50} color="#E53E3E" loading={true} />
+      </div>
+    );
+  }
+
+  // Render "No Data Available" if no data and not loading
   if (!data || data.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -39,25 +68,9 @@ const DataTable = ({
     );
   }
 
-  const totalPages = Math.ceil(data.length / rowsPerPage);
-  const indexOfLastRow = currentPage * rowsPerPage;
-  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-  const currentData = data.slice(indexOfFirstRow, indexOfLastRow);
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage((prevPage) => prevPage + 1);
-    }
-  };
-
-  const handlePreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage((prevPage) => prevPage - 1);
-    }
-  };
-
+  // Render the table and data
   return (
-    <div className="overflow-x-auto pt-4">
+    <div className="overflow-x-auto pt-4 relative">
       <div className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
         <table className="min-w-full leading-normal">
           <thead>
