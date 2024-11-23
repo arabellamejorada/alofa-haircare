@@ -22,24 +22,19 @@ const Dashboard = () => {
       try {
         setLoading(true);
 
-        // Fetch orders data from API
         const ordersResponse = await getAllOrdersWithItems();
         const orders = ordersResponse.orders;
 
-        // Get today's date at midnight
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        // Filter orders placed today
         const todaysOrders = orders.filter((order) => {
-          const orderDate = new Date(order.date_ordered); // Use `date_ordered` from API
+          const orderDate = new Date(order.date_ordered);
           return orderDate >= today;
         });
 
-        // Filter unique customers who placed orders today
         const todaysCustomers = new Set(todaysOrders.map((o) => o.customer_id));
 
-        // Calculate cumulative stats
         const totalSales = orders.reduce(
           (sum, order) => sum + parseFloat(order.total_amount || 0),
           0,
@@ -47,7 +42,6 @@ const Dashboard = () => {
         const totalOrders = orders.length;
         const totalCustomers = new Set(orders.map((o) => o.customer_id)).size;
 
-        // Calculate daily stats
         const dailySales = todaysOrders.reduce(
           (sum, order) => sum + parseFloat(order.total_amount || 0),
           0,
@@ -73,7 +67,6 @@ const Dashboard = () => {
     fetchDashboardStats();
   }, []);
 
-  // Format currency with commas
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -105,7 +98,7 @@ const Dashboard = () => {
               label="Total Orders (This Month)"
               value={stats.totalOrders}
               icon={<FaShoppingBag size={24} />}
-              change={`+${stats.dailyOrders}`} // Daily Orders
+              change={`+${stats.dailyOrders}`}
             />
             {/* Total Customers Card */}
             <DashboardCard

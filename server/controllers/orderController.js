@@ -794,8 +794,19 @@ const updateOrderRemarks = async (req, res) => {
   }
 };
 
+const GetAllOrderStatuses = async (req, res) => {
+  try {
+    const result = await pool.query(`SELECT * FROM order_status`);
+    res.status(200).json(result.rows);
+  } catch (error) {
+    console.error("Error fetching order statuses:", error);
+    res.status(500).json({ error: "Failed to fetch order statuses" });
+  }
+}
+
 module.exports = {
   getReservedQuantityByVariationId,
+  GetAllOrderStatuses,
   createOrder,
   getOrderByProfileId,
   getAllOrdersWithOrderItems,
