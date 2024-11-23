@@ -19,7 +19,7 @@ export const createOrder = async (formData) => {
 export const getAllOrdersWithItems = async () => {
   try {
     const response = await axios.get("/order/all");
-    console.log("Orders fetched: ", response.data);
+    // console.log("Orders fetched: ", response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching orders: ", error);
@@ -173,6 +173,17 @@ export const getAllRefundRequests = async () => {
     throw error;
   }
 };
+
+export const getAllOrderStatuses = async () => {
+  try {
+    const response = await axios.get("/order-status");
+    console.log("Order statuses fetched: ", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching order statuses: ", error);
+    throw error;
+  }
+}
 
 export const updateRefundStatus = async (refundRequestId, statusId) => {
   try {

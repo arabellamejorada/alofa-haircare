@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Fragment } from "react";
-import { getAllOrdersWithItems } from "../../api/orders";
+import { getAllOrdersWithItems, getAllOrderStatuses } from "../../api/orders";
 import { ClipLoader } from "react-spinners";
 import { FaArrowUp, FaArrowDown, FaEye } from "react-icons/fa";
 import Modal from "../../components/modal/Modal";
@@ -8,6 +8,7 @@ import RefreshIcon from "../../components/shared/RefreshButton";
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
+  const [orderStatuses, setOrderStatuses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -19,6 +20,7 @@ const Orders = () => {
   const [search, setSearch] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState(""); // New filter state for status
 
   // Sorting states
   const [sortField, setSortField] = useState("");
@@ -27,19 +29,6 @@ const Orders = () => {
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
-
-  const [isFullScreen, setIsFullScreen] = useState(false);
-  const [fullScreenImage, setFullScreenImage] = useState(null);
-
-  const handleImageClick = (imageSrc) => {
-    setFullScreenImage(imageSrc);
-    setIsFullScreen(true);
-  };
-
-  const closeFullScreen = () => {
-    setIsFullScreen(false);
-    setFullScreenImage(null);
-  };
 
   const fetchOrders = async () => {
     try {
@@ -56,6 +45,9 @@ const Orders = () => {
       } else {
         console.error("No orders data found.");
       }
+
+      const orderStatusesResponse = await getAllOrderStatuses();
+      setOrderStatuses(orderStatusesResponse || []);
     } catch (err) {
       setError("Failed to fetch orders");
       console.error("Error fetching orders:", err);
@@ -103,6 +95,10 @@ const Orders = () => {
     const matchesSearch =
       orderId.includes(searchLower) || customerName.includes(searchLower);
 
+    // Filter by status
+    const matchesStatus =
+      selectedStatus === "" || order.order_status_name === selectedStatus;
+
     // Filter by date
     let withinDateRange = true;
 
@@ -114,23 +110,26 @@ const Orders = () => {
         const orderDate = new Date(orderDateStr);
         const orderDateTime = orderDate.getTime();
 
-        let startDateTime = startDate
+        const startDateTime = startDate
           ? new Date(startDate).setHours(0, 0, 0, 0)
           : null;
-        let endDateTime = endDate
+        const endDateTime = endDate
           ? new Date(endDate).setHours(23, 59, 59, 999)
           : null;
 
+        // Check only startDate if endDate is not selected
         if (startDateTime && orderDateTime < startDateTime) {
           withinDateRange = false;
         }
+
+        // Check only endDate if startDate is not selected
         if (endDateTime && orderDateTime > endDateTime) {
           withinDateRange = false;
         }
       }
     }
 
-    return matchesSearch && withinDateRange;
+    return matchesSearch && matchesStatus && withinDateRange;
   });
 
   const totalPages = Math.ceil(filteredOrders.length / rowsPerPage);
@@ -160,6 +159,12 @@ const Orders = () => {
           maximumFractionDigits: 2,
         })}`,
     },
+    {
+      key: "order_status_name",
+      header: "Order Status",
+      align: "center",
+      render: (status) => <PaymentStatusBadge status={status} />,
+    },
     { key: "date_ordered", header: "Date Ordered" },
     { key: "view", header: "View" },
   ];
@@ -187,9 +192,7 @@ const Orders = () => {
   return (
     <Fragment>
       <div className="flex flex-col gap-2">
-        <strong className="text-3xl font-bold text-gray-500">
-          Verify Order Payments
-        </strong>
+        <strong className="text-3xl font-bold text-gray-500">All Orders</strong>
         <div className="relative mt-2">
           {/* Filters Section */}
           <div className="flex justify-between">
@@ -209,6 +212,19 @@ const Orders = () => {
                   Clear
                 </button>
               )}
+              {/* Dropdown for order status filter */}
+              <select
+                className="h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+              >
+                <option value="">All Statuses</option>
+                {orderStatuses.map((status) => (
+                  <option key={status.status_id} value={status.status_name}>
+                    {status.status_name}
+                  </option>
+                ))}
+              </select>
               {/* Date Filters */}
               <div className="flex items-center">
                 <label className="mr-2 text-sm font-medium text-gray-700">

@@ -46,4 +46,5 @@ router.put(
   refundController.updateRefundStatus,
 );
 
+router.get("/order-status", orderController.GetAllOrderStatuses);
 module.exports = router;
