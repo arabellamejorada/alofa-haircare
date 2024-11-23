@@ -86,7 +86,6 @@ const Orders = () => {
   };
 
   // Calculate filtered and paginated data
-  // Calculate filtered and paginated data
   const filteredOrders = orders.filter((order) => {
     const orderId = order.order_id.toString();
     const customerName = order.customer_name?.toLowerCase() || "";
@@ -95,6 +94,10 @@ const Orders = () => {
     // Filter by search terms
     const matchesSearch =
       orderId.includes(searchLower) || customerName.includes(searchLower);
+
+    // Filter by status
+    const matchesStatus =
+      selectedStatus === "" || order.order_status_name === selectedStatus;
 
     // Filter by date
     let withinDateRange = true;
@@ -126,7 +129,7 @@ const Orders = () => {
       }
     }
 
-    return matchesSearch && withinDateRange;
+    return matchesSearch && matchesStatus && withinDateRange;
   });
 
   const totalPages = Math.ceil(filteredOrders.length / rowsPerPage);
