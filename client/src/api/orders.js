@@ -196,3 +196,15 @@ export const updateRefundStatus = async (refundRequestId, statusId) => {
     throw error;
   }
 };
+
+export const getSalesMetrics = async (startDate, endDate) => {
+  try {
+    const response = await axios.get("/sales-metrics", {
+      params: { start_date: startDate, end_date: endDate },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching sales metrics:", error);
+    throw error;
+  }
+};
