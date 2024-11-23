@@ -42,6 +42,10 @@ const RefundModal = ({ isOpen, closeModal, orderItems, selectedOrder }) => {
     setProofs((prev) => [...prev, ...newFiles]);
   };
 
+  const handleRemoveFile = (index) => {
+    setProofs((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async () => {
     if (reason.length < 20) {
       toast.error("Reason must be at least 20 characters long.");
@@ -63,7 +67,7 @@ const RefundModal = ({ isOpen, closeModal, orderItems, selectedOrder }) => {
     }
 
     const selectedItems = Object.entries(checkedItems)
-      .filter(([_, value]) => value) // Check only if value is truthy
+      .filter(([value]) => value) // Check only if value is truthy
       .map(([orderItemId, { quantity }]) => {
         const item = orderItems.find(
           (i) => i.order_item_id === parseInt(orderItemId, 10),
@@ -283,7 +287,7 @@ const RefundModal = ({ isOpen, closeModal, orderItems, selectedOrder }) => {
                     <label className="text-gray-700 block font-semibold mb-1">
                       Upload Proof
                     </label>
-                    <div className="w-full h-24 border-dashed border-2 flex flex-col items-center justify-center rounded-md cursor-pointer hover:bg-gray-50 p-2">
+                    <div className="w-full h-32 border-dashed border-2 flex flex-col items-center justify-center rounded-md cursor-pointer hover:bg-gray-50 p-2 overflow-x-auto">
                       <input
                         type="file"
                         multiple // Allow multiple uploads
@@ -297,14 +301,21 @@ const RefundModal = ({ isOpen, closeModal, orderItems, selectedOrder }) => {
                           + Add Up to 5 Photos
                         </span>
                       </label>
-                      <div className="flex flex-wrap gap-4  overflow-y-auto max-h-40 w-full p-2">
+                      <div className="flex flex-wrap gap-2  overflow-y-auto max-h-40 w-full p-2">
                         {proofs.map((file, index) => (
-                          <img
-                            key={index}
-                            src={URL.createObjectURL(file)}
-                            alt={`Uploaded Proof ${index + 1}`}
-                            className="w-24 h-24 object-cover rounded-md border border-gray-300"
-                          />
+                          <div key={index} className="relative">
+                            <img
+                              src={URL.createObjectURL(file)}
+                              alt={`Uploaded Proof ${index + 1}`}
+                              className="w-16 h-16 object-cover rounded-md border border-gray-300"
+                            />
+                            <button
+                              onClick={() => handleRemoveFile(index)}
+                              className="absolute -top-2 -right-2 w-5 h-5 bg-gray-300 hover:bg-gray-400 p-1 text-black rounded-full flex items-center justify-center"
+                            >
+                              &times;
+                            </button>
+                          </div>
                         ))}
                       </div>
                       {proofs.length >= 5 && (
