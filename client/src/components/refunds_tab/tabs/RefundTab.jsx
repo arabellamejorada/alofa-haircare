@@ -68,11 +68,16 @@ const RefundTab = ({ statusFilter }) => {
     try {
       setLoading(true);
       const data = await getAllRefundRequests();
-      setRefunds(data);
-      console.log(data);
+      if (Array.isArray(data)) {
+        setRefunds(data);
+      } else {
+        console.error("Invalid refund data structure:", data);
+        setRefunds([]); // Fallback to an empty array
+      }
     } catch (err) {
       setError("Failed to fetch refund requests");
       console.error("Error fetching refunds:", err);
+      setRefunds([]); // Set an empty array on error
     } finally {
       setLoading(false);
     }
@@ -123,7 +128,7 @@ const RefundTab = ({ statusFilter }) => {
 
   const normalizedStatusFilter = normalizeStatusFilter(statusFilter);
 
-  const filteredRefunds = refunds.filter((refund) => {
+  const filteredRefunds = (refunds || []).filter((refund) => {
     const refundId = refund.refund_request_id.toString();
     const customerName = refund.customer_name?.toLowerCase() || "";
     const searchLower = search.toLowerCase();
