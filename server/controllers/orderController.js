@@ -847,7 +847,7 @@ const getSalesMetrics = async (req, res) => {
       [start_date, end_date]
     );
 
-    console.log("Query Result:", result.rows[0]); // Debugging
+    // console.log("Query Result:", result.rows[0]); // Debugging
     res.json(result.rows[0]); // Return the computed metrics
   } catch (error) {
     console.error("Error fetching sales metrics:", error);

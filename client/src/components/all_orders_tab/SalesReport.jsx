@@ -21,9 +21,6 @@ const SalesReport = ({ orders }) => {
       const defaultEndDate =
         sortedOrders[sortedOrders.length - 1]?.date_ordered;
 
-      console.log("Default Start Date:", defaultStartDate);
-      console.log("Default End Date:", defaultEndDate);
-
       setStartDate(defaultStartDate);
       setEndDate(defaultEndDate);
     }
@@ -41,21 +38,16 @@ const SalesReport = ({ orders }) => {
         ); // Output in YYYY-MM-DD
         const formattedEndDate = new Date(endDate).toLocaleDateString("en-CA"); // Output in YYYY-MM-DD
 
-        console.log("Fetching metrics for:", {
-          startDate: formattedStartDate,
-          endDate: formattedEndDate,
-        });
-
         const metrics = await getSalesMetrics(
           formattedStartDate,
           formattedEndDate,
         );
-        console.log("Fetched Metrics:", metrics);
+        // console.log("Fetched Metrics:", metrics);
 
-        setTotalAmount(metrics.total_sales || 0);
-        setTotalLoss(metrics.total_loss || 0);
+        setTotalAmount(Number(metrics.total_sales || 0));
+        setTotalLoss(Number(metrics.total_loss || 0));
         setTotalSalesWithRefundDeduction(
-          metrics.total_sales_with_refund_deduction || 0,
+          Number(metrics.total_sales_with_refund_deduction || 0),
         );
       } catch (error) {
         console.error("Error fetching sales metrics:", error);
@@ -68,7 +60,7 @@ const SalesReport = ({ orders }) => {
   // Filter orders to exclude "Cancelled" and within date range
   useEffect(() => {
     if (!startDate || !endDate || orders.length === 0) {
-      console.log("No orders or invalid date range");
+      //   console.log("No orders or invalid date range");
       setTotalOrders(0);
       return;
     }
@@ -85,14 +77,13 @@ const SalesReport = ({ orders }) => {
 
       const isWithinDateRange = orderDate >= start && orderDate <= end;
 
-      console.log(
-        `Order ${order.order_id}: Status=${order.order_status_name}, Date=${order.date_ordered}, NotCancelled=${isNotCancelled}, WithinDateRange=${isWithinDateRange}`,
-      );
+      //   console.log(
+      //     `Order ${order.order_id}: Status=${order.order_status_name}, Date=${order.date_ordered}, NotCancelled=${isNotCancelled}, WithinDateRange=${isWithinDateRange}`,
+      //   );
 
       return isNotCancelled && isWithinDateRange;
     });
 
-    console.log("Filtered Orders:", filteredOrders);
     setTotalOrders(filteredOrders.length);
   }, [orders, startDate, endDate]);
 
@@ -137,6 +128,7 @@ const SalesReport = ({ orders }) => {
             ₱
             {totalAmount.toLocaleString(undefined, {
               minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
             })}
           </p>
         </div>

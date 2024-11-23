@@ -177,7 +177,6 @@ export const getAllRefundRequests = async () => {
 export const getAllOrderStatuses = async () => {
   try {
     const response = await axios.get("/order-status");
-    console.log("Order statuses fetched: ", response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching order statuses: ", error);
