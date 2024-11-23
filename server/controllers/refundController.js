@@ -139,6 +139,7 @@ const getRefundRequestsByProfileId = async (req, res) => {
             rs.status_name AS refund_status_name,
             p.first_name AS profile_first_name,
             p.last_name AS profile_last_name,
+            o.order_id,
             o.order_status_id,
             os.status_name AS order_status_name,
             JSON_AGG(
@@ -173,6 +174,7 @@ const getRefundRequestsByProfileId = async (req, res) => {
             rs.status_name,
             p.first_name,
             p.last_name,
+            o.order_id,
             o.order_status_id,
             os.status_name
         ORDER BY rr.requested_at DESC
@@ -191,7 +193,7 @@ const getRefundRequestsByProfileId = async (req, res) => {
         refund.profile_first_name || ""
       } ${refund.profile_last_name || ""}`;
       (refund.requested_at = formatDate(refund.requested_at)),
-        (refund.updated_at = formatDate(refund.updated_at)),
+      (refund.updated_at = formatDate(refund.updated_at)),
         delete refund.profile_first_name;
       delete refund.profile_last_name;
       return refund;
