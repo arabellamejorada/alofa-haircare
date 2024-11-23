@@ -5,7 +5,7 @@ import axios from "./axios"; // Importing a configured axios instance
 export const getCustomers = async () => {
   try {
     const response = await axios.get("/customer");
-    console.log("Customers fetched:", response.data);
+    // console.log("Customers fetched:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching customers:", error);
@@ -17,7 +17,7 @@ export const getCustomers = async () => {
 export const getCustomerById = async (customerId) => {
   try {
     const response = await axios.get(`/customer/${customerId}`);
-    console.log("Customer fetched:", response.data);
+    // console.log("Customer fetched:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching customer:", error);
@@ -27,9 +27,9 @@ export const getCustomerById = async (customerId) => {
 
 export const getCustomerByProfileId = async (profile_id) => {
   try {
-    console.log("Fetching customer with profile ID:", profile_id);
+    // console.log("Fetching customer with profile ID:", profile_id);
     const response = await axios.get(`/customer/profile/${profile_id}`);
-    console.log("Customer fetched:", response.data);
+    // console.log("Customer fetched:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching customer:", error);
@@ -41,7 +41,7 @@ export const getCustomerByProfileId = async (profile_id) => {
 export const createCustomer = async (customerData) => {
   try {
     const response = await axios.post("/customer", customerData);
-    console.log("Customer created:", response.data);
+    // console.log("Customer created:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error creating customer:", error);
@@ -51,8 +51,8 @@ export const createCustomer = async (customerData) => {
 
 export const updateCustomerProfile = async (customerId, updatedProfile) => {
   try {
-    console.log("Updating customer profile:", updatedProfile);
-    console.log("Customer ID:", customerId);
+    // console.log("Updating customer profile:", updatedProfile);
+    // console.log("Customer ID:", customerId);
     const response = await axios.put(`/customer/${customerId}`, updatedProfile);
     return response.data;
   } catch (error) {
@@ -66,7 +66,7 @@ export const updateCustomerProfile = async (customerId, updatedProfile) => {
 export const deleteCustomer = async (customerId) => {
   try {
     const response = await axios.delete(`/customer/${customerId}`);
-    console.log("Customer deleted:", response.data);
+    // console.log("Customer deleted:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error deleting customer:", error);
@@ -79,7 +79,7 @@ export const deleteCustomer = async (customerId) => {
 // Fetch all shipping addresses of a customer
 export const getShippingAddressesByCustomerId = async (customer_id) => {
   try {
-    console.log("Fetching shipping addresses for customer ID:", customer_id);
+    // console.log("Fetching shipping addresses for customer ID:", customer_id);
     const response = await axios.get(`/address/${customer_id}`);
     
     // Check if the response contains an empty array
@@ -88,7 +88,7 @@ export const getShippingAddressesByCustomerId = async (customer_id) => {
       return []; // Return an empty array if no addresses are found
     }
 
-    console.log("Shipping addresses fetched:", response.data);
+    // console.log("Shipping addresses fetched:", response.data);
     return response.data;
   } catch (error) {
     // Check if the error is a 404, meaning no addresses were found
@@ -108,7 +108,7 @@ export const getShippingAddressesByCustomerId = async (customer_id) => {
 export const createShippingAddress = async (addressData) => {
   try {
     const response = await axios.post("/address", addressData);
-    console.log("Shipping address created:", response.data);
+    // console.log("Shipping address created:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error creating shipping address:", error);
@@ -120,7 +120,7 @@ export const createShippingAddress = async (addressData) => {
 export const updateShippingAddress = async (addressId, updatedAddress) => {
   try {
     const response = await axios.put(`/address/${addressId}`, updatedAddress);
-    console.log("Shipping address updated:", response.data);
+    // console.log("Shipping address updated:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error updating shipping address:", error);
@@ -132,7 +132,7 @@ export const updateShippingAddress = async (addressId, updatedAddress) => {
 export const deleteShippingAddress = async (addressId) => {
   try {
     const response = await axios.delete(`/address/${addressId}`);
-    console.log("Shipping address deleted:", response.data);
+    // console.log("Shipping address deleted:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error deleting shipping address:", error);

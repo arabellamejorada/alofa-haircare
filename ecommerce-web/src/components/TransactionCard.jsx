@@ -105,6 +105,11 @@ const TransactionCard = ({
               ? refund?.requested_at || "N/A"
               : order?.date_ordered || "N/A"}
           </div>
+          <div className="text-gray-500 font-normal text-xs mb-0">
+            {activeTab === "For Refund" &&
+              refund?.refund_status_name === "Completed" &&
+              ("Refund Completed: " + refund?.updated_at || "N/A")}
+          </div>
         </div>
         <div
           className={`font-normal ${
@@ -283,7 +288,7 @@ TransactionCard.propTypes = {
       }),
     ).isRequired,
     total_amount: PropTypes.number.isRequired,
-  }).isRequired,
+  }),
   setLoading: PropTypes.func.isRequired,
   setTransactions: PropTypes.func.isRequired,
   refund: PropTypes.shape({
@@ -303,7 +308,7 @@ TransactionCard.propTypes = {
     requested_at: PropTypes.string.isRequired,
     refund_status_name: PropTypes.string.isRequired,
     total_refund_amount: PropTypes.number.isRequired,
-  }).isRequired,
+  }),
 };
 
 export default TransactionCard;

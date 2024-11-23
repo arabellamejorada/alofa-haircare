@@ -24,7 +24,7 @@ const Inventory = () => {
   const [search, setSearch] = useState("");
   const [selectedProduct] = useState("");
   const [selectedStatus] = useState("");
-  const [showArchived] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
 
   // Sorting states
   const [sortField, setSortField] = useState("");
@@ -91,27 +91,29 @@ const Inventory = () => {
 
   // Calculate filtered and paginated data
   const filteredInventory = inventory.filter((item) => {
-    const productName = item.product_name?.toLowerCase() || "";
-    const variation = `${item.type || ""} - ${item.value || ""}`.toLowerCase();
-    const sku = item.sku?.toLowerCase() || "";
+    const productName = item.product_name?.toLowerCase().trim() || "";
+    const variation = `${item.type || ""} - ${item.value || ""}`
+      .toLowerCase()
+      .trim();
+    const sku = item.sku?.toLowerCase().trim() || "";
+
+    const searchTerm = search.toLowerCase().trim();
 
     const matchesSearch =
-      productName.includes(search.toLowerCase()) ||
-      variation.includes(search.toLowerCase()) ||
-      sku.includes(search.toLowerCase());
+      productName.includes(searchTerm) ||
+      variation.includes(searchTerm) ||
+      sku.includes(searchTerm);
 
     const matchesProductFilter =
-      selectedProduct === "" || productName === selectedProduct.toLowerCase();
+      selectedProduct === "" ||
+      productName === selectedProduct.toLowerCase().trim();
 
-    const matchesStatusFilter =
-      selectedStatus === "" || item.product_status === selectedStatus;
+    // Ensure product_status comparison is case-insensitive and trimmed
+    const matchesArchivedFilter = showArchived
+      ? true
+      : item.product_status?.trim().toLowerCase() !== "archived";
 
-    return (
-      matchesSearch &&
-      matchesProductFilter &&
-      matchesStatusFilter &&
-      (showArchived || item.product_status?.toLowerCase() !== "archived")
-    );
+    return matchesSearch && matchesProductFilter && matchesArchivedFilter;
   });
 
   const totalPages = Math.ceil(filteredInventory.length / rowsPerPage);
@@ -132,8 +134,13 @@ const Inventory = () => {
     { key: "inventory_id", header: "ID" },
     { key: "sku", header: "SKU" },
     { key: "product_name", header: "Product Name" },
-    { key: "variation", header: "Variation" },
+    { key: "value", header: "Variation" },
     { key: "stock_quantity", header: "Stock Quantity", align: "right" },
+    {
+      key: "reserved_quantity",
+      header: "Reserved Quantity (Pending Orders)",
+      align: "right",
+    },
     { key: "product_status", header: "Status" },
     { key: "last_updated_date", header: "Last Update" },
     { key: "action", header: "Action", align: "center" },
@@ -167,13 +174,33 @@ const Inventory = () => {
               />
               {search && (
                 <button
-                  onClick={() => setSearch("")}
-                  className="text-sm ml-2 text-alofa-pink hover:text-alofa-dark"
+                  onClick={() => {
+                    setSearch("");
+                    setShowArchived(false);
+                    setCurrentPage(1);
+                  }}
+                  className="ml-4 text-sm text-gray-700 hover:text-gray-900"
                 >
-                  Clear
+                  Clear Filters
                 </button>
               )}
+              {/* Checkbox for Show/Hide Archived */}
+              <div className="flex items-center ml-4">
+                <input
+                  type="checkbox"
+                  checked={showArchived}
+                  onChange={(e) => {
+                    setShowArchived(e.target.checked);
+                    setCurrentPage(1); // Reset to page 1
+                  }}
+                  className="h-5 w-5 accent-alofa-pink"
+                />
+                <label className="ml-2 font-semibold text-gray-700">
+                  {showArchived ? "Hide Archived" : "Show Archived"}
+                </label>
+              </div>
             </div>
+
             <div className="flex align-bottom">
               <RefreshIcon
                 onClick={handleRefresh}
@@ -191,7 +218,8 @@ const Inventory = () => {
                   <th
                     key={column.key}
                     className={`px-5 py-3 border-b-2 border-gray-200 bg-alofa-pink text-white text-sm font-semibold ${
-                      column.key === "stock_quantity"
+                      column.key === "stock_quantity" ||
+                      column.key === "reserved_quantity"
                         ? "text-center"
                         : column.align === "right"
                           ? "text-right"
@@ -257,7 +285,10 @@ const Inventory = () => {
                       <td colSpan={columns.length} className="bg-gray-100">
                         <div className="p-4">
                           <strong>
-                            Inventory History for {item.variation}
+                            Inventory History for {item.product_name}{" "}
+                            {item.value && item.value !== "N/A"
+                              ? `(${item.value})`
+                              : ""}
                           </strong>
                           <table className="min-w-full mt-2 bg-white border">
                             <thead>
