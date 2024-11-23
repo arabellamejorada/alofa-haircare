@@ -5,7 +5,7 @@ import { FaArrowUp, FaArrowDown, FaEye } from "react-icons/fa";
 import Modal from "../../components/modal/Modal";
 import PaymentStatusBadge from "../../components/shared/StatusBadge";
 import RefreshIcon from "../../components/shared/RefreshButton";
-
+import SalesReport from "./SalesReport";
 const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [orderStatuses, setOrderStatuses] = useState([]);
@@ -266,6 +266,13 @@ const Orders = () => {
               colorClass="text-gray-500 hover:text-gray-700"
             />
           </div>
+          {/* Sales Report */}
+          <SalesReport
+            orders={filteredOrders}
+            startDate={startDate}
+            endDate={endDate}
+            selectedStatus={selectedStatus}
+          />
           {filteredOrders.length === 0 ? (
             <div className="flex items-center justify-center h-64">
               <div className="text-center">

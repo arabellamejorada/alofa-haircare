@@ -48,3 +48,5 @@ router.put(
 
 router.get("/order-status", orderController.GetAllOrderStatuses);
 module.exports = router;
+
+router.get("/sales-metrics", orderController.getSalesMetrics);

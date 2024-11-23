@@ -804,9 +804,64 @@ const GetAllOrderStatuses = async (req, res) => {
   }
 }
 
+const getSalesMetrics = async (req, res) => {
+  const { start_date, end_date } = req.query;
+
+  if (!start_date || !end_date) {
+    return res.status(400).json({ error: "Start date and end date are required" });
+  }
+
+  try {
+    const result = await pool.query(
+      `
+      WITH TotalAmount AS (
+          SELECT 
+              COALESCE(SUM(o.total_amount), 0) AS total_sales
+          FROM 
+              orders o
+          WHERE 
+              o.order_status_id != 5
+              AND o.date_ordered >= $1::TIMESTAMPTZ
+              AND o.date_ordered < $2::TIMESTAMPTZ + INTERVAL '1 day'
+      ),
+      TotalLoss AS (
+          SELECT 
+              COALESCE(SUM(ri.item_subtotal), 0) AS total_loss
+          FROM 
+              refund_items ri
+          JOIN 
+              refund_request rr ON ri.refund_request_id = rr.id
+          WHERE 
+              rr.refund_status_id = 2
+              AND rr.updated_at >= $1::TIMESTAMPTZ
+              AND rr.updated_at < $2::TIMESTAMPTZ + INTERVAL '1 day'
+      )
+      SELECT 
+          ta.total_sales,
+          tl.total_loss,
+          (ta.total_sales - tl.total_loss) AS total_sales_with_refund_deduction
+      FROM 
+          TotalAmount ta, 
+          TotalLoss tl;
+      `,
+      [start_date, end_date]
+    );
+
+    console.log("Query Result:", result.rows[0]); // Debugging
+    res.json(result.rows[0]); // Return the computed metrics
+  } catch (error) {
+    console.error("Error fetching sales metrics:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+
+
+
 module.exports = {
   getReservedQuantityByVariationId,
   GetAllOrderStatuses,
+  getSalesMetrics,
   createOrder,
   getOrderByProfileId,
   getAllOrdersWithOrderItems,
