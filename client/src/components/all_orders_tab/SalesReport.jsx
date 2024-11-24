@@ -8,12 +8,22 @@ const SalesReport = ({
   setStartDate,
   setEndDate,
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(() => {
+    // Retrieve the initial state from local storage
+    const savedState = localStorage.getItem("salesReportExpanded");
+    return savedState === "true"; // Default to false if no saved state exists
+  });
+
   const [totalAmount, setTotalAmount] = useState(0);
   const [totalOrders, setTotalOrders] = useState(0);
   const [totalLoss, setTotalLoss] = useState(0);
   const [totalSalesWithRefundDeduction, setTotalSalesWithRefundDeduction] =
     useState(0);
+
+  // Persist the expanded state to local storage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("salesReportExpanded", isExpanded);
+  }, [isExpanded]);
 
   useEffect(() => {
     if (!startDate || !endDate) return;
