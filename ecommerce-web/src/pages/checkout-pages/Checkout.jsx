@@ -189,7 +189,7 @@ const Checkout = () => {
         subtotal: subtotal,
         voucher_id: voucherId,
         total_discount: voucherDiscount,
-        total_amount: subtotal + 200 - voucherDiscount,
+        total_amount: subtotal + (formDetails.shipping_fee) - voucherDiscount,
         shipping_address_id: formDetails.shipping_address_id,
         paymentMethod: formDetails.paymentMethod,
         shipping_fee: formDetails.shipping_fee,

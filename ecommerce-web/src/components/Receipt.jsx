@@ -8,8 +8,10 @@ const Receipt = ({ orderDetails }) => {
   const discount = parseFloat(orderDetails.order.total_discount) || 0;
   const orderID = orderDetails.order.order_id;
   const subtotal = parseFloat(orderDetails.order.subtotal) || 0;
-  const total = parseFloat(orderDetails.order.total_amount) || 0;
   const shippingFee = parseFloat(orderDetails.order.shipping_fee) || 0;
+
+  const total = subtotal + shippingFee - discount;
+
   const orderItems = orderDetails.order_items;
 
   useEffect(() => {
