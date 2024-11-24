@@ -499,6 +499,41 @@ const Orders = () => {
                             )}
                           </dd>
                         </div>
+                        {/* Shipping Address */}
+                        <div className="py-3">
+                          <dt className="text-sm font-medium text-gray-500">
+                            Shipping Details
+                          </dt>
+                          <dd className="mt-1 text-base text-gray-900">
+                            <p>
+                              <strong className="text-gray-600 text-sm font-semibold">
+                                Contact #:
+                              </strong>{" "}
+                              {selectedOrder.shipping_address.phone_number}
+                            </p>
+                            <p>
+                              <strong className="text-gray-600 text-sm font-semibold">
+                                Address:
+                              </strong>{" "}
+                              {selectedOrder.shipping_address.address_line}
+                              {selectedOrder.shipping_address.barangay
+                                ? `, ${selectedOrder.shipping_address.barangay}`
+                                : ""}
+                              {selectedOrder.shipping_address.city
+                                ? `, ${selectedOrder.shipping_address.city}`
+                                : ""}
+                              {selectedOrder.shipping_address.province
+                                ? `, ${selectedOrder.shipping_address.province}`
+                                : ""}
+                              {selectedOrder.shipping_address.region
+                                ? `, ${selectedOrder.shipping_address.region}`
+                                : ""}
+                              {selectedOrder.shipping_address.zip_code
+                                ? `, ${selectedOrder.shipping_address.zip_code}`
+                                : ""}
+                            </p>
+                          </dd>
+                        </div>
 
                         {/* Voucher Details */}
                         {selectedOrder.voucher && (
