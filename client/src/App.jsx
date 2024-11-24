@@ -25,33 +25,50 @@ import OrderVerification from "./components/orders_tab/OrderVerification";
 import Shipping from "./components/shipping_tab/Shipping";
 import Refund from "./components/refunds_tab/Refunds";
 import Orders from "./components/all_orders_tab/Orders";
+import ForgotPassword from "./components/ForgotPassword";
+import PasswordReset from "./components/PasswordReset";
 
 import { AuthProvider, AuthContext } from "./components/AuthContext";
 
-const ProtectedRoute = ({ element, adminOnly = false }) => {
+// Function to check access
+const hasAccess = (role, requiredRole) => {
+  if (requiredRole === "admin") return role === "admin";
+  if (requiredRole === "employee") return ["admin", "employee"].includes(role);
+  return true;
+};
+
+// ProtectedRoute Component
+const ProtectedRoute = ({ element, requiredRole }) => {
   const { token, role } = useContext(AuthContext);
 
   if (!token) return <Navigate to="/login" replace />;
-  if (role !== "admin" && role !== "employee")
-    return <Navigate to="/login" replace />;
-  if (adminOnly && role !== "admin")
+  if (!hasAccess(role, requiredRole))
     return <Navigate to="/not-authorized" replace />;
 
   return element;
 };
 
-// Not Authorized component
-function NotAuthorized() {
-  return (
-    <div style={{ padding: "2rem", textAlign: "center" }}>
-      <h1>Not Authorized</h1>
-      <p>You do not have permission to view this page.</p>
-      <Link to="/" className="text-alofa-dark">
-        Go back to Dashboard
-      </Link>
-    </div>
-  );
-}
+// Not Authorized Page
+const NotAuthorized = () => (
+  <div style={{ padding: "2rem", textAlign: "center" }}>
+    <h1>Not Authorized</h1>
+    <p>You do not have permission to view this page.</p>
+    <Link to="/" className="text-alofa-dark">
+      Go back to Dashboard
+    </Link>
+  </div>
+);
+
+// 404 Page
+const NotFound = () => (
+  <div style={{ padding: "2rem", textAlign: "center" }}>
+    <h1>404</h1>
+    <p>Page not found.</p>
+    <Link to="/" className="text-alofa-dark">
+      Go back to Dashboard
+    </Link>
+  </div>
+);
 
 function App() {
   return (
@@ -59,6 +76,7 @@ function App() {
       <Router>
         <Toaster richColors position="top-right" />
         <Routes>
+          {/* Main Layout with Protected Routes */}
           <Route path="/" element={<ProtectedRoute element={<Layout />} />}>
             <Route index element={<ProtectedRoute element={<Dashboard />} />} />
             <Route
@@ -71,11 +89,15 @@ function App() {
             />
             <Route
               path="voucher"
-              element={<ProtectedRoute element={<Vouchers />} adminOnly />}
+              element={
+                <ProtectedRoute element={<Vouchers />} requiredRole="admin" />
+              }
             />
             <Route
               path="faqs"
-              element={<ProtectedRoute element={<Faqs />} adminOnly />}
+              element={
+                <ProtectedRoute element={<Faqs />} requiredRole="admin" />
+              }
             />
             <Route
               path="inventory"
@@ -99,11 +121,15 @@ function App() {
             />
             <Route
               path="suppliers"
-              element={<ProtectedRoute element={<Suppliers />} adminOnly />}
+              element={
+                <ProtectedRoute element={<Suppliers />} requiredRole="admin" />
+              }
             />
             <Route
               path="employees"
-              element={<ProtectedRoute element={<Employees />} adminOnly />}
+              element={
+                <ProtectedRoute element={<Employees />} requiredRole="admin" />
+              }
             />
             <Route
               path="orderVerification"
@@ -122,8 +148,13 @@ function App() {
               element={<ProtectedRoute element={<Orders />} />}
             />
           </Route>
+
+          {/* Authentication and Public Routes */}
           <Route path="login" element={<Login />} />
+          <Route path="forgot-password" element={<ForgotPassword />} />
+          <Route path="reset-password" element={<PasswordReset />} />
           <Route path="not-authorized" element={<NotAuthorized />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
     </AuthProvider>

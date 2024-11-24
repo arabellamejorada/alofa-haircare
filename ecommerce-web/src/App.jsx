@@ -24,6 +24,8 @@ import Login from "./pages/Login.jsx";
 import SignUp from "./pages/SignUp.jsx";
 import Profile from "./pages/customer-pages/CustomerProfile.jsx";
 import OrderConfirmation from "./pages/checkout-pages/OrderConfirmation.jsx";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 import "./App.css";
 import { Toaster } from "sonner";
@@ -34,7 +36,11 @@ const AppContent = () => {
 
   // Determine whether to display Navbar/Footer
   const isAuthPage =
-    location.pathname === "/login" || location.pathname === "/signup";
+    location.pathname === "/login" ||
+    location.pathname === "/signup" ||
+    location.pathname === "/forgot-password" ||
+    location.pathname === "/reset-password";
+
   const isCheckoutPage = location.pathname === "/checkout";
 
   // Show loading screen while verifying session
@@ -45,7 +51,7 @@ const AppContent = () => {
   return (
     <>
       <Toaster richColors position="top-center" />
-      <Navbar />
+      {!isAuthPage && <Navbar />}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/products" element={<Products />} />
@@ -56,6 +62,8 @@ const AppContent = () => {
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/login" element={<Login setToken={setToken} />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route
           path="/profile/*"
           element={
@@ -65,8 +73,9 @@ const AppContent = () => {
           }
         />
         <Route path="/order-confirmed" element={<OrderConfirmation />} />
+        {/* Add a catch-all route for 404 */}
+        <Route path="*" element={<div>Page Not Found</div>} />
       </Routes>
-
       {!isAuthPage && !isCheckoutPage && <Footer />}
     </>
   );

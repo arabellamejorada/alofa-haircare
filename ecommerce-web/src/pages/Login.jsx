@@ -119,7 +119,17 @@ const Login = () => {
                   </button>
                 </div>
 
-                <div className="flex flex-col items-center gap-2 mt-6">
+                {/* Forgot Password Link */}
+                <div className="mt-2 text-right">
+                  <Link
+                    to="/forgot-password"
+                    className="text-sm text-alofa-pink hover:underline"
+                  >
+                    Forgot Password?
+                  </Link>
+                </div>
+
+                <div className="flex flex-col items-center gap-2 mt-2">
                   <Button
                     type="submit"
                     className="w-full font-extrabold font-sans text-white py-2 px-4 rounded-md focus:outline-none bg-gradient-to-b from-[#FE699F] to-[#F8587A]"
@@ -127,12 +137,12 @@ const Login = () => {
                     CONTINUE
                   </Button>
 
-                  <div className="text-sm gap-1">
+                  {/* <div className="text-sm gap-1">
                     Don&apos;t have an account?{" "}
                     <Link to="/signup" className="underline">
                       Sign Up
                     </Link>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </form>
