@@ -185,7 +185,7 @@ const ShippingAddress = ({
       if (address.city?.code) {
         await fetchBarangays(address.city.code);
       }
-      console.log("Selected address:", formDetails);
+      // console.log("Selected address:", formDetails);
       setIsAddressModalOpen(false);
     } catch (error) {
       toast.error("Failed to save address. Please try again.");
