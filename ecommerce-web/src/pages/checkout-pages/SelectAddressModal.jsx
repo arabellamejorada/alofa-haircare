@@ -35,10 +35,8 @@ const SelectAddressModal = ({
       } catch (error) {
         if (error.response && error.response.status === 404) {
           setAddresses([]);
-          console.log("No addresses found for this customer.");
           toast.error("No addresses found for this customer.");
         } else {
-          console.error("Error fetching addresses:", error);
           toast.error("Error fetching addresses.");
         }
       } finally {

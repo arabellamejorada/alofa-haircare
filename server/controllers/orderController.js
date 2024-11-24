@@ -85,7 +85,7 @@ const createOrder = async (req, res) => {
   const cartItems = JSON.parse(req.body.cartItems);
   const proofImage = req.file ? req.file.path : null;
 
-  // console.log("Order details received:", orderDetails);
+  console.log("Order details received:", orderDetails);
   // console.log("Cart items received:", cartItems);
   // console.log("Proof image path:", proofImage);
 
@@ -122,6 +122,32 @@ const createOrder = async (req, res) => {
     const shippingMethodResult = await pool.query(
       `SELECT * FROM shipping_method WHERE courier = 'J&T Express'`,
     );
+
+    // if no shipping_address_id (meaning new address), insert new shipping address
+    if (!orderDetails.shipping_address_id) {
+    
+      const shippingAddressResult = await pool.query(
+        `INSERT INTO shipping_address (first_name, last_name, address_line, barangay, city, province, region, zip_code, phone_number, customer_id)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        RETURNING shipping_address_id`,
+        [
+          orderDetails.firstName,
+          orderDetails.lastName,
+          orderDetails.street,
+          orderDetails.barangay,
+          orderDetails.city,
+          orderDetails.province,
+          orderDetails.region,
+          orderDetails.postalCode,
+          orderDetails.phoneNumber,
+          orderDetails.customer_id,
+        ],
+      );
+
+      orderDetails.shipping_address_id = shippingAddressResult.rows[0].shipping_address_id
+    }
+
+          console.log("shipping address generated:", orderDetails.shipping_address_id)
 
     // Step 1: Insert shipping details and get the shipping_id
     const shippingResult = await pool.query(
