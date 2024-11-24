@@ -153,7 +153,7 @@ const RefundModal = ({ isOpen, closeModal, orderItems, selectedOrder }) => {
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <DialogPanel className="pt-7 px-8 py-3 w-full max-w-2xl h-[700px] transform overflow-visible rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                <DialogPanel className="pt-7 px-8 py-3 w-full max-w-2xl h-[700px] transform overflow-visible rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all flex flex-col justify-between">
                   <DialogTitle
                     as="h3"
                     className="text-3xl font-bold leading-normal gradient-heading mb-4"

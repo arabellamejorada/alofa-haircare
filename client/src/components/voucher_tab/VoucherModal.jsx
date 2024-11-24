@@ -264,8 +264,8 @@ const VoucherModal = ({
                   border-gray-300 appearance-none focus:outline-none 
                   focus:ring-0 focus:border-alofa-pink peer"
             >
-              <option value={true}>True</option>
-              <option value={false}>False</option>
+              <option value={true}>Yes</option>
+              <option value={false}>No</option>
             </select>
             <label
               htmlFor="is_active"

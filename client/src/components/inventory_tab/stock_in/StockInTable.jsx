@@ -228,7 +228,7 @@ const StockInTable = ({
         <table className="min-w-full leading-normal">
           <thead>
             <tr>
-              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-alofa-highlight to-alofa-pink text-gray-100 text-left text-md font-semibold uppercase tracking-wider">
+              <th className="px-5 py-3 border-b-2 border-gray-200 bg-alofa-pink text-gray-100 text-left text-md font-semibold uppercase tracking-wider">
                 #
               </th>
               {columns
@@ -238,13 +238,13 @@ const StockInTable = ({
                 )
                 .map((column) => (
                   <th
-                    className="px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-alofa-highlight to-alofa-pink text-gray-100 text-left text-md font-semibold uppercase tracking-wider"
+                    className="px-5 py-3 border-b-2 border-gray-200 bg-alofa-pink text-gray-100 text-left text-md font-semibold uppercase tracking-wider"
                     key={column.key}
                   >
                     {column.header}
                   </th>
                 ))}
-              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gradient-to-b from-alofa-highlight to-alofa-pink text-gray-100 text-center text-md font-semibold uppercase tracking-wider">
+              <th className="px-5 py-3 border-b-2 border-gray-200 bg-alofa-pink text-gray-100 text-center text-md font-semibold uppercase tracking-wider">
                 Delete
               </th>
             </tr>
