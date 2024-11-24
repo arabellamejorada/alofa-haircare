@@ -10,13 +10,16 @@ import Search from "../../components/Filter/Search.jsx";
 
 const PurchasesTab = () => {
   const { user } = useContext(AuthContext);
-  const [activeTab, setActiveTab] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [tabUnderlineStyle, setTabUnderlineStyle] = useState({});
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [refundRequests, setRefundRequests] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [activeTab, setActiveTab] = useState(() => {
+    return localStorage.getItem("activeTab") || "All";
+  });
 
   const statusMap = useMemo(
     () => ({
@@ -64,18 +67,28 @@ const PurchasesTab = () => {
   };
 
   useEffect(() => {
+    // Save activeTab to localStorage whenever it changes
+    localStorage.setItem("activeTab", activeTab);
+  }, [activeTab]);
+
+  useEffect(() => {
     fetchTransactions();
   }, [activeTab, user]);
 
   useEffect(() => {
-    const initialTabElement = document.getElementById(`tab-0`);
-    if (initialTabElement) {
-      setTabUnderlineStyle({
-        width: initialTabElement.offsetWidth,
-        left: initialTabElement.offsetLeft,
-      });
-    }
-  }, []);
+  // Set underline position on initial render based on activeTab
+  const currentTabElement = document.getElementById(
+    `tab-${["All", "Pending", "To Ship", "To Receive", "Completed", "For Refund"].indexOf(
+      activeTab
+    )}`
+  );
+  if (currentTabElement) {
+    setTabUnderlineStyle({
+      width: currentTabElement.offsetWidth,
+      left: currentTabElement.offsetLeft,
+    });
+  }
+}, [activeTab]);
 
   useEffect(() => {
     const filtered = transactions.filter((transaction) => {
@@ -127,6 +140,7 @@ const PurchasesTab = () => {
 
   const handleTabClick = (tab, index) => {
     setActiveTab(tab);
+    localStorage.setItem("activeTab", tab);
     const tabElement = document.getElementById(`tab-${index}`);
     if (tabElement) {
       setTabUnderlineStyle({
