@@ -161,14 +161,15 @@ const Checkout = () => {
     }
 
     setErrors(newErrors);
+    return newErrors;
   };
 
   const handleCompleteOrder = async () => {
     try {
       setLoading(true);
 
-      validateErrors();
-      if (Object.keys(errors).length > 0) {
+      const currentErrors = validateErrors();
+      if (Object.keys(currentErrors).length > 0) {
         toast.error("Please fill out all required fields.");
         setLoading(false);
         return;
@@ -243,13 +244,13 @@ const Checkout = () => {
 
       // Log all formData contents
       console.log("Creating order with form data:");
-      for (let [key, value] of formData.entries()) {
-        console.log(`${key}:`, value);
-      }
+      // for (let [key, value] of formData.entries()) {
+      //   console.log(`${key}:`, value);
+      // }
       let order, order_items;
       try {
         const response = await createOrder(formData);
-        console.log("Create Order Response:", response);
+        // console.log("Create Order Response:", response);
         order = response.order;
         order_items = response.order_items;
       } catch (error) {
