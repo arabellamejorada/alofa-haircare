@@ -1,30 +1,40 @@
 import React, { useState, useEffect } from "react";
 import { getSalesMetrics } from "../../api/orders";
 
-const SalesReport = ({ orders }) => {
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+const SalesReport = ({
+  orders,
+  startDate,
+  endDate,
+  setStartDate,
+  setEndDate,
+}) => {
   const [totalAmount, setTotalAmount] = useState(0);
   const [totalOrders, setTotalOrders] = useState(0);
-  const [formattedDateRange, setFormattedDateRange] = useState("");
   const [totalLoss, setTotalLoss] = useState(0);
   const [totalSalesWithRefundDeduction, setTotalSalesWithRefundDeduction] =
     useState(0);
 
-  // Set default startDate and endDate based on orders
+  // Set default startDate and endDate based on orders if not provided
   useEffect(() => {
-    if (orders.length > 0) {
+    console.log("startDate", startDate);
+    console.log("endDate", endDate);
+    if (orders.length > 0 && (!startDate || !endDate)) {
       const sortedOrders = [...orders].sort(
         (a, b) => new Date(a.date_ordered) - new Date(b.date_ordered),
       );
-      const defaultStartDate = sortedOrders[0]?.date_ordered;
-      const defaultEndDate =
-        sortedOrders[sortedOrders.length - 1]?.date_ordered;
+      const defaultStartDate = new Date(sortedOrders[0]?.date_ordered)
+        .toISOString()
+        .split("T")[0]; // Earliest order date (YYYY-MM-DD)
+      const defaultEndDate = new Date(
+        sortedOrders[sortedOrders.length - 1]?.date_ordered,
+      )
+        .toISOString()
+        .split("T")[0]; // Latest order date (YYYY-MM-DD)
 
       setStartDate(defaultStartDate);
       setEndDate(defaultEndDate);
     }
-  }, [orders]);
+  }, [orders, startDate, endDate, setStartDate, setEndDate]);
 
   // Fetch sales metrics whenever startDate or endDate changes
   useEffect(() => {
@@ -32,18 +42,7 @@ const SalesReport = ({ orders }) => {
 
     const fetchMetrics = async () => {
       try {
-        // Adjust startDate and endDate to remove time and timezone offsets
-        const formattedStartDate = new Date(startDate).toLocaleDateString(
-          "en-CA",
-        ); // Output in YYYY-MM-DD
-        const formattedEndDate = new Date(endDate).toLocaleDateString("en-CA"); // Output in YYYY-MM-DD
-
-        const metrics = await getSalesMetrics(
-          formattedStartDate,
-          formattedEndDate,
-        );
-        // console.log("Fetched Metrics:", metrics);
-
+        const metrics = await getSalesMetrics(startDate, endDate);
         setTotalAmount(Number(metrics.total_sales || 0));
         setTotalLoss(Number(metrics.total_loss || 0));
         setTotalSalesWithRefundDeduction(
@@ -57,64 +56,65 @@ const SalesReport = ({ orders }) => {
     fetchMetrics();
   }, [startDate, endDate]);
 
-  // Filter orders to exclude "Cancelled" and within date range
+  // Calculate total orders excluding "Cancelled" and within the date range
   useEffect(() => {
     if (!startDate || !endDate || orders.length === 0) {
-      //   console.log("No orders or invalid date range");
       setTotalOrders(0);
       return;
     }
 
     const filteredOrders = orders.filter((order) => {
-      // Exclude "Cancelled" orders
       const isNotCancelled =
         order.order_status_name.toLowerCase() !== "cancelled";
 
-      // Filter by date range (ignoring time components)
       const orderDate = new Date(order.date_ordered).setHours(0, 0, 0, 0);
       const start = new Date(startDate).setHours(0, 0, 0, 0);
       const end = new Date(endDate).setHours(23, 59, 59, 999);
 
-      const isWithinDateRange = orderDate >= start && orderDate <= end;
-
-      //   console.log(
-      //     `Order ${order.order_id}: Status=${order.order_status_name}, Date=${order.date_ordered}, NotCancelled=${isNotCancelled}, WithinDateRange=${isWithinDateRange}`,
-      //   );
-
-      return isNotCancelled && isWithinDateRange;
+      return isNotCancelled && orderDate >= start && orderDate <= end;
     });
 
     setTotalOrders(filteredOrders.length);
   }, [orders, startDate, endDate]);
 
-  // Format the date range for display
-  const formatDateRange = (startDate, endDate) => {
+  // Format date for display
+  const formatDate = (dateString) => {
     const options = { year: "numeric", month: "long", day: "numeric" };
-    const format = new Intl.DateTimeFormat("en-US", options);
-
-    const start = startDate ? new Date(startDate) : null;
-    const end = endDate ? new Date(endDate) : null;
-
-    if (start && end) {
-      return `${format.format(start)} to ${format.format(end)}`;
-    }
-    return "Start - End";
+    const date = new Date(dateString);
+    return !isNaN(date) ? date.toLocaleDateString(undefined, options) : "";
   };
-
-  useEffect(() => {
-    setFormattedDateRange(formatDateRange(startDate, endDate));
-  }, [startDate, endDate]);
 
   return (
     <div className="bg-gray-50 border rounded-lg p-4 mt-4 shadow-md">
       <h3 className="text-lg font-semibold text-gray-700">Sales Summary</h3>
+
+      {/* Date Range Display */}
+      <div className="flex flex-col gap-2 mt-4">
+        <p className="text-sm text-gray-600 mt-2">
+          Date Range:{" "}
+          <span className="font-medium text-gray-800">
+            {startDate && endDate
+              ? `${formatDate(startDate)} to ${formatDate(endDate)}`
+              : orders.length > 0
+                ? `${formatDate(
+                    new Date(orders[0]?.date_ordered)
+                      .toISOString()
+                      .split("T")[0],
+                  )} to ${formatDate(
+                    new Date(orders[orders.length - 1]?.date_ordered)
+                      .toISOString()
+                      .split("T")[0],
+                  )}`
+                : "No orders available"}
+          </span>
+        </p>
+      </div>
+
       <p className="text-sm text-gray-600 mt-1">
-        Date Range:{" "}
-        <span className="font-medium text-gray-800">{formattedDateRange}</span>
-      </p>
-      <p className="text-sm text-gray-600">
         Note: All statuses are included except "Cancelled".
       </p>
+
+      {/* Metrics */}
       <div className="flex flex-col gap-4 mt-4">
         <div className="flex justify-between items-center">
           <p className="text-gray-500 text-sm">Total Orders</p>
