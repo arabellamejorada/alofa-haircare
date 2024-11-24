@@ -94,7 +94,7 @@ const ProfileContent = ({ profileData, setProfileData }) => {
 
       // Update Supabase Auth user
       if (Object.keys(updates).length > 0) {
-        const { data: updatedUser, error: updateError } =
+        const { error: updateError } =
           await supabase.auth.updateUser(updates);
         if (updateError) {
           throw updateError;
