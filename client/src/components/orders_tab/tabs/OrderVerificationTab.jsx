@@ -118,18 +118,28 @@ const OrderVerificationTab = ({ statusFilter }) => {
       sortField === field && sortOrder === "asc" ? "desc" : "asc";
     setSortField(field);
     setSortOrder(newSortOrder);
-    setOrders((prevData) =>
-      [...prevData].sort((a, b) => {
-        const aField =
-          field === "total_amount" ? parseFloat(a[field]) : a[field];
-        const bField =
-          field === "total_amount" ? parseFloat(b[field]) : b[field];
+
+    const sortedData = [...orders].sort((a, b) => {
+      if (field === "date_ordered" || field === "some_other_date_field") {
+        // Handle date sorting
+        const dateA = new Date(a[field]);
+        const dateB = new Date(b[field]);
+
+        if (dateA < dateB) return newSortOrder === "asc" ? -1 : 1;
+        if (dateA > dateB) return newSortOrder === "asc" ? 1 : -1;
+        return 0;
+      } else {
+        // Handle non-date fields
+        const aField = isNaN(a[field]) ? a[field] : parseFloat(a[field]);
+        const bField = isNaN(b[field]) ? b[field] : parseFloat(b[field]);
 
         if (aField < bField) return newSortOrder === "asc" ? -1 : 1;
         if (aField > bField) return newSortOrder === "asc" ? 1 : -1;
         return 0;
-      }),
-    );
+      }
+    });
+
+    setOrders(sortedData);
   };
 
   const handleRefresh = async () => {
