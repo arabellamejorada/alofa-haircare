@@ -3,6 +3,7 @@ import {
   getAllOrdersWithItems,
   updateShippingStatusAndTrackingNumber,
   getOrderItemsByOrderId,
+  getShippingMethods,
 } from "../../../api/orders";
 import { createStockOut } from "../../../api/stockOut";
 import { ClipLoader } from "react-spinners";
@@ -19,6 +20,7 @@ const OrdersTab = ({ statusFilter }) => {
   const { employeeId } = useAuth();
 
   const [orders, setOrders] = useState([]);
+  const [shippingMethods, setShippingMethods] = useState([]);
   const [loading, setLoading] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [error, setError] = useState(null);
@@ -39,18 +41,18 @@ const OrdersTab = ({ statusFilter }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [trackingNumber, setTrackingNumber] = useState("");
+  const [selectedShippingMethod, setSelectedShippingMethod] = useState({});
 
   const [orderItems, setOrderItems] = useState([]);
   const [checkedItems, setCheckedItems] = useState({});
 
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-  const [confirmAction, setConfirmAction] = useState(() => {});
-
+  const [confirmAction, setConfirmAction] = useState(null);
   const [confirmMessage, setConfirmMessage] = useState("");
 
-  const openConfirmModal = (action, message) => {
+  const openConfirmModal = (message, action) => {
+    setConfirmMessage(message);
     setConfirmAction(() => action);
-    setConfirmMessage(message); // Set the dynamic message
     setIsConfirmModalOpen(true);
   };
 
@@ -110,14 +112,48 @@ const OrdersTab = ({ statusFilter }) => {
   };
 
   const handleUpdateShippingStatus = async () => {
+    console.log("selectedOrder", selectedOrder);
+    console.log("order_status_id", selectedOrder.order_status_id);
     if (!selectedOrder) return;
 
-    // Validate Tracking Number
-    const trackingNumberPattern = /^\d{12}$/; // 12-digit number regex
-    if (!trackingNumber.match(trackingNumberPattern)) {
-      toast.error(
-        "Invalid format for tracking number. Must be a 12-digit number.",
-      );
+    let nextStatusId;
+    let nextStatusName;
+
+    if (selectedOrder.order_status_id === 2) {
+      nextStatusId = 3;
+      nextStatusName = "Shipped";
+    } else if (selectedOrder.order_status_id === 3) {
+      nextStatusId = 4;
+      nextStatusName = "Completed";
+    } else {
+      return;
+    }
+
+    if (!selectedShippingMethod.shipping_method_id) {
+      toast.error("Please select a shipping method.");
+      return;
+    }
+
+    if (!trackingNumber) {
+      toast.error("Please enter a tracking number.");
+      return;
+    }
+
+    {
+    }
+    if (
+      selectedShippingMethod.shipping_method_id === 1 &&
+      trackingNumber.length !== 12 &&
+      nextStatusId === 3
+    ) {
+      toast.error("Tracking number must be 12 digits for J&T Express.");
+      return;
+    } else if (
+      selectedShippingMethod.shipping_method_id === 2 &&
+      trackingNumber.length !== 9 &&
+      nextStatusId === 3
+    ) {
+      toast.error("Tracking number must be 9 digits for JRS Express.");
       return;
     }
 
@@ -128,21 +164,28 @@ const OrdersTab = ({ statusFilter }) => {
       return;
     }
 
+    openConfirmModal(
+      "Are you sure you want to update shipping status? This action can't be undone.",
+      () => updateShippingStatus(nextStatusId, nextStatusName), // Pass a function reference
+    );
+  };
+
+  const updateShippingStatus = async (nextStatusId, nextStatusName) => {
     try {
       setUpdatingStatus(true);
 
-      let nextStatusId;
-      let nextStatusName;
+      await updateShippingStatusAndTrackingNumber(
+        selectedOrder.shipping_id,
+        nextStatusId,
+        trackingNumber,
+        selectedShippingMethod.shipping_method_id,
+      );
 
-      if (selectedOrder.order_status_id === 2) {
-        nextStatusId = 3;
-        nextStatusName = "Shipped";
-      } else if (selectedOrder.order_status_id === 3) {
-        nextStatusId = 4;
-        nextStatusName = "Completed";
-      } else {
-        return;
+      if (nextStatusName === "Shipped") {
+        await handleStockOutOnShipping();
       }
+
+      toast.success("Shipping status updated successfully.");
 
       // Email notification logic
       if (selectedOrder.customer_email && selectedOrder.customer_name) {
@@ -157,7 +200,7 @@ const OrdersTab = ({ statusFilter }) => {
             <h1>Order Shipped</h1>
             <p>Hi ${selectedOrder.customer_name},</p>
             <p>Your order <strong>#${selectedOrder.order_id}</strong> has been shipped.</p>
-            <p>Here is your tracking number: <strong>${trackingNumber}</strong>.</p>
+            <p>Here is your tracking number: <strong>${selectedShippingMethod.courier}: ${trackingNumber}</strong>.</p>
             <p>Log in to track your shipping status: <a href="http://localhost:5173/profile/purchases">My Purchases</a></p>
             <p>Thank you for shopping with us!</p>
           `;
@@ -193,17 +236,6 @@ const OrdersTab = ({ statusFilter }) => {
         return; // Exit the function if customer data is invalid
       }
 
-      if (nextStatusName === "Shipped") {
-        await handleStockOutOnShipping();
-      }
-
-      await updateShippingStatusAndTrackingNumber(
-        selectedOrder.shipping_id,
-        nextStatusId,
-        trackingNumber,
-      );
-
-      toast.success("Shipping status updated successfully.");
       closeModal();
       await fetchOrders();
     } catch (error) {
@@ -217,7 +249,9 @@ const OrdersTab = ({ statusFilter }) => {
 
   const handleStockOutOnShipping = async () => {
     if (!allItemsChecked()) {
-      toast.error("Please check all items before shipping.");
+      toast.error(
+        "Please verify all items are prepared before updating the status.",
+      );
       return;
     }
 
@@ -374,6 +408,24 @@ const OrdersTab = ({ statusFilter }) => {
       setLoading(false);
     }
   }, [statusFilter]);
+
+  useEffect(() => {
+    const fetchShippingMethods = async () => {
+      try {
+        const response = await getShippingMethods();
+        if (response?.data) {
+          setShippingMethods(response.data); // Populate shipping methods
+          setSelectedShippingMethod(response.data[0] || {});
+        }
+      } catch (error) {
+        console.error("Error fetching shipping methods:", error);
+        setShippingMethods([]);
+        setSelectedShippingMethod({ shipping_method_id: "", courier: "" });
+      }
+    };
+
+    fetchShippingMethods();
+  }, []);
 
   useEffect(() => {
     fetchOrders();
@@ -628,7 +680,10 @@ const OrdersTab = ({ statusFilter }) => {
                         onClick={() => openModal(order)}
                         className="px-3 py-1 bg-alofa-pink text-white rounded hover:bg-alofa-dark"
                       >
-                        Update Status
+                        {order.order_status_id === 4 ||
+                        order.order_status_id === 5
+                          ? "View Status"
+                          : "Update Status"}
                       </button>
                     </td>
                   </tr>
@@ -678,6 +733,56 @@ const OrdersTab = ({ statusFilter }) => {
                 <div className="font-extrabold text-3xl text-alofa-dark mb-4">
                   Update Shipping Status
                 </div>
+                {/* Dropdown for shipping method */}
+                {selectedOrder?.order_status_id >= 2 &&
+                  selectedOrder?.order_status_id <= 4 && (
+                    <>
+                      <label className="font-bold" htmlFor="shipping_method">
+                        Shipping Method:
+                      </label>
+                      <div className="flex items-center gap-2 mb-4">
+                        <select
+                          name="shipping_method"
+                          id="shipping_method"
+                          className={`rounded-xl border w-full h-10 pl-4 ${
+                            selectedOrder?.order_status_id === 3 ||
+                            selectedOrder?.order_status_id === 4
+                              ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                              : "bg-gray-50 text-slate-700 hover:border-alofa-pink hover:bg-white"
+                          }`}
+                          disabled={
+                            selectedOrder?.order_status_id === 3 ||
+                            selectedOrder?.order_status_id === 4
+                          }
+                          value={
+                            selectedShippingMethod?.shipping_method_id || ""
+                          }
+                          onChange={(e) => {
+                            const selected = shippingMethods.find(
+                              (method) =>
+                                String(method.shipping_method_id) ===
+                                e.target.value,
+                            );
+                            setSelectedShippingMethod(selected || {});
+                          }}
+                        >
+                          <option value="" disabled>
+                            Select a shipping method
+                          </option>
+                          {shippingMethods.map((method) => (
+                            <option
+                              key={method.shipping_method_id}
+                              value={method.shipping_method_id}
+                            >
+                              {method.courier.trim()}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </>
+                  )}
+
+                {/* Tracking Number Input */}
                 <label className="font-bold" htmlFor="tracking_number">
                   Tracking Number:
                 </label>
@@ -685,19 +790,35 @@ const OrdersTab = ({ statusFilter }) => {
                   type="text"
                   name="tracking_number"
                   id="tracking_number"
-                  placeholder="Tracking Number"
-                  className={`rounded-xl border w-full h-10 pl-4 
-                    ${
-                      selectedOrder.order_status_id === 4 ||
-                      selectedOrder.order_status_id === 3
-                        ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                        : "bg-gray-50 text-slate-700 hover:border-alofa-pink hover:bg-white"
-                    }`}
+                  placeholder={
+                    selectedShippingMethod.shipping_method_id === 1
+                      ? "Enter 12-digit tracking number"
+                      : selectedShippingMethod.shipping_method_id === 2
+                        ? "Enter 9-digit tracking number"
+                        : "Enter tracking number"
+                  }
+                  className={`rounded-xl border w-full h-10 pl-4 ${
+                    selectedOrder.order_status_id === 4 ||
+                    selectedOrder.order_status_id === 3
+                      ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                      : "bg-gray-50 text-slate-700 hover:border-alofa-pink hover:bg-white"
+                  }`}
                   value={trackingNumber}
-                  onChange={(e) => setTrackingNumber(e.target.value)}
+                  onChange={(e) => {
+                    let value = e.target.value.replace(/\D/g, ""); // Allow only digits
+                    if (selectedShippingMethod.shipping_method_id === 1) {
+                      value = value.slice(0, 12); // Limit to 12 digits
+                    } else if (
+                      selectedShippingMethod.shipping_method_id === 2
+                    ) {
+                      value = value.slice(0, 9); // Limit to 9 digits
+                    }
+                    setTrackingNumber(value);
+                  }}
                   disabled={
                     selectedOrder.order_status_id === 3 ||
-                    selectedOrder.order_status_id === 4
+                    selectedOrder.order_status_id === 4 ||
+                    !selectedShippingMethod
                   }
                 />
               </div>
@@ -763,12 +884,7 @@ const OrdersTab = ({ statusFilter }) => {
               <div className="mt-8 flex justify-end gap-2">
                 {selectedOrder.order_status_id !== 4 && (
                   <button
-                    onClick={() =>
-                      openConfirmModal(
-                        () => handleUpdateShippingStatus(),
-                        "Are you sure you want to update shipping status? This action can't be undone.",
-                      )
-                    }
+                    onClick={() => handleUpdateShippingStatus()}
                     className="px-6 py-2 bg-alofa-pink text-white font-semibold rounded-lg hover:bg-alofa-dark transition"
                   >
                     {selectedOrder.order_status_id === 2
@@ -780,14 +896,6 @@ const OrdersTab = ({ statusFilter }) => {
                           })`}
                   </button>
                 )}
-                {/* {selectedOrder.order_status_id !== 2 && (
-                  <button
-                    onClick={handleCancelShipping}
-                    className="px-6 py-2 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400 transition"
-                  >
-                    Cancel Shipping
-                  </button>
-                )} */}
               </div>
             </>
           </div>
@@ -795,10 +903,12 @@ const OrdersTab = ({ statusFilter }) => {
             isOpen={isConfirmModalOpen}
             onClose={() => setIsConfirmModalOpen(false)}
             onConfirm={() => {
-              confirmAction();
-              setIsConfirmModalOpen(false);
+              if (confirmAction) {
+                confirmAction(); // Execute the stored action
+              }
+              setIsConfirmModalOpen(false); // Close the modal
             }}
-            message={confirmMessage} // Use the dynamic message here
+            message={confirmMessage}
           />
         </Modal>
       )}

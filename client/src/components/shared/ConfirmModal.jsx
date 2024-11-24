@@ -40,7 +40,10 @@ const ConfirmModal = ({
           {/* Confirm button */}
           <button
             className="px-4 py-2 bg-alofa-dark text-white rounded-md hover:bg-alofa-dark transition-colors"
-            onClick={onConfirm}
+            onClick={() => {
+              onConfirm(); // Call confirmAction passed down from parent
+              onClose(); // Close modal after confirming
+            }}
           >
             Confirm
           </button>
