@@ -8,34 +8,22 @@ const SalesReport = ({
   setStartDate,
   setEndDate,
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(() => {
+    // Retrieve the initial state from local storage
+    const savedState = localStorage.getItem("salesReportExpanded");
+    return savedState === "true"; // Default to false if no saved state exists
+  });
+
   const [totalAmount, setTotalAmount] = useState(0);
   const [totalOrders, setTotalOrders] = useState(0);
   const [totalLoss, setTotalLoss] = useState(0);
   const [totalSalesWithRefundDeduction, setTotalSalesWithRefundDeduction] =
     useState(0);
 
-  // Set default startDate and endDate based on orders if not provided
+  // Persist the expanded state to local storage whenever it changes
   useEffect(() => {
-    // console.log("startDate", startDate);
-    // console.log("endDate", endDate);
-    if (orders.length > 0 && (!startDate || !endDate)) {
-      const sortedOrders = [...orders].sort(
-        (a, b) => new Date(a.date_ordered) - new Date(b.date_ordered),
-      );
-      const defaultStartDate = new Date(sortedOrders[0]?.date_ordered)
-        .toISOString()
-        .split("T")[0]; // Earliest order date (YYYY-MM-DD)
-      const defaultEndDate = new Date(
-        sortedOrders[sortedOrders.length - 1]?.date_ordered,
-      )
-        .toISOString()
-        .split("T")[0]; // Latest order date (YYYY-MM-DD)
-
-      setStartDate(defaultStartDate);
-      setEndDate(defaultEndDate);
-    }
-  }, [orders, startDate, endDate, setStartDate, setEndDate]);
+    localStorage.setItem("salesReportExpanded", isExpanded);
+  }, [isExpanded]);
 
   useEffect(() => {
     if (!startDate || !endDate) return;

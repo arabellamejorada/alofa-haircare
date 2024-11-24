@@ -81,7 +81,7 @@ const ProductCard = ({ id, image, name, value, price, sku }) => {
         {/* Add to Cart button */}
         <div className="flex justify-end mt-1 mb-1 px-3 pb-2">
           <button
-            className="font-extrabold text-white py-2 px-3 rounded-full focus:outline-none shadow-md bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="font-extrabold text-white py-2 px-3 rounded-xl focus:outline-none shadow-md bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F] disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleAddToCart}
             aria-label={`Add ${name} ${value} to cart`}
             disabled={isAddingToCart}
