@@ -17,7 +17,7 @@ const RecentOrdersTable = ({ fetchOrders }) => {
         const sortedOrders = response.orders.sort(
           (a, b) => new Date(b.date_ordered) - new Date(a.date_ordered),
         ); // Sort orders by most recent
-        setOrders(sortedOrders.slice(0, 5)); // Keep only the 5 most recent orders
+        setOrders(sortedOrders.slice(0, 8)); // Limit to a maximum of 8 orders
       } catch (error) {
         console.error("Error fetching recent orders:", error);
       } finally {
@@ -102,10 +102,8 @@ const RecentOrdersTable = ({ fetchOrders }) => {
       <h2 className="text-xl font-bold text-gray-700 mb-2">
         Most Recent Orders
       </h2>
-      {loading ? (
-        <div className="flex items-center justify-center h-full mt-[5%]">
-          <ClipLoader size={50} color={"#E53E3E"} loading={true} />
-        </div>
+      {orders.length === 0 ? (
+        <div className="text-center text-gray-500">No orders found.</div>
       ) : (
         <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
           <thead>
