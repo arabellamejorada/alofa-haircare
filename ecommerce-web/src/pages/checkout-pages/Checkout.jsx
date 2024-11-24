@@ -189,10 +189,32 @@ const Checkout = () => {
         subtotal: subtotal,
         voucher_id: voucherId,
         total_discount: voucherDiscount,
-        total_amount: subtotal + 200 - voucherDiscount,
+        total_amount: subtotal + formDetails.shipping_fee - voucherDiscount,
         shipping_address_id: formDetails.shipping_address_id,
         paymentMethod: formDetails.paymentMethod,
         shipping_fee: formDetails.shipping_fee,
+        firstName: formDetails.firstName,
+        lastName: formDetails.lastName,
+        email: formDetails.email,
+        phoneNumber: formDetails.phoneNumber,
+        street: formDetails.street,
+        region: {
+          name: formDetails.region?.name || "",
+          code: formDetails.region?.code || "",
+        },
+        province: {
+          name: formDetails.province?.name || "",
+          code: formDetails.province?.code || "",
+        },
+        city: {
+          name: formDetails.city?.name || "",
+          code: formDetails.city?.code || "",
+        },
+        barangay: {
+          name: formDetails.barangay?.name || "",
+          code: formDetails.barangay?.code || "",
+        },
+        postalCode: formDetails.postalCode,
       };
 
       formData.append("orderDetails", JSON.stringify(orderDetails));
@@ -289,7 +311,6 @@ const Checkout = () => {
         cartItems,
       );
 
-      console.log("Voucher response:", response);
       if (response.error) {
         toast.error(response.error);
         setLoading(false);
@@ -332,11 +353,6 @@ const Checkout = () => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    console.log("Updated Voucher applied ID:", voucherId);
-    console.log("Updated Voucher applied discount:", voucherDiscount);
-  }, [voucherId, voucherDiscount]);
 
   const handleRemoveVoucher = () => {
     setVoucherDiscount(0);
