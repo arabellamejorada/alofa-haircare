@@ -114,8 +114,32 @@ const Voucher = () => {
     if (!voucherData.type) validationErrors.type = "Voucher type is required";
     if (voucherData.discount_value <= 0)
       validationErrors.discount_value = "Discount value must be greater than 0";
+
+    if (voucherData.type === "percentage" && voucherData.discount_value > 100)
+      validationErrors.discount_value =
+        "Percentage discount cannot exceed 100%";
+
     if (!voucherData.discount_scope)
       validationErrors.discount_scope = "Discount scope is required";
+    if (!voucherData.total_limit)
+      validationErrors.total_limit = "Usage limit is required";
+    if (validationErrors.total_limit < 0)
+      validationErrors.total_limit = "Usage limit must be greater than 0";
+    if (!voucherData.valid_from)
+      validationErrors.valid_from = "Valid from date is required";
+    if (!voucherData.valid_until)
+      validationErrors.valid_until = "Valid until date is required";
+
+    // Date validation
+    if (
+      voucherData.valid_from &&
+      voucherData.valid_until &&
+      new Date(voucherData.valid_from) > new Date(voucherData.valid_until)
+    ) {
+      validationErrors.valid_until =
+        "Valid until date must be greater than valid from date";
+    }
+
     setErrors(validationErrors);
     return Object.keys(validationErrors).length === 0;
   };
@@ -158,7 +182,9 @@ const Voucher = () => {
         toast.success("Voucher deleted successfully.");
         fetchVouchers();
       } catch (error) {
-        toast.error("Error deleting voucher. Please try again.");
+        toast.error(
+          "Error deleting voucher. Cannot delete vouchers that have been used.",
+        );
       } finally {
         setLoading(false);
         setIsConfirmModalOpen(false);
@@ -199,10 +225,10 @@ const Voucher = () => {
         code: "",
         type: "",
         discount_value: "",
-        min_spend: "",
-        max_discount: "",
+        min_spend: "0.00",
+        max_discount: "0.00",
         total_limit: "",
-        max_use_per_user: "",
+        max_use_per_user: "1",
         is_active: true,
         valid_from: "",
         valid_until: "",
@@ -479,7 +505,7 @@ const Voucher = () => {
                                   minimumFractionDigits: 2,
                                   maximumFractionDigits: 2,
                                 })}`
-                              : " N/A"}
+                              : " No Limit"}
                           </div>
                           <div>Valid Until: {voucher.valid_until}</div>
                         </div>
@@ -577,6 +603,7 @@ const Voucher = () => {
             setVoucherData={setVoucherData}
             selectedVoucher={selectedVoucher}
             errors={errors}
+            setErrors={setErrors}
           />
 
           <VariationsModal
