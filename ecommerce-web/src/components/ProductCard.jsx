@@ -3,7 +3,7 @@ import { useState, useContext } from "react";
 import { CartContext } from "./CartContext.jsx";
 import { useNavigate } from "react-router-dom";
 import { getProductVariationById } from "../api/product.js";
-import { MdAddShoppingCart } from "react-icons/md";
+import { FaCartPlus } from "react-icons/fa";
 import { ClipLoader } from "react-spinners"; // Import the spinner component
 import { toast } from "sonner";
 
@@ -12,16 +12,13 @@ const ProductCard = ({ id, image, name, value, price, sku }) => {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const navigate = useNavigate();
 
-  // Mark the function as async to use await inside it
   const handleAddToCart = async (e) => {
     e.stopPropagation();
 
     try {
-      // Fetch the latest product details by ID
       const variationData = await getProductVariationById(id);
       const latestProduct = variationData[0];
 
-      // Check if stock quantity is greater than zero
       if (latestProduct.stock_quantity <= 0) {
         toast.error(
           "This product cannot be added to the cart because it's out of stock.",
@@ -33,7 +30,7 @@ const ProductCard = ({ id, image, name, value, price, sku }) => {
       setTimeout(() => {
         addToCart({ id, image, name, value, price, sku });
         setIsAddingToCart(false);
-      }, 500); // Adjust delay as necessary
+      }, 500);
     } catch (error) {
       console.error("Error fetching product details:", error);
       toast.error("Unable to add product to cart at this time.");
@@ -47,11 +44,11 @@ const ProductCard = ({ id, image, name, value, price, sku }) => {
   return (
     <div
       onClick={handleCardClick}
-      className="relative p-1 rounded-lg cursor-pointer"
+      className="relative p-1 rounded-lg cursor-pointer transition-transform transform hover:scale-105" // Added hover effect
     >
-      {/* inner card with white background */}
+      {/* Inner card */}
       <div className="bg-white border-2 border-alofa-light-pink rounded-lg shadow-md overflow-hidden flex flex-col justify-between w-56 text-center">
-        {/* Square image occupying the whole top */}
+        {/* Image */}
         <div className="w-full aspect-square">
           <img
             src={image}
@@ -64,17 +61,16 @@ const ProductCard = ({ id, image, name, value, price, sku }) => {
         <div className="flex flex-col items-start px-3 py-1">
           <h3
             className="mt-1 mb-1 text-lg font-semibold text-gray-700 overflow-hidden text-ellipsis whitespace-nowrap"
-            style={{ maxWidth: "200px", height: "1.5rem" }} // Reduced margin-top
+            style={{ maxWidth: "200px", height: "1.5rem" }}
           >
             {name}
           </h3>
           <p
             className="mb-1 text-md font-light text-gray-700 overflow-hidden text-ellipsis whitespace-nowrap"
-            style={{ lineHeight: "1.2", height: "1.2rem" }} // Reduced height
+            style={{ lineHeight: "1.2", height: "1.2rem" }}
           >
             {value !== "N/A" ? value : ""}
           </p>
-
           <p className="text-xl font-bold text-gray-900 mt-1 mb-1">
             ₱
             {new Intl.NumberFormat("en-PH", {
@@ -82,9 +78,10 @@ const ProductCard = ({ id, image, name, value, price, sku }) => {
             }).format(price)}
           </p>
         </div>
+        {/* Add to Cart button */}
         <div className="flex justify-end mt-1 mb-1 px-3 pb-2">
           <button
-            className="font-extrabold text-white py-2 px-3 rounded-full focus:outline-none shadow-[0px_4px_4px_rgba(0,0,0,0.25)] bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="font-extrabold text-white py-2 px-3 rounded-xl focus:outline-none shadow-md bg-gradient-to-b from-[#FE699F] to-[#F8587A] hover:bg-gradient-to-b hover:from-[#F8587A] hover:to-[#FE699F] disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleAddToCart}
             aria-label={`Add ${name} ${value} to cart`}
             disabled={isAddingToCart}
@@ -93,7 +90,7 @@ const ProductCard = ({ id, image, name, value, price, sku }) => {
               {isAddingToCart ? (
                 <ClipLoader size={20} color="white" loading={isAddingToCart} />
               ) : (
-                <MdAddShoppingCart size={20} />
+                <FaCartPlus size={20} />
               )}
             </div>
           </button>
