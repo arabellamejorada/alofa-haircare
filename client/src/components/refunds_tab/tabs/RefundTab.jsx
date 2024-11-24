@@ -84,7 +84,7 @@ const RefundTab = ({ statusFilter }) => {
   };
 
   useEffect(() => {
-    console.log("Current status filter:", statusFilter);
+    // console.log("Current status filter:", statusFilter);
     fetchRefunds();
     setCurrentPage(1);
   }, [statusFilter]);

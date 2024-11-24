@@ -1,13 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getSalesMetrics } from "../../api/orders";
 
-const SalesReport = ({
-  orders,
-  startDate,
-  endDate,
-  setStartDate,
-  setEndDate,
-}) => {
+const SalesReport = ({ orders, startDate, endDate }) => {
   const [isExpanded, setIsExpanded] = useState(() => {
     // Retrieve the initial state from local storage
     const savedState = localStorage.getItem("salesReportExpanded");

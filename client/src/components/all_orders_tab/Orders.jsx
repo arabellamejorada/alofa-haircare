@@ -46,8 +46,13 @@ const Orders = () => {
 
         // Set default start and end dates
         if (sortedOrders.length > 0) {
-          setStartDate(sortedOrders[sortedOrders.length - 1]?.date_ordered); // Earliest order
-          setEndDate(sortedOrders[0]?.date_ordered); // Latest order
+          const earliestDate =
+            sortedOrders[sortedOrders.length - 1]?.date_ordered; // Earliest order
+          const latestDate = sortedOrders[0]?.date_ordered; // Latest order
+
+          // Ensure that startDate is always earlier than endDate
+          setStartDate(earliestDate);
+          setEndDate(latestDate);
         }
       } else {
         console.error("No orders data found.");
@@ -67,36 +72,65 @@ const Orders = () => {
     fetchOrders();
   }, [isDateCleared]);
 
-  // Clear dates handler
-  const clearDates = () => {
-    setStartDate(""); // Clear startDate
-    setEndDate(""); // Clear endDate
-    setIsDateCleared(true); // Set isDateCleared to true
-  };
-
   // Handle sorting
   const handleSort = (field) => {
     const newSortOrder =
       sortField === field && sortOrder === "asc" ? "desc" : "asc";
     setSortField(field);
     setSortOrder(newSortOrder);
-    setOrders((prevData) =>
-      [...prevData].sort((a, b) => {
-        const aField =
-          field === "total_amount" ? parseFloat(a[field]) : a[field];
-        const bField =
-          field === "total_amount" ? parseFloat(b[field]) : b[field];
+
+    const sortedData = [...orders].sort((a, b) => {
+      if (field === "date_ordered") {
+        // Handle date sorting
+        const dateA = new Date(a[field]);
+        const dateB = new Date(b[field]);
+
+        if (dateA < dateB) return newSortOrder === "asc" ? -1 : 1;
+        if (dateA > dateB) return newSortOrder === "asc" ? 1 : -1;
+        return 0;
+      } else {
+        // Handle non-date fields
+        const aField = isNaN(a[field]) ? a[field] : parseFloat(a[field]);
+        const bField = isNaN(b[field]) ? b[field] : parseFloat(b[field]);
 
         if (aField < bField) return newSortOrder === "asc" ? -1 : 1;
         if (aField > bField) return newSortOrder === "asc" ? 1 : -1;
         return 0;
-      }),
-    );
+      }
+    });
+
+    setOrders(sortedData);
   };
 
   const handleRefresh = async () => {
     setLoading(true);
     await fetchOrders();
+  };
+
+  const handleStartDateChange = (e) => {
+    const newStartDate = e.target.value;
+    setStartDate(newStartDate);
+
+    // Ensure Start Date is less than or equal to End Date
+    if (endDate && new Date(newStartDate) > new Date(endDate)) {
+      setEndDate(newStartDate);
+    }
+  };
+
+  const handleEndDateChange = (e) => {
+    const newEndDate = e.target.value;
+    setEndDate(newEndDate);
+
+    // Ensure End Date is greater than or equal to Start Date
+    if (startDate && new Date(newEndDate) < new Date(startDate)) {
+      setStartDate(newEndDate);
+    }
+  };
+
+  const clearDates = () => {
+    setStartDate(""); // Clear Start Date
+    setEndDate(""); // Clear End Date
+    setIsDateCleared((prevState) => !prevState); // Toggle isDateCleared to refetch the orders with new filters
   };
 
   // Calculate filtered and paginated data
@@ -249,7 +283,7 @@ const Orders = () => {
                   type="date"
                   className="h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
                   value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
+                  onChange={handleStartDateChange}
                 />
               </div>
               <div className="flex items-center">
@@ -260,7 +294,7 @@ const Orders = () => {
                   type="date"
                   className="h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
                   value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
+                  onChange={handleEndDateChange}
                 />
               </div>
               {(startDate || endDate) && (
@@ -283,8 +317,6 @@ const Orders = () => {
             orders={filteredOrders}
             startDate={startDate}
             endDate={endDate}
-            setStartDate={setStartDate}
-            setEndDate={setEndDate}
           />
           {filteredOrders.length === 0 ? (
             <div className="flex items-center justify-center h-64">
