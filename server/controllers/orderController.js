@@ -125,7 +125,6 @@ const createOrder = async (req, res) => {
 
     // if no shipping_address_id (meaning new address), insert new shipping address
     if (!orderDetails.shipping_address_id) {
-    
       const shippingAddressResult = await pool.query(
         `INSERT INTO shipping_address (first_name, last_name, address_line, barangay, city, province, region, zip_code, phone_number, customer_id)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
@@ -144,10 +143,14 @@ const createOrder = async (req, res) => {
         ],
       );
 
-      orderDetails.shipping_address_id = shippingAddressResult.rows[0].shipping_address_id
+      orderDetails.shipping_address_id =
+        shippingAddressResult.rows[0].shipping_address_id;
     }
 
-          console.log("shipping address generated:", orderDetails.shipping_address_id)
+    console.log(
+      "shipping address generated:",
+      orderDetails.shipping_address_id,
+    );
 
     // Step 1: Insert shipping details and get the shipping_id
     const shippingResult = await pool.query(
@@ -467,8 +470,17 @@ const getAllOrdersWithOrderItems = async (req, res) => {
         s.tracking_number,
         s.shipping_date,
         s.shipping_fee, 
-        v.code AS voucher_code, -- Include voucher code only
-        o.remarks, 
+        v.code AS voucher_code,
+        o.remarks,
+        sa.first_name AS shipping_first_name,
+        sa.last_name AS shipping_last_name,
+        sa.phone_number AS shipping_phone_number,
+        sa.address_line,
+        sa.barangay ->> 'name' AS barangay_name,
+        sa.city ->> 'name' AS city_name,
+        sa.province ->> 'name' AS province_name,
+        sa.region ->> 'name' AS region_name,
+        sa.zip_code,
         JSON_AGG(
           JSON_BUILD_OBJECT(
             'order_item_id', oi.order_item_id,
@@ -492,7 +504,8 @@ const getAllOrdersWithOrderItems = async (req, res) => {
       LEFT JOIN customer c ON o.customer_id = c.customer_id
       LEFT JOIN profiles p ON c.profile_id = p.id
       LEFT JOIN shipping s ON o.shipping_id = s.shipping_id
-      LEFT JOIN vouchers v ON o.voucher_id = v.voucher_id -- Join vouchers table
+      LEFT JOIN shipping_address sa ON s.shipping_address_id = sa.shipping_address_id
+      LEFT JOIN vouchers v ON o.voucher_id = v.voucher_id
       GROUP BY 
         o.order_id, 
         os.status_name, 
@@ -504,7 +517,12 @@ const getAllOrdersWithOrderItems = async (req, res) => {
         s.tracking_number,
         s.shipping_date,
         s.shipping_fee, 
-        v.code -- Add voucher code to GROUP BY
+        v.code,
+        sa.shipping_address_id,
+        sa.barangay,
+        sa.city,
+        sa.province,
+        sa.region
       ORDER BY o.order_id;
     `);
 
@@ -512,7 +530,7 @@ const getAllOrdersWithOrderItems = async (req, res) => {
       return res.status(200).json({ orders: [] });
     }
 
-    // Map orders to include customer_name and voucher details
+    // Map orders to include customer_name, voucher, and shipping address
     const orders = ordersResult.rows.map((order) => {
       return {
         ...order,
@@ -524,7 +542,18 @@ const getAllOrdersWithOrderItems = async (req, res) => {
         shipping_date: formatDate(order.shipping_date),
         voucher: order.voucher_code
           ? { code: order.voucher_code, total_discount: order.total_discount }
-          : null, // Include voucher with total_discount or null if not present
+          : null,
+        shipping_address: {
+          first_name: order.shipping_first_name,
+          last_name: order.shipping_last_name,
+          phone_number: order.shipping_phone_number,
+          address_line: order.address_line,
+          barangay: order.barangay_name, // Use the extracted name
+          city: order.city_name,
+          province: order.province_name,
+          region: order.region_name,
+          zip_code: order.zip_code,
+        },
       };
     });
 
@@ -714,10 +743,11 @@ const updateOrderStatus = async (req, res) => {
       [order_status_id, order_id],
     );
 
-   if (order_status_id === 4) { //Completed
+    if (order_status_id === 4) {
+      //Completed
       await pool.query(
         `UPDATE orders SET date_delivered = NOW() WHERE order_id = $1`,
-        [order_id]
+        [order_id],
       );
 
       console.log("Order status updated to Completed");
@@ -757,14 +787,14 @@ const updateShippingStatusAndTrackingNumber = async (req, res) => {
       [order_status_id, shipping_id],
     );
 
-   const shippingDate = new Date(); // Use JavaScript to get the current date and time
+    const shippingDate = new Date(); // Use JavaScript to get the current date and time
     await pool.query(
       `UPDATE shipping 
       SET tracking_number = $1, 
           shipping_date = $2,
           shipping_method_id = $3
       WHERE shipping_id = $4`,
-      [tracking_number, shippingDate, shipping_method_id, shipping_id]
+      [tracking_number, shippingDate, shipping_method_id, shipping_id],
     );
 
     // Find order_id from shipping_id
@@ -775,10 +805,11 @@ const updateShippingStatusAndTrackingNumber = async (req, res) => {
 
     const order_id = orderResult.rows[0].order_id;
 
-    if (order_status_id === 4) { //Completed
+    if (order_status_id === 4) {
+      //Completed
       await pool.query(
         `UPDATE orders SET date_delivered = NOW() WHERE order_id = $1`,
-        [order_id]
+        [order_id],
       );
 
       console.log("Order status updated to Completed");
@@ -833,13 +864,15 @@ const GetAllOrderStatuses = async (req, res) => {
     console.error("Error fetching order statuses:", error);
     res.status(500).json({ error: "Failed to fetch order statuses" });
   }
-}
+};
 
 const getSalesMetrics = async (req, res) => {
   const { start_date, end_date } = req.query;
 
   if (!start_date || !end_date) {
-    return res.status(400).json({ error: "Start date and end date are required" });
+    return res
+      .status(400)
+      .json({ error: "Start date and end date are required" });
   }
 
   try {
@@ -875,7 +908,7 @@ const getSalesMetrics = async (req, res) => {
           TotalAmount ta, 
           TotalLoss tl;
       `,
-      [start_date, end_date]
+      [start_date, end_date],
     );
 
     // console.log("Query Result:", result.rows[0]); // Debugging
@@ -897,7 +930,6 @@ const getShippingMethods = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch shipping methods" });
   }
 };
-
 
 module.exports = {
   getReservedQuantityByVariationId,
