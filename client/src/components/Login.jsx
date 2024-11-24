@@ -1,5 +1,5 @@
 import React, { useState, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "./AuthContext.jsx";
 
 const Login = () => {
@@ -87,6 +87,16 @@ const Login = () => {
               >
                 {showPassword ? "Hide" : "Show"}
               </button>
+            </div>
+
+            {/* Forgot Password Link */}
+            <div className="text-right mt-2">
+              <Link
+                to="/forgot-password"
+                className="text-sm text-alofa-pink hover:underline"
+              >
+                Forgot Password?
+              </Link>
             </div>
 
             <div className="mt-5">
