@@ -11,6 +11,7 @@ const VoucherModal = ({
   setVoucherData,
   selectedVoucher,
   errors,
+  setErrors,
 }) => {
   const [previousMaxDiscount, setPreviousMaxDiscount] = useState("");
 
@@ -25,7 +26,14 @@ const VoucherModal = ({
   };
 
   const handleInputChange = (e) => {
+    console.log(errors, setErrors);
+
     const { name, value } = e.target;
+
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: undefined,
+    }));
 
     if (name === "type") {
       if (value === "flat") {
@@ -43,6 +51,15 @@ const VoucherModal = ({
           [name]: value,
           max_discount: previousMaxDiscount || "", // Restore or keep empty
         }));
+
+        if (name === "discount_value") {
+          if (value < 0 || value > 100) {
+            setErrors((prevErrors) => ({
+              ...prevErrors,
+              discount_value: "Percentage must be between 0 and 100",
+            }));
+          }
+        }
       }
     } else {
       setVoucherData((prevData) => ({
@@ -127,13 +144,16 @@ const VoucherModal = ({
                   border-gray-300 appearance-none focus:outline-none 
                   focus:ring-0 focus:border-alofa-pink peer"
               min="0"
-              placeholder=" "
+              max={voucherData.type === "percentage" ? "100" : undefined}
+              placeholder=""
             />
             <label
               htmlFor="discount_value"
               className="absolute text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] start-2.5 peer-focus:text-alofa-pink peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4"
             >
-              Discount Value
+              {voucherData.type === "percentage"
+                ? "Discount Value(%)"
+                : "Discount Value(₱)"}
             </label>
             {errors.discount_value && (
               <p className="text-red-500 text-sm mt-1">
@@ -161,7 +181,7 @@ const VoucherModal = ({
               htmlFor="min_spend"
               className="absolute text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] start-2.5 peer-focus:text-alofa-pink peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4"
             >
-              Min. Spend
+              Min. Spend(₱)
             </label>
             {errors.min_spend && (
               <p className="text-red-500 text-sm mt-1">{errors.min_spend}</p>
@@ -188,7 +208,7 @@ const VoucherModal = ({
                 htmlFor="max_discount"
                 className="absolute text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] start-2.5 peer-focus:text-alofa-pink peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4"
               >
-                Max Discount
+                Max Discount(₱)
               </label>
               {errors.max_discount && (
                 <p className="text-red-500 text-sm mt-1">
@@ -253,7 +273,7 @@ const VoucherModal = ({
           </div>
 
           {/* Is Active Input */}
-          <div className="relative w-full">
+          {/* <div className="relative w-full">
             <select
               name="is_active"
               id="is_active"
@@ -273,7 +293,7 @@ const VoucherModal = ({
             >
               Is Active
             </label>
-          </div>
+          </div> */}
 
           {/* Valid From */}
           <div className="relative w-full">
