@@ -112,8 +112,8 @@ const OrdersTab = ({ statusFilter }) => {
   };
 
   const handleUpdateShippingStatus = async () => {
-    console.log("selectedOrder", selectedOrder);
-    console.log("order_status_id", selectedOrder.order_status_id);
+    // console.log("selectedOrder", selectedOrder);
+    // console.log("order_status_id", selectedOrder.order_status_id);
     if (!selectedOrder) return;
 
     let nextStatusId;
@@ -429,7 +429,7 @@ const OrdersTab = ({ statusFilter }) => {
 
   useEffect(() => {
     fetchOrders();
-    console.log(orders);
+    // console.log(orders);
     setCurrentPage(1); // Reset to first page when filters change
   }, [fetchOrders, statusFilter]);
 
@@ -440,13 +440,23 @@ const OrdersTab = ({ statusFilter }) => {
     setSortField(field);
     setSortOrder(newSortOrder);
 
-    const sortedData = [...orders].sort((a, b) => {
-      const aField = isNaN(a[field]) ? a[field] : parseFloat(a[field]);
-      const bField = isNaN(b[field]) ? b[field] : parseFloat(b[field]);
+    // console.log("Sorting by:", field, newSortOrder);
 
-      if (aField < bField) return newSortOrder === "asc" ? -1 : 1;
-      if (aField > bField) return newSortOrder === "asc" ? 1 : -1;
-      return 0;
+    const sortedData = [...orders].sort((a, b) => {
+      if (field === "date_ordered") {
+        const dateA = new Date(a[field]);
+        const dateB = new Date(b[field]);
+        if (dateA < dateB) return newSortOrder === "asc" ? -1 : 1;
+        if (dateA > dateB) return newSortOrder === "asc" ? 1 : -1;
+        return 0;
+      } else {
+        // Handle non-date fields as usual
+        const aField = isNaN(a[field]) ? a[field] : parseFloat(a[field]);
+        const bField = isNaN(b[field]) ? b[field] : parseFloat(b[field]);
+        if (aField < bField) return newSortOrder === "asc" ? -1 : 1;
+        if (aField > bField) return newSortOrder === "asc" ? 1 : -1;
+        return 0;
+      }
     });
 
     setOrders(sortedData);
