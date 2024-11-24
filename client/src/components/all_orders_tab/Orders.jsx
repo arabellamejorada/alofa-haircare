@@ -20,6 +20,7 @@ const Orders = () => {
   const [search, setSearch] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [isDateCleared, setIsDateCleared] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState(""); // New filter state for status
 
   // Sorting states
@@ -42,6 +43,12 @@ const Orders = () => {
         });
 
         setOrders(sortedOrders);
+
+        // Set default start and end dates
+        if (sortedOrders.length > 0) {
+          setStartDate(sortedOrders[sortedOrders.length - 1]?.date_ordered); // Earliest order
+          setEndDate(sortedOrders[0]?.date_ordered); // Latest order
+        }
       } else {
         console.error("No orders data found.");
       }
@@ -58,7 +65,14 @@ const Orders = () => {
 
   useEffect(() => {
     fetchOrders();
-  }, []);
+  }, [isDateCleared]);
+
+  // Clear dates handler
+  const clearDates = () => {
+    setStartDate(""); // Clear startDate
+    setEndDate(""); // Clear endDate
+    setIsDateCleared(true); // Set isDateCleared to true
+  };
 
   // Handle sorting
   const handleSort = (field) => {
@@ -250,13 +264,10 @@ const Orders = () => {
               </div>
               {(startDate || endDate) && (
                 <button
-                  onClick={() => {
-                    setStartDate("");
-                    setEndDate("");
-                  }}
+                  onClick={clearDates}
                   className="text-sm ml-2 text-alofa-pink hover:text-alofa-dark"
                 >
-                  Clear Dates
+                  Reset Dates
                 </button>
               )}
             </div>
@@ -271,7 +282,8 @@ const Orders = () => {
             orders={filteredOrders}
             startDate={startDate}
             endDate={endDate}
-            selectedStatus={selectedStatus}
+            setStartDate={setStartDate}
+            setEndDate={setEndDate}
           />
           {filteredOrders.length === 0 ? (
             <div className="flex items-center justify-center h-64">
