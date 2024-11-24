@@ -109,6 +109,28 @@ const Orders = () => {
     await fetchOrders();
   };
 
+  // Handle start date change with validation
+  const handleStartDateChange = (e) => {
+    const newStartDate = e.target.value;
+    setStartDate(newStartDate);
+
+    // Ensure startDate <= endDate
+    if (endDate && new Date(newStartDate) > new Date(endDate)) {
+      setEndDate(newStartDate);
+    }
+  };
+
+  // Handle end date change with validation
+  const handleEndDateChange = (e) => {
+    const newEndDate = e.target.value;
+    setEndDate(newEndDate);
+
+    // Ensure startDate <= endDate
+    if (startDate && new Date(newEndDate) < new Date(startDate)) {
+      setStartDate(newEndDate);
+    }
+  };
+
   // Calculate filtered and paginated data
   const filteredOrders = orders.filter((order) => {
     const orderId = order.order_id.toString();
@@ -259,7 +281,7 @@ const Orders = () => {
                   type="date"
                   className="h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
                   value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
+                  onChange={handleStartDateChange}
                 />
               </div>
               <div className="flex items-center">
@@ -270,7 +292,7 @@ const Orders = () => {
                   type="date"
                   className="h-10 px-4 border rounded-xl bg-gray-50 border-slate-300"
                   value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
+                  onChange={handleEndDateChange}
                 />
               </div>
               {(startDate || endDate) && (
@@ -293,8 +315,6 @@ const Orders = () => {
             orders={filteredOrders}
             startDate={startDate}
             endDate={endDate}
-            setStartDate={setStartDate}
-            setEndDate={setEndDate}
           />
           {filteredOrders.length === 0 ? (
             <div className="flex items-center justify-center h-64">
