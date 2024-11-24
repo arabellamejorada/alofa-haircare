@@ -150,6 +150,7 @@ const Orders = () => {
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
   const currentData = filteredOrders.slice(indexOfFirstRow, indexOfLastRow);
+  const [showFullRemarks, setShowFullRemarks] = useState(false);
 
   const handleNextPage = () => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
@@ -391,6 +392,7 @@ const Orders = () => {
                             {selectedOrder.customer_name}
                           </dd>
                         </div>
+
                         {/* Date Ordered */}
                         <div className="py-3">
                           <dt className="text-sm font-medium text-gray-500">
@@ -419,6 +421,7 @@ const Orders = () => {
                             />
                           </dd>
                         </div>
+
                         {/* Order Status */}
                         <div className="py-3">
                           <dt className="text-sm font-medium text-gray-500">
@@ -430,6 +433,7 @@ const Orders = () => {
                             />
                           </dd>
                         </div>
+
                         {/* Total Amount */}
                         <div className="py-3">
                           <dt className="text-sm font-medium text-gray-500">
@@ -447,47 +451,85 @@ const Orders = () => {
                           </dd>
                         </div>
 
-                        <div className="divide-y divide-gray-200">
-                          {/* Shipping Fee */}
-                          <div className="py-3 ">
-                            <dt className="text-sm font-medium text-gray-500">
-                              Shipping Fee
-                            </dt>
-                            <dd className="mt-1 text-base text-gray-900">
-                              ₱
-                              {Number(
-                                selectedOrder.shipping_fee,
-                              ).toLocaleString(undefined, {
+                        {/* Shipping Fee */}
+                        <div className="py-3">
+                          <dt className="text-sm font-medium text-gray-500">
+                            Shipping Fee
+                          </dt>
+                          <dd className="mt-1 text-base text-gray-900">
+                            ₱
+                            {Number(selectedOrder.shipping_fee).toLocaleString(
+                              undefined,
+                              {
                                 minimumFractionDigits: 2,
                                 maximumFractionDigits: 2,
-                              })}
+                              },
+                            )}
+                          </dd>
+                        </div>
+
+                        {/* Voucher Details */}
+                        {selectedOrder.voucher && (
+                          <div className="py-3">
+                            <dt className="text-sm font-medium text-gray-500">
+                              Voucher Used
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              Code: <span>{selectedOrder.voucher.code}</span>
+                            </dd>
+                            <dd className="mt-1 text-sm text-gray-900 ">
+                              Discount: ₱
+                              <span className="font-semibold">
+                                {Number(
+                                  selectedOrder.voucher.total_discount,
+                                ).toLocaleString(undefined, {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}
+                              </span>
                             </dd>
                           </div>
-                          {selectedOrder.voucher && (
-                            <div className="py-3 ">
-                              <dt className="text-sm font-medium text-gray-500">
-                                Voucher Used
-                              </dt>
-                              <dd className="mt-1 text-sm text-gray-900">
-                                Code: <span>{selectedOrder.voucher.code}</span>
-                              </dd>
-                              <dd className="mt-1 text-sm text-gray-900 ">
-                                Discount: ₱
-                                <span className="font-semibold">
-                                  {Number(
-                                    selectedOrder.voucher.total_discount,
-                                  ).toLocaleString(undefined, {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2,
-                                  })}
-                                </span>
-                              </dd>
-                            </div>
-                          )}
+                        )}
+
+                        {/* Remarks Section */}
+                        <div className="py-3">
+                          <dt className="text-sm font-medium text-gray-500">
+                            Remarks
+                          </dt>
+                          <dd className="mt-1 text-base text-gray-900">
+                            {selectedOrder.remarks?.length > 100 ? (
+                              <div>
+                                {showFullRemarks ? (
+                                  <>
+                                    {selectedOrder.remarks}
+                                    <button
+                                      onClick={() => setShowFullRemarks(false)}
+                                      className="ml-2 text-sm text-blue-500 hover:underline"
+                                    >
+                                      Show Less
+                                    </button>
+                                  </>
+                                ) : (
+                                  <>
+                                    {selectedOrder.remarks.slice(0, 100)}...
+                                    <button
+                                      onClick={() => setShowFullRemarks(true)}
+                                      className="ml-2 text-sm text-blue-500 hover:underline"
+                                    >
+                                      Show More
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+                            ) : (
+                              selectedOrder.remarks || "No remarks available."
+                            )}
+                          </dd>
                         </div>
                       </dl>
                     </div>
                   </div>
+
                   {/* Right Section - Items */}
                   <div className="w-1/2">
                     <div className="bg-gray-50 p-4 rounded-lg h-full">
