@@ -16,8 +16,8 @@ const SalesReport = ({
 
   // Set default startDate and endDate based on orders if not provided
   useEffect(() => {
-    console.log("startDate", startDate);
-    console.log("endDate", endDate);
+    // console.log("startDate", startDate);
+    // console.log("endDate", endDate);
     if (orders.length > 0 && (!startDate || !endDate)) {
       const sortedOrders = [...orders].sort(
         (a, b) => new Date(a.date_ordered) - new Date(b.date_ordered),
