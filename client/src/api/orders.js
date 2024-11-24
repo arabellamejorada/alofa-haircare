@@ -109,11 +109,13 @@ export const updateShippingStatusAndTrackingNumber = async (
   shippingId,
   orderStatusId,
   trackingNumber,
+  shipping_method_id
 ) => {
   try {
     const response = await axios.put(`/shipping/${shippingId}/status`, {
       order_status_id: orderStatusId,
       tracking_number: trackingNumber,
+      shipping_method_id: shipping_method_id
     });
     return response.data;
   } catch (error) {
@@ -207,3 +209,13 @@ export const getSalesMetrics = async (startDate, endDate) => {
     throw error;
   }
 };
+
+export const getShippingMethods = async () => {
+  try {
+    const response = await axios.get("/shipping-methods");
+    return response;
+  } catch (error) {
+    console.error("Error fetching shipping methods:", error);
+    throw error;
+  }
+}

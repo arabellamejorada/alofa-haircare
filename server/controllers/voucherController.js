@@ -151,7 +151,7 @@ const createVoucher = async (req, res) => {
           min_spend || 0,
           max_discount || null,
           total_limit,
-          max_use_per_user ||1,
+          max_use_per_user || 1,
           is_active,
           valid_from,
           valid_until,

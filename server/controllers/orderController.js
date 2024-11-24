@@ -716,8 +716,12 @@ const updateOrderStatus = async (req, res) => {
 
 const updateShippingStatusAndTrackingNumber = async (req, res) => {
   const { shipping_id } = req.params;
-  const { order_status_id, tracking_number } = req.body;
+  const { order_status_id, tracking_number, shipping_method_id } = req.body;
 
+  console.log("received shipping_id:", shipping_id);
+  console.log("received order_status_id:", order_status_id);
+  console.log("received tracking_number:", tracking_number);
+  console.log("received shipping_method_id:", shipping_method_id);
   try {
     await pool.query("BEGIN");
 
@@ -731,9 +735,10 @@ const updateShippingStatusAndTrackingNumber = async (req, res) => {
     await pool.query(
       `UPDATE shipping 
       SET tracking_number = $1, 
-          shipping_date = $2 
-      WHERE shipping_id = $3`,
-      [tracking_number, shippingDate, shipping_id]
+          shipping_date = $2,
+          shipping_method_id = $3
+      WHERE shipping_id = $4`,
+      [tracking_number, shippingDate, shipping_method_id, shipping_id]
     );
 
     // Find order_id from shipping_id
@@ -855,7 +860,17 @@ const getSalesMetrics = async (req, res) => {
   }
 };
 
-
+// Get all shipping_methods
+const getShippingMethods = async (req, res) => {
+  try {
+    console.log("Fetching shipping methods...");
+    const result = await pool.query(`SELECT * FROM shipping_method`);
+    res.status(200).json(result.rows);
+  } catch (error) {
+    console.error("Error fetching shipping methods:", error);
+    res.status(500).json({ error: "Failed to fetch shipping methods" });
+  }
+};
 
 
 module.exports = {
@@ -867,6 +882,7 @@ module.exports = {
   getAllOrdersWithOrderItems,
   getOrderByOrderId,
   getOrderItemsByOrderId,
+  getShippingMethods,
   updateOrderPaymentStatus,
   updateOrderStatus,
   updateShippingStatusAndTrackingNumber,
