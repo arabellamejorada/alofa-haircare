@@ -15,6 +15,28 @@ const SalesReport = ({
   const [totalSalesWithRefundDeduction, setTotalSalesWithRefundDeduction] =
     useState(0);
 
+  // Set default startDate and endDate based on orders if not provided
+  useEffect(() => {
+    // console.log("startDate", startDate);
+    // console.log("endDate", endDate);
+    if (orders.length > 0 && (!startDate || !endDate)) {
+      const sortedOrders = [...orders].sort(
+        (a, b) => new Date(a.date_ordered) - new Date(b.date_ordered),
+      );
+      const defaultStartDate = new Date(sortedOrders[0]?.date_ordered)
+        .toISOString()
+        .split("T")[0]; // Earliest order date (YYYY-MM-DD)
+      const defaultEndDate = new Date(
+        sortedOrders[sortedOrders.length - 1]?.date_ordered,
+      )
+        .toISOString()
+        .split("T")[0]; // Latest order date (YYYY-MM-DD)
+
+      setStartDate(defaultStartDate);
+      setEndDate(defaultEndDate);
+    }
+  }, [orders, startDate, endDate, setStartDate, setEndDate]);
+
   useEffect(() => {
     if (!startDate || !endDate) return;
 
