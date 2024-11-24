@@ -308,6 +308,7 @@ TransactionCard.propTypes = {
     requested_at: PropTypes.string.isRequired,
     refund_status_name: PropTypes.string.isRequired,
     total_refund_amount: PropTypes.number.isRequired,
+    updated_at: PropTypes.string,
   }),
 };
 
