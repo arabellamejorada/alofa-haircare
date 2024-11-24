@@ -46,8 +46,13 @@ const Orders = () => {
 
         // Set default start and end dates
         if (sortedOrders.length > 0) {
-          setStartDate(sortedOrders[sortedOrders.length - 1]?.date_ordered); // Earliest order
-          setEndDate(sortedOrders[0]?.date_ordered); // Latest order
+          const earliestDate =
+            sortedOrders[sortedOrders.length - 1]?.date_ordered; // Earliest order
+          const latestDate = sortedOrders[0]?.date_ordered; // Latest order
+
+          // Ensure that startDate is always earlier than endDate
+          setStartDate(earliestDate);
+          setEndDate(latestDate);
         }
       } else {
         console.error("No orders data found.");
@@ -66,13 +71,6 @@ const Orders = () => {
   useEffect(() => {
     fetchOrders();
   }, [isDateCleared]);
-
-  // Clear dates handler
-  const clearDates = () => {
-    setStartDate(""); // Clear startDate
-    setEndDate(""); // Clear endDate
-    setIsDateCleared(true); // Set isDateCleared to true
-  };
 
   // Handle sorting
   const handleSort = (field) => {
@@ -109,26 +107,30 @@ const Orders = () => {
     await fetchOrders();
   };
 
-  // Handle start date change with validation
   const handleStartDateChange = (e) => {
     const newStartDate = e.target.value;
     setStartDate(newStartDate);
 
-    // Ensure startDate <= endDate
+    // Ensure Start Date is less than or equal to End Date
     if (endDate && new Date(newStartDate) > new Date(endDate)) {
       setEndDate(newStartDate);
     }
   };
 
-  // Handle end date change with validation
   const handleEndDateChange = (e) => {
     const newEndDate = e.target.value;
     setEndDate(newEndDate);
 
-    // Ensure startDate <= endDate
+    // Ensure End Date is greater than or equal to Start Date
     if (startDate && new Date(newEndDate) < new Date(startDate)) {
       setStartDate(newEndDate);
     }
+  };
+
+  const clearDates = () => {
+    setStartDate(""); // Clear Start Date
+    setEndDate(""); // Clear End Date
+    setIsDateCleared((prevState) => !prevState); // Toggle isDateCleared to refetch the orders with new filters
   };
 
   // Calculate filtered and paginated data
