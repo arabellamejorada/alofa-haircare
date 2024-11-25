@@ -37,18 +37,19 @@ const Orders = () => {
       const response = await getAllOrdersWithItems();
       if (response && response.orders) {
         const sortedOrders = response.orders.sort((a, b) => {
-          const dateA = new Date(a.date_ordered);
-          const dateB = new Date(b.date_ordered);
+          const dateA = new Date(a.date_ordered_original);
+          const dateB = new Date(b.date_ordered_original);
           return dateB - dateA; // Most recent first
         });
 
         setOrders(sortedOrders);
 
+        console.log(response.orders);
         // Set default start and end dates
         if (sortedOrders.length > 0) {
           const earliestDate =
-            sortedOrders[sortedOrders.length - 1]?.date_ordered; // Earliest order
-          const latestDate = sortedOrders[0]?.date_ordered; // Latest order
+            sortedOrders[sortedOrders.length - 1]?.date_ordered_original; // Earliest order
+          const latestDate = sortedOrders[0]?.date_ordered_original; // Latest order
 
           // Ensure that startDate is always earlier than endDate
           setStartDate(earliestDate);
@@ -80,7 +81,7 @@ const Orders = () => {
     setSortOrder(newSortOrder);
 
     const sortedData = [...orders].sort((a, b) => {
-      if (field === "date_ordered") {
+      if (field === "date_ordered_original") {
         // Handle date sorting
         const dateA = new Date(a[field]);
         const dateB = new Date(b[field]);
@@ -151,7 +152,7 @@ const Orders = () => {
     let withinDateRange = true;
 
     if (startDate || endDate) {
-      const orderDateStr = order.date_ordered;
+      const orderDateStr = order.date_ordered_original;
       if (!orderDateStr) {
         withinDateRange = false;
       } else {
@@ -214,7 +215,7 @@ const Orders = () => {
       align: "center",
       render: (status) => <PaymentStatusBadge status={status} />,
     },
-    { key: "date_ordered", header: "Date Ordered" },
+    { key: "date_ordered_original", header: "Date Ordered" },
     { key: "view", header: "View" },
   ];
 
