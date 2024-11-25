@@ -158,11 +158,11 @@ const ProductsTab = () => {
       let response;
       if (selectedProduct) {
         response = await updateProduct(selectedProduct.product_id, productData);
-        console.log("Product updated successfully:", response);
+        // console.log("Product updated successfully:", response);
         toast.success("Product updated successfully");
       } else {
         response = await createProductWithVariationAndInventory(productData);
-        console.log("Product created successfully:", response);
+        // console.log("Product created successfully:", response);
         toast.success("Product created successfully");
       }
       handleCloseModal();
@@ -215,7 +215,7 @@ const ProductsTab = () => {
         setLoading(true);
         const response = await archiveProduct(selectedProduct.product_id);
         const productsData = await getAllProducts();
-        console.log("Product archived successfully:", response);
+        // console.log("Product archived successfully:", response);
         toast.success("Product archived successfully");
         setProducts(productsData);
       } catch (error) {
@@ -258,12 +258,6 @@ const ProductsTab = () => {
     setSortField(field);
   };
 
-  const handleSearchChange = (e) => setSearch(e.target.value.toLowerCase());
-
-  const handleCategoryChange = (e) => setSelectedCategory(e.target.value);
-
-  const handleStatusChange = (e) => setSelectedStatus(e.target.value);
-
   const filteredProducts = products
     .filter((product) => {
       const matchesSearch =
@@ -271,7 +265,8 @@ const ProductsTab = () => {
         product.description.toLowerCase().includes(search);
 
       const matchesCategory =
-        !selectedCategory || product.product_category === selectedCategory;
+        !selectedCategory ||
+        product.product_category_id === parseInt(selectedCategory, 10);
 
       const matchesStatus = selectedStatus
         ? product.status_id === parseInt(selectedStatus)
