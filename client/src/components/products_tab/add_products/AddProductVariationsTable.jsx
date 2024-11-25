@@ -277,6 +277,7 @@ const AddProductVariationsTable = ({
                         ? "border-red-500"
                         : "border-gray-200"
                     }`}
+                    min="0"
                   />
                   {variationErrors[index] &&
                     variationErrors[index].unit_price && (
