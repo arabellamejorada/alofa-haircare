@@ -452,7 +452,7 @@ const getOrderByProfileId = async (req, res) => {
       return order;
     });
 
-    console.log("Orders fetched successfully", orders);
+    // console.log("Orders fetched successfully", orders);
     res.status(200).json(orders);
   } catch (error) {
     console.error("Error fetching orders:", error);
@@ -926,7 +926,6 @@ const getSalesMetrics = async (req, res) => {
 // Get all shipping_methods
 const getShippingMethods = async (req, res) => {
   try {
-    console.log("Fetching shipping methods...");
     const result = await pool.query(`SELECT * FROM shipping_method`);
     res.status(200).json(result.rows);
   } catch (error) {
