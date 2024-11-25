@@ -44,7 +44,7 @@ const Orders = () => {
 
         setOrders(sortedOrders);
 
-        console.log(response.orders);
+        // console.log(response.orders);
         // Set default start and end dates
         if (sortedOrders.length > 0) {
           const earliestDate =

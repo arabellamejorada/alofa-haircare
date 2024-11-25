@@ -3,7 +3,7 @@ import axios from './axios';
 export const getInventory = async () => {
     try {
         const response = await axios.get("/inventory");
-        console.log("Inventory fetched: ", response.data);
+        // console.log("Inventory fetched: ", response.data);
         return response.data;
     } catch (error) {
         console.error("Error during get inventory:", error);
@@ -24,7 +24,7 @@ export const getInventoryHistoryByVariationId = async (variationId) => {
 export const getAllInventoryHistory= async () => {
   try {
     const response = await axios.get("/inventory-history");
-    console.log("Inventory history fetched: ", response.data);
+    // console.log("Inventory history fetched: ", response.data);
     return response;
   } catch (error) {
     console.error("Error fetching inventory history:", error);

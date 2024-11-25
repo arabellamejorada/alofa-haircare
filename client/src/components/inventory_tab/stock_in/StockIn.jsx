@@ -180,7 +180,7 @@ const StockIn = () => {
       stockInProducts,
     };
 
-    console.log("Stock In Data:", stockInData);
+    // console.log("Stock In Data:", stockInData);
     try {
       setLoading(true);
       await createStockIn(stockInData);
