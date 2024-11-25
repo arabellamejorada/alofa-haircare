@@ -507,6 +507,13 @@ const Orders = () => {
                           <dd className="mt-1 text-base text-gray-900">
                             <p>
                               <strong className="text-gray-600 text-sm font-semibold">
+                                Name:
+                              </strong>{" "}
+                              {selectedOrder.shipping_address.first_name}{" "}
+                              {selectedOrder.shipping_address.last_name}
+                            </p>
+                            <p>
+                              <strong className="text-gray-600 text-sm font-semibold">
                                 Contact #:
                               </strong>{" "}
                               {selectedOrder.shipping_address.phone_number}
