@@ -138,8 +138,8 @@ const Inventory = () => {
     { key: "stock_quantity", header: "Stock Quantity", align: "right" },
     {
       key: "reserved_quantity",
-      header: "Reserved Quantity (Pending Orders)",
-      align: "right",
+      header: "Reserved Quantity",
+      align: "center",
     },
     { key: "product_status", header: "Status" },
     { key: "last_updated_date", header: "Last Update" },
@@ -218,8 +218,8 @@ const Inventory = () => {
                   <th
                     key={column.key}
                     className={`px-5 py-3 border-b-2 border-gray-200 bg-alofa-pink text-white text-sm font-semibold ${
-                      column.key === "stock_quantity" ||
-                      column.key === "reserved_quantity"
+                      column.key === "reserved_quantity" ||
+                      column.key === "stock_quantity"
                         ? "text-center"
                         : column.align === "right"
                           ? "text-right"
@@ -246,6 +246,7 @@ const Inventory = () => {
                       <td
                         key={column.key}
                         className={`px-5 py-2 border-b ${
+                          column.key === "reserved_quantity" ||
                           column.key === "stock_quantity"
                             ? "text-center"
                             : column.align === "right"
@@ -253,7 +254,9 @@ const Inventory = () => {
                               : "text-left"
                         }`}
                       >
-                        {column.key === "stock_quantity" ? (
+                        {column.key === "reserved_quantity" ? (
+                          <span>{item[column.key]}</span>
+                        ) : column.key === "stock_quantity" ? (
                           <QuantityBadge quantity={item[column.key]} />
                         ) : column.key === "action" ? (
                           <button

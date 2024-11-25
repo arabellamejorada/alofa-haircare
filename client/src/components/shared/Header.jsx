@@ -1,13 +1,12 @@
 // Header.jsx
 import React, { useEffect, useState } from "react";
 import { HiMenu } from "react-icons/hi";
-import { FaUserAlt, FaUserCircle } from "react-icons/fa";
+import { FaUserAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../supabaseClient";
 import { ClipLoader } from "react-spinners";
 import Modal from "../modal/Modal"; // Adjust the import path as necessary
 import { toast } from "sonner";
-
 
 export default function Header({ onMenuClick }) {
   const navigate = useNavigate();
@@ -88,6 +87,31 @@ export default function Header({ onMenuClick }) {
   };
 
   const handleSave = async () => {
+    // Add necessary validations
+    if (!formData.first_name || formData.first_name.trim() === "") {
+      toast.error("First name cannot be empty.");
+      return;
+    }
+    if (!formData.last_name || formData.last_name.trim() === "") {
+      toast.error("Last name cannot be empty.");
+      return;
+    }
+    if (!formData.email || formData.email.trim() === "") {
+      toast.error("Email cannot be empty.");
+      return;
+    }
+    // Optionally, validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
+    // If password is being changed, add validation
+    if (formData.password && formData.password.length < 6) {
+      toast.error("Password must be at least 6 characters long.");
+      return;
+    }
+
     try {
       if (!sessionUser) throw new Error("User not authenticated");
 
