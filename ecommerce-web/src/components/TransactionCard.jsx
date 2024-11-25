@@ -210,7 +210,8 @@ const TransactionCard = ({
             {(activeTab === "To Receive" || activeTab === "Completed") &&
               order.tracking_number && (
                 <div className="font-normal text-sm mb-0">
-                  Tracking Number: {order.tracking_number} (J&T Express)
+                  Tracking Number: {order.tracking_number} (
+                  {order.shipping_method.trim()})
                 </div>
               )}
           </div>

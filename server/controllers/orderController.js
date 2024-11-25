@@ -395,6 +395,7 @@ const getOrderByProfileId = async (req, res) => {
         p.last_name AS profile_last_name,
         s.tracking_number,
         s.shipping_date,
+        sm.courier AS shipping_method,
         JSON_AGG(
             JSON_BUILD_OBJECT(
                 'order_item_id', oi.order_item_id,
@@ -418,6 +419,7 @@ const getOrderByProfileId = async (req, res) => {
     LEFT JOIN product_variation pv ON oi.variation_id = pv.variation_id
     LEFT JOIN product pr ON pv.product_id = pr.product_id
     LEFT JOIN shipping s ON o.shipping_id = s.shipping_id
+    LEFT JOIN shipping_method sm ON s.shipping_method_id = sm.shipping_method_id
     WHERE p.id = $1
     GROUP BY 
         o.order_id, 
@@ -427,7 +429,8 @@ const getOrderByProfileId = async (req, res) => {
         p.first_name, 
         p.last_name,
         s.tracking_number,
-        s.shipping_date
+        s.shipping_date,
+        sm.courier
     ORDER BY o.order_id;
     `,
       [profile_id],
@@ -449,6 +452,7 @@ const getOrderByProfileId = async (req, res) => {
       return order;
     });
 
+    console.log("Orders fetched successfully", orders);
     res.status(200).json(orders);
   } catch (error) {
     console.error("Error fetching orders:", error);
