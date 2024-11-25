@@ -289,6 +289,7 @@ TransactionCard.propTypes = {
       }),
     ).isRequired,
     total_amount: PropTypes.number.isRequired,
+    shipping_method: PropTypes.string,
   }),
   setLoading: PropTypes.func.isRequired,
   setTransactions: PropTypes.func.isRequired,

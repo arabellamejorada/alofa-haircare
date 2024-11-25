@@ -69,27 +69,24 @@ const CustomerProfile = () => {
         </div>
       )}
 
-      <div className="flex flex-col lg:flex-row items-start justify-center pt-28 px-4 gap-6 max-w-6xl mx-auto overflow-hidden">
+      <div className="flex flex-col lg:flex-row items-start justify-center pt-28 px-1 gap-1 max-w-6xl mx-auto overflow-hidden">
         {/* Sidebar */}
-        <aside className="w-full lg:w-1/4 mb-8 lg:mb-0 flex-shrink-0">
+        <aside className="w-full lg:w-1/5 mb-8 lg:mb-0 flex-shrink-0">
           {/* User Info */}
           <div className="flex flex-col mb-6">
             <div className="flex items-center">
-              <img
-                src="https://via.placeholder.com/80"
-                alt="Profile Placeholder"
-                className="w-16 h-16 rounded-full mr-4 object-cover"
-              />
+            <div className="w-16 h-16 rounded-full mr-4 bg-gray-100 flex items-center justify-center">
+              <FaUser className="text-alofa-pink w-8 h-8" />
+            </div>
               <div>
                 <p className="text-lg font-medium text-gray-700">
                   Hello,{" "}
                   <span className="text-alofa-pink font-semibold">
                     {profileData ? profileData.profiles.first_name : ""}
                   </span>
-                  .
                 </p>
-                <p className="text-sm text-gray-500">
-                  Logged in: 26 Oct, 19:54
+                <p className="text-sm text-gray-500 italic">
+                  Customer
                 </p>
               </div>
             </div>
@@ -162,7 +159,7 @@ const CustomerProfile = () => {
         </aside>
 
         {/* Main Content */}
-        <main className="w-full lg:w-full max-w-7xl p-8 flex-grow mx-auto">
+        <main className="w-full lg:w-3/4 p-7 flex-grow min-w-[900px]">
           <Routes>
             <Route
               path=""
