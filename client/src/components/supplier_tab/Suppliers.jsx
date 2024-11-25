@@ -57,7 +57,7 @@ const Suppliers = () => {
         const suppliersData = await getAllSuppliers();
         setSuppliers(suppliersData);
       } catch (error) {
-        console.log(error);
+        throw error;
       } finally {
         setLoading(false);
       }

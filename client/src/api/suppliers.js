@@ -3,7 +3,7 @@ import axios from './axios';
 export const getAllSuppliers = async () => {
     try {
         const response = await axios.get('/suppliers');
-        console.log('Suppliers fetched: ', response.data);
+        // console.log('Suppliers fetched: ', response.data);
         return response.data;
     } catch (error) {
         console.error('Error fetching suppliers: ', error);
@@ -14,7 +14,7 @@ export const getAllSuppliers = async () => {
 export const getSupplier = async (id) => {
     try {
         const response = await axios.get(`/suppliers/${id}`);
-        console.log('Supplier fetched: ', response.data);
+        // console.log('Supplier fetched: ', response.data);
         return response.data;
     } catch (error) {
         console.error('Error fetching supplier: ', error);
@@ -25,7 +25,7 @@ export const getSupplier = async (id) => {
 export const createSupplier = async (supplierData) => {
     try {
         const response = await axios.post('/suppliers', supplierData);
-        console.log('Supplier created: ', response.data);
+        // console.log('Supplier created: ', response.data);
         return response.data;
     } catch (error) {
         console.error('Error creating supplier: ', error);
@@ -36,7 +36,7 @@ export const createSupplier = async (supplierData) => {
 export const updateSupplier = async (id, supplierData) => {
     try {
         const response = await axios.put(`/suppliers/${id}`, supplierData);
-        console.log('Supplier updated: ', response.data);
+        // console.log('Supplier updated: ', response.data);
         return response.data;
     } catch (error) {
         console.error('Error updating supplier: ', error);
@@ -47,7 +47,7 @@ export const updateSupplier = async (id, supplierData) => {
 export const archiveSupplier = async (id) => {
     try {
         const response = await axios.put(`/suppliers/${id}/archive`);
-        console.log('Supplier archived: ', response.data);
+        // console.log('Supplier archived: ', response.data);
         return response.data;
     } catch (error) {
         console.error('Error archiving supplier: ', error);

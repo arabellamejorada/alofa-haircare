@@ -66,7 +66,7 @@ const Voucher = () => {
       setLoading(true);
       const vouchersData = await getAllVouchers();
       setVouchers(vouchersData);
-      console.log(vouchersData);
+      // console.log(vouchersData);
     } catch (error) {
       toast.error("Failed to fetch vouchers");
     } finally {
@@ -75,7 +75,7 @@ const Voucher = () => {
   };
 
   const fetchProductVariations = async (selectedVoucher) => {
-    console.log(selectedVoucher);
+    // console.log(selectedVoucher);
     try {
       const response = await getVoucherProductVariations(selectedVoucher);
       setVariations((prevVariations) => ({
@@ -171,7 +171,7 @@ const Voucher = () => {
   };
 
   const handleDeleteVoucher = async (voucherId) => {
-    console.log("delete voucher", voucherId);
+    // console.log("delete voucher", voucherId);
     setConfirmMessage(
       `Are you sure you want to delete the voucher "${selectedVoucher.code}"?`,
     );

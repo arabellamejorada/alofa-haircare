@@ -13,7 +13,7 @@ export const getAllVouchers = async () => {
 export const getVoucherById = async (id) => {
     try {
         const response = await axios.get(`/voucher/${id}`);
-        console.log('Voucher fetched: ', response.data);
+        // console.log('Voucher fetched: ', response.data);
         return response.data;
     } catch (error) {
         console.error('Error fetching voucher: ', error);
@@ -24,7 +24,7 @@ export const getVoucherById = async (id) => {
 export const getVoucherProductVariations = async (voucher_id) => {
     try {
         const response = await axios.get(`/voucher/variations/${voucher_id}`);
-        console.log('Voucher variations fetched: ', response.data);
+        // console.log('Voucher variations fetched: ', response.data);
         return response.data;
     } catch (error) {
         console.error('Error fetching voucher variations: ', error);
@@ -35,7 +35,7 @@ export const getVoucherProductVariations = async (voucher_id) => {
 export const createVoucher = async (voucherData) => {
     try {
         const response = await axios.post('/voucher', voucherData);
-        console.log('Voucher created: ', response.data);
+        // console.log('Voucher created: ', response.data);
         return response.data;
     } catch (error) {
         console.error('Error creating voucher: ', error);
@@ -46,7 +46,7 @@ export const createVoucher = async (voucherData) => {
 export const updateVoucher = async (id, voucherData) => {
     try {
         const response = await axios.put(`/voucher/${id}`, voucherData);
-        console.log('Voucher updated: ', response.data);
+        // console.log('Voucher updated: ', response.data);
         return response.data;
     } catch (error) {
         console.error('Error updating voucher: ', error);
@@ -57,7 +57,7 @@ export const updateVoucher = async (id, voucherData) => {
 export const deleteVoucher = async (id) => {
     try {
         const response = await axios.delete(`/voucher/${id}`);
-        console.log('Voucher deleted: ', response.data);
+        // console.log('Voucher deleted: ', response.data);
         return response.data;
     } catch (error) {
         console.error('Error deleting voucher: ', error);

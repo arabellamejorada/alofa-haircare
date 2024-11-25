@@ -3,7 +3,7 @@ import axios from "axios";
 export const createStockIn = async (requestData) => {
     try {
     const response = await axios.post("http://localhost:3001/stock-in", requestData);
-        console.log("Stock In created: ", response.data);
+        // console.log("Stock In created: ", response.data);
         return response.data;
     } catch (error) {
         console.error("Error creating Stock In:", error);
