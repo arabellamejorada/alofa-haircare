@@ -25,7 +25,10 @@ export const validateEmail = (email) =>
   /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(email);
 
 // Validate contact number to be an 11-digit number
-export const validateContactNumber = (number) => /^\d{11}$/.test(number);
+export const validateContactNumber = (contactNumber) => {
+  const contactNumberRegex = /^09\d{9}$/; // Starts with 09 and has 11 digits
+  return contactNumberRegex.test(contactNumber);
+};
 
 // Validate that a password is at least 6 characters long
 export const validatePassword = (password) => password.length >= 6;

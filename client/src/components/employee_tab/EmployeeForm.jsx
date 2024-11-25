@@ -110,16 +110,21 @@ const EmployeeForm = ({
                 Contact Number:
               </label>
               <input
-                type="text"
+                type="tel"
                 name="contact_number"
                 id="contact_number"
                 placeholder="Contact Number"
                 value={contactNumber}
                 onChange={(e) => handleInputChange(e, "contactNumber")}
+                onInput={(e) => {
+                  e.target.value = e.target.value.replace(/[^0-9]/g, ""); // Allow only numbers
+                }}
                 className={`rounded-xl border w-full h-10 pl-4 bg-gray-50 hover:border-alofa-pink hover:bg-white border-slate-300 text-slate-700 ${
                   errors.contactNumber ? "border-red-500" : ""
                 }`}
+                maxLength={11}
               />
+
               {errors.contactNumber && (
                 <p className="text-red-500 text-sm">{errors.contactNumber}</p>
               )}
