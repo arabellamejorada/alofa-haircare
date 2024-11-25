@@ -50,7 +50,6 @@ const PurchasesTab = () => {
           (a, b) => new Date(b.requested_at) - new Date(a.requested_at),
         );
         setRefundRequests(sortedRefunds);
-        // console.log("Refunds:", refunds);
       } else {
         // Fetch orders for other tabs
         const orders = await getOrderByProfileId(user.id);
@@ -58,7 +57,6 @@ const PurchasesTab = () => {
           (a, b) => new Date(b.date_ordered) - new Date(a.date_ordered),
         );
         setTransactions(sortedOrders);
-        // console.log("Orders:", orders);
       }
     } catch (error) {
       console.error("Error fetching transactions:", error);
@@ -172,10 +170,10 @@ const PurchasesTab = () => {
           <ClipLoader size={50} color="#E53E3E" loading={loading} />
         </div>
       )}
-      <div className="rounded-lg w-full max-w-7xl mx-auto mb-4">
+      <div className="rounded-lg w-full max-w-[900px] mx-auto mb-4">
         {/* Tabs */}
         <div className="relative mb-4 border-b border-gray-200">
-          <div className="flex space-x-4">
+          <div className="flex space-x-4 whitespace-nowrap">
             {[
               "All",
               "Pending",
