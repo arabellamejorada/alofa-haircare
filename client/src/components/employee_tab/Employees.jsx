@@ -108,9 +108,7 @@ const Employees = () => {
         break;
       case "contactNumber":
         setContactNumber(value);
-        error = /^\d{11}$/.test(value)
-          ? ""
-          : "Enter a valid 11-digit phone number";
+        error = value.trim() ? "" : "Contact number is required";
         break;
       case "roleId":
         setRoleId(value);
@@ -154,6 +152,14 @@ const Employees = () => {
       toast.error("Please fill out all required fields correctly.");
       return;
     }
+
+    // console.log("Adding employee...", {
+    //   firstName,
+    //   lastName,
+    //   email,
+    //   contactNumber,
+    //   roleId,
+    // });
 
     try {
       setLoading(true);
@@ -204,6 +210,13 @@ const Employees = () => {
       toast.error("Please fill out all required fields correctly.");
       return;
     }
+    // console.log("Updating employee...", {
+    //   firstName,
+    //   lastName,
+    //   email,
+    //   contactNumber,
+    //   roleId,
+    // });
 
     const updatedEmployee = {
       first_name: firstName || selectedEmployee.first_name,
