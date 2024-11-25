@@ -215,7 +215,7 @@ const Orders = () => {
       align: "center",
       render: (status) => <PaymentStatusBadge status={status} />,
     },
-    { key: "date_ordered_original", header: "Date Ordered" },
+    { key: "date_ordered", header: "Date Ordered" },
     { key: "view", header: "View" },
   ];
 
