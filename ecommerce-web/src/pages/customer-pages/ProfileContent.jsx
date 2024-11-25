@@ -66,6 +66,63 @@ const ProfileContent = ({ profileData, setProfileData }) => {
       return;
     }
 
+    // Add necessary validations to ensure all fields are not empty
+    // Validate First Name
+    if (
+      !editableProfileData.firstName ||
+      editableProfileData.firstName.trim() === ""
+    ) {
+      toast.error("First Name cannot be empty.");
+      return;
+    }
+    // Validate Last Name
+    if (
+      !editableProfileData.lastName ||
+      editableProfileData.lastName.trim() === ""
+    ) {
+      toast.error("Last Name cannot be empty.");
+      return;
+    }
+    // Validate Email
+    if (!editableProfileData.email || editableProfileData.email.trim() === "") {
+      toast.error("Email cannot be empty.");
+      return;
+    }
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(editableProfileData.email)) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
+    // Validate Contact Number
+    if (
+      !editableProfileData.contactNumber ||
+      editableProfileData.contactNumber.trim() === ""
+    ) {
+      toast.error("Contact Number cannot be empty.");
+      return;
+    }
+    // Validate contact number format
+    const contactNumberRegex = /^\+?\d{10,15}$/;
+    if (!contactNumberRegex.test(editableProfileData.contactNumber)) {
+      toast.error("Please enter a valid contact number.");
+      return;
+    }
+    // Validate Password if being edited
+    if (isEditing.password) {
+      if (
+        !editableProfileData.password ||
+        editableProfileData.password.trim() === ""
+      ) {
+        toast.error("Password cannot be empty.");
+        return;
+      }
+      if (editableProfileData.password.length < 6) {
+        toast.error("Password must be at least 6 characters long.");
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
@@ -94,12 +151,9 @@ const ProfileContent = ({ profileData, setProfileData }) => {
 
       // Update Supabase Auth user
       if (Object.keys(updates).length > 0) {
-        const { error: updateError } =
-          await supabase.auth.updateUser(updates);
+        const { error: updateError } = await supabase.auth.updateUser(updates);
         if (updateError) {
           throw updateError;
-        } else {
-          // Optionally, update user in state if necessary
         }
       }
 
