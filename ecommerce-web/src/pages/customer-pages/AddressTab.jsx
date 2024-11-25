@@ -24,6 +24,17 @@ const AddressTab = ({ profileData }) => {
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [confirmMessage, setConfirmMessage] = useState("");
   const [confirmAction, setConfirmAction] = useState(null);
+  const [errors, setErrors] = useState({
+    first_name: "",
+    last_name: "",
+    address_line: "",
+    region: "",
+    province: "",
+    city: "",
+    barangay: "",
+    phone_number: "",
+    zip_code: "",
+  });
 
   useEffect(() => {
     const fetchAddresses = async () => {
@@ -247,6 +258,8 @@ const AddressTab = ({ profileData }) => {
             <NewAddressModal
               onClose={handleCloseModal}
               onSave={handleSaveNewAddress}
+              errors={errors}
+              setErrors={setErrors}
             />
           )}
 
@@ -256,6 +269,8 @@ const AddressTab = ({ profileData }) => {
               address={selectedAddress}
               onClose={handleCloseEditModal}
               onSave={handleSaveEditedAddress}
+              errors={errors}
+              setErrors={setErrors}
             />
           )}
         </div>

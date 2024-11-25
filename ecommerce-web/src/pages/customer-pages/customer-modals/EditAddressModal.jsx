@@ -2,8 +2,9 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import PropTypes from "prop-types";
 import "../../../../src/App.css";
+import { toast } from "sonner";
 
-const EditAddressModal = ({ address, onClose, onSave }) => {
+const EditAddressModal = ({ address, onClose, onSave, errors, setErrors }) => {
   const [formDetails, setFormDetails] = useState({
     shipping_address_id: "",
     first_name: "",
@@ -187,6 +188,44 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
       return updatedData;
     });
 
+    // Validation logic
+    setErrors((prevErrors) => {
+      let updatedErrors = { ...prevErrors };
+
+      if (name === "first_name") {
+        updatedErrors[name] =
+          value.trim() === "" ? "First name is required" : "";
+      } else if (name === "last_name") {
+        updatedErrors[name] =
+          value.trim() === "" ? "Last name is required" : "";
+      } else if (name === "address_line") {
+        updatedErrors[name] = value.trim() === "" ? "Address is required" : "";
+      } else if (name === "phone_number") {
+        const regex = /^(09|\+639)\d{0,9}$/; // Allow typing but enforce pattern
+        if (value.length > 11) {
+          updatedErrors[name] = "Phone number cannot exceed 11 digits.";
+        } else if (!regex.test(value)) {
+          updatedErrors[name] =
+            "Invalid phone number format. Example: 09123456789";
+        } else {
+          updatedErrors[name] = "";
+        }
+      } else if (name === "zip_code") {
+        updatedErrors[name] =
+          value.trim() === "" ? "Please enter a valid postal code" : "";
+      } else if (name === "region") {
+        updatedErrors[name] = value === "" ? "Please select a region" : "";
+      } else if (name === "province") {
+        updatedErrors[name] = value === "" ? "Please select a province" : "";
+      } else if (name === "city") {
+        updatedErrors[name] = value === "" ? "Please select a city" : "";
+      } else if (name === "barangay") {
+        updatedErrors[name] = value === "" ? "Please select a barangay" : "";
+      }
+
+      return updatedErrors;
+    });
+
     if (name === "region") {
       await fetchProvinces(value);
     } else if (name === "province") {
@@ -219,7 +258,14 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
       !phone_number ||
       !zip_code
     ) {
-      alert("Please fill in all fields.");
+      toast.error("Please fill in all fields.");
+      return;
+    }
+
+    // Check for errors in state
+    const hasErrors = Object.values(errors).some((error) => error !== "");
+    if (hasErrors) {
+      toast.error("Please fix the errors in the form before saving.");
       return;
     }
 
@@ -247,10 +293,11 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
                 name="first_name"
                 value={formDetails.first_name}
                 onChange={handleInputChange}
-                className="block w-full px-3 pb-2 pt-4 text-base 
+                className={`block w-full px-3 pb-2 pt-4 text-base 
                   text-gray-900 bg-transparent rounded-lg border 
-                  border-gray-300 appearance-none focus:outline-none 
-                  focus:ring-0 focus:border-alofa-pink peer"
+                  ${errors.first_name ? "border-red-500" : "border-gray-300"} 
+                  appearance-none focus:outline-none 
+                  focus:ring-0 focus:border-alofa-pink peer`}
                 placeholder=" "
               />
               <label
@@ -261,6 +308,9 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
               >
                 First Name
               </label>
+              {errors.first_name && (
+                <p className="text-red-500 text-sm mt-1">{errors.first_name}</p>
+              )}
             </div>
 
             <div className="relative w-full">
@@ -269,10 +319,11 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
                 name="last_name"
                 value={formDetails.last_name}
                 onChange={handleInputChange}
-                className="block w-full px-3 pb-2 pt-4 text-base 
+                className={`block w-full px-3 pb-2 pt-4 text-base 
                   text-gray-900 bg-transparent rounded-lg border 
-                  border-gray-300 appearance-none focus:outline-none 
-                  focus:ring-0 focus:border-alofa-pink peer"
+                  ${errors.last_name ? "border-red-500" : "border-gray-300"} 
+                  appearance-none focus:outline-none 
+                  focus:ring-0 focus:border-alofa-pink peer`}
                 placeholder=" "
               />
               <label
@@ -283,6 +334,9 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
               >
                 Last Name
               </label>
+              {errors.last_name && (
+                <p className="text-red-500 text-sm mt-1">{errors.last_name}</p>
+              )}
             </div>
           </div>
 
@@ -292,10 +346,11 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
               name="address_line"
               value={formDetails.address_line}
               onChange={handleInputChange}
-              className="block w-full px-3 pb-2 pt-4 text-base 
-                text-gray-900 bg-transparent rounded-lg border 
-                border-gray-300 appearance-none focus:outline-none 
-                focus:ring-0 focus:border-alofa-pink peer"
+              className={`block w-full px-3 pb-2 pt-4 text-base 
+                  text-gray-900 bg-transparent rounded-lg border 
+                  ${errors.address_line ? "border-red-500" : "border-gray-300"} 
+                  appearance-none focus:outline-none 
+                  focus:ring-0 focus:border-alofa-pink peer`}
               placeholder=" "
             />
             <label
@@ -306,6 +361,9 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
             >
               Street and house number
             </label>
+            {errors.address_line && (
+              <p className="text-red-500 text-sm mt-1">{errors.address_line}</p>
+            )}
           </div>
 
           {/* Repeat similar changes for Region, Province, City, and Barangay fields */}
@@ -315,10 +373,11 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
               name="region"
               value={formDetails.region.code}
               onChange={handleInputChange}
-              className="block w-full px-3 pb-2 pt-4 text-base 
-                text-gray-900 bg-transparent rounded-lg border 
-                border-gray-300 appearance-none focus:outline-none 
-                focus:ring-0 focus:border-alofa-pink peer"
+              className={`block w-full px-3 pb-2 pt-4 text-base 
+                  text-gray-900 bg-transparent rounded-lg border 
+                  ${errors.region ? "border-red-500" : "border-gray-300"} 
+                  appearance-none focus:outline-none 
+                  focus:ring-0 focus:border-alofa-pink peer`}
             >
               <option value="" disabled>
                 Select Region
@@ -337,6 +396,9 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
             >
               Region
             </label>
+            {errors.region && (
+              <p className="text-red-500 text-sm mt-1">{errors.region}</p>
+            )}
           </div>
 
           {/* Province */}
@@ -345,10 +407,11 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
               name="province"
               value={formDetails.province.code}
               onChange={handleInputChange}
-              className="block w-full px-3 pb-2 pt-4 text-base 
-                text-gray-900 bg-transparent rounded-lg border 
-                border-gray-300 appearance-none focus:outline-none 
-                focus:ring-0 focus:border-alofa-pink peer"
+              className={`block w-full px-3 pb-2 pt-4 text-base 
+                  text-gray-900 bg-transparent rounded-lg border 
+                  ${errors.province ? "border-red-500" : "border-gray-300"} 
+                  appearance-none focus:outline-none 
+                  focus:ring-0 focus:border-alofa-pink peer`}
               disabled={!formDetails.region.code}
             >
               <option value="">Select Province</option>
@@ -366,6 +429,9 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
             >
               Province
             </label>
+            {errors.province && (
+              <p className="text-red-500 text-sm mt-1">{errors.province}</p>
+            )}
           </div>
 
           {/* City */}
@@ -374,10 +440,11 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
               name="city"
               value={formDetails.city.code}
               onChange={handleInputChange}
-              className="block w-full px-3 pb-2 pt-4 text-base 
-                text-gray-900 bg-transparent rounded-lg border 
-                border-gray-300 appearance-none focus:outline-none 
-                focus:ring-0 focus:border-alofa-pink peer"
+              className={`block w-full px-3 pb-2 pt-4 text-base 
+                  text-gray-900 bg-transparent rounded-lg border 
+                  ${errors.city ? "border-red-500" : "border-gray-300"} 
+                  appearance-none focus:outline-none 
+                  focus:ring-0 focus:border-alofa-pink peer`}
               disabled={!formDetails.province.code}
             >
               <option value="">Select City/Municipality</option>
@@ -395,6 +462,9 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
             >
               City/Municipality
             </label>
+            {errors.city && (
+              <p className="text-red-500 text-sm mt-1">{errors.city}</p>
+            )}
           </div>
 
           {/* Barangay */}
@@ -403,10 +473,11 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
               name="barangay"
               value={formDetails.barangay.code}
               onChange={handleInputChange}
-              className="block w-full px-3 pb-2 pt-4 text-base 
-                text-gray-900 bg-transparent rounded-lg border 
-                border-gray-300 appearance-none focus:outline-none 
-                focus:ring-0 focus:border-alofa-pink peer"
+              className={`block w-full px-3 pb-2 pt-4 text-base 
+                  text-gray-900 bg-transparent rounded-lg border 
+                  ${errors.barangay ? "border-red-500" : "border-gray-300"} 
+                  appearance-none focus:outline-none 
+                  focus:ring-0 focus:border-alofa-pink peer`}
               disabled={!formDetails.city.code || barangays.length === 0}
             >
               <option value="">Select Barangay</option>
@@ -424,6 +495,9 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
             >
               Barangay
             </label>
+            {errors.barangay && (
+              <p className="text-red-500 text-sm mt-1">{errors.barangay}</p>
+            )}
           </div>
 
           <div className="relative mb-4">
@@ -432,11 +506,13 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
               name="phone_number"
               value={formDetails.phone_number}
               onChange={handleInputChange}
-              className="block w-full px-3 pb-2 pt-4 text-base 
-                text-gray-900 bg-transparent rounded-lg border 
-                border-gray-300 appearance-none focus:outline-none 
-                focus:ring-0 focus:border-alofa-pink peer"
+              className={`block w-full px-3 pb-2 pt-4 text-base 
+                  text-gray-900 bg-transparent rounded-lg border 
+                  ${errors.phone_number ? "border-red-500" : "border-gray-300"} 
+                  appearance-none focus:outline-none 
+                  focus:ring-0 focus:border-alofa-pink peer`}
               placeholder=" "
+              maxLength={11}
             />
             <label
               htmlFor="phone_number"
@@ -446,6 +522,9 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
             >
               Phone Number
             </label>
+            {errors.phone_number && (
+              <p className="text-red-500 text-sm mt-1">{errors.phone_number}</p>
+            )}
           </div>
 
           <div className="relative mb-10">
@@ -454,10 +533,11 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
               name="zip_code"
               value={formDetails.zip_code}
               onChange={handleInputChange}
-              className="block w-full px-3 pb-2 pt-4 text-base 
-                text-gray-900 bg-transparent rounded-lg border 
-                border-gray-300 appearance-none focus:outline-none 
-                focus:ring-0 focus:border-alofa-pink peer"
+              className={`block w-full px-3 pb-2 pt-4 text-base 
+                  text-gray-900 bg-transparent rounded-lg border 
+                  ${errors.zip_code ? "border-red-500" : "border-gray-300"} 
+                  appearance-none focus:outline-none 
+                  focus:ring-0 focus:border-alofa-pink peer`}
               placeholder=" "
             />
             <label
@@ -468,6 +548,9 @@ const EditAddressModal = ({ address, onClose, onSave }) => {
             >
               Postal Code
             </label>
+            {errors.zip_code && (
+              <p className="text-red-500 text-sm mt-1">{errors.zip_code}</p>
+            )}
           </div>
 
           <button

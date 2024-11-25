@@ -185,7 +185,6 @@ const ShippingAddress = ({
       if (address.city?.code) {
         await fetchBarangays(address.city.code);
       }
-      // console.log("Selected address:", formDetails);
       setIsAddressModalOpen(false);
     } catch (error) {
       toast.error("Failed to save address. Please try again.");
@@ -197,9 +196,38 @@ const ShippingAddress = ({
 
   const validateField = (name, value) => {
     let error = "";
-    if (!value) {
-      error = "Field is required";
+    if (name === "firstName" && !value) {
+      error = "First name is required";
+    } else if (name === "lastName" && !value) {
+      error = "Last name is required";
+    } else if (name === "street" && !value) {
+      error = "Street is required";
+    } else if (name === "region" && !value) {
+      error = "Region is required";
+    } else if (name === "province" && !value) {
+      error = "Province is required";
+    } else if (name === "city" && !value) {
+      error = "City is required";
+    } else if (name === "barangay" && !value) {
+      error = "Barangay is required";
+    } else if (name === "postalCode" && !value) {
+      error = "Postal code is required";
+    } else if (name === "phoneNumber") {
+      const regex = /^(09|\+639)\d{0,9}$/; // Allow typing but enforce pattern
+      if (value.length > 11) {
+        error = "Phone number cannot exceed 11 digits.";
+      } else if (!regex.test(value) && value.length > 0 && value.length < 11) {
+        error = "Invalid phone number format. Example: 09123456789";
+      } else if (!value) {
+        error = "Phone number is required";
+      }
+    } else if (name === "email") {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(value)) {
+        error = "Please enter a valid email address";
+      }
     }
+
     return error;
   };
 
@@ -317,7 +345,6 @@ const ShippingAddress = ({
       return [];
     }
   };
-
   const renderError = (field) => {
     if (errors[field]) {
       return <span className="text-red-500 text-xs">{errors[field]}</span>;
@@ -342,10 +369,11 @@ const ShippingAddress = ({
             name="email"
             value={formDetails.email}
             onChange={handleInputChange}
-            className="block w-full px-3 pb-2 pt-4 text-base 
+            className={`block w-full px-3 pb-2 pt-4 text-base 
                     text-gray-900 bg-transparent rounded-lg border 
-                    border-gray-300 appearance-none focus:outline-none 
-                    focus:ring-0 focus:border-alofa-pink peer"
+                    ${errors.email ? "border-red-500" : "border-gray-300"} 
+                    appearance-none focus:outline-none 
+                    focus:ring-0 focus:border-alofa-pink peer`}
             placeholder=" "
           />
           <label
@@ -396,10 +424,11 @@ const ShippingAddress = ({
               name="firstName"
               value={formDetails.firstName}
               onChange={handleInputChange}
-              className="block w-full px-3 pb-2 pt-4 text-base 
-                            text-gray-900 bg-transparent rounded-lg border 
-                            border-gray-300 appearance-none focus:outline-none 
-                            focus:ring-0 focus:border-alofa-pink peer"
+              className={`block w-full px-3 pb-2 pt-4 text-base 
+                  text-gray-900 bg-transparent rounded-lg border 
+                  ${errors.firstName ? "border-red-500" : "border-gray-300"} 
+                  appearance-none focus:outline-none 
+                  focus:ring-0 focus:border-alofa-pink peer`}
               placeholder=" "
             />
             <label
@@ -422,10 +451,11 @@ const ShippingAddress = ({
               name="lastName"
               value={formDetails.lastName}
               onChange={handleInputChange}
-              className="block w-full px-3 pb-2 pt-4 text-base 
-                            text-gray-900 bg-transparent rounded-lg border 
-                            border-gray-300 appearance-none focus:outline-none 
-                            focus:ring-0 focus:border-alofa-pink peer"
+              className={`block w-full px-3 pb-2 pt-4 text-base 
+                  text-gray-900 bg-transparent rounded-lg border 
+                  ${errors.lastName ? "border-red-500" : "border-gray-300"} 
+                  appearance-none focus:outline-none 
+                  focus:ring-0 focus:border-alofa-pink peer`}
               placeholder=" "
             />
             <label
@@ -442,16 +472,17 @@ const ShippingAddress = ({
           </div>
         </div>
 
-        <div className="relative">
+        <div className="relative mb-4">
           <input
             type="text"
             name="street"
             value={formDetails.street}
             onChange={handleInputChange}
-            className="block w-full px-3 pb-2 pt-4 text-base 
+            className={`block w-full px-3 pb-2 pt-4 text-base 
                     text-gray-900 bg-transparent rounded-lg border 
-                    border-gray-300 appearance-none focus:outline-none 
-                    focus:ring-0 focus:border-alofa-pink peer mb-4"
+                    ${errors.street ? "border-red-500" : "border-gray-300"} 
+                    appearance-none focus:outline-none 
+                    focus:ring-0 focus:border-alofa-pink peer`}
             placeholder=" "
           />
           <label
@@ -473,9 +504,11 @@ const ShippingAddress = ({
             name="region"
             value={formDetails.region.code}
             onChange={handleInputChange}
-            className={`block w-full px-3 pb-2 pt-4 text-base text-gray-900 bg-transparent
-                rounded-lg border border-gray-300 appearance-none focus:outline-none 
-                focus:ring-0 focus:border-alofa-pink peer`}
+            className={`block w-full px-3 pb-2 pt-4 text-base 
+                    text-gray-900 bg-transparent rounded-lg border 
+                    ${errors.region ? "border-red-500" : "border-gray-300"} 
+                    appearance-none focus:outline-none 
+                    focus:ring-0 focus:border-alofa-pink peer`}
             placeholder=" "
           >
             <option value="" disabled>
@@ -502,9 +535,11 @@ const ShippingAddress = ({
             name="province"
             value={formDetails.province.code}
             onChange={handleInputChange}
-            className={`block w-full px-3 pb-2 pt-4 text-base text-gray-900 bg-transparent
-                rounded-lg border border-gray-300 appearance-none focus:outline-none 
-                focus:ring-0 focus:border-alofa-pink peer`}
+            className={`block w-full px-3 pb-2 pt-4 text-base 
+                    text-gray-900 bg-transparent rounded-lg border 
+                    ${errors.province ? "border-red-500" : "border-gray-300"} 
+                    appearance-none focus:outline-none 
+                    focus:ring-0 focus:border-alofa-pink peer`}
             disabled={!formDetails.region.code}
             placeholder=""
           >
@@ -530,9 +565,11 @@ const ShippingAddress = ({
             name="city"
             value={formDetails.city.code}
             onChange={handleInputChange}
-            className={`block w-full px-3 pb-2 pt-4 text-base text-gray-900 bg-transparent
-                  rounded-lg border border-gray-300 appearance-none focus:outline-none 
-                  focus:ring-0 focus:border-alofa-pink peer`}
+            className={`block w-full px-3 pb-2 pt-4 text-base 
+                    text-gray-900 bg-transparent rounded-lg border 
+                    ${errors.city ? "border-red-500" : "border-gray-300"} 
+                    appearance-none focus:outline-none 
+                    focus:ring-0 focus:border-alofa-pink peer`}
             disabled={!formDetails.province.code}
             placeholder=""
           >
@@ -558,8 +595,10 @@ const ShippingAddress = ({
             name="barangay"
             value={formDetails.barangay.code}
             onChange={handleInputChange}
-            className={`block w-full px-3 pb-2 pt-4 text-base text-gray-900 bg-transparent
-                    rounded-lg border border-gray-300 appearance-none focus:outline-none 
+            className={`block w-full px-3 pb-2 pt-4 text-base 
+                    text-gray-900 bg-transparent rounded-lg border 
+                    ${errors.barangay ? "border-red-500" : "border-gray-300"} 
+                    appearance-none focus:outline-none 
                     focus:ring-0 focus:border-alofa-pink peer`}
             disabled={!formDetails.city.code || barangays.length === 0}
             placeholder=""
@@ -581,6 +620,7 @@ const ShippingAddress = ({
           >
             Barangay
           </label>
+          {renderError("barangay")}
         </div>
 
         <div className="relative mb-4">
@@ -590,11 +630,13 @@ const ShippingAddress = ({
             id="phoneNumber"
             value={formDetails.phoneNumber}
             onChange={handleInputChange}
-            className="block w-full px-3 pb-2 pt-4 text-base 
-                      text-gray-900 bg-transparent rounded-lg border 
-                      border-gray-300 appearance-none focus:outline-none 
-                      focus:ring-0 focus:border-alofa-pink peer"
+            className={`block w-full px-3 pb-2 pt-4 text-base 
+                    text-gray-900 bg-transparent rounded-lg border 
+                    ${errors.phoneNumber ? "border-red-500" : "border-gray-300"} 
+                    appearance-none focus:outline-none 
+                    focus:ring-0 focus:border-alofa-pink peer`}
             placeholder=""
+            maxLength={11}
           />
           <label
             htmlFor="phoneNumber"
@@ -616,10 +658,11 @@ const ShippingAddress = ({
             id="postalCode"
             value={formDetails.postalCode}
             onChange={handleInputChange}
-            className="block w-full px-3 pb-2 pt-4 text-base 
-                      text-gray-900 bg-transparent rounded-lg border 
-                      border-gray-300 appearance-none focus:outline-none 
-                      focus:ring-0 focus:border-alofa-pink peer"
+            className={`block w-full px-3 pb-2 pt-4 text-base 
+                    text-gray-900 bg-transparent rounded-lg border 
+                    ${errors.postalCode ? "border-red-500" : "border-gray-300"} 
+                    appearance-none focus:outline-none 
+                    focus:ring-0 focus:border-alofa-pink peer`}
             placeholder=""
           />
           <label

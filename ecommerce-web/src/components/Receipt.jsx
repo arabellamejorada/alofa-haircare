@@ -15,15 +15,15 @@ const Receipt = ({ orderDetails }) => {
   const orderItems = orderDetails.order_items;
 
   useEffect(() => {
-    console.log("orderDetails:", orderDetails);
+    // console.log("orderDetails:", orderDetails);
     const orderDateString = orderDetails.order.order_date;
-    console.log("order_date:", orderDateString);
+    // console.log("order_date:", orderDateString);
 
     if (orderDateString) {
       const date = new Date(orderDateString);
       if (!isNaN(date.getTime())) {
         setOrderDate(date);
-        console.log("Parsed Date:", date);
+        // console.log("Parsed Date:", date);
       } else {
         console.error("Invalid date format:", orderDateString);
         setOrderDate(null);
