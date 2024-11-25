@@ -129,19 +129,31 @@ const Checkout = () => {
   const validateErrors = () => {
     const newErrors = {};
 
-    if (!formDetails.firstName) {
+    // Validate individual fields and add specific error messages
+    if (!formDetails.firstName.trim()) {
       newErrors.firstName = "First name is required.";
     }
-    if (!formDetails.lastName) {
+    if (!formDetails.lastName.trim()) {
       newErrors.lastName = "Last name is required.";
     }
-    if (!formDetails.email) {
+    if (!formDetails.email.trim()) {
       newErrors.email = "Email is required.";
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formDetails.email)) {
+        newErrors.email = "Please enter a valid email address.";
+      }
     }
-    if (!formDetails.phoneNumber) {
+    if (!formDetails.phoneNumber.trim()) {
       newErrors.phoneNumber = "Phone number is required.";
+    } else {
+      const phoneRegex = /^(09|\+639)\d{9}$/;
+      if (!phoneRegex.test(formDetails.phoneNumber)) {
+        newErrors.phoneNumber =
+          "Invalid phone number format. Example: 09123456789";
+      }
     }
-    if (!formDetails.street) {
+    if (!formDetails.street.trim()) {
       newErrors.street = "Address is required.";
     }
     if (!formDetails.region.code) {
@@ -153,31 +165,48 @@ const Checkout = () => {
     if (!formDetails.city.code) {
       newErrors.city = "City is required.";
     }
-    if (!formDetails.postalCode) {
+    if (
+      barangays.length > 0 &&
+      !formDetails.barangay.code &&
+      formDetails.barangay.name === ""
+    ) {
+      newErrors.barangay = "Barangay is required.";
+    }
+    if (!formDetails.postalCode.trim()) {
       newErrors.postalCode = "Postal code is required.";
     }
     if (!formDetails.paymentMethod) {
-      newErrors.paymentMethod = "Payment method is required.";
+      newErrors.paymentMethod = "Please upload a payment receipt.";
+    } else if (!receiptFile) {
+      newErrors.paymentMethod = "Please upload a payment receipt.";
     }
-
+    // Update the errors state
     setErrors(newErrors);
+
     return newErrors;
   };
 
   const handleCompleteOrder = async () => {
     try {
       setLoading(true);
+      const errors = validateErrors();
+      if (Object.keys(errors).length > 0) {
+        // If there are multiple missing fields, show a general error message.
+        let foundSpecificError = false;
 
-      const currentErrors = validateErrors();
-      if (Object.keys(currentErrors).length > 0) {
-        toast.error("Please fill out all required fields.");
-        setLoading(false);
-        return;
-      }
+        for (const field in errors) {
+          if (errors[field]) {
+            // Display specific error messages for fields that are missing.
+            toast.error(errors[field]);
+            foundSpecificError = true;
+          }
+        }
 
-      // Only require barangay if there are barangays available
-      if (barangays.length > 0 && !formDetails.barangay.code) {
-        toast.error("Field is required.");
+        // If no specific errors were displayed, show a generic error message.
+        if (!foundSpecificError) {
+          toast.error("Please fill out all required fields.");
+        }
+
         setLoading(false);
         return;
       }
@@ -243,7 +272,7 @@ const Checkout = () => {
       }
 
       // Log all formData contents
-      console.log("Creating order with form data:");
+      // console.log("Creating order with form data:");
       // for (let [key, value] of formData.entries()) {
       //   console.log(`${key}:`, value);
       // }
@@ -287,7 +316,7 @@ const Checkout = () => {
       setReceiptFile(null);
       setUploadedPaymentMethod(null);
     } catch (error) {
-      toast.error("Please fill out all required fields.");
+      toast.error("An error occured while creating order. Please try again.");
       console.error("Failed to complete order:", error);
     } finally {
       setLoading(false);

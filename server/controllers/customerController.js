@@ -124,7 +124,7 @@ const getCustomerById = async (req, res) => {
 // Get customer by profile ID
 const getCustomerByProfileId = async (req, res) => {
   const profile_id = req.params.profile_id;
-console.log("profile_id", profile_id)
+// console.log("profile_id", profile_id)
   try {
     const { data, error } = await supabase
       .from("customer")
@@ -293,7 +293,7 @@ const createShippingAddress = async (req, res) => {
 const getShippingAddressByCustomerId = async (req, res) => {
   const customer_id = req.params.customer_id;
 
-  console.log("customer_id", customer_id);
+  // console.log("customer_id", customer_id);
   try {
     const { data, error } = await supabase
       .from("shipping_address")
@@ -324,9 +324,9 @@ const updateShippingAddress = async (req, res) => {
   const shipping_address_id = parseInt(req.params.id);
   const { first_name, last_name, phone_number, address_line, barangay, city, province, region, zip_code } = req.body;
 
-  console.log("shipping_address_id", shipping_address_id);
-  console.log("Received updated address: ",first_name, last_name, phone_number, address_line, barangay, city, province, region, zip_code
-  );
+  // console.log("shipping_address_id", shipping_address_id);
+  // console.log("Received updated address: ",first_name, last_name, phone_number, address_line, barangay, city, province, region, zip_code
+  // );
   try {
     const { data, error } = await supabase
       .from("shipping_address")
