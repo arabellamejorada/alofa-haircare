@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Fragment } from "react";
+import React, { useState, useEffect, useCallback, Fragment } from "react";
 import {
   getAllOrdersWithItems,
   updateOrderPaymentStatus,
@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import SendEmail from "../../shared/SendEmail";
 import ConfirmModal from "../../shared/ConfirmModal";
 import DynamicModal from "../../modal/DynamicModal";
+import InsufficientPaymentModal from "../../modal/InsufficientPaymentModal";
 import RefreshIcon from "../../shared/RefreshButton";
 
 const OrderVerificationTab = ({ statusFilter }) => {
@@ -47,6 +48,8 @@ const OrderVerificationTab = ({ statusFilter }) => {
 
   const [isRemarksModalOpen, setIsRemarksModalOpen] = useState(false);
   const [isReasonModalOpen, setIsReasonModalOpen] = useState(false);
+  const [isInsufficientPaymentModalOpen, setIsInsufficientPaymentModalOpen] =
+    useState(false);
 
   const openRemarksModal = (order) => {
     setSelectedOrder(order);
@@ -63,6 +66,10 @@ const OrderVerificationTab = ({ statusFilter }) => {
     setIsConfirmModalOpen(true);
   };
 
+  const openInsufficientPaymentModal = () => {
+    setIsInsufficientPaymentModalOpen(true);
+  };
+
   const handleImageClick = (imageSrc) => {
     setFullScreenImage(imageSrc);
     setIsFullScreen(true);
@@ -73,7 +80,7 @@ const OrderVerificationTab = ({ statusFilter }) => {
     setFullScreenImage(null);
   };
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       setLoading(true);
       const response = await getAllOrdersWithItems();
@@ -87,11 +94,10 @@ const OrderVerificationTab = ({ statusFilter }) => {
           );
         }
 
-        // Sort orders by 'date_ordered' in descending order
         const sortedOrders = filteredOrders.sort((a, b) => {
           const dateA = new Date(a.date_ordered);
           const dateB = new Date(b.date_ordered);
-          return dateB - dateA; // Most recent first
+          return dateB - dateA;
         });
 
         setOrders(sortedOrders);
@@ -104,12 +110,12 @@ const OrderVerificationTab = ({ statusFilter }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [statusFilter]);
 
   useEffect(() => {
     fetchOrders();
-    setCurrentPage(1); // Reset to first page when statusFilter changes
-  }, [statusFilter]);
+    setCurrentPage(1); // Reset to the first page when statusFilter changes
+  }, [fetchOrders]);
 
   // Handle sorting
   const handleSort = (field) => {
@@ -240,7 +246,7 @@ const OrderVerificationTab = ({ statusFilter }) => {
       setLoading(true);
 
       // Log remarks for debugging purposes
-      console.log(`Remarks for Order #${selectedOrder.order_id}:`, remarks);
+      // console.log(`Remarks for Order #${selectedOrder.order_id}:`, remarks);
 
       // Step 1: Update order remarks in the database
       await updateOrderRemarks(selectedOrder.order_id, remarks);
@@ -257,13 +263,13 @@ const OrderVerificationTab = ({ statusFilter }) => {
         <p>Thank you for shopping with us!</p>
       `;
 
-      console.log("Sending email with data:", {
-        to: selectedOrder.customer_email,
-        from: "Alofa Haircare <mailgun@sandbox1463264fb2744256b74af8ebe920ea0c.mailgun.org>", // Replace with verified sender email
-        subject,
-        text: textContent,
-        html: htmlContent,
-      });
+      // console.log("Sending email with data:", {
+      //   to: selectedOrder.customer_email,
+      //   from: "Alofa Haircare <mailgun@sandbox1463264fb2744256b74af8ebe920ea0c.mailgun.org>", // Replace with verified sender email
+      //   subject,
+      //   text: textContent,
+      //   html: htmlContent,
+      // });
 
       await SendEmail(
         selectedOrder.customer_email,
@@ -317,13 +323,13 @@ const OrderVerificationTab = ({ statusFilter }) => {
         <p>Thank you.</p>
       `;
 
-      console.log("Sending email with data:", {
-        to: selectedOrder.customer_email,
-        from: "Alofa Haircare <mailgun@sandbox1463264fb2744256b74af8ebe920ea0c.mailgun.org>", // Replace with your verified sender email
-        subject,
-        text: textContent,
-        html: htmlContent,
-      });
+      // console.log("Sending email with data:", {
+      //   to: selectedOrder.customer_email,
+      //   from: "Alofa Haircare <mailgun@sandbox1463264fb2744256b74af8ebe920ea0c.mailgun.org>", // Replace with your verified sender email
+      //   subject,
+      //   text: textContent,
+      //   html: htmlContent,
+      // });
 
       await SendEmail(
         selectedOrder.customer_email,
@@ -347,8 +353,13 @@ const OrderVerificationTab = ({ statusFilter }) => {
     }
   };
 
-  const handleInsufficientPayment = async () => {
+  const handleInsufficientPayment = async (amountPaid, amountDue) => {
     if (!selectedOrder) return;
+
+    if (!amountPaid || !amountDue) {
+      toast.error("Please enter the amount paid and amount due.");
+      return;
+    }
 
     // Validate customer email
     if (!selectedOrder.customer_email || !selectedOrder.customer_name) {
@@ -364,18 +375,37 @@ const OrderVerificationTab = ({ statusFilter }) => {
       const htmlContent = `
         <h1>Insufficient Payment</h1>
         <p>Hi ${selectedOrder.customer_name},</p>
-        <p>Your payment for your Order #${selectedOrder.order_id}.</p>
+        <p>We have received your payment for Order #${selectedOrder.order_id}. However, the payment you sent through ${selectedOrder.payment_method_name} is insufficient.</p>
+        <p><strong>Total Amount:</strong> ₱${Number(
+          selectedOrder.total_amount,
+        ).toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}</p>
+        <p><strong>Paid Amount: </strong> ₱${Number(amountPaid).toLocaleString(
+          undefined,
+          {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          },
+        )}</p>
+        <p><strong>Remaining Balance:</strong> ₱${Number(
+          amountDue,
+        ).toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}  </p>
         <p>Please settle the remaining balance within 24 hours after this email is sent and send proof by replying to this thread.</p>
         <p>Thank you.</p>
       `;
 
-      console.log("Sending email with data:", {
-        to: selectedOrder.customer_email,
-        from: "Alofa Haircare <mailgun@sandbox1463264fb2744256b74af8ebe920ea0c.mailgun.org>", // Replace with your verified sender email
-        subject,
-        text: textContent,
-        html: htmlContent,
-      });
+      // console.log("Sending email with data:", {
+      //   to: selectedOrder.customer_email,
+      //   from: "Alofa Haircare <mailgun@sandbox1463264fb2744256b74af8ebe920ea0c.mailgun.org>", // Replace with your verified sender email
+      //   subject,
+      //   text: textContent,
+      //   html: htmlContent,
+      // });
 
       await SendEmail(
         selectedOrder.customer_email,
@@ -787,12 +817,7 @@ const OrderVerificationTab = ({ statusFilter }) => {
                       Invalid Payment
                     </button>
                     <button
-                      onClick={() =>
-                        openConfirmModal(
-                          handleInsufficientPayment,
-                          "Are you sure you want to mark this payment as insufficient?",
-                        )
-                      }
+                      onClick={openInsufficientPaymentModal}
                       className="px-6 py-2 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400 transition"
                     >
                       Insufficient Payment
@@ -828,6 +853,30 @@ const OrderVerificationTab = ({ statusFilter }) => {
                 title="Reason"
                 placeholder="Enter reason..."
                 inputType="textarea"
+              />
+            )}
+            {isInsufficientPaymentModalOpen && (
+              <InsufficientPaymentModal
+                isOpen={isInsufficientPaymentModalOpen}
+                onClose={() => setIsInsufficientPaymentModalOpen(false)}
+                onSubmit={(amountPaid, amountDue) => {
+                  openConfirmModal(
+                    () => handleInsufficientPayment(amountPaid, amountDue),
+                    `Are you sure you want to mark this payment as insufficient with the following details?\n\nAmount Paid: ₱${Number(
+                      amountPaid,
+                    ).toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}\nAmount Due: ₱${Number(amountDue).toLocaleString(
+                      undefined,
+                      {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      },
+                    )}`,
+                  );
+                }}
+                totalAmount={selectedOrder.total_amount}
               />
             )}
           </Modal>
