@@ -12,6 +12,7 @@ const ProductDetails = () => {
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useContext(CartContext);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  
 
   useEffect(() => {
     // console.log("Product ID:", productId);
@@ -151,15 +152,16 @@ const ProductDetails = () => {
             <div className="w-full lg:w-1/2 flex flex-col justify-between relative p-0">
               {/* White Container with Product Details */}
               <div className="bg-white shadow-lg p-10 rounded-3xl h-[450px] flex flex-col">
-                <h2 className="gradient-heading text-5xl font-bold font-heading pt-0 mt-0 mb-2 leading-relaxed">
+                <h2 className="gradient-heading text-5xl font-bold font-heading pt-0 mt-0 mb-0 leading-relaxed">
                   {variation.product_name}
                 </h2>
-                <p className="text-gray-600 italic text-lg mb-6">
+                <p className="text-gray-600 italic text-lg mb-3">
                   {variation.value !== "N/A" ? variation.value : ""}
                 </p>
-                <p className="text-gray-600 mb-8 leading-relaxed text-lg flex-grow">
-                  {variation.product_description}{" "}
-                </p>
+
+                <div className="text-gray-600 mb-4 leading-relaxed text-lg flex-grow overflow-auto max-h-[210px] no-scrollbar">
+                  {variation.product_description}
+                </div>
 
                 {/* Stock Quantity and Price */}
                 <div className="mt-auto flex items-center justify-between text-gray-600 text-lg">
