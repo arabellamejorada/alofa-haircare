@@ -3,7 +3,7 @@ import axios from "axios";
 export const createStockOut = async (requestData) => {
     try {
     const response = await axios.post("http://localhost:3001/stock-out", requestData);
-        console.log("Stock Out created: ", response.data);
+        // console.log("Stock Out created: ", response.data);
         return response.data;
     } catch (error) {
         console.error("Error stocking out:", error);
