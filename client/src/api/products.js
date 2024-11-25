@@ -8,7 +8,7 @@ export const createProductWithVariationAndInventory = async (formData) => {
         'Content-Type': 'multipart/form-data',
       },
     });
-    console.log('Product with variations and inventory created: ', response.data);
+    // console.log('Product with variations and inventory created: ', response.data);
     return response.data;
   } catch (error) {
     console.error('Error creating product with variations and inventory: ', error);
@@ -189,7 +189,7 @@ export const deleteInventory = async (inventoryId) => {
 export const getAllProductVariations = async () => {
     try {
         const response = await axios.get('/product-variations');
-        console.log('Product variations fetched: ', response.data);
+        // console.log('Product variations fetched: ', response.data);
         return response.data;
     } catch (error) {
         console.error('Error fetching product variations: ', error);

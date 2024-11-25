@@ -26,7 +26,7 @@ const VoucherModal = ({
   };
 
   const handleInputChange = (e) => {
-    console.log(errors, setErrors);
+    // console.log(errors, setErrors);
 
     const { name, value } = e.target;
 
