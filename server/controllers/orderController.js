@@ -541,6 +541,7 @@ const getAllOrdersWithOrderItems = async (req, res) => {
         customer_name: `${order.profile_first_name || ""} ${
           order.profile_last_name || ""
         }`,
+        date_ordered_original: order.date_ordered,
         date_ordered: formatDate(order.date_ordered),
         date_delivered: formatDate(order.date_delivered),
         shipping_date: formatDate(order.shipping_date),
@@ -872,6 +873,8 @@ const GetAllOrderStatuses = async (req, res) => {
 
 const getSalesMetrics = async (req, res) => {
   const { start_date, end_date } = req.query;
+  console.log("Start date:", start_date);
+  console.log("End date:", end_date);
 
   if (!start_date || !end_date) {
     return res
