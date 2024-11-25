@@ -16,6 +16,8 @@ const OrderVerification = () => {
         return <OrderVerificationTab statusFilter="Verified" />;
       case "Refunded Payment":
         return <OrderVerificationTab statusFilter="Refunded" />;
+      case "Insufficient Payment":
+        return <OrderVerificationTab statusFilter="Insufficient" />;
       default:
         return null;
     }
@@ -35,6 +37,7 @@ const OrderVerification = () => {
             "Pending Payment",
             "Verified Payment",
             "Refunded Payment",
+            "Insufficient Payment",
           ].map((tab) => (
             <button
               key={tab}

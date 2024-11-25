@@ -703,7 +703,7 @@ const getOrderItemsByOrderId = async (req, res) => {
 const updateOrderPaymentStatus = async (req, res) => {
   const { order_id } = req.params;
   const { payment_status_id } = req.body;
-
+  // console.log("Payment status update:", payment_status_id);
   try {
     await pool.query(
       `UPDATE orders SET payment_status_id = $1 WHERE order_id = $2`,

@@ -117,6 +117,9 @@ const OrderVerificationTab = ({ statusFilter }) => {
     setCurrentPage(1); // Reset to the first page when statusFilter changes
   }, [fetchOrders]);
 
+  // useEffect(() => {
+  //   console.log(selectedOrder);
+  // }, [selectedOrder]);
   // Handle sorting
   const handleSort = (field) => {
     const newSortOrder =
@@ -361,6 +364,12 @@ const OrderVerificationTab = ({ statusFilter }) => {
       return;
     }
 
+    // Check if already submitted
+    if (selectedOrder.payment_status_id === 4) {
+      toast.error("Insufficient payment already submitted for this order.");
+      return;
+    }
+
     // Validate customer email
     if (!selectedOrder.customer_email || !selectedOrder.customer_name) {
       toast.error("Customer email or name is missing. Cannot send email.");
@@ -368,8 +377,10 @@ const OrderVerificationTab = ({ statusFilter }) => {
     }
     setLoading(true);
     try {
-      // Send an email with a link to the refunds page
+      // Update payment status to "Insufficient" (ID: 4)
+      await updateOrderPaymentStatus(selectedOrder.order_id, 4);
 
+      // Send an email with a link to the  customer
       const subject = `Insufficient Payment for Order #${selectedOrder.order_id}`;
       const textContent = `Hi ${selectedOrder.customer_name},\n\nYour payment for your Order #${selectedOrder.order_id} is insufficient. Please settle the remaining balance within 24 hours after this email is sent and send the receipt by replying to this thread. Thank you.`;
       const htmlContent = `
@@ -661,6 +672,14 @@ const OrderVerificationTab = ({ statusFilter }) => {
                           {selectedOrder.order_status_name}
                         </dd>
                       </div>
+                      <div className="py-3">
+                        <dt className="text-sm font-medium text-gray-500">
+                          Remarks
+                        </dt>
+                        <dd className="mt-1 text-base text-gray-900">
+                          {selectedOrder.remarks || "No remarks available."}
+                        </dd>
+                      </div>
                       {/* Total Amount */}
                       <div className="py-3">
                         <dt className="text-sm font-medium text-gray-500">
@@ -816,12 +835,16 @@ const OrderVerificationTab = ({ statusFilter }) => {
                     >
                       Invalid Payment
                     </button>
-                    <button
-                      onClick={openInsufficientPaymentModal}
-                      className="px-6 py-2 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400 transition"
-                    >
-                      Insufficient Payment
-                    </button>
+                    {selectedOrder.payment_status_id !== 4 && (
+                      <button
+                        onClick={() => {
+                          openInsufficientPaymentModal();
+                        }}
+                        className="px-6 py-2 bg-gray-300 text-gray-700 hover:bg-gray-400 font-semibold rounded-lg transition"
+                      >
+                        Insufficient Payment
+                      </button>
+                    )}
                   </>
                 )}
             </div>
@@ -860,6 +883,12 @@ const OrderVerificationTab = ({ statusFilter }) => {
                 isOpen={isInsufficientPaymentModalOpen}
                 onClose={() => setIsInsufficientPaymentModalOpen(false)}
                 onSubmit={(amountPaid, amountDue) => {
+                  if (selectedOrder.payment_status_id === 4) {
+                    toast.error(
+                      "Insufficient payment already submitted for this order.",
+                    );
+                    return;
+                  }
                   openConfirmModal(
                     () => handleInsufficientPayment(amountPaid, amountDue),
                     `Are you sure you want to mark this payment as insufficient with the following details?\n\nAmount Paid: ₱${Number(
