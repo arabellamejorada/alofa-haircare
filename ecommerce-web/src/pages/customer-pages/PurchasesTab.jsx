@@ -29,6 +29,7 @@ const PurchasesTab = () => {
       "To Receive": "Shipped",
       Completed: "Completed",
       "For Refund": "For Refund",
+      Cancelled: "Cancelled",
     }),
     [],
   );
@@ -76,19 +77,25 @@ const PurchasesTab = () => {
   }, [activeTab, user]);
 
   useEffect(() => {
-  // Set underline position on initial render based on activeTab
-  const currentTabElement = document.getElementById(
-    `tab-${["All", "Pending", "To Ship", "To Receive", "Completed", "For Refund"].indexOf(
-      activeTab
-    )}`
-  );
-  if (currentTabElement) {
-    setTabUnderlineStyle({
-      width: currentTabElement.offsetWidth,
-      left: currentTabElement.offsetLeft,
-    });
-  }
-}, [activeTab]);
+    // Set underline position on initial render based on activeTab
+    const currentTabElement = document.getElementById(
+      `tab-${[
+        "All",
+        "Pending",
+        "To Ship",
+        "To Receive",
+        "Completed",
+        "For Refund",
+        "Cancelled",
+      ].indexOf(activeTab)}`,
+    );
+    if (currentTabElement) {
+      setTabUnderlineStyle({
+        width: currentTabElement.offsetWidth,
+        left: currentTabElement.offsetLeft,
+      });
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     const filtered = transactions.filter((transaction) => {
@@ -176,6 +183,7 @@ const PurchasesTab = () => {
               "To Receive",
               "Completed",
               "For Refund",
+              "Cancelled",
             ].map((tab, index) => (
               <button
                 key={tab}

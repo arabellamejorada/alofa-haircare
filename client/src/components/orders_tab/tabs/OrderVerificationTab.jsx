@@ -45,7 +45,6 @@ const OrderVerificationTab = ({ statusFilter }) => {
   const [confirmAction, setConfirmAction] = useState(() => {});
   const [confirmMessage, setConfirmMessage] = useState("");
 
-  const [isDynamicModalOpen, setIsDynamicModalOpen] = useState(false);
   const [isRemarksModalOpen, setIsRemarksModalOpen] = useState(false);
   const [isReasonModalOpen, setIsReasonModalOpen] = useState(false);
 
@@ -398,13 +397,19 @@ const OrderVerificationTab = ({ statusFilter }) => {
   };
 
   const handleReasonSubmit = (reason) => {
+    if (!reason) {
+      toast.error("Please enter a reason for marking the payment as invalid.");
+      return;
+    }
+
+    // Close the modal
+    setIsReasonModalOpen(false);
+
     // Open the ConfirmModal with the handleInvalidPayment action and a dynamic message including the reason
     openConfirmModal(
       () => handleInvalidPayment(reason),
       `Are you sure you want to mark this payment as invalid for the following reason?\n\n"${reason}"`,
     );
-    // Close the DynamicModal
-    setIsDynamicModalOpen(false);
   };
 
   if (error) return <div className="text-red-500">{error}</div>;
