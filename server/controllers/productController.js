@@ -428,8 +428,10 @@ const getAllProductStatus = async (req, res) => {
     const client = await pool.connect();
 
     try {
-        const results = await client.query('SELECT * FROM product_status');
-        res.status(200).json(results.rows);
+   const results = await client.query(
+            'SELECT * FROM product_status WHERE status_id IN ($1, $2)', 
+            [1, 4] // Replace with the desired IDs
+        );        res.status(200).json(results.rows);
     } catch (error) {
         console.error('Error fetching product statuses:', error);
         res.status(500).json({ message: 'Error fetching product statuses', error: error.message });
