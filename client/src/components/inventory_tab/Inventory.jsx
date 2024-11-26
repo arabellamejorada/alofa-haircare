@@ -37,7 +37,7 @@ const Inventory = () => {
         getInventory(),
         getAllInventoryHistory(),
       ]);
-      console.log(inventoryData);
+      // console.log(inventoryData);
       setInventory(inventoryData);
       if (
         inventoryHistoryResponse &&
