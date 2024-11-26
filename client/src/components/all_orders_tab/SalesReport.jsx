@@ -138,7 +138,7 @@ const SalesReport = ({ orders, startDate, endDate }) => {
 
             {/* Net Income */}
             <div className="flex flex-col items-center text-center">
-              <p className="text-gray-500 text-sm">Net Income</p>
+              <p className="text-gray-500 text-sm">Net Sales</p>
               <p className="text-2xl font-bold text-gray-800">
                 ₱
                 {totalSalesWithRefundDeduction.toLocaleString(undefined, {
