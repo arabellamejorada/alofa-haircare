@@ -150,7 +150,7 @@ const AddNewProduct = () => {
       variations: variationErrors,
     });
 
-    console.log("Submission errors", productErrors, variationErrors);
+    // console.log("Submission errors", productErrors, variationErrors);
     // If there are no errors, proceed with form submission
     if (
       Object.keys(productErrors).length === 0 &&
@@ -187,9 +187,9 @@ const AddNewProduct = () => {
           });
         }
 
-        console.log("Form Data:", formData);
+        // console.log("Form Data:", formData);
         await createProductWithVariationAndInventory(formData);
-        console.log("Product with variations created successfully!");
+        // console.log("Product with variations created successfully!");
         toast.success("Product with variations created successfully!");
         // Reset form on successful submission
         setNewProductFormData({
