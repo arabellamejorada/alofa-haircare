@@ -12,7 +12,6 @@ const ProductDetails = () => {
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useContext(CartContext);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
-  
 
   useEffect(() => {
     // console.log("Product ID:", productId);

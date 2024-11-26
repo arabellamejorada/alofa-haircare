@@ -28,7 +28,8 @@ const getAllInventories = async (req, res) => {
                 product_variation.*, 
                 product.name AS product_name, 
                 product_status.description AS product_status,
-                CONCAT(product_variation.type, ' - ', product_variation.value) AS variation
+                CONCAT(product_variation.type, ' - ', product_variation.value) AS variation,
+                COALESCE(inventory.reserved_quantity, 0) AS reserved_quantity -- Ensure reserved_quantity is 0 if NULL
             FROM 
                 inventory
             JOIN 
