@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Modal from "./Modal";
 
 const InsufficientPaymentModal = ({
@@ -7,20 +7,29 @@ const InsufficientPaymentModal = ({
   onSubmit,
   totalAmount,
 }) => {
-  const [amountPaid, setAmountPaid] = useState("");
-  const [amountDue, setAmountDue] = useState("");
+  const [amountPaid, setAmountPaid] = useState(0);
+  const [amountDue, setAmountDue] = useState(totalAmount);
+
+  useEffect(() => {
+    // Ensure numeric calculation
+    const paid = parseFloat(amountPaid) || 0;
+    setAmountDue(Math.max(totalAmount - paid, 0)); // Prevent negative due amount
+  }, [amountPaid, totalAmount]);
 
   const handleSubmit = () => {
-    if (!amountPaid || !amountDue) {
-      alert("Please enter both the Amount Paid and Amount Due.");
+    const paid = parseFloat(amountPaid);
+    if (isNaN(paid) || paid < 0) {
+      alert("Please enter a valid Amount Paid.");
       return;
     }
-    onSubmit(amountPaid, amountDue);
-    setAmountPaid(""); // Reset state
-    setAmountDue(""); // Reset state
+    if (paid >= totalAmount) {
+      alert("Payment is sufficient or exceeds the total amount.");
+      return;
+    }
+    onSubmit(paid, amountDue);
+    setAmountPaid(0); // Reset state
     onClose(); // Close modal
   };
-
   return (
     <Modal
       isVisible={isOpen}
@@ -50,16 +59,19 @@ const InsufficientPaymentModal = ({
               onChange={(e) => setAmountPaid(e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-alofa-pink"
               placeholder="0.00"
+              min="0"
             />
           </div>
           <div>
             <label className="font-semibold">Amount Due:</label>
             <input
-              type="number"
-              value={amountDue}
-              onChange={(e) => setAmountDue(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-alofa-pink"
-              placeholder="0.00"
+              type="text"
+              value={`₱${Number(amountDue).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}`}
+              readOnly
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-100"
             />
           </div>
         </div>
