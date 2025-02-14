@@ -26,3 +26,7 @@ This project is an eCommerce platform designed for Alofa Haircare to provide a s
 - Cassey Anne Gempesaw
 - Arabella Grace Mejorada
 - John Robert Anthony Tabudlong
+
+## Installation
+# Clone the Repository
+- git clone https://github.com/catgempesaw/alofa-haircare.git
